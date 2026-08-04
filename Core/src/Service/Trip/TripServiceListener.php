@@ -94,7 +94,7 @@
             $album = $this->photoService->getAlbum($message["albumId"]);
             if ($album !== null) {
                 $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
-                $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
+                $photos = $this->photoService->getPhotosForAlbum($album->getId(), true);
 
                 if ($place !== null && count($photos) > 0) {
                     if ($place->getMainHighlight() === null) {

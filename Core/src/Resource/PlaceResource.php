@@ -1879,7 +1879,7 @@
                 throw new NotFoundException($albumId);
             }
 
-            $this->photoService->updateAlbum($albumId, $place->getLatitude(), $place->getLongitude(), $mainPhotoPosition ?? $mainPhotoId, $batchId);
+            $this->photoService->updateAlbum($albumId, $mainPhotoPosition ?? $mainPhotoId, $batchId);
             
             $place = $this->doGetPlace($placeId);
             return $place->findAlbum($albumId);
@@ -2141,7 +2141,7 @@
                 throw new NotFoundException($albumId);
             }
 
-            return $this->photoService->getPhotosForAlbum($albumId, $place->getLatitude(), $place->getLongitude());
+            return $this->photoService->getPhotosForAlbum($albumId);
         }
 
         private function doGetPlace(string $placeId, ?int $nearbyPlaces = null) : Place {            

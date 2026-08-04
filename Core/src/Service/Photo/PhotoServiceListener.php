@@ -6,7 +6,6 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-    use Core\Service\Place\PlaceService;
 
     class PhotoServiceListener {
 
@@ -20,14 +19,12 @@
         private const FETCH_ALBUMS_ACTION_INTERVAL = 6 * CommonConstants::ONE_HOUR_SECONDS;
 
         private readonly PhotoService $photoService;
-        private readonly PlaceService $placeService;    
         private readonly CacheClient $distributedCacheClient;    
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(PhotoService $photoService, PlaceService $placeService, CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(PhotoService $photoService, CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->photoService = $photoService;
-            $this->placeService = $placeService;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
@@ -46,8 +43,7 @@
 
             $this->distributedCacheClient->lock(sprintf(self::UPLOADING_COMPLETING_LOCK_FORMAT, $message["albumId"]), self::UPLOADING_COMPLETING_LOCK_TTL, function() use(&$message) {
                 if ($this->photoService->getPendingPhotosCount($message["albumId"], $message["batchId"]) === $message["expectedBatchSize"]) {
-                    $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
-                    $this->photoService->updateAlbum($message["albumId"], $place?->getLatitude(), $place?->getLongitude(), $message["albumMainPhotoPosition"], $message["batchId"]);
+                    $this->photoService->updateAlbum($message["albumId"], $message["albumMainPhotoPosition"], $message["batchId"]);
                     // TODO: This event is published just to end the processing in Agent. Is this really the best solution? Shouldn't we just end the processing here? What if the code above fails and this event is not published?
                     $this->eventPublisher->publish(Event::PhotosUploadingCompleted($message["agentId"], $message["batchId"]));
                 }                
@@ -57,8 +53,7 @@
         public function onAlbumUpdated(mixed $message) : void {
             $album = $this->photoService->getAlbum($message["albumId"]);
             if ($album !== null) {
-                $place = $this->placeService->getRegularPlaceForAlbum($message["albumId"]);
-                $photos = $this->photoService->getPhotosForAlbum($album->getId(), $place?->getLatitude(), $place?->getLongitude(), true);
+                $photos = $this->photoService->getPhotosForAlbum($album->getId(), true);
     
                 if (count($photos) !== $album->getImagesCount()) {
                     $this->eventPublisher->publish(Event::AlbumInvalidated($album->getId()));

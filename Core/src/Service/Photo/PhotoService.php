@@ -109,7 +109,7 @@
             $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);
             $createdAlbumExternalId = $this->googleClient->createAlbum($albumName);
             $albumId = $this->getOrCreateAlbumId($createdAlbumExternalId);
-            $this->updateAlbum($albumId, $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude());
+            $this->updateAlbum($albumId);
             return $this->getAlbum($albumId);
         }
 
@@ -118,16 +118,12 @@
             $this->pruneUnusedObjects($objectKeys);
         }
 
-        public function updateAlbum(string $albumId, ?float $latitude = null, ?float $longitude = null, string | int | null $mainPhotoIdOrPosition = null, ?string $batchId = null) : void {            
+        public function updateAlbum(string $albumId, string | int | null $mainPhotoIdOrPosition = null, ?string $batchId = null) : void {            
             if ($batchId !== null) {
                 $this->createPendingPhotos($albumId, $batchId);
             }
 
             if ($mainPhotoIdOrPosition !== null) {
-                if ($latitude === null || $longitude === null) {
-                    throw new \InvalidArgumentException("Latitude and longitude must be provided when setting main photo.");
-                }
-
                 $externalAlbumId = $this->photoMapper->selectAlbumExternalId($albumId);       
                 if ($externalAlbumId === null) {
                     throw new \InvalidArgumentException("An album with the identifier '$albumId' does not exist.");
@@ -135,7 +131,7 @@
 
                 $mainPhotoId = null;
                 if (is_int($mainPhotoIdOrPosition) || ctype_digit((string) $mainPhotoIdOrPosition)) {
-                    $photos = $this->getPhotosForAlbum($albumId, $latitude, $longitude, true);
+                    $photos = $this->getPhotosForAlbum($albumId, true);
 
                     $mainPhotoPosition = $mainPhotoIdOrPosition - 1;
                     if ($mainPhotoPosition < 0 || $mainPhotoPosition >= count($photos)) {
@@ -182,7 +178,7 @@
             return $this->photoMapper->selectPhotos($photoIds);
         }
 
-        public function getPhotosForAlbum(string $albumId, float $latitude, float $longitude, bool $forceRefetch = false) : array {
+        public function getPhotosForAlbum(string $albumId, bool $forceRefetch = false) : array {
             $fetchedAlbumKey = sprintf(self::ALBUM_PHOTOS_CACHE_KEY_FORMAT, $albumId);
             if ($forceRefetch) {
                 $this->distributedCacheClient->delete($fetchedAlbumKey);
@@ -208,16 +204,6 @@
             $response = $this->getPhotosResponse($albumId);
             while (isset($response["mediaItems"] )) {
                 foreach ($response["mediaItems"] as &$mediaItem) {
-                    $timestamp = strtotime($mediaItem["mediaMetadata"]["creationTime"]);
-
-                    $dateTime = new \DateTime();
-                    $dateTime->setTimestamp($timestamp);
-                    $suncalc = new SunCalc($dateTime, $latitude, $longitude);
-                    $sunPosition = $suncalc->getSunPosition($dateTime);
-
-                    $sunAltitude = $sunPosition->altitude * 180 / M_PI;
-                    $sunAzimuth = $sunPosition->azimuth * 180 / M_PI;
-
                     $photos[] = new Photo(
                         $this->getOrCreatePhotoId($mediaItem["id"], false, $mediaItem["baseUrl"]), 
                         fn() => $this->getGooglePhotoProxyUrl($mediaItem["baseUrl"]),
@@ -227,9 +213,7 @@
                         $mediaItem["mediaMetadata"]["photo"]["apertureFNumber"] ?? null,
                         isset($mediaItem["mediaMetadata"]["photo"]["exposureTime"]) ? doubleval(rtrim($mediaItem["mediaMetadata"]["photo"]["exposureTime"], "s")) : null,
                         $mediaItem["mediaMetadata"]["photo"]["isoEquivalent"] ?? null,
-                        $timestamp,
-                        $sunAltitude,
-                        $sunAzimuth
+                        strtotime($mediaItem["mediaMetadata"]["creationTime"])
                     );
                 }
                 

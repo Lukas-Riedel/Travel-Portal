@@ -1188,8 +1188,7 @@
                         "circumstances": "Okolnosti",
                         "atmosphere": "Atmosféra",
                         "impression": "Osobní dojem",
-                        "datetime": "Čas pořízení",
-                        "sun": "Výška slunce"
+                        "date": "Datum pořízení"
                     },
                     "option": {
                         "composition": {

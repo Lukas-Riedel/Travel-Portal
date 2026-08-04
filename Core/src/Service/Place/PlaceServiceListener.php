@@ -147,7 +147,7 @@
                 $album = $this->photoService->getAlbumForPhotoId($place->getMainHighlight()->getPhoto()->getId());
 
                 if ($album !== null && $album->getMainPhoto()->getId() !== $place->getMainHighlight()->getPhoto()->getId()) {
-                    $this->photoService->updateAlbum($album->getId(), $place->getLatitude(), $place->getLongitude(), $place->getMainHighlight()->getPhoto()->getId());
+                    $this->photoService->updateAlbum($album->getId(), $place->getMainHighlight()->getPhoto()->getId());
                 }
             }
         }

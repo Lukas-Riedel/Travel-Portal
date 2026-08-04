@@ -217,7 +217,7 @@
                     $urlProvider->bindTo($this);
 
                     return new Photo($photoRow["id"], $urlProvider, $photoRow["permalink"], $photoRow["camera"], $photoRow["focal_length"], $photoRow["aperture"],
-                        $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"], $photoRow["sun_altitude"], $photoRow["sun_azimuth"]);                    
+                        $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);                    
                 });
         }
 
@@ -398,9 +398,7 @@
                     shutter_speed,
                     iso,
                     timestamp,
-                    permalink,
-                    sun_altitude,
-                    sun_azimuth
+                    permalink
                 )
                 VALUES (
                     ?,
@@ -420,8 +418,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($photo->getId(), $albumId, $photo->getCamera(), $photo->getFocalLength(), $photo->getAperture(),
-                    $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink(),
-                    $photo->getSunAltitude(), $photo->getSunAzimuth())
+                    $photo->getShutterSpeed(), $photo->getIso(), $photo->getTimestamp(), $photo->getPermalink())
                 ->execute() === 1;
         }
 
@@ -681,7 +678,7 @@
             }
 
             return new Photo($photoId, $urlProvider, $photoRow["permalink"], $photoRow["camera"], $photoRow["focal_length"], $photoRow["aperture"],
-                $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"], $photoRow["sun_altitude"], $photoRow["sun_azimuth"]);
+                $photoRow["shutter_speed"], $photoRow["iso"], $photoRow["timestamp"]);
         }
 
         private function getSelectAlbumsQuery(string $cteName) : string {

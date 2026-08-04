@@ -771,7 +771,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 t("photo.prompt.upload.failed")
             )
 
-    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, timezone?: string, sunAltitude?: number) =>
+    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number) =>
         showFormToast(
             t("highlight.prompt.update.attribute.message"),
             [
@@ -837,17 +837,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 },
                 timestamp && {
                     type: "text",
-                    label: t("highlight.prompt.update.attribute.label.datetime"),
+                    label: t("highlight.prompt.update.attribute.label.date"),
                     required: false,
                     disabled: true,
-                    defaultValue: formatTimestamp(timestamp, t("general.format.datetime.year.included"), timezone),
-                },
-                sunAltitude && {
-                    type: "text",
-                    label: t("highlight.prompt.update.attribute.label.sun"),
-                    required: false,
-                    disabled: true,
-                    defaultValue: `${sunAltitude.toFixed(1)}°`,
+                    defaultValue: formatTimestamp(timestamp, t("general.format.date.year.included")),
                 }
             ],
             (composition, sky, shadows, circumstantes, atmosphere, impression) => updateHighlightAttributes(
