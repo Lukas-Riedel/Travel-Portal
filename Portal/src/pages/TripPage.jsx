@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom"
 import { useTrip } from "../hooks/useTrip"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import PageHeader from "../components/PageHeader"
-import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
+import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle"
 import StatisticsPanel from "../components/StatisticsPanel"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import { useMemo } from "react"
@@ -16,6 +16,7 @@ import { useEvents } from "../hooks/useEvents"
 import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useCategories } from "../hooks/useCategories.ts"
 
 export default function TripPage() {
     const { hasRole } = useAuth()
@@ -29,17 +30,24 @@ export default function TripPage() {
     const { trips: candidateTrips } = useCandidateTrips()
     const { places } = useRegularPlaces({ tripId, include: ["categories", "dates", "notes"], sort: "-score" })
     const { candidatePlaces } = useCandidatePlaces({ tripId, include: ["categories", "dates", "notes"], sort: "-score" })
+    const countryCategories = useCategories({ categories: ["country"] })
+
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : places, [trip, places, candidatePlaces])
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
-    const countryCategoriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
+
+    const countryCategoriesMap = useMemo(() => {
+        return new Map(countryCategories?.map(category => [category.name, category]))
+    }, [countryCategories])
+    const visitedCountriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [tripPlacesWithoutLayover])
 
     const getPlaceCategory = place => {
-        if (countryCategoriesMap.size > 1) {
-            return countryCategoriesMap.get(place?.country)
+        if (visitedCountriesMap.size > 1) {
+            return visitedCountriesMap.get(place?.country)
         }
         return place?.getCategory("mostSpecificWithMetadata")
     }
+    const getAirportCategory = airport => countryCategoriesMap.get(airport.country)
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
 
@@ -47,15 +55,17 @@ export default function TripPage() {
         <>
             <PageHeader
                 name={trip && trip.getFullName()}
-                categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
+                categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.TripEdit) && { "Počet highlightů": trip?.highlights?.length }}
                 onHighlightsRefreshed={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => refreshTripHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.TripEdit) && updateTripName}
                 onRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
-            <HighlightCarouselAndPlaceMapToggle
+            <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
                 entity={trip}
                 places={tripPlacesWithoutLayover}
+                flights={trip && (trip.flights ?? []).filter(flight => flight.registration)}
                 placeMainCategorySelector={getPlaceCategory}
+                airportMainCategorySelector={getAirportCategory}
                 onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
                 onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
                 onHighlightRemoved={hasRole(UserRole.TripHighlightEdit) && removeTripHighlight}

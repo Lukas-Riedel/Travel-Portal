@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useCategory } from "../hooks/useCategory"
 import PageHeader from "../components/PageHeader"
-import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
+import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import StatisticsPanel from "../components/StatisticsPanel"
 import { useMemo } from "react"
@@ -78,7 +78,7 @@ export default function CategoryPage() {
                 onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName}
                 onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== "country" && removeCategory} />
-            <HighlightCarouselAndPlaceMapToggle
+            <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
                 entity={category}
                 places={places}
                 placeMainCategorySelector={getPlaceCategory}

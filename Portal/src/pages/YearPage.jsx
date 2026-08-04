@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import PageHeader from "../components/PageHeader"
-import HighlightCarouselAndPlaceMapToggle from "../components/HighlightCarouselAndPlaceMapToggle"
+import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle"
 import StatisticsPanel from "../components/StatisticsPanel"
 import { useMemo } from "react"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
@@ -18,6 +18,7 @@ import { fromUnixTime, startOfDay } from "date-fns"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { Trip } from "../classes/Trip.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useCategories } from "../hooks/useCategories.ts"
 
 export default function YearPage() {
     const { hasRole } = useAuth()
@@ -27,16 +28,23 @@ export default function YearPage() {
 
     const { year, removeYearHighlight, updateYearMainHighlight, updateYearHighlightQualityAttributes, refreshYearHighlights } = useYear(yearParameter)
     const { places } = useTimeFilteredRegularPlaces({ year: yearParameter, include: ["dates", "categories", "notes"] })
-    const { trips: yearTrips } = useRegularTrips({ year: yearParameter, include: ["expenses"] })
+    const { trips: yearTrips } = useRegularTrips({ year: yearParameter, include: ["expenses", "flights"] })
+    const countryCategories = useCategories({ categories: ["country"] })
 
+    const flights = useMemo(() => (yearTrips ?? []).flatMap(trip => trip.flights).filter(Boolean).filter(flight => flight.registration), [yearTrips])
     const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
     const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => place.dates?.length > 0), [places])
     const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(fromUnixTime(d.start, { timeZone: timezone })).getTime()) ?? []))).sort((a, b) => a - b).map(ts => new Date(ts)), [placesWithoutTrip, timezone])
 
-    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
+    const countryCategoriesMap = useMemo(() => {
+        return new Map(countryCategories?.map(category => [category.name, category]))
+    }, [countryCategories])
+
+    const visitedCountriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
     const getPlaceCategory = place => countryCategoriesMap.get(place?.country)
+    const getAirportCategory = airport => countryCategoriesMap.get(airport.country)
     const getDayOfYear = date => Math.round((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 1)) / 86400000)
 
     const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
@@ -46,14 +54,16 @@ export default function YearPage() {
         <>
             <PageHeader
                 name={year?.id}
-                categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
+                categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.YearEdit) && { "Počet highlightů": year?.highlights?.length }}
                 onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => refreshYearHighlights(highlightsCount))}
             />
-            <HighlightCarouselAndPlaceMapToggle
+            <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
                 entity={year}
                 places={places}
+                flights={flights}
                 placeMainCategorySelector={getPlaceCategory}
+                airportMainCategorySelector={getAirportCategory}
                 onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
                 onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
                 onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) && removeYearHighlight}

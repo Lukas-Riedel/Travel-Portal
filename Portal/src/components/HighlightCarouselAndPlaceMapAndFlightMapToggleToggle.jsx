@@ -1,11 +1,12 @@
 import { useLayoutEffect, useRef, useState } from "react"
 import { Map as MapIcon, Images } from "lucide-react"
-import HighlightCarousel from "./HighlightCarousel"
-import PlaceMap from "./PlaceMap"
+import HighlightCarousel from "./HighlightCarousel.jsx"
+import PlaceMap from "./PlaceMap.tsx"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import PlaceMapAndFlightMapToggle from "./PlaceMapAndFlightMapToggle.tsx"
 
-export default function HighlightCarouselAndPlaceMapToggle({ entity, places, placeMainCategorySelector, onPhotoReplaced, onPhotoCorrected,
-    onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated }) {
+export default function HighlightCarouselAndPlaceMapAndFlightMapToggleToggle({ entity, places, flights, placeMainCategorySelector, airportMainCategorySelector, onPhotoReplaced, onPhotoCorrected,
+    onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onRightClick }) {
     const [showMap, setShowMap] = useState(false)
     const [height, setHeight] = useState(0)
     const carouselRef = useRef(null)
@@ -26,13 +27,16 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
     if (entity && (!Array.isArray(entity.highlights) || entity.highlights.filter(highlight => highlight.photo.timestamp < getCurrentOrMaximumAllowedTimestamp()).length === 0)) {
         return (
             <div className="h-[365px] sm:h-[730px] my-4">
-                <PlaceMap
+                <PlaceMapAndFlightMapToggle
                     places={places}
-                    placeMainCategorySelector={placeMainCategorySelector} />
+                    flights={flights}
+                    placeMainCategorySelector={placeMainCategorySelector}
+                    airportMainCategorySelector={airportMainCategorySelector}
+                    onRightClick={onRightClick} />
             </div>
         )
     }
-    
+
     return (
         <div className="relative w-full my-4">
             <div
@@ -48,9 +52,12 @@ export default function HighlightCarouselAndPlaceMapToggle({ entity, places, pla
             </div>
             {showMap && (
                 <div style={{ height, width: "100%" }}>
-                    <PlaceMap
+                    <PlaceMapAndFlightMapToggle
                         places={places}
-                        placeMainCategorySelector={placeMainCategorySelector} />
+                        flights={flights}
+                        placeMainCategorySelector={placeMainCategorySelector}
+                        airportMainCategorySelector={airportMainCategorySelector}
+                        onRightClick={onRightClick} />
                 </div>
             )}
 
