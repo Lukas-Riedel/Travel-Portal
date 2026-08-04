@@ -380,6 +380,30 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                 ])}
                             </div>
                         )}
+                        {isPlace(event) && event.notes && event.notes.length > 0 && (
+                            <ul className="mt-3 text-xs text-gray-500 space-y-2 leading-5">
+                                {event.notes.map(note => (
+                                    <li
+                                        key={note.id}
+                                        className="clear-left flex items-center space-x-2">
+                                        <NotebookPen className="w-4 h-4 shrink-0" />
+                                        <div className="relative group inline-block flex-1 min-w-0 hover:cursor-help">
+                                            <span className="truncate block">
+                                                <ReactMarkdown>
+                                                    {note.content}
+                                                </ReactMarkdown>
+                                            </span>
+                                            <Tooltip>
+                                                <NotebookPen size={16} />
+                                                <ReactMarkdown>
+                                                    {note.content}
+                                                </ReactMarkdown>
+                                            </Tooltip>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </li>
                 ))}
             </ul>
