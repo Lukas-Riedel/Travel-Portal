@@ -14,6 +14,9 @@ class DeviceLogOnRequestedNotificationFactory(
     private val gson = Gson()
 
     override suspend fun create(args: Map<String, Any>): Notification? {
+        val preferences = context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        preferences.edit().putLong(LAST_NOTIFICATION_TIMESTAMP_KEY, System.currentTimeMillis()).apply()
+
         if (!isCharging(context)) {
             return null
         }
@@ -35,5 +38,10 @@ class DeviceLogOnRequestedNotificationFactory(
         val status = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
         
         return status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+    }
+
+    companion object {
+        private const val DEVICE_PREFERENCES_NAME = "DevicePreferences"
+        private const val LAST_NOTIFICATION_TIMESTAMP_KEY = "lastNotificationTimestamp"
     }
 }

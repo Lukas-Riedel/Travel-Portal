@@ -13,12 +13,17 @@ class PassiveLocationReceiver : BroadcastReceiver() {
             return
         }
 
-        val prefs = context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
-        val lastLogonTime = prefs.getLong(LAST_LOGON_KEY, 0L)
+        val preferences = context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
         val currentTime = System.currentTimeMillis()
+        
+        val lastFcmTime = preferences.getLong(LAST_NOTIFICATION_TIMESTAMP_KEY, 0L)
+        val lastLogonTime = preferences.getLong(LAST_LOGON_TIMESTAMP_KEY, 0L)
 
-        if (currentTime - lastLogonTime >= MIN_LOGON_INTERVAL_MS) {
-            prefs.edit().putLong(LAST_LOGON_KEY, currentTime).apply()
+        val isNotificationActive = (currentTime - lastFcmTime) <= MAX_NOTIFICATION_AGE_MS
+        val isThrottled = (currentTime - lastLogonTime) < MIN_LOGON_INTERVAL_MS
+
+        if (isNotificationActive && !isThrottled) {
+            preferences.edit().putLong(LAST_LOGON_TIMESTAMP_KEY, currentTime).apply()
 
             val serviceIntent = Intent(context, DeviceForegroundService::class.java)
             ContextCompat.startForegroundService(context, serviceIntent)
@@ -27,7 +32,9 @@ class PassiveLocationReceiver : BroadcastReceiver() {
 
     companion object {
         private const val DEVICE_PREFERENCES_NAME = "DevicePreferences"
-        private const val LAST_LOGON_KEY = "lastLogonTimestamp"
+        private const val LAST_LOGON_TIMESTAMP_KEY = "lastLogonTimestamp"
+        private const val LAST_NOTIFICATION_TIMESTAMP_KEY = "lastNotificationTimestamp"
         private const val MIN_LOGON_INTERVAL_MS = 15 * 60 * 1000L
+        private const val MAX_NOTIFICATION_AGE_MS = 24 * 60 * 60 * 1000L
     }
 }
