@@ -109,16 +109,16 @@
                 ->execute() === 1;
         }
 
-        public function updateNoteOwner(NoteType $noteType, string $noteId, string $entityId) : bool {
+        public function updateNoteOwner(NoteType $noteType, string $oldEntityId, string $newEntityId) : bool {
             $sql = <<<SQL
                 UPDATE {$noteType->getTableName()}
                 SET id = ?
-                WHERE note_id = ?
+                WHERE id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($entityId, $noteId)
+                ->withParameters($newEntityId, $oldEntityId)
                 ->execute() === 1;
         }
 
