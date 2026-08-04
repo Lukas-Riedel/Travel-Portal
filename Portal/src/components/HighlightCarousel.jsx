@@ -130,7 +130,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     const handleHighlightQualityAttributesUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
         showUpdateHighlightAttributesToast((composition, sky, shadows, circumstances, atmosphere, impression) => onHighlightQualityAttributesUpdated(highlight.id, composition,
-            sky, shadows, circumstances, atmosphere, impression), highlight?.attributes, highlight.photo.timestamp)
+            sky, shadows, circumstances, atmosphere, impression), highlight?.attributes, highlight.photo.timestamp, highlight.photo.focalLength)
     }
 
     if (highlights && shuffledHighlights.length === 0) {

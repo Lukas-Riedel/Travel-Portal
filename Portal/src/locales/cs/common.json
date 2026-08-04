@@ -64,6 +64,9 @@
             "kilometer_one": "{{count}} kilometr",
             "kilometer_few": "{{count}} kilometry",
             "kilometer_other": "{{count}} kilometrů",
+            "millimeter_one": "{{count}} milimetr",
+            "millimeter_few": "{{count}} milimetry",
+            "millimeter_other": "{{count}} milimetrů",
             "meter_one": "{{count}} metr",
             "meter_few": "{{count}} metry",
             "meter_other": "{{count}} metrů",
@@ -1188,7 +1191,8 @@
                         "circumstances": "Okolnosti",
                         "atmosphere": "Atmosféra",
                         "impression": "Osobní dojem",
-                        "date": "Datum pořízení"
+                        "date": "Datum pořízení",
+                        "focalLength": "Ohnisková vzdálenost"
                     },
                     "option": {
                         "composition": {

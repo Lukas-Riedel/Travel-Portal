@@ -8,11 +8,13 @@ import { formatTimestamp } from "../utils/timeUtils.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { Trip } from "../classes/Trip.ts"
 import type { GeoJSON } from "geojson"
+import { useFormatters } from "./useFormatters.ts"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
     const { configuration } = useConfiguration()
     const { t } = useTranslation()
+    const { formatMillimeters } = useFormatters()
 
     const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
         showInputToast(
@@ -771,7 +773,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 t("photo.prompt.upload.failed")
             )
 
-    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number) =>
+    const showUpdateHighlightAttributesToast = (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, focalLength?: number) =>
         showFormToast(
             t("highlight.prompt.update.attribute.message"),
             [
@@ -841,6 +843,13 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false,
                     disabled: true,
                     defaultValue: formatTimestamp(timestamp, t("general.format.date.year.included")),
+                },
+                focalLength && {
+                    type: "text",
+                    label: t("highlight.prompt.update.attribute.label.focalLength"),
+                    required: false,
+                    disabled: true,
+                    defaultValue: formatMillimeters(focalLength)
                 }
             ],
             (composition, sky, shadows, circumstantes, atmosphere, impression) => updateHighlightAttributes(

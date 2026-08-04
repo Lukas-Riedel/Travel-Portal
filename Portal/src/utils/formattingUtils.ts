@@ -14,9 +14,13 @@ export function formatDeviceType(type: string): string {
     return type.toLowerCase().replace(/^./, c => c.toUpperCase())
 }
 
-export function getMinMaxRange(items: number[]): string {
+export function getMinMaxRange(items: number[], formatValue?: (value: number) => string): string {
     const min = Math.min(...items)
     const max = Math.max(...items)
+
+    if (formatValue) {
+        return min === max ? formatValue(min) : `${min}-${formatValue(max)}`
+    }
 
     return min === max ? `${min}` : `${min}-${max}`
 }

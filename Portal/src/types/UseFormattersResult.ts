@@ -4,6 +4,7 @@ export interface UseFormattersResult {
     formatDuration: (value: number, includeSeconds?: boolean) => string
     formatEvents: (value: number) => string
     formatKilometers: (value: number) => string
+    formatMillimeters: (value: number) => string
     formatMeters: (value: number) => string
     formatElevationMeters: (value: number) => string
     formatPhotos: (value: number) => string

@@ -31,6 +31,7 @@ export function useFormatters(): UseFormattersResult {
 
     const formatEvents = useCallback((v: number) => t("general.unit.event", { count: v }), [t])
     const formatKilometers = useCallback((v: number) => t("general.unit.kilometer", { count: Math.round(v) }), [t])
+    const formatMillimeters = useCallback((v: number) => t("general.unit.millimeter", { count: Math.round(v) }), [t])
     const formatMeters = useCallback((v: number) => t("general.unit.meter", { count: Math.round(v) }), [t])
     const formatElevationMeters = useCallback((v: number) => t("general.unit.elevation", { count: Math.round(v) }), [t])
     const formatPhotos = useCallback((v: number) => t("general.unit.photo", { count: v }), [t])
@@ -107,6 +108,7 @@ export function useFormatters(): UseFormattersResult {
     return {
         formatDuration,
         formatEvents,
+        formatMillimeters,
         formatKilometers,
         formatMeters,
         formatElevationMeters,

@@ -26,7 +26,7 @@ export default function PlacePage() {
     const { hasRole } = useAuth()
     const { placeId } = useParams()
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
-    const { formatMeters } = useFormatters()
+    const { formatMeters, formatMillimeters } = useFormatters()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
@@ -45,7 +45,7 @@ export default function PlacePage() {
             <PageHeader
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
-                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation), "Ohnisková vzdálenost": place?.highlights?.length > 0 && `${getMinMaxRange(place.highlights.map(h => h.photo.focalLength))} milimetrů` }}
+                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation), "Ohnisková vzdálenost": place?.highlights?.length > 0 && getMinMaxRange(place.highlights.map(h => h.photo.focalLength), formatMillimeters) }}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => refreshPlaceHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel
