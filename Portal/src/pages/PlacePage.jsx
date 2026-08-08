@@ -18,7 +18,6 @@ import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import PlaceReviewAlertBar from "../components/PlaceReviewAlertBar.tsx"
-import { getMinMaxRange } from "../utils/formattingUtils.ts"
 
 const nearbyPlacesCount = 3
 
@@ -45,7 +44,7 @@ export default function PlacePage() {
             <PageHeader
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
-                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation), "Ohnisková vzdálenost": place?.highlights?.length > 0 && getMinMaxRange(place.highlights.map(h => h.photo.focalLength), formatMillimeters) }}
+                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation) }}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => refreshPlaceHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel
