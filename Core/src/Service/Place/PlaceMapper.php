@@ -371,7 +371,7 @@
                         }
 
                         $places[$placeRow["id"]]->addDate(new Date($placeRow["start"], $placeRow["end"], $placeRow["layover"] === "t", $weather,
-                            $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"]), $placeRow["trip_id"] == null ? null : $tripService->getTripIdentifierById($placeRow["trip_id"])));  
+                            $this->photoService->getAlbumForPlaceAndDate($placeRow["name"], $placeRow["start"], $placeRow["timezone"]), $placeRow["trip_id"] == null ? null : $tripService->getTripIdentifierById($placeRow["trip_id"])));
                     }
                 }
             }

@@ -61,7 +61,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
             <PhotoTile
                 src={date?.album?.mainImageUrl}
                 firstLineText={place?.name}
-                secondLineText={date && formatTimestamp(date.start, t("general.format.date.year.included"))}
+                secondLineText={date && formatTimestamp(date.start, t("general.format.date.year.included"), place?.timezone)}
                 categories={place && [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)]}
                 onClick={openGallery} />
             {onAlbumRefreshed && date?.album && (

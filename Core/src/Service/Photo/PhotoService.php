@@ -88,8 +88,8 @@
             return $this->photoMapper->selectAlbum($albumId);
         }
         
-        public function getAlbumForPlaceAndDate(string $placeName, int $timestamp) : ?Album {
-            return $this->photoMapper->selectAlbumByName($this->getAlbumName($placeName, $timestamp));
+        public function getAlbumForPlaceAndDate(string $placeName, int $timestamp, string $timezone) : ?Album {
+            return $this->photoMapper->selectAlbumByName($this->getAlbumName($placeName, $timestamp, $timezone));
         }
         
         public function getAlbumsForPlace(string $placeName) : array {
@@ -106,7 +106,7 @@
         }
 
         public function createAlbum(PlaceIdentifier $placeIdentifier, int $timestamp) : Album {
-            $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp);
+            $albumName = $this->getAlbumName($placeIdentifier->getName(), $timestamp, $placeIdentifier->getTimezone());
             $createdAlbumExternalId = $this->googleClient->createAlbum($albumName);
             $albumId = $this->getOrCreateAlbumId($createdAlbumExternalId);
             $this->updateAlbum($albumId);
@@ -419,8 +419,8 @@
             }
         }
 
-        private function getAlbumName(string $placeName, int $timestamp) : string {
-            return $placeName . " " . date(CommonConstants::DMY_DATE_FORMAT, $timestamp);
+        private function getAlbumName(string $placeName, int $timestamp, string $timezone) : string {
+            return $placeName . " " . (new \DateTime("@$timestamp"))->setTimezone(new \DateTimeZone($timezone))->format(CommonConstants::DMY_DATE_FORMAT);
         }
         
         private function getOrCreateAlbumId(string $externalId) : string {
