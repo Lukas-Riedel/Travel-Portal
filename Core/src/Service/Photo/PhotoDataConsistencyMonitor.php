@@ -28,20 +28,13 @@
                 null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             $allAlbums = $this->photoService->getAllAlbums();
 
-            $referencedAlbumIds = array();
-            foreach ($relevantPlaces as &$place) {
-                foreach ($place->getDates() as &$date) {
-                    if ($date->getAlbum() !== null) {
-                        $referencedAlbumIds[$date->getAlbum()->getId()] = true;
-                    }
-                }
-            }
-
-            foreach ($allAlbums as &$album) {
-                $albumId = $album->getId();
-                if (!isset($referencedAlbumIds[$albumId])) {
-                    $dataConsistencyIssues[] = new DataConsistencyIssue(self::ALBUM_WITHOUT_PLACE_ISSUE_NAME, $albumId, $album, time());
-                }
+            $allAlbumIds = array_map(fn($album) => $album->getId(), $allAlbums);
+            $referencedAlbumIds = array_map(fn($date) => $date->getAlbum()->getId(), array_filter(array_merge(...array_map(
+                fn($place) => $place->getDates(), $relevantPlaces)), fn($date) => $date->getAlbum() !== null));
+            $nonReferencedAlbumIds = array_diff($allAlbumIds, $referencedAlbumIds);
+            foreach ($nonReferencedAlbumIds as &$nonReferencedAlbumId) {
+                $dataConsistencyIssues[] = new DataConsistencyIssue(self::ALBUM_WITHOUT_PLACE_ISSUE_NAME, $nonReferencedAlbumId,
+                    $this->photoService->getAlbum($nonReferencedAlbumId), time());
             }
 
             $emptyAlbums = array_filter($allAlbums, fn($album) => $album->getImagesCount() === 0);
