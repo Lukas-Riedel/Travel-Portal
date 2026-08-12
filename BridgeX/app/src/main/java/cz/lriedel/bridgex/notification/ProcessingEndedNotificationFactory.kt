@@ -1,5 +1,12 @@
 package cz.lriedel.bridgex.notification
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 import android.content.Context
 import cz.lriedel.bridgex.R
 
@@ -19,10 +26,17 @@ class ProcessingEndedNotificationFactory(
 
                 val placeId = innerArgs["placeId"] as? String ?: return null
                 val placeName = innerArgs["placeName"] as? String ?: return null
+                val photoUrl = innerArgs["result"] as? String
+
+                val imageBitmap = photoUrl?.let { url ->
+                    fetchImageBitmap(url)
+                }
+
                 Notification(
                     context.getString(R.string.title_photos_uploaded),
                     context.getString(R.string.message_photos_uploaded, placeName),
-                    mapOf<String, Any>("placeId" to placeId)
+                    mapOf<String, Any>("placeId" to placeId),
+                    imageBitmap
                 )
             }
             PHOTO_REPLACING_TRIGGERED_EVENT_NAME -> {
@@ -40,6 +54,32 @@ class ProcessingEndedNotificationFactory(
                 )
             }
             else -> null
+        }
+    }
+
+    private suspend fun fetchImageBitmap(baseUrl: String): Bitmap? = withContext(Dispatchers.IO) {
+        val formattedUrl = "$baseUrl=w1024"
+        
+        try {
+            val connection = (URL(formattedUrl).openConnection() as HttpURLConnection).apply {
+                doInput = true
+                connectTimeout = 3000
+                readTimeout = 3000
+                connect()
+            }
+
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                connection.inputStream.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream)
+                }
+            }
+            else {
+                null
+            }
+        }
+        catch (e: Exception) {
+            Log.e(ProcessingEndedNotificationFactory::class.java.simpleName, "Failed to fetch notification image from $formattedUrl", e)
+            null
         }
     }
 

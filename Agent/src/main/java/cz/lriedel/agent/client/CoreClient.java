@@ -2,6 +2,7 @@ package cz.lriedel.agent.client;
 
 import cz.lriedel.agent.model.api.Album;
 import cz.lriedel.agent.model.api.PendingPhoto;
+import cz.lriedel.agent.model.api.Photo;
 import cz.lriedel.agent.model.api.Place;
 import cz.lriedel.agent.model.request.DevicePrototype;
 import cz.lriedel.agent.model.request.EventPrototype;
@@ -35,13 +36,11 @@ public class CoreClient {
     private static final String CREATE_PLACE_ALBUM_ENDPOINT_PATH = "/places/{placeId}/albums";
     private static final String REFRESH_PLACE_ALBUM_ENDPOINT_PATH = "/places/{placeId}/albums/{albumId}/refresh";
     private static final String CREATE_PLACE_ALBUM_PHOTO_ENDPOINT_PATH = "/places/{placeId}/albums/{albumId}/photos";
+    private static final String GET_PLACE_ALBUM_PHOTOS_ENDPOINT_PATH = "/places/{placeId}/albums/{albumId}/photos";
 
-    private static final ParameterizedTypeReference<List<Place>> PLACES_LIST_TYPE_REFERENCE = new ParameterizedTypeReference<>() {
-
-    };
-    private static final ParameterizedTypeReference<Map<String, Object>> CONFIGURATION_MAP_TYPE_REFERENCE = new ParameterizedTypeReference<>() {
-
-    };
+    private static final ParameterizedTypeReference<List<Place>> PLACES_LIST_TYPE_REFERENCE = new ParameterizedTypeReference<>() {};
+    private static final ParameterizedTypeReference<List<Photo>> PHOTOS_LIST_TYPE_REFERENCE = new ParameterizedTypeReference<>() {};
+    private static final ParameterizedTypeReference<Map<String, Object>> CONFIGURATION_MAP_TYPE_REFERENCE = new ParameterizedTypeReference<>() {};
 
     private final RestTemplate restTemplate;
     private final HttpEntityProvider httpEntityProvider;
@@ -91,6 +90,13 @@ public class CoreClient {
         URI uri = uriBuilderFactory.builder().path(CREATE_PLACE_ALBUM_PHOTO_ENDPOINT_PATH).build(placeId, albumId);
 
         return Objects.requireNonNull(restTemplate.postForObject(uri, httpEntityProvider.getHttpEntity(photoPrototype), PendingPhoto.class));
+    }
+
+    public List<Photo> getPhotos(String placeId, String albumId) {
+        URI uri = uriBuilderFactory.builder().path(GET_PLACE_ALBUM_PHOTOS_ENDPOINT_PATH).build(placeId, albumId);
+
+        return Objects.requireNonNull(
+                restTemplate.exchange(uri, HttpMethod.GET, httpEntityProvider.getEmptyHttpEntity(), PHOTOS_LIST_TYPE_REFERENCE).getBody());
     }
 
     public Album refreshAlbum(String placeId, String albumId, @Nullable Integer mainPhotoPosition, @Nullable String batchId) {

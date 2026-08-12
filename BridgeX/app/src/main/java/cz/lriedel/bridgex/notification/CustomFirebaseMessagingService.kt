@@ -20,6 +20,7 @@ import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.reflect.Type
+import android.graphics.Bitmap
 
 class CustomFirebaseMessagingService : FirebaseMessagingService() {
     private val gson = Gson()
@@ -94,6 +95,15 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             .setContentIntent(pendingIntent)
             .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
+
+        notification.image?.let { bitmap ->
+            builder.setLargeIcon(bitmap)
+            builder.setStyle(
+                NotificationCompat.BigPictureStyle()
+                    .bigPicture(bitmap)
+                    .bigLargeIcon(null as android.graphics.Bitmap?)
+            )
+        }
 
         manager.notify(System.currentTimeMillis().toInt(), builder.build())
     }

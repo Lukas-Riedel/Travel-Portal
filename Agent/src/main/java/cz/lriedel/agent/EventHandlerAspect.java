@@ -1,5 +1,7 @@
 package cz.lriedel.agent;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.model.args.EventArgs;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +26,15 @@ class EventHandlerAspect {
 
     private static final String EVENT_NAME_PROPERTY_KEY = "name";
     private static final String EVENT_ARGS_PROPERTY_KEY = "args";
+    private static final String EVENT_ARGS_RESULT_PROPERTY_KEY = "result";
 
     private final CoreClient coreClient;
+    private final ObjectMapper objectMapper;
     private final LoggingContext loggingContext;
 
-    EventHandlerAspect(CoreClient coreClient, LoggingContext loggingContext) {
+    EventHandlerAspect(CoreClient coreClient, ObjectMapper objectMapper, LoggingContext loggingContext) {
         this.coreClient = coreClient;
+        this.objectMapper = objectMapper;
         this.loggingContext = loggingContext;
     }
 
@@ -40,7 +45,7 @@ class EventHandlerAspect {
 
         Object eventArgs = pjp.getArgs()[0];
         String eventName = eventArgs.getClass().getSimpleName().replace(EventArgs.class.getSimpleName(), EMPTY);
-        Map<String, Object> event = Map.of(EVENT_NAME_PROPERTY_KEY, eventName, EVENT_ARGS_PROPERTY_KEY, eventArgs);
+        Map<String, Object> event = createEvent(eventName, eventArgs);
 
         long start = System.currentTimeMillis();
         log.info("Starting processing of '{} ({})'...", eventName, eventArgs);
@@ -48,8 +53,12 @@ class EventHandlerAspect {
 
         try {
             Object result = pjp.proceed();
-            coreClient.createEvent(PROCESSING_ENDED_EVENT_NAME, event);
-            return result;
+
+            Map<String, Object> mergedArgs = objectMapper.convertValue(eventArgs, new TypeReference<>() {});
+            mergedArgs.put(EVENT_ARGS_RESULT_PROPERTY_KEY, result);
+
+            coreClient.createEvent(PROCESSING_ENDED_EVENT_NAME, createEvent(eventName, mergedArgs));
+            return null;
         }
         catch (Exception e) {
             log.error(String.format("An exception occurred when processing '%s (%s)'.", eventName, eventArgs), e);
@@ -60,5 +69,9 @@ class EventHandlerAspect {
             loggingContext.clear();
             log.info("Processing of '{} ({})' ended in {} milliseconds.", eventName, eventArgs, System.currentTimeMillis() - start);
         }
+    }
+
+    private Map<String, Object> createEvent(String name, Object args) {
+        return Map.of(EVENT_NAME_PROPERTY_KEY, name, EVENT_ARGS_PROPERTY_KEY, args);
     }
 }

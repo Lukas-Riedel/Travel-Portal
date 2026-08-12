@@ -9,6 +9,7 @@ import cz.lriedel.agent.AgentContextDataProvider;
 import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.model.api.Album;
 import cz.lriedel.agent.model.api.PendingPhoto;
+import cz.lriedel.agent.model.api.Photo;
 import cz.lriedel.agent.model.api.Place;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
@@ -172,7 +173,7 @@ public class PhotoService implements AgentContextDataProvider {
         });
     }
 
-    public void uploadPhotos(String placeId, @Nullable Instant timestamp, @Nullable String albumId, @Nullable Integer mainPhotoPosition, Path path) {
+    public String uploadPhotos(String placeId, @Nullable Instant timestamp, @Nullable String albumId, @Nullable Integer mainPhotoPosition, Path path) {
         if (albumId == null) {
             log.info("Album for place {} does not exist. Creating a new album...", placeId);
             albumId = coreClient.createAlbum(placeId, Objects.requireNonNull(timestamp)).getId();
@@ -189,6 +190,8 @@ public class PhotoService implements AgentContextDataProvider {
                 return null;
             });
         }
+
+        return coreClient.getPhotos(placeId, albumId).get(mainPhotoPosition != null ? mainPhotoPosition - 1 : 0).getUrl().toString();
     }
 
     @SneakyThrows

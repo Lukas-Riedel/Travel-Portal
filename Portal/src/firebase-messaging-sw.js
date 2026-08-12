@@ -85,6 +85,7 @@ onBackgroundMessage(messaging, payload => {
             self.registration.showNotification("Fotky byly nahrány", {
                 body: "Místo " + wrappedEvent.args.placeName + " má nové fotky",
                 icon: "icon-192.png",
+                image: wrappedEvent.args.result ? `${wrappedEvent.args.result}=w1024` : undefined,
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
