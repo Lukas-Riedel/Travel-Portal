@@ -3,6 +3,8 @@
 
     use Core\Common\CommonConstants;
     use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\Place;
+    use Core\Service\Place\Date;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Statistics\KeyValuePair;
@@ -59,17 +61,16 @@
 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     $placesByDay = array();
-                    foreach ($relevantPlaces as $place) {
-                        foreach ($place->getDates() as $date) {
-                            $dayKey = date(CommonConstants::DMY_DATE_FORMAT, $date->getStart());
+                    foreach ($relevantPlaces as &$place) {
+                        foreach ($place->getDates() as &$date) {
+                            $dayKey = $this->getDayKey($place, $date);
                             $placesByDay[$dayKey] ??= array();
                             $placesByDay[$dayKey][] = $place;
                         }
                     }
 
                     $mostPhotosPerDay = $this->getStandingsStatistics(fn($place, $date) => array(sprintf(self::PHOTOS_DATE_STATISTICS_FORMAT, implode(", ",
-                        array_unique(array_map(fn($place) => $place->getName(), $placesByDay[date(CommonConstants::DMY_DATE_FORMAT, $date->getStart())]))),
-                        date(CommonConstants::DMY_DATE_FORMAT, $date->getStart()))), $relevantPlaces);
+                        array_unique(array_map(fn($place) => $place->getName(), $placesByDay[$this->getDayKey($place, $date)]))), $this->getDayKey($place, $date))), $relevantPlaces);
                     if (count($mostPhotosPerDay) > 0) {
                         $statistics[] = new Statistics(StatisticsName::MostPhotosPerDay, $mostPhotosPerDay, StatisticsUnit::Photos);
                     }
@@ -105,6 +106,12 @@
             }
 
             return $statistics;
+        }
+
+        private function getDayKey(Place $place, Date $date) : string {
+            return (new \DateTimeImmutable('@' . $date->getStart()))
+                ->setTimezone(new \DateTimeZone($place->getTimezone()))
+                ->format(CommonConstants::DMY_DATE_FORMAT);
         }
 
         private function getStandingsStatistics(callable $keysSelector, array $relevantPlaces) : array {
