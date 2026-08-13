@@ -13,6 +13,7 @@ import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import { useUserInput } from "../hooks/useUserInput.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { getHighlightsTier } from "../utils/highlightUtils.ts"
 
 // TODO: This is duplicated in MainLayout. Replace by t(`category.category.${categoryCategory}`).
 const categoryCategories = {
@@ -44,11 +45,12 @@ export default function CategoryPage() {
         ?.reduce((acc, score) => acc + score, 0), [places])
     const totalQuality = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)
         ?.reduce((acc, quality) => acc + quality, 0), [places])
-    const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)?.length, [places])    
+    const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)?.length, [places])
 
     const attributes = {
         "Kategorie": categoryCategories[category?.category] ?? category?.category,
         "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / placesWithQualityCount)}%`,
+        "Tier": getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
         "Celkové skóre": totalScore,
         "Počet highlightů": category?.highlights?.length
     }
