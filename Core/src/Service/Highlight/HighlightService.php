@@ -506,7 +506,10 @@
                         if ($photo !== null) {
                             $data = $this->httpClient->executeRequest(HttpMethod::GET,
                                 $photo->getUrl() . "=w" . $highlightSize->getWidth() . "-h" . $highlightSize->getHeight());
-                            $this->cloudStorageClient->put($highlightSize->getBucket(), $objectKey, $data);
+
+                            if (is_string($data) && @getimagesizefromstring($data) !== false) {
+                                $this->cloudStorageClient->put($highlightSize->getBucket(), $objectKey, $data);
+                            }
                         }
                     }
 
