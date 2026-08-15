@@ -6,29 +6,20 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
-import cz.lriedel.bridgex.device.DeviceForegroundService
+import cz.lriedel.bridgex.device.DeviceForegroundServiceRunner
 
 class DeviceLogOnRequestedNotificationFactory(
     private val context: Context
 ) : NotificationFactory {
+    private val deviceForegroundServiceRunner = DeviceForegroundServiceRunner(context)
     private val gson = Gson()
 
     override suspend fun create(args: Map<String, Any>): Notification? {
-        val preferences = context.getSharedPreferences(DEVICE_PREFERENCES_NAME, Context.MODE_PRIVATE)
-        preferences.edit().putLong(LAST_NOTIFICATION_TIMESTAMP_KEY, System.currentTimeMillis()).apply()
+        deviceForegroundServiceRunner.recordExecutionAttempt()
 
-        if (!isCharging(context)) {
-            return null
+        if (isCharging(context)) {
+            deviceForegroundServiceRunner.execute(NotificationContext.headers.get())
         }
-
-        val serviceIntent = Intent(context, DeviceForegroundService::class.java).apply {
-            val currentHeaders = NotificationContext.headers.get()
-            if (currentHeaders != null) {
-                putExtra("headers", gson.toJson(currentHeaders))
-            }
-        }
-
-        ContextCompat.startForegroundService(context, serviceIntent)
 
         return null
     }
@@ -38,10 +29,5 @@ class DeviceLogOnRequestedNotificationFactory(
         val status = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
         
         return status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
-    }
-
-    companion object {
-        private const val DEVICE_PREFERENCES_NAME = "DevicePreferences"
-        private const val LAST_NOTIFICATION_TIMESTAMP_KEY = "lastNotificationTimestamp"
     }
 }
