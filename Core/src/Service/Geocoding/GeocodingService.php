@@ -2,8 +2,10 @@
     namespace Core\Service\Geocoding;
 
     use Common\Client\Cache\CacheClient;
+    use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Common\CommonConstants;
     use Core\Client\Google\GoogleClient;
+    use Core\Service\Configuration\ConfigurationService;
 
     class GeocodingService {
 
@@ -21,12 +23,16 @@
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
+        private readonly ConfigurationService $configurationService;
         private readonly CacheClient $distributedCacheClient;
         private readonly GoogleClient $googleClient;
+        private readonly GenerativeContentClient $generativeContentClient;
 
-        public function __construct(CacheClient $distributedCacheClient, GoogleClient $googleClient) {
+        public function __construct(ConfigurationService $configurationService, CacheClient $distributedCacheClient, GoogleClient $googleClient, GenerativeContentClient $generativeContentClient) {
+            $this->configurationService = $configurationService;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->googleClient = $googleClient;
+            $this->generativeContentClient = $generativeContentClient;
         }
 
         public function getAddress(float $latitude, float $longitude, bool $fetchIfNotPresent = true) : ?Address {
@@ -122,7 +128,7 @@
             $timezone = null;
 
             // Geocoding request.
-            $resolvedLocation = $this->googleClient->getLocation($address);
+            $resolvedLocation = $this->fetchLocation($address);
             if ($resolvedLocation !== null) {
                 $country = $this->extractCountryName($resolvedLocation);
                 $latitude = $resolvedLocation["geometry"]["location"]["lat"];
@@ -143,6 +149,17 @@
             $this->distributedCacheClient->set($this->getAddressCacheKey($address), $convertedLocation, self::ADDRESS_CACHE_TTL);
 
             return $convertedLocation;
+        }
+
+        private function fetchLocation(string $address) : mixed {
+            $fetchedLocation = $this->googleClient->getLocation($address);
+            if ($fetchedLocation === null) {
+                $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["alternativeAddress"];
+                $alternativeAddress = $this->generativeContentClient->getResponse($prompt, array("address" => $address));
+                $fetchedLocation = $this->googleClient->getLocation($alternativeAddress);
+            }
+
+            return $fetchedLocation;
         }
 
         private function extractCountryName(mixed $resolvedLocation) : ?string {
