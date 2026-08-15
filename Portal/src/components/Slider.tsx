@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react"
 
-export default function Slider({ name, valueFormatter, value, defaultValue, minValue, maxValue, step, onValueChanged }) {
+interface SliderProps {
+    name: string
+    value?: number
+    onValueChanged: (value: number) => void
+    valueFormatter?: (value: number) => string
+    defaultValue?: number
+    minValue?: number
+    maxValue?: number
+    step?: number
+}
+
+export default function Slider({ name, valueFormatter, value, defaultValue, minValue, maxValue, step, onValueChanged }: SliderProps) {
     const [innerValue, setInnerValue] = useState(value ?? maxValue)
 
     useEffect(() => {
         setInnerValue(value)
     }, [value])
 
-    const handleChange = event => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = Math.max(minValue, Math.min(maxValue, Number(event.target.value)))
         setInnerValue(newValue)
         onValueChanged(newValue)
