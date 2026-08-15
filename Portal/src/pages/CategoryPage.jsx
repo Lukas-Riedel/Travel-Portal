@@ -50,7 +50,7 @@ export default function CategoryPage() {
     const attributes = {
         "Kategorie": categoryCategories[category?.category] ?? category?.category,
         "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / placesWithQualityCount)}%`,
-        "Tier": getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
+        "Tier": category && getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
         "Celkové skóre": totalScore,
         "Počet highlightů": category?.highlights?.length
     }
