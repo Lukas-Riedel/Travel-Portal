@@ -106,7 +106,9 @@ export default function TripPage() {
                     onNoteContentUpdated={hasRole(UserRole.TripNoteEdit) && updateTripNoteContent}
                     onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
             )}
-            <TripNavigation trip={trip} />
+            <TripNavigation
+                trip={trip}
+                canDisplayFutureTrips={hasRole(UserRole.PortalFutureRead)} />
         </>
     )
 }
