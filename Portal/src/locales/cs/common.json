@@ -1090,8 +1090,10 @@
             }
         }
     },
+    "editor": {
+        "select": "Vyber klíč k editaci"
+    },
     "configuration": {
-        "select": "Vyber konfigurační klíč k editaci",
         "prompt": {
             "update": {
                 "message": "Opravdu chceš modifikovat tento konfigurační záznam?",

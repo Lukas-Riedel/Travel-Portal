@@ -4,7 +4,7 @@ import TabMenu from "../components/TabMenu"
 import TripSummary from "../components/TripSummary"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip"
 import ExpenseSummary from "../components/ExpenseSummary"
-import { Plus } from "lucide-react"
+import { FingerprintPattern, Plus } from "lucide-react"
 import FloatingButton from "../components/FloatingButton"
 import { useDataConsistencyIssues } from "../hooks/useDataConsistencyIssues"
 import { fromZonedTime } from "date-fns-tz"
@@ -57,7 +57,7 @@ const categoryCategories = {
 }
 
 export default function AdminPage() {
-    const { hasRole } = useAuth()
+    const { hasRole, accessToken } = useAuth()
     const { t } = useTranslation()
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
@@ -317,9 +317,25 @@ export default function AdminPage() {
                     onAirportCountryChanged={updateAirportCountry} />
             )}
             {activeTab === 4 && hasRole(UserRole.ConfigurationEdit) && (
-                <ConfigurationEditor
-                    configuration={configuration}
-                    onConfigurationUpdated={updateConfigurationEntry} />
+                <>
+                    <ConfigurationEditor
+                        configuration={configuration}
+                        onConfigurationUpdated={updateConfigurationEntry} />
+                    <form
+                        action={(window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL) + "/google/auth"}
+                        method="post"
+                        target="_blank">
+                        <input
+                            type="hidden"
+                            name="token"
+                            value={accessToken} />
+                        <button
+                            type="submit"
+                            className="fixed bottom-8 right-8 bg-white hover:bg-gray-100 text-black p-3 rounded-full shadow-md transition-colors duration-200">
+                            <FingerprintPattern className="w-6 h-6" />
+                        </button>
+                    </form>
+                </>
             )}
             {activeTab === 5 && hasRole(UserRole.DeviceRead) && (
                 <DeviceCardGrid

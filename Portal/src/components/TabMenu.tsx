@@ -23,6 +23,7 @@ export default function TabMenu({ labels, onActiveTabChanged }: TabMenuProps) {
         return tabNames[0]
     }, [tabNames, searchParams])
 
+    // TODO: Extract URL search params logic into a new hook, and make TabMenu a pure controlled component.
     const setActiveTab = useCallback((index: number) => {
         const newSearchParams = new URLSearchParams(searchParams)
         const newTabName = tabNames[index]
