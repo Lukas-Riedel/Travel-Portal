@@ -30,7 +30,7 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
             <div className="flex flex-col sm:flex-row gap-4 px-2 items-stretch">
                 {availableEventTypes.map(type => {
                     const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[type as TimeTrackingEventType]
-                    const balance = timeTrackingEvents && getBalance(timeTrackingEvents[type as TimeTrackingEventType])
+                    const balance = timeTrackingEvents?.[type] && getBalance(timeTrackingEvents[type as TimeTrackingEventType])
 
                     return Icon && (
                         <div

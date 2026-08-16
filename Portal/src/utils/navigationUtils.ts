@@ -1,6 +1,6 @@
 import type { Coordinate } from "recharts"
 import type { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
-import type { Airline, Airport, Category, Flight, Label, Place, Trip } from "../types/CoreSwaggerTypes.ts"
+import type { Airline, Airport, Category, Flight, Label, Place, PlaceIdentifier, Trip, TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { Navigable } from "../types/Navigable.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import { formatTimestamp } from "./timeUtils.ts"
@@ -23,9 +23,8 @@ const isYear = (to: Navigable): to is number => typeof to === "number" && (to as
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
 const isAirport = (to: Navigable): to is Airport => (to as Airport).shortName !== undefined
 const isCategory = (to: Navigable): to is Category => (to as Category).category !== undefined
-const isPlace = (to: Navigable): to is Place => (to as Place).score !== undefined
-// TODO: Countries are optional, there is no way how to decide whether the entity is a trip at this point.
-const isTrip = (to: Navigable): to is Trip => (to as Trip).countries !== undefined
+const isPlace = (to: Navigable): to is PlaceIdentifier => (to as PlaceIdentifier).score !== undefined
+const isTrip = (to: Navigable): to is TripIdentifier => (to as Trip).countries !== undefined || (to as TripIdentifier).year !== undefined
 const isLabel = (to: Navigable): to is Label => (to as Label).name !== undefined && !isAirline(to) && !isCategory(to) && !isPlace(to) && !isTrip(to)
 const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).place !== undefined && (to as PlaceAlbum).album !== undefined
 const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => (to as AdminNavigationTarget).tab !== undefined

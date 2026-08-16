@@ -133,6 +133,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
             <div className="flex">
                 {categories?.map(category => (
                     <CategoryFlag
+                        key={category.id}
                         category={category}
                         className="w-14 object-cover mx-2 flex-shrink-0" />
                 ))}
@@ -156,6 +157,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
             <div className="flex flex-wrap justify-center gap-3">
                 {categories?.map(category => (
                     <CategoryFlag
+                        key={category.id}
                         category={category}
                         className="w-10 h-auto flex-shrink-0" />
                 ))}

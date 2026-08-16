@@ -2,6 +2,7 @@ import { format, isSameDay } from "date-fns"
 import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay } from "../types/CoreSwaggerTypes.ts"
 import { fromZonedTime } from "date-fns-tz"
 import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { getTripFullName, isTripCandidate } from "../utils/formattingUtils.ts"
 
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"
 
@@ -28,7 +29,7 @@ export class Trip implements ITrip {
     }
 
     public isCandidate(): boolean {
-        return !this.year
+        return isTripCandidate(this)
     }
 
     public isPast(): boolean {
@@ -44,7 +45,7 @@ export class Trip implements ITrip {
     }
 
     public getFullName(): string {
-        return this.isCandidate() ? this.name : `${this.name} ${this.year}`
+        return getTripFullName(this)
     }
 
     public getCalendarEvents(date: globalThis.Date, places: Place[], timezone?: string): (Flight | (Place & Date))[] {
