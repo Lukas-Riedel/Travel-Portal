@@ -26,11 +26,7 @@ export default function TrackerPage() {
                 tenureEvents={timeTrackingEvents["tenure"]}
                 onEventCreated={hasRole(UserRole.TrackerEdit) && createTimeTrackingEvent}
                 onEventRemoved={hasRole(UserRole.TrackerEdit) && removeTimeTrackingEvent} />
-            <TimeOffBalanceSummary
-                overtimeEvents={timeTrackingEvents["overtime"]}
-                vacationEvents={timeTrackingEvents["vacation"]}
-                selfcareEvents={timeTrackingEvents["selfcare"]}
-                tenureEvents={timeTrackingEvents["tenure"]} />
+            <TimeOffBalanceSummary timeTrackingEvents={timeTrackingEvents} />
             {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable
                     trips={trips?.filter(trip => trip?.isFuture())}

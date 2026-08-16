@@ -13,7 +13,6 @@ interface StatisticsPanelProps {
     statistics: Statistics[] | null
 }
 
-// TODO: Generalize this component by applying the Card/Tile pattern (i.e., StatisticsPanel -> Panel, StatisticsPanelItem -> PanelItem).
 export default function StatisticsPanel({ statistics }: StatisticsPanelProps) {
     const { t } = useTranslation()
     const { configuration } = useConfiguration()
