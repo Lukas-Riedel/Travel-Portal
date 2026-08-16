@@ -1,44 +1,47 @@
 import { useMemo, useEffect, useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
+import type { TabMenuLabel } from "../types/TabMenuLabel"
 
-const tabUrlQueryParamName = "tab"
+const TAB_URL_QUERY_PARAM_NAME = "tab"
 
-export default function TabMenu({ labels, onActiveTabChanged }) {
+interface TabMenuProps {
+    labels: TabMenuLabel[]
+    onActiveTabChanged?: (index: number) => void
+}
+
+export default function TabMenu({ labels, onActiveTabChanged }: TabMenuProps) {
     const [searchParams, setSearchParams] = useSearchParams()
 
-    const labelNames = useMemo(() => labels.map(label => label.tab), [labels])
+    const tabNames = useMemo(() => labels.map(label => label.tab), [labels])
 
     const activeTabName = useMemo(() => {
-        const tabNameFromUrl = searchParams.get(tabUrlQueryParamName)
-
-        if (tabNameFromUrl && labelNames.includes(tabNameFromUrl)) {
+        const tabNameFromUrl = searchParams.get(TAB_URL_QUERY_PARAM_NAME)
+        if (tabNameFromUrl && tabNames.includes(tabNameFromUrl)) {
             return tabNameFromUrl
         }
-        return labelNames[0]
-    }, [labelNames, searchParams])
 
-    const activeTabIndex = useMemo(() => labelNames.indexOf(activeTabName), [labelNames, activeTabName])
+        return tabNames[0]
+    }, [tabNames, searchParams])
 
-    const setActiveTab = useCallback(index => {
+    const setActiveTab = useCallback((index: number) => {
         const newSearchParams = new URLSearchParams(searchParams)
-        const newTabName = labelNames[index]
+        const newTabName = tabNames[index]
 
         if (index === 0) {
-            newSearchParams.delete(tabUrlQueryParamName)
+            newSearchParams.delete(TAB_URL_QUERY_PARAM_NAME)
         }
         else {
-            newSearchParams.set(tabUrlQueryParamName, newTabName)
+            newSearchParams.set(TAB_URL_QUERY_PARAM_NAME, newTabName)
         }
 
         setSearchParams(newSearchParams)
-    }, [labelNames, searchParams, setSearchParams])
+    }, [tabNames, searchParams, setSearchParams])
 
     useEffect(() => {
         if (onActiveTabChanged) {
-            onActiveTabChanged(activeTabIndex)
+            onActiveTabChanged(tabNames.indexOf(activeTabName))
         }
-    }, [activeTabIndex, onActiveTabChanged])
-
+    }, [tabNames, activeTabName, onActiveTabChanged])
 
     return labels.filter(label => label.enabled).length > 1 && (
         <nav className="flex flex-wrap border-b border-gray-200">
