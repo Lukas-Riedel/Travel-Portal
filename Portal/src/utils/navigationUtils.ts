@@ -91,3 +91,7 @@ export function getAircraftLink(registration: string): string {
 export function getFlightPriceLink(flight: Flight): string {
     return `https://www.google.com/travel/flights?q=One way flight from ${flight.from.shortName} to ${flight.to.shortName} on ${formatTimestamp(flight.start, "d.M.yyyy", flight.from.timezone)}`
 }
+
+export function getGoogleCalendarLink(date: Date): string {
+    return `https://calendar.google.com/calendar/u/0/r/week/${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+}

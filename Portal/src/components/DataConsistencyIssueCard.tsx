@@ -15,6 +15,7 @@ import type { Trip } from "../classes/Trip.ts"
 import { formatTimestamp, getAirportLocalTime } from "../utils/timeUtils.ts"
 import Card from "./Card.tsx"
 import { useMemo } from "react"
+import { getGoogleCalendarLink } from "../utils/navigationUtils.ts"
 
 interface DataConsistencyIssueCardProps {
     dataConsistencyIssue: DataConsistencyIssue | null
@@ -49,7 +50,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     const { showRemoveAlbumToast, showLogFlightToast, showRemovePhotoToast, showUpdatePlaceCountryToast, showUpdateAirportNameToast, showAssignCategoryToast, showRemovePlaceToast,
         showUpdateAirportCountryToast, showUpdateAirlineLogoToast, showReplaceFitnessToast, showUpdateCategoryToast, showAssignAirlineCodeToast } = usePredefinedUserInput()
 
-    const openGoogleCalendar = (timestamp: number) => window.open(((d: Date) => `https://calendar.google.com/calendar/u/0/r/day/${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`)(fromUnixTime(timestamp)), "_blank")
+    const openGoogleCalendar = (timestamp: number) => window.open(getGoogleCalendarLink(fromUnixTime(timestamp)), "_blank")
 
     const handleFitnessReplaced = ({ timestamp, fitness }: TimeBasedFitnessCollection) => {
         if (onFitnessReplaced) {

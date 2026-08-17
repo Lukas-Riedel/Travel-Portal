@@ -17,8 +17,8 @@ interface TripNavigationProps {
 export default function TripNavigation({ trip, canDisplayFutureTrips }: TripNavigationProps) {
     const { trips } = useRegularTrips()
 
-    const previousTrip = useMemo(() => !trip?.isCandidate() && trips?.findLast(t => t?.start < trip?.start), [trip, trips])
-    const nextTrip = useMemo(() => !trip?.isCandidate() && trips?.find(t => t?.start > trip?.start), [trip, trips])
+    const previousTrip = useMemo(() => trip?.isCandidate() ? undefined : trips?.findLast(t => t?.start < trip?.start), [trip, trips])
+    const nextTrip = useMemo(() => trip?.isCandidate() ? undefined : trips?.find(t => t?.start > trip?.start), [trip, trips])
 
     return (
         <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">

@@ -518,7 +518,7 @@
                     
                     $notes = array();
                     if (in_array(PlaceIncludedEntity::Notes->value, $includedEntities)) {
-                        $notes = $this->noteService->getPlaceNotes($placeRow["place_id"]);                   
+                        $notes = $this->noteService->getPlaceNotes($placeRow["id"]);                   
                     }
                     
                     $nearbyPlacesArr = array();

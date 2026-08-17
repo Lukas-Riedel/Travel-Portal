@@ -6,7 +6,7 @@ import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/
 import StatisticsPanel from "../components/StatisticsPanel"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import { useMemo } from "react"
-import TripCalendar from "../components/TripCalendar"
+import TripCalendar from "../components/TripCalendar.tsx"
 import TripNavigation from "../components/TripNavigation"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import ExpenseSummary from "../components/ExpenseSummary"
@@ -77,7 +77,6 @@ export default function TripPage() {
                 places={tripPlaces}
                 tripCandidates={candidateTrips}
                 displayWarnings={hasRole(UserRole.PortalWarningRead)}
-                displayCopyItineraryButton={hasRole(UserRole.TripEdit)}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !trip?.isCandidate() && publishPhotosUploadingTriggeredEvent}
                 onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
                 onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}

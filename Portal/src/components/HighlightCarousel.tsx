@@ -160,7 +160,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }
 
     if (shuffledHighlights.length === 0) {
-        if (!highlights) {
+        if (highlights) {
             return null
         }
 
