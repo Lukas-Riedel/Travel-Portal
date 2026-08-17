@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useCategory } from "../hooks/useCategory"
 import PageHeader from "../components/PageHeader"
-import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle"
+import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import StatisticsPanel from "../components/StatisticsPanel"
 import { useMemo } from "react"

@@ -87,8 +87,6 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         else {
             setShuffledHighlights(highlights ?? [])
         }
-
-        setCurrentHighlightIndex(previous => Math.min((highlights ?? []).length - 1, previous))
     }, [highlights])
 
     useEffect(() => {
