@@ -1,0 +1,1 @@
+export type UseQueryParamStateResult = [string | null, (value: string | null) => void]

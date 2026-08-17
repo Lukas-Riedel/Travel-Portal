@@ -19,9 +19,12 @@ import { useAppNavigate } from "../hooks/useAppNavigate.ts"
 import RegionMap from "../components/RegionMap.jsx"
 import { useRegions } from "../hooks/useRegions.ts"
 import { useNavigate } from "react-router-dom"
+import { useQueryParamState } from "../hooks/useQueryParamState.ts"
 
 const defaultMaxDistance = 250
 const defaultMaxQuality = 80
+
+const TAB_URL_QUERY_PARAM_NAME = "tab"
 
 export default function PlansPage() {
     const { hasRole } = useAuth()
@@ -29,6 +32,7 @@ export default function PlansPage() {
     const { formatKilometers } = useFormatters()
     const navigate = useAppNavigate()
     const simpleNavigate = useNavigate()
+    const [selectedTab, setSelectedTab] = useQueryParamState(TAB_URL_QUERY_PARAM_NAME, "consideredPlaces")
 
     const { candidatePlaces, changeCurrentLocation, createCandidatePlace, removeCandidatePlace } = useCandidatePlaces({ include: ["categories"] })
     const { places: visitedPlaces } = useTimeFilteredRegularPlaces({ include: ["categories"], sort: "quality", maxEnd: getCurrentTimestamp() })
@@ -38,7 +42,6 @@ export default function PlansPage() {
 
     const [maxDistance, setMaxDistance] = useState(defaultMaxDistance)
     const [maxQuality, setMaxQuality] = useState(defaultMaxQuality)
-    const [activeTab, setActiveTab] = useState(0)
 
     const countryCategoriesMap = useMemo(() => {
         return new Map(countryCategories?.map(category => [category.name, category]))
@@ -120,38 +123,41 @@ export default function PlansPage() {
         return acc
     }, {}), [filteredVisitedPlaces])
 
-    const labels = [
+    const tabs = [
         {
-            tab: "consideredPlaces",
-            name: "Zvažovaná místa",
+            name: "consideredPlaces",
+            label: "Zvažovaná místa",
             enabled: hasRole(UserRole.PlaceRead)
         },
         {
-            tab: "visitedPlaces",
-            name: "Navštívená místa",
+            name: "visitedPlaces",
+            label: "Navštívená místa",
             enabled: hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            tab: "visitedRegions",
-            name: "Navštívené regiony",
+            name: "visitedRegions",
+            label: "Navštívené regiony",
             enabled: hasRole(UserRole.RegionRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            tab: "consideredTrips",
-            name: "Návrhy výletů",
+            name: "consideredTrips",
+            label: "Návrhy výletů",
             enabled: hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         }
     ]
+
+    const activeTab = useMemo(() => tabs.map(label => label.name).indexOf(selectedTab), [tabs, selectedTab])
 
     const handleCandidatePlaceCreated = () => {
         showCreatePlaceToast((name, address) => createCandidatePlace(name, address).then(place => (navigate(place), place)))
     }
 
-    return labels.some(label => label.enabled) && (
+    return tabs.some(label => label.enabled) && (
         <>
             <TabMenu
-                labels={labels}
-                onActiveTabChanged={setActiveTab} />
+                tabs={tabs}
+                selectedTab={selectedTab}
+                onTabSelected={setSelectedTab} />
             {hasRole(UserRole.PlaceRead) && activeTab === 0 && (
                 <>
                     <div className="h-[400px] md:h-[700px] my-4">

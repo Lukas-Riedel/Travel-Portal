@@ -8,14 +8,14 @@ import Editor from "./Editor.tsx"
 
 interface ConfigurationEditorProps {
     configuration: Record<string, any> | null
+    selectedKey?: string
     onConfigurationUpdated?: (key: string, value: any) => Promise<Record<string, any>>
+    onKeySelected?: (key: string) => void
 }
 
-export default function ConfigurationEditor({ configuration, onConfigurationUpdated }: ConfigurationEditorProps) {
+export default function ConfigurationEditor({ configuration, onConfigurationUpdated, selectedKey, onKeySelected }: ConfigurationEditorProps) {
     const { t } = useTranslation()
     const { showUpdateConfigurationEntryToast } = usePredefinedUserInput()
-
-    const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
     const formatConfigurationKeyName = (key: string) => key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase()).trim()
 
@@ -30,8 +30,9 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
     return (
         <Editor
             keys={keys}
-            onKeySelected={setSelectedKey}>
-            {selectedKey && (
+            selectedKey={selectedKey}
+            onKeySelected={onKeySelected}>
+            {selectedKey && configuration?.[selectedKey] && (
                 <ReactJson
                     name={false}
                     src={{ [selectedKey]: configuration[selectedKey] }}

@@ -43,6 +43,7 @@ import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import TaskCardBoard from "../components/TaskCardBoard.tsx"
 import { getCurrentTimestamp, getAirportLocalTime } from "../utils/timeUtils.ts"
 import { getGeoFeatures, getGeoJson } from "../utils/geocodingUtils.ts"
+import { useQueryParamState } from "../hooks/useQueryParamState.ts"
 
 // TODO: Duplicated in CategoryPage. Replace by t(`category.category.${categoryCategory}`).
 const categoryCategories = {
@@ -56,6 +57,9 @@ const categoryCategories = {
     region: "Geografický region"
 }
 
+const TAB_URL_QUERY_PARAM_NAME = "tab"
+const KEY_URL_QUERY_PARAM_NAME = "key"
+
 export default function AdminPage() {
     const { hasRole, accessToken } = useAuth()
     const { t } = useTranslation()
@@ -63,10 +67,9 @@ export default function AdminPage() {
     const { configuration, updateConfigurationEntry } = useConfiguration()
     const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast, showCreateTripTaskToast } = usePredefinedUserInput()
 
-    const [activeTab, setActiveTab] = useState(0)
+    const [selectedKey, setSelectedKey] = useQueryParamState(KEY_URL_QUERY_PARAM_NAME)
+    const [selectedTab, setSelectedTab] = useQueryParamState(TAB_URL_QUERY_PARAM_NAME, AdminMenuTabName.Trip)
 
-    // TODO: This is temporary to stop fetching data consistency issues every time since there are too many of them right now. The assumption is that there will always be a very little of them otherwise.
-    const dataConsistencyIssues = useDataConsistencyIssues(activeTab === 3)
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
     const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: "agent" })
@@ -92,68 +95,73 @@ export default function AdminPage() {
 
     const tasksWithTrips = useMemo(() => trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip }))), [trips])
 
-    const labels = [
+    const tabs = [
         {
-            tab: AdminMenuTabName.Trip,
-            name: t("menu.tab.label.trip"),
+            name: AdminMenuTabName.Trip,
+            label: t("menu.tab.label.trip"),
             enabled: upcomingOrCurrentTrip !== null && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            tab: AdminMenuTabName.Flights,
-            name: t("menu.tab.label.flights"),
+            name: AdminMenuTabName.Flights,
+            label: t("menu.tab.label.flights"),
             enabled: hasRole(UserRole.TripFlightRead) && hasRole(UserRole.PortalFutureRead)
         },
         {
-            tab: AdminMenuTabName.Airlines,
-            name: t("menu.tab.label.airlines"),
+            name: AdminMenuTabName.Airlines,
+            label: t("menu.tab.label.airlines"),
             enabled: hasRole(UserRole.AirlineEdit)
         },
         {
-            tab: AdminMenuTabName.DataConsistencyIssues,
-            name: t("menu.tab.label.issues"),
+            name: AdminMenuTabName.DataConsistencyIssues,
+            label: t("menu.tab.label.issues"),
             enabled: hasRole(UserRole.MonitoringRead)
         },
         {
-            tab: AdminMenuTabName.Configuration,
-            name: t("menu.tab.label.configuration"),
+            name: AdminMenuTabName.Configuration,
+            label: t("menu.tab.label.configuration"),
             enabled: configuration !== null && hasRole(UserRole.ConfigurationEdit)
         },
         {
-            tab: AdminMenuTabName.Devices,
-            name: t("menu.tab.label.devices"),
+            name: AdminMenuTabName.Devices,
+            label: t("menu.tab.label.devices"),
             enabled: devices && devices.length > 0 && hasRole(UserRole.DeviceRead)
         },
         {
-            tab: AdminMenuTabName.PermanentPlaces,
-            name: t("menu.tab.label.places"),
+            name: AdminMenuTabName.PermanentPlaces,
+            label: t("menu.tab.label.places"),
             enabled: hasRole(UserRole.PlaceEdit)
         },
         {
-            tab: AdminMenuTabName.ActiveSubscriptions,
-            name: t("menu.tab.label.subscriptions"),
+            name: AdminMenuTabName.ActiveSubscriptions,
+            label: t("menu.tab.label.subscriptions"),
             enabled: hasRole(UserRole.SubscriptionEdit)
         },
         {
-            tab: AdminMenuTabName.Regions,
-            name: t("menu.tab.label.regions"),
+            name: AdminMenuTabName.Regions,
+            label: t("menu.tab.label.regions"),
             enabled: hasRole(UserRole.RegionEdit)
         },
         {
-            tab: AdminMenuTabName.Documents,
-            name: t("menu.tab.label.documents"),
+            name: AdminMenuTabName.Documents,
+            label: t("menu.tab.label.documents"),
             enabled: hasRole(UserRole.DocumentEdit)
         },
         {
-            tab: AdminMenuTabName.Vouchers,
-            name: t("menu.tab.label.vouchers"),
+            name: AdminMenuTabName.Vouchers,
+            label: t("menu.tab.label.vouchers"),
             enabled: hasRole(UserRole.VoucherEdit)
         },
         {
-            tab: AdminMenuTabName.Tasks,
-            name: t("menu.tab.label.tasks"),
+            name: AdminMenuTabName.Tasks,
+            label: t("menu.tab.label.tasks"),
             enabled: hasRole(UserRole.TripTaskEdit)
         }
     ]
+
+    const activeTab = useMemo(() => tabs.map(label => label.name).indexOf(selectedTab), [tabs, selectedTab])
+
+    // TODO: This is temporary to stop fetching data consistency issues every time since there are too many of them right now. The assumption is that there will always be a very little of them otherwise.
+    const dataConsistencyIssues = useDataConsistencyIssues(activeTab === 3)
 
     const handleFlightCreated = () => {
         showCreateFlightToast(async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
@@ -242,11 +250,12 @@ export default function AdminPage() {
         })
     }
 
-    return labels.some(label => label.enabled) && (
+    return tabs.some(label => label.enabled) && (
         <>
             <TabMenu
-                labels={labels}
-                onActiveTabChanged={setActiveTab} />
+                tabs={tabs}
+                selectedTab={selectedTab}
+                onTabSelected={setSelectedTab} />
             {activeTab === 0 && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && (
                 <>
                     <TripSummary
@@ -320,7 +329,9 @@ export default function AdminPage() {
                 <>
                     <ConfigurationEditor
                         configuration={configuration}
-                        onConfigurationUpdated={updateConfigurationEntry} />
+                        onConfigurationUpdated={updateConfigurationEntry}
+                        selectedKey={selectedKey}
+                        onKeySelected={setSelectedKey} />
                     <form
                         action={(window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL) + "/google/auth"}
                         method="post"
@@ -368,7 +379,9 @@ export default function AdminPage() {
             {activeTab === 8 && hasRole(UserRole.RegionEdit) && (
                 <>
                     <RegionEditor
-                        categories={categoriesWithRegions} />
+                        categories={categoriesWithRegions}
+                        selectedKey={selectedKey}
+                        onKeySelected={setSelectedKey} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleRegionCreated} />

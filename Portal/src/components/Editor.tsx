@@ -6,41 +6,21 @@ import { useSearchParams } from "react-router-dom";
 import AppLink from "./AppLink";
 import { ExternalLink } from "lucide-react";
 
-const KEY_URL_QUERY_PARAM_NAME = "key"
-
 interface EditorProps {
     keys: EditorKey[] | null
-    children: React.ReactNode
+    selectedKey?: string
     onKeySelected?: (key: string) => void
+    children: React.ReactNode
 }
 
-export default function Editor({ keys, children, onKeySelected }: EditorProps) {
+export default function Editor({ keys, children, selectedKey, onKeySelected }: EditorProps) {
     const { t } = useTranslation()
-    const [searchParams, setSearchParams] = useSearchParams()
 
-    const keyNames = useMemo(() => keys?.map(key => key.name), [keys])
-
-    const activeKeyName = useMemo(() => {
-        const keyNameFromUrl = searchParams.get(KEY_URL_QUERY_PARAM_NAME)
-        if (keyNameFromUrl && keyNames?.includes(keyNameFromUrl)) {
-            return keyNameFromUrl
+    const setSelectedKey = useCallback((name: string) => {
+        if (onKeySelected) {
+            onKeySelected(name)
         }
-
-        return null
-    }, [keyNames, searchParams])
-
-    // TODO: Extract URL search params logic into a new hook, and make Editor a pure controlled component.
-    const setActiveKey = useCallback((name: string) => {
-        const newSearchParams = new URLSearchParams(searchParams)
-        newSearchParams.set(KEY_URL_QUERY_PARAM_NAME, name)
-        setSearchParams(newSearchParams)
-    }, [keyNames, searchParams, setSearchParams])
-
-    useEffect(() => {
-        if (onKeySelected && activeKeyName) {
-            onKeySelected(activeKeyName)
-        }
-    }, [keys, keyNames, activeKeyName])
+    }, [onKeySelected])
 
     if (!keys) {
         return (
@@ -59,8 +39,8 @@ export default function Editor({ keys, children, onKeySelected }: EditorProps) {
                 {keys.map(({ name, label, target }) => (
                     <div
                         key={name}
-                        onClick={() => setActiveKey(name)}
-                        className={`flex items-center justify-between w-full text-left px-3 py-2 rounded cursor-pointer transition-colors group ${name === activeKeyName ? "bg-gray-300 font-semibold text-gray-900" : "text-gray-700 hover:bg-gray-200"}`}>
+                        onClick={() => setSelectedKey(name)}
+                        className={`flex items-center justify-between w-full text-left px-3 py-2 rounded cursor-pointer transition-colors group ${name === selectedKey ? "bg-gray-300 font-semibold text-gray-900" : "text-gray-700 hover:bg-gray-200"}`}>
                         <span className="truncate">
                             {label}
                         </span>
@@ -68,7 +48,7 @@ export default function Editor({ keys, children, onKeySelected }: EditorProps) {
                             <AppLink
                                 to={target}
                                 onClick={e => e.stopPropagation()}
-                                className={`ml-2 p-1 rounded transition-all ${name === activeKeyName ? "text-gray-600 hover:text-black hover:bg-gray-400/50" : "text-gray-400 hover:text-gray-700 hover:bg-gray-300/50 opacity-0 group-hover:opacity-100"}`}>
+                                className={`ml-2 p-1 rounded transition-all ${name === selectedKey ? "text-gray-600 hover:text-black hover:bg-gray-400/50" : "text-gray-400 hover:text-gray-700 hover:bg-gray-300/50 opacity-0 group-hover:opacity-100"}`}>
                                 <ExternalLink className="w-4 h-4" />
                             </AppLink>
                         )}
@@ -76,7 +56,7 @@ export default function Editor({ keys, children, onKeySelected }: EditorProps) {
                 ))}
             </div>
             <div className="flex-1 p-3 overflow-auto">
-                {activeKeyName ? children : (
+                {selectedKey && keys.some(key => key.name === selectedKey) ? children : (
                     <div className="flex items-center justify-center text-gray-500 h-full w-full">
                         {t("editor.select")}
                     </div>

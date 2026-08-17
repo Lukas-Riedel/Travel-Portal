@@ -11,22 +11,23 @@ import Editor from "./Editor"
 
 interface RegionEditorProps {
     categories: Category[] | null
+    selectedKey?: string
+    onKeySelected?: (key: string) => void
 }
 
-export default function RegionEditor({ categories }: RegionEditorProps) {
-    const [selectedCategory, setSelectedCategory] = useState(null)
-
+export default function RegionEditor({ categories, selectedKey, onKeySelected }: RegionEditorProps) {
     const keys = useMemo(() => categories?.map(category => ({ name: category.name, label: category.name, target: category })), [categories])
+    const selectedCategory = useMemo(() => categories?.find(category => category.name === selectedKey), [categories, selectedKey])
 
     return (
         <Editor
             keys={keys}
-            onKeySelected={name => setSelectedCategory(categories.find(category => category.name === name))}>
+            selectedKey={selectedKey}
+            onKeySelected={onKeySelected}>
             {selectedCategory && (
                 <EditedRegionContent
                     category={selectedCategory}
-                    // TODO: This doesn't set the category name in the URL because this component doesn't have access to search params. Resolve by resolving TODO in Editor first.
-                    onCategorySelected={setSelectedCategory} />
+                    onCategorySelected={category => onKeySelected?.(category.name)} />
             )}
         </Editor>
     )
