@@ -1,5 +1,5 @@
 import PageHeader from "../components/PageHeader.jsx"
-import HighlightCarousel from "../components/HighlightCarousel.jsx"
+import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import CategoryBar from "../components/CategoryBar.jsx"
 import LabelBar from "../components/LabelBar.jsx"
 import DateTileGrid from "../components/DateTileGrid.jsx"

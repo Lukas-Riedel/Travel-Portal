@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react"
 import { Map as MapIcon, Images } from "lucide-react"
-import HighlightCarousel from "./HighlightCarousel.jsx"
+import HighlightCarousel from "./HighlightCarousel.tsx"
 import PlaceMap from "./PlaceMap.tsx"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import PlaceMapAndFlightMapToggle from "./PlaceMapAndFlightMapToggle.tsx"

@@ -1162,6 +1162,14 @@
         }
     },
     "highlight": {
+        "editor": {
+            "label": {
+                "rotation": "Rotace",
+                "zoom": "Zoom",
+                "x": "Osa X",
+                "y": "Osa y"
+            }
+        },
         "prompt": {
             "select": {
                 "message": "Zadej počet highlightů k vytvoření:",

@@ -1,56 +1,74 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
+import type { Highlightable } from "../types/Highlightable.ts"
 import { AnimatePresence, motion } from "framer-motion"
 import { Pause, Play, Trash2, Star, SlidersVertical, Edit2, Plus, Upload, Check } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
-import { useUserInput } from "../hooks/useUserInput.tsx"
 import { TailSpin } from "react-loader-spinner"
-import { format, fromUnixTime } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
-import { getOnlyElement, isDaylightSavingTime } from "../utils/helpers"
+import { getOnlyElement } from "../utils/helpers"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
-import { useDevices } from "../hooks/useDevices"
+import { useDevices } from "../hooks/useDevices.ts"
 import Cropper from "react-easy-crop"
-import Slider from "../components/Slider"
-import { listPlaceAlbumPhotos } from "../clients/coreClient"
+import type { Area } from "react-easy-crop"
+import Slider from "../components/Slider.tsx"
+import { listPlaceAlbumPhotos } from "../clients/coreClient.ts"
 import piexif from "piexifjs"
 import { v4 as uuidv4 } from "uuid"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { DeviceType, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
+import type { Highlight, Place } from "../types/CoreSwaggerTypes.ts"
+import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import { useTranslation } from "react-i18next"
 
-const invalidPhotoId = "d4cbc2ec-1dd2-4f57-87e6-ae12f197aa5c" // TODO: Resolve in a better way.
-const agentOnlineStatusThresholdSeconds = 60
+const DEFAULT_ROTATION = 0
+const DEFAULT_ZOOM = 1
+const DEFAULT_X_POSITION = 0
+const DEFAULT_Y_POSITION = 0
 
-const defaultRotation = 0
-const defaultZoom = 1
-const defaultXPosition = 0
-const defaultYPosition = 0
+const BASE_URL_DOWNLOAD_SUFFIX = "=d"
+const JPG_FILE_SUFFIX = ".jpg"
+const CHUNK_SIZE = 0x8000
 
-export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }) {
-    const { configuration } = useConfiguration()
-    const agents = useDevices({ type: "agent" })
+const SLIDESHOW_INTERVAL_MS = 7000
+
+interface HighlightCarouselProps {
+    place: Place | null
+    highlights: Highlight[] | null
+    onPhotoReplaced?: (agentId: string, placeId: string, albumId: string, placeName: string, photoId: string, path: string, sendNotification: boolean) => Promise<void>
+    onPhotoCorrected?: (placeId: string, albumId: string, filename: string, base64Data: string, photoId: string) => Promise<Highlight>
+    onHighlightRemoved?: (highlightId: string) => Promise<void>
+    onMainHighlightUpdated?: (highlightId: string) => Promise<Highlightable>
+    onHighlightQualityAttributesUpdated?: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>
+    onHighlightCreated?: (photoId: string) => Promise<Highlight>
+}
+
+export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }: HighlightCarouselProps) {
+    const { t } = useTranslation()
+
+    const onlineAgents = useOnlineAgents()
     const { showCreateHighlightToast, showUpdateHighlightToast, showRemoveHighlightToast, showUpdateMainHighlightToast, showReplacePhotoToast, showUpdateHighlightAttributesToast } = usePredefinedUserInput()
 
-    const [shuffledHighlights, setShuffledHighlights] = useState([])
-    const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
-    const { places: currentHighlightPlaces } = useRegularPlaces({ photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id ?? invalidPhotoId, include: ["dates"] })
-    const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)
-        ?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
     const slideshowAutostartEnabled = !(onPhotoReplaced || onPhotoCorrected || onHighlightRemoved || onMainHighlightUpdated || onHighlightQualityAttributesUpdated)
+
+    const [shuffledHighlights, setShuffledHighlights] = useState<Highlight[]>([])
+    const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(!slideshowAutostartEnabled)
     const [showEditor, setShowEditor] = useState(false)
-    const [crop, setCrop] = useState({ x: defaultXPosition, y: defaultYPosition })
-    const [zoom, setZoom] = useState(defaultZoom)
-    const [rotation, setRotation] = useState(defaultRotation)
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
-    const [currentHighlightReferencePhotoUrl, setCurrentHighlightReferencePhotoUrl] = useState(null)
+    const [crop, setCrop] = useState({ x: DEFAULT_X_POSITION, y: DEFAULT_Y_POSITION })
+    const [zoom, setZoom] = useState(DEFAULT_ZOOM)
+    const [rotation, setRotation] = useState(DEFAULT_ROTATION)
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
+
+    const { places: currentHighlightPlaces } = useRegularPlaces({ enabled: !!shuffledHighlights[currentHighlightIndex]?.photo?.id, photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id, include: [PlaceIncludedEntity.Dates] })
+    const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
+    const [currentHighlightReferencePhotoUrl, setCurrentHighlightReferencePhotoUrl] = useState<string | null>(null)
 
     useEffect(() => {
-        const fetchAndSetPhotoUrl = async photoId => {
+        const fetchAndSetPhotoUrl = async (photoId: string) => {
             if (place?.id && currentHighlightAlbumId) {
                 const photos = await listPlaceAlbumPhotos(place.id, currentHighlightAlbumId)
                 // TODO: Introduce a new endpoint for obtaining a photo based on its identifier
                 const photo = photos.find(photo => photo.id === photoId)
-                setCurrentHighlightReferencePhotoUrl(photo?.url + "=d")
+                setCurrentHighlightReferencePhotoUrl(photo?.url + BASE_URL_DOWNLOAD_SUFFIX)
             }
         }
 
@@ -58,7 +76,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         fetchAndSetPhotoUrl(shuffledHighlights[currentHighlightIndex]?.photo?.id)
     }, [place?.id, currentHighlightAlbumId, shuffledHighlights, currentHighlightIndex])
 
-    const onCropComplete = useCallback((_, croppedAreaPixels) => {
+    const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
         setCroppedAreaPixels(croppedAreaPixels)
     }, [])
 
@@ -69,6 +87,8 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
         else {
             setShuffledHighlights(highlights ?? [])
         }
+
+        setCurrentHighlightIndex(previous => Math.min((highlights ?? []).length - 1, previous))
     }, [highlights])
 
     useEffect(() => {
@@ -76,68 +96,87 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
             return
         }
 
-        const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % shuffledHighlights.length), 7000)
+        const interval = setInterval(() => setCurrentHighlightIndex(previous => (previous + 1) % shuffledHighlights.length), SLIDESHOW_INTERVAL_MS)
         return () => clearInterval(interval)
     }, [shuffledHighlights, isPaused])
 
     const handleHighlightCreated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
-        showCreateHighlightToast(() => {
-            return onHighlightCreated(highlight.photo.id).then(_ => {
+
+        showCreateHighlightToast(() => onHighlightCreated(highlight.photo.id)
+            .then(result => {
                 const newHighlights = [...shuffledHighlights]
                 newHighlights.splice(currentHighlightIndex, 1)
                 setShuffledHighlights(newHighlights)
                 setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
-            })
-        })
+                return result
+            }))
     }
 
     const handlePhotoReplaced = () => {
-        const onlineAgents = agents.filter(agent => agent.lastSeen + agentOnlineStatusThresholdSeconds > Date.now() / 1000).map(agent => ({ id: agent.id, name: agent.name }))
-        showReplacePhotoToast(onlineAgents, (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path, sendNotification).then(() => window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")))
+        showReplacePhotoToast(onlineAgents, (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path, sendNotification)
+            .then(() => {
+                window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")
+            }))
     }
 
     const handlePhotoCorrected = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+
         showUpdateHighlightToast(() => getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
-            .then(base64Data => onPhotoCorrected(place.id, currentHighlightAlbumId, uuidv4() + ".jpg", base64Data, highlight.photo.id))
-            .then(() => window.open(highlight.photo.permalink, "_blank")))
-            .then(() => {
-                setCrop({ x: defaultXPosition, y: defaultYPosition })
-                setZoom(defaultZoom)
-                setRotation(defaultRotation)
+            .then(base64Data => onPhotoCorrected(place.id, currentHighlightAlbumId, uuidv4() + JPG_FILE_SUFFIX, base64Data, highlight.photo.id))
+            .then(result => {
+                window.open(highlight.photo.permalink, "_blank")
+                return result
+            }))
+            .finally(() => {
+                setCrop({ x: DEFAULT_X_POSITION, y: DEFAULT_Y_POSITION })
+                setZoom(DEFAULT_ZOOM)
+                setRotation(DEFAULT_ROTATION)
                 setShowEditor(false)
             })
     }
 
     const handleHighlightRemoved = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
-        showRemoveHighlightToast(() => {
-            return onHighlightRemoved(highlight.id).then(_ => {
-                const newHighlights = [...shuffledHighlights]
-                newHighlights.splice(currentHighlightIndex, 1)
-                setShuffledHighlights(newHighlights)
-                setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
-            })
-        })
+
+        showRemoveHighlightToast(() => onHighlightRemoved(highlight.id).then(() => {
+            const newHighlights = [...shuffledHighlights]
+            newHighlights.splice(currentHighlightIndex, 1)
+            setShuffledHighlights(newHighlights)
+            setCurrentHighlightIndex(previous => Math.max(0, Math.min(previous, newHighlights.length - 1)))
+        }))
     }
 
     const handleMainHighlightUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+
         showUpdateMainHighlightToast(() => onMainHighlightUpdated(highlight.id))
     }
 
     const handleHighlightQualityAttributesUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+
         showUpdateHighlightAttributesToast((composition, sky, shadows, circumstances, atmosphere, impression) => onHighlightQualityAttributesUpdated(highlight.id, composition,
             sky, shadows, circumstances, atmosphere, impression), highlight?.attributes, highlight.photo.timestamp, highlight.photo.focalLength)
     }
 
-    if (highlights && shuffledHighlights.length === 0) {
-        return null
+    if (shuffledHighlights.length === 0) {
+        if (!highlights) {
+            return null
+        }
+
+        return (
+            <div className="flex items-center justify-center w-full [aspect-ratio:3/2]">
+                <TailSpin
+                    color="black"
+                    height={80}
+                    width={80} />
+            </div>
+        )
     }
 
-    return shuffledHighlights.length > 0 ? (
+    return (
         <div className={`relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg my-4 ${showEditor && "ring-8 ring-red-600"}`}>
             {showEditor ? (
                 <Cropper
@@ -166,32 +205,32 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 <>
                     <div className="absolute z-50 top-0 left-0 flex space-x-2 bg-white/10 backdrop-blur-md rounded-br-xl shadow-md p-3">
                         <Slider
-                            name="Rotace"
+                            name={t("highlight.editor.label.rotation")}
                             value={rotation}
-                            defaultValue={defaultRotation}
+                            defaultValue={DEFAULT_ROTATION}
                             step={0.05}
                             minValue={-15}
                             maxValue={15}
                             onValueChanged={setRotation} />
                         <Slider
-                            name="Zoom"
+                            name={t("highlight.editor.label.zoom")}
                             value={zoom}
-                            defaultValue={defaultZoom}
+                            defaultValue={DEFAULT_ZOOM}
                             step={0.01}
                             minValue={1}
                             maxValue={3}
                             onValueChanged={setZoom} />
                         <Slider
-                            name="Osa X"
+                            name={t("highlight.editor.label.x")}
                             value={crop.x}
-                            defaultValue={defaultXPosition}
+                            defaultValue={DEFAULT_X_POSITION}
                             minValue={-720}
                             maxValue={720}
                             onValueChanged={x => setCrop({ x: x, y: crop.y })} />
                         <Slider
-                            name="Osa Y"
+                            name={t("highlight.editor.label.y")}
                             value={crop.y}
-                            defaultValue={defaultYPosition}
+                            defaultValue={DEFAULT_Y_POSITION}
                             minValue={-480}
                             maxValue={480}
                             onValueChanged={y => setCrop({ x: crop.x, y: y })} />
@@ -222,7 +261,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                         <Plus size={16} />
                     </button>
                 )}
-                {onPhotoCorrected && showEditor && (rotation !== defaultRotation || zoom !== defaultZoom || crop.x !== defaultXPosition || crop.y !== defaultYPosition) && (
+                {onPhotoCorrected && showEditor && (rotation !== DEFAULT_ROTATION || zoom !== DEFAULT_ZOOM || crop.x !== DEFAULT_X_POSITION || crop.y !== DEFAULT_Y_POSITION) && (
                     <button
                         onClick={handlePhotoCorrected}
                         className="btn-chip-gray">
@@ -231,7 +270,7 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 )}
                 {onPhotoCorrected && currentHighlightReferencePhotoUrl && (
                     <button
-                        onClick={() => setShowEditor(prev => !prev)}
+                        onClick={() => setShowEditor(previous => !previous)}
                         className="btn-chip-gray">
                         <Edit2 size={16} />
                     </button>
@@ -253,9 +292,13 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 {shuffledHighlights.length > 1 && (
                     <>
                         <button
-                            onClick={() => setIsPaused(prev => !prev)}
+                            onClick={() => setIsPaused(previous => !previous)}
                             className="btn-chip-gray">
-                            {isPaused ? <Play size={16} /> : <Pause size={16} />}
+                            {isPaused ? (
+                                <Play size={16} />
+                            ) : (
+                                <Pause size={16} />
+                            )}
                         </button>
                         {onMainHighlightUpdated && (
                             <button
@@ -275,17 +318,10 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
                 )}
             </div>
         </div>
-    ) : (
-        <div className="flex items-center justify-center w-full [aspect-ratio:3/2]">
-            <TailSpin
-                color="black"
-                height={80}
-                width={80} />
-        </div>
     )
 }
 
-const createImage = url =>
+const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
         const image = new Image()
         image.addEventListener("load", () => resolve(image))
@@ -294,18 +330,18 @@ const createImage = url =>
         image.src = url
     })
 
-const getCroppedImg = async (imageSrc, pixelCrop, rotation) => {
+const getCroppedImg = async (imageSrc: string, pixelCrop: Area, rotation: number): Promise<string> => {
     const response = await fetch(imageSrc)
     const arrayBuffer = await response.arrayBuffer()
     const bytes = new Uint8Array(arrayBuffer)
+
     let binary = ""
-    const chunkSize = 0x8000
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize)
+    for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+        const chunk = bytes.subarray(i, i + CHUNK_SIZE)
         binary += String.fromCharCode(...chunk)
     }
-    const base64 = btoa(binary)
 
+    const base64 = btoa(binary)
     const exifObj = piexif.load("data:image/jpeg;base64," + base64)
 
     const image = await createImage(imageSrc)
@@ -338,7 +374,6 @@ const getCroppedImg = async (imageSrc, pixelCrop, rotation) => {
     ctx.putImageData(data, 0, 0)
 
     let croppedBase64 = canvas.toDataURL("image/jpeg", 0.5)
-
     const exifBytes = piexif.dump(exifObj)
     const finalBase64 = piexif.insert(exifBytes, croppedBase64)
 

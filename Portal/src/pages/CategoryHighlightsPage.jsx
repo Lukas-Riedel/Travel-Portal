@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import { useMemo, useState } from "react"
-import HighlightCarousel from "../components/HighlightCarousel"
+import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useCategory } from "../hooks/useCategory"
