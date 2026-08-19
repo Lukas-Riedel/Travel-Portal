@@ -136,8 +136,7 @@
     $healthCheckables = array(
         $distributedCacheClient,
         $databaseClient,
-        $messagingClient,
-        $searchClient
+        $messagingClient
     );
 
     // Event producers.
