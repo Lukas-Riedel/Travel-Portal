@@ -4,7 +4,7 @@ import { createEvent } from "../clients/coreClient.ts"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
 
-export const useEvents = (eventType: EventType): UseEventsResult => {
+export const useEvents = (eventType?: EventType): UseEventsResult => {
     const { messages } = useNotifications()
 
     const [readMessageIds, setReadMessageIds] = useState(() => new Set<string>())

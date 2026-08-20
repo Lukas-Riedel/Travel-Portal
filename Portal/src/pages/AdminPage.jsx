@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import TabMenu from "../components/TabMenu"
-import TripSummary from "../components/TripSummary"
+import TripSummary from "../components/TripSummary.tsx"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip"
 import ExpenseSummary from "../components/ExpenseSummary"
 import { FingerprintPattern, Plus } from "lucide-react"
@@ -63,7 +63,7 @@ const KEY_URL_QUERY_PARAM_NAME = "key"
 export default function AdminPage() {
     const { hasRole, accessToken } = useAuth()
     const { t } = useTranslation()
-    const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent } = useEvents()
+    const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent, publishPhotosUploadingTriggeredEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
     const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast, showCreateDocumentToast, showCreateMultipleGeographicalRegionsToast, showCreateFlightToast, showCreateSubscriptionToast, showCreateTripTaskToast } = usePredefinedUserInput()
 
@@ -261,8 +261,10 @@ export default function AdminPage() {
                     <TripSummary
                         trip={upcomingOrCurrentTrip}
                         displayWarnings={hasRole(UserRole.PortalWarningRead)}
+                        displayDeviceData={hasRole(UserRole.PortalFutureRead)}
                         onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
-                        onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
+                        onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
+                        onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
                     {hasRole(UserRole.TripNoteRead) && (
                         <NoteCardGrid
                             rowSize={3}

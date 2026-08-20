@@ -60,7 +60,7 @@ export function getOnlyElement(arr) {
     return arr?.length === 1 ? arr[0] : undefined
 }
 
-// TODO: What to do with this?
+// TODO: What to do with this? Use useCache?
 export async function getCachedCoordinates(address, getCoordinates) {
     const cachedCoordinates = localStorage.getItem(address)
 

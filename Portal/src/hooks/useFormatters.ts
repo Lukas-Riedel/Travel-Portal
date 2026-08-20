@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { useCallback } from "react"
 import { StatisticsUnit } from "../types/CoreSwaggerTypes.ts"
 import type { UseFormattersResult } from "../types/UseFormattersResult.ts"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 type UnitFormatter = (value: number) => string
 
@@ -62,7 +63,7 @@ export function useFormatters(): UseFormattersResult {
     }, [])
 
     const formatTimeAgo = useCallback((timestamp: number) => {
-        const seconds = Math.floor(Date.now() / 1000 - timestamp)
+        const seconds = Math.floor(getCurrentTimestamp() - timestamp)
         if (seconds < 60) {
             return t("general.time.ago.seconds")
         }
@@ -79,6 +80,26 @@ export function useFormatters(): UseFormattersResult {
 
         const days = Math.floor(hours / 24)
         return t("general.time.ago.day", { count: days })
+    }, [t])
+
+    const formatRefreshedBefore = useCallback((timestamp: number) => {
+        const seconds = Math.floor(getCurrentTimestamp() - timestamp)
+        if (seconds < 60) {
+            return t("general.time.refreshed.ago.seconds")
+        }
+
+        const minutes = Math.floor(seconds / 60)
+        if (minutes < 60) {
+            return t("general.time.refreshed.ago.minute", { count: minutes })
+        }
+
+        const hours = Math.floor(minutes / 60)
+        if (hours < 24) {
+            return t("general.time.refreshed.ago.hour", { count: hours })
+        }
+
+        const days = Math.floor(hours / 24)
+        return t("general.time.refreshed.ago.day", { count: days })
     }, [t])
 
     const formatStatisticsUnit = useCallback((unit: StatisticsUnit, value: number, mainCurrency?: string) => {
@@ -125,6 +146,7 @@ export function useFormatters(): UseFormattersResult {
         formatLatitude,
         formatLongitude,
         formatTimeAgo,
+        formatRefreshedBefore,
         formatStatisticsUnit
     }
 }

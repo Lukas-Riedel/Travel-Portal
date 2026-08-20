@@ -7,7 +7,7 @@ import CardGrid from "./CardGrid.tsx"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useTranslation } from "react-i18next"
-import { formatTimestamp, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { formatTimestamp, getTripDays, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import type { Trip } from "../classes/Trip.ts"
 import type { Place } from "../classes/Place.ts"
 import type { Note } from "../types/CoreSwaggerTypes.ts"
@@ -31,14 +31,6 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
     const { showMoveTripToast, showLoadTripToast, showCopyTripItineraryToast } = usePredefinedUserInput()
 
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
-
-    const realTripStart = useMemo(() => trip?.start ?? (places && places.length > 0 ? Math.min(...places.flatMap(place => place?.dates ?? []).map(date => date.start)) : undefined), [trip?.start, places])
-    const realTripEnd = useMemo(() => trip?.end ?? (places && places.length > 0 ? Math.max(...places.flatMap(place => place?.dates ?? []).map(date => date.end)) : undefined), [trip?.end, places])
-
-    const days = useMemo(() => realTripStart && realTripEnd && eachDayOfInterval({
-        start: startOfDay(toZonedTime(fromUnixTime(realTripStart), timezone)),
-        end: startOfDay(toZonedTime(fromUnixTime(realTripEnd - 1), timezone))
-    }), [timezone, realTripStart, realTripEnd])
 
     const handleMoved = () => {
         showMoveTripToast(start => onTripMoved(Math.round(fromZonedTime(start.toISOString().slice(0, -1), configuration?.homeLocation?.timezone).getTime() / 1000)))
@@ -69,7 +61,7 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
     return (
         <div className="relative w-full my-4">
             <CardGrid rowSize={4}>
-                {days?.map((day, index) => (
+                {getTripDays(trip, places, timezone)?.map((day, index) => (
                     <DayCard
                         key={day.getTime()}
                         day={day}

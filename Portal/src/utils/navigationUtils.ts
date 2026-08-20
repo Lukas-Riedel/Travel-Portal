@@ -73,7 +73,7 @@ export function getPath(to: Navigable, currentPath?: string): string {
 }
 
 export function getMapLink(address: string): string {
-    return `https://www.google.com/maps/search/${address}`
+    return `https://www.google.com/maps/search/${encodeURIComponent(address)}`
 }
 
 export function getSatelliteLink(coordinates: Coordinates): string {

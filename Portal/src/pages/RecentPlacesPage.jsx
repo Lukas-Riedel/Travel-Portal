@@ -5,17 +5,19 @@ import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
 import { TailSpin } from "react-loader-spinner"
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
-import TripSummary from "../components/TripSummary.jsx"
+import TripSummary from "../components/TripSummary.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
+import { useEvents } from "../hooks/useEvents.ts"
 
 const limitStep = 10
 const maxDistance = 2000
 
 export default function RecentPlacesPage() {
     const { hasRole } = useAuth()
+    const { publishPhotosUploadingTriggeredEvent } = useEvents()
 
     const [displayedPlaces, setDisplayedPlaces] = useState(undefined)
     const [currentLimit, setCurrentLimit] = useState(limitStep)
@@ -77,8 +79,10 @@ export default function RecentPlacesPage() {
             {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}
+                    displayDeviceData={hasRole(UserRole.PortalFutureRead)}
                     onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
-                    onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote} />
+                    onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
+                    onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
             )}
             <PlaceSummaryList places={displayedPlaces} />
             {displayedPlaces && isFetching.current && (

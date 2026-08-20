@@ -1,6 +1,8 @@
-import { endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
+import { eachDayOfInterval, endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getCoordinates } from "../clients/coreClient.ts"
+import type { Trip } from "../classes/Trip.ts"
+import type { Place } from "../classes/Place.ts"
 
 export const ONE_MINUTE_SECONDS = 60
 export const ONE_HOUR_SECONDS = 60 * ONE_MINUTE_SECONDS
@@ -84,4 +86,23 @@ export async function getAirportTimezone(airportName: string): Promise<string> {
 
 export async function getAirportLocalTime(airportName: string, datetime: Date): Promise<number> {
     return Math.round(fromZonedTime(datetime, await getAirportTimezone(airportName))?.getTime() / 1000)
+}
+
+export function getTripDays(trip?: Trip, places?: Place[], timezone?: string): Date[] | undefined {
+    const realTripStart = trip?.start ?? (places && places.length > 0 ? Math.min(...places.flatMap(place => place?.dates ?? []).map(date => date.start)) : undefined)
+    const realTripEnd = trip?.end ?? (places && places.length > 0 ? Math.max(...places.flatMap(place => place?.dates ?? []).map(date => date.end)) : undefined)
+
+    return realTripStart && realTripEnd && eachDayOfInterval({
+        start: startOfDay(toZonedTime(fromUnixTime(realTripStart), timezone)),
+        end: startOfDay(toZonedTime(fromUnixTime(realTripEnd - 1), timezone))
+    })
+}
+
+export function isTodayOrFutureDay(date: Date, timezone?: string): boolean {
+    const todayStart = startOfDay(toZonedTime(new Date(), timezone))
+    return date >= todayStart
+}
+
+export function getCurrentHour(timezone?: string) {
+    return toZonedTime(new Date(), timezone || "UTC").getHours()
 }
