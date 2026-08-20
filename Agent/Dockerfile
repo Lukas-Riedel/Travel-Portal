@@ -1,6 +1,7 @@
 FROM maven:3-eclipse-temurin-17-alpine AS builder
 WORKDIR /build
-ARG SERVICE_CORE_URLARG USERNAME
+ARG SERVICE_CORE_URL
+ARG USERNAME
 ARG PASSWORD
 COPY Agent/pom.xml .
 RUN mvn dependency:go-offline -B
