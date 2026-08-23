@@ -164,7 +164,8 @@
         public function updatePlaceExcerpt(string $placeId, ?string $excerpt) : bool {
             if ($excerpt === null) {
                 $placeIdentifier = $this->getPlaceIdentifierById($placeId);
-                $excerpt = $this->getSuggestedExcerpt($placeIdentifier->getName(), $placeIdentifier->getCountry());
+                $placeCategories = $this->categoryService->getCategoryIdentifiersForPlace($placeId);
+                $excerpt = $this->getSuggestedExcerpt($placeIdentifier->getName(), $placeIdentifier->getCountry(), count($placeCategories) === 0 ? null : $placeCategories[count($placeCategories) - 1]->getName());
             }
             return $this->placeMapper->updatePlaceExcerpt($placeId, $excerpt);
         }
@@ -199,7 +200,9 @@
 
             if ($wasUpdated) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($placeId));
-                $this->updatePlaceExcerpt($placeId, $this->getSuggestedExcerpt($name, $place->getCountry()));
+
+                $placeCategories = $place->getCategories();
+                $this->updatePlaceExcerpt($placeId, $this->getSuggestedExcerpt($name, $place->getCountry(), count($placeCategories) === 0 ? null : $placeCategories[count($placeCategories) - 1]->getName()));
             }
 
             return $wasUpdated;
@@ -390,7 +393,7 @@
 
             $location = $this->geocodingService->getLocation($address);
             $placeIdentifier = new PlaceIdentifier(null, $name, $country === null ? null : $this->categoryService->getOrCreateCountryCategoryIdentifier($country)->getName(),
-                $location->getLatitude(), $location->getLongitude(), $location->getElevation(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country));
+                $location->getLatitude(), $location->getLongitude(), $location->getElevation(), $location->getTimezone(), null, 0, null, $this->getSuggestedExcerpt($name, $country, null));
             $this->transactionManager->executeAtomically(function() use(&$placeIdentifier) {
                 $this->placeMapper->insertPlaceIdentifier($placeIdentifier);
                 
@@ -416,9 +419,9 @@
             return $wasRemoved;
         }
 
-        private function getSuggestedExcerpt(string $name, ?string $country) : ?string {
+        private function getSuggestedExcerpt(string $name, ?string $country, ?string $region) : ?string {
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeExcerpt"];
-            return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country ?? ""));
+            return $this->generativeContentClient->getResponse($prompt, array("name" => $name, "country" => $country ?? "UNKNOWN", "region" => $region ?? "UNKNOWN"));
         }
 
         private function getTimezoneOffset(int $timestamp, string $fromTimezone, string $toTimezone) : int {

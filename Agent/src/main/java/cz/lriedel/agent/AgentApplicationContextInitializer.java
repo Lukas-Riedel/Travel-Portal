@@ -32,6 +32,7 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
     private static final String SERVICE_IAM_CLIENT_ID_PROPERTY_PLACEHOLDER = "service.iam.client.id";
     private static final String SERVICE_IAM_CLIENT_SECRET_PROPERTY_PLACEHOLDER = "service.iam.client.secret";
 
+    // TODO: Do not hardcode this.
     private static final String DEFAULT_USERNAME = "guest";
     private static final String DEFAULT_PASSWORD = "guest";
 
