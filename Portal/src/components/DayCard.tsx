@@ -362,7 +362,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                 end={event.end}
                                 timezone={timezone || event.timezone} />
                         )}
-                        {isPlace(event) && onPhotosAdded && event.album?.uploadingStart && event.album?.uploadingProgress && (
+                        {isPlace(event) && onPhotosAdded && !!event.album?.uploadingStart && !!event.album?.uploadingProgress && (
                             <div className="relative group inline-block hover:cursor-help">
                                 {renderDescriptionRow("text-yellow-500", [
                                     (
