@@ -8,6 +8,7 @@ interface CategoryCardGridProps {
     categories: Category[] | null
     categoriesPlaces: Record<string, DistanceAwarePlace[] | Place[]> | null
     rowSize: number
+    columnSize?: number
     onCurrentLocationChanged?: (place: Place) => void
     onMaximumDistanceChanged?: (distance: number) => void
     onPlaceRemoved?: (placeId: string) => Promise<void>
@@ -15,7 +16,7 @@ interface CategoryCardGridProps {
 
 const haveDistance = (places: DistanceAwarePlace[] | Place[]): places is DistanceAwarePlace[] => places.length > 0 && (places[0] as DistanceAwarePlace).distance !== undefined
 
-export default function CategoryCardGrid({ categories, categoriesPlaces, rowSize, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }: CategoryCardGridProps) {
+export default function CategoryCardGrid({ categories, categoriesPlaces, rowSize, columnSize, onCurrentLocationChanged, onMaximumDistanceChanged, onPlaceRemoved }: CategoryCardGridProps) {
     const getSortedPlaces = (categoryName: string) => {
         const places = categoriesPlaces?.[categoryName] || []
         return haveDistance(places)
@@ -24,7 +25,9 @@ export default function CategoryCardGrid({ categories, categoriesPlaces, rowSize
     }
 
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {categories?.map(category => (
                 <CategoryCard
                     key={category.id}

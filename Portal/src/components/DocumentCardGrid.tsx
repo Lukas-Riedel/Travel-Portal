@@ -5,12 +5,15 @@ import DocumentCard from "./DocumentCard.tsx"
 interface DocumentCardGridProps {
     documents: Document[] | null
     rowSize: number
+    columnSize?: number
     onDocumentRemoved?: (documentId: string) => Promise<void>
 }
 
-export default function DocumentCardGrid({ documents, rowSize, onDocumentRemoved }: DocumentCardGridProps) {
+export default function DocumentCardGrid({ documents, rowSize, columnSize, onDocumentRemoved }: DocumentCardGridProps) {
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {documents?.map(document => (
                 <DocumentCard
                     key={document.id}

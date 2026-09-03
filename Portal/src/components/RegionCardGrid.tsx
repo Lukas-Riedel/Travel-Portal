@@ -6,15 +6,18 @@ import type { GeoJSON } from "geojson"
 interface RegionCardGridProps {
     regions: Region[] | null
     rowSize: number
+    columnSize?: number
     onCategorySelected?: (category: any) => void
     onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<any>
     onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<any>
     onRegionVisualized?: (region: Region) => void
 }
 
-export default function RegionCardGrid({ regions, rowSize, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }: RegionCardGridProps) {
+export default function RegionCardGrid({ regions, rowSize, columnSize, onCategorySelected, onGeographicalRegionUpdated, onCompositeRegionUpdated, onRegionVisualized }: RegionCardGridProps) {
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {regions?.map((region, index) => (
                 <RegionCard
                     key={index}

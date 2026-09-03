@@ -7,6 +7,7 @@ interface DataConsistencyIssueCardGridProps {
     dataConsistencyIssues: DataConsistencyIssue[] | null
     airlines: Airline[] | null
     rowSize: number
+    columnSize?: number
     onAirlineCodeAssigned?: (airlineId: string, code: string) => Promise<Airline>
     onFitnessReplaced?: (timestamp: number, steps: number, seconds: number, distance: number, overwrite: boolean) => Promise<Fitness>
     onAirportNameChanged?: (airportId: string, longName: string) => Promise<Airport>
@@ -21,11 +22,13 @@ interface DataConsistencyIssueCardGridProps {
     onPlaceCountryChanged?: (placeId: string, country: string) => Promise<Place>
 }
 
-export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, airlines, rowSize, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
+export default function DataConsistencyIssueCardGrid({ dataConsistencyIssues, airlines, rowSize, columnSize, onAirlineCodeAssigned, onFitnessReplaced, onAirportNameChanged, onAirlineLogoChanged,
     onAllAlbumsInvalidated, onPhotoInvalidated, onGeographicalExtensionCategoryAdded, onPlaceRemoved, onFlightLogged, onCategoryMetadataChanged, onAirportCountryChanged,
     onPlaceCountryChanged }: DataConsistencyIssueCardGridProps) {
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {dataConsistencyIssues?.map((dataConsistencyIssue, idx) => (
                 <DataConsistencyIssueCard
                     key={idx}

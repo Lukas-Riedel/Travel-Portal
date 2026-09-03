@@ -5,12 +5,15 @@ import StatisticsCard from "./StatisticsCard.tsx"
 interface StatisticsCardGridProps {
     statistics: Statistics[] | null
     rowSize: number
+    columnSize?: number
     years?: Year[]
 }
 
-export default function StatisticsCardGrid({ statistics, rowSize, years }: StatisticsCardGridProps) {
+export default function StatisticsCardGrid({ statistics, rowSize, columnSize, years }: StatisticsCardGridProps) {
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {statistics?.map(item => (
                 <StatisticsCard
                     key={item.name}

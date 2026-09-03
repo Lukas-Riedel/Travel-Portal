@@ -7,16 +7,19 @@ import PlaceCard from "./PlaceCard.tsx"
 interface PlaceCardProps {
     places: Place[] | DistanceAwarePlace[] | null
     rowSize: number
+    columnSize?: number
     onPlaceRemoved?: (placeId: string) => Promise<void>
 }
 
 const haveDistance = (places: DistanceAwarePlace[] | Place[]): places is DistanceAwarePlace[] => places.length > 0 && (places[0] as DistanceAwarePlace).distance !== undefined
 
-export default function PlaceCardGrid({ places, rowSize, onPlaceRemoved }: PlaceCardProps) {
+export default function PlaceCardGrid({ places, rowSize, columnSize, onPlaceRemoved }: PlaceCardProps) {
     const sortedPlaces = useMemo(() => places && (haveDistance(places) ? [...places].sort((a, b) => a.distance - b.distance) : places), [places])
 
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {sortedPlaces?.map(place => (
                 <PlaceCard
                     key={place.id}

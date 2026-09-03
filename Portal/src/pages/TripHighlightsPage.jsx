@@ -52,7 +52,9 @@ export default function TripHighlightsPage() {
 
     const handleHighlightCreated = async photoId => createTripHighlight(photoId)
         .then(highlight => {
-            setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            if (currentHighlights) {
+                setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            }
             return highlight
         })
 

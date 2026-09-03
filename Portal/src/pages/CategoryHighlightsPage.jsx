@@ -23,7 +23,9 @@ export default function CategoryHighlightsPage() {
 
     const handleHighlightCreated = async photoId => createCategoryHighlight(photoId)
         .then(highlight => {
-            setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            if (currentHighlights) {
+                setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            }
             return highlight
         })
 

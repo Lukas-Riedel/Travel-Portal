@@ -5,12 +5,15 @@ import TripCard from "./TripCard.tsx"
 interface TripCardGridProps {
     trips: Trip[] | null
     rowSize: number
+    columnSize?: number
     onTripRemoved?: (tripId: string) => Promise<void>
 }
 
-export default function TripCardGrid({ trips, rowSize, onTripRemoved }: TripCardGridProps) {
+export default function TripCardGrid({ trips, rowSize, columnSize, onTripRemoved }: TripCardGridProps) {
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {trips?.map(trip => (
                 <TripCard
                     key={trip.id}

@@ -312,6 +312,7 @@ export default function AdminPage() {
                     dataConsistencyIssues={dataConsistencyIssues}
                     airlines={airlines}
                     rowSize={4}
+                    columnize={6}
                     onAirlineCodeAssigned={createAirlineCode}
                     onFitnessReplaced={replaceFitness}
                     onAirlineLogoChanged={updateAirlineLogo}

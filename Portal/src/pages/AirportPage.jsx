@@ -42,6 +42,7 @@ export default function AirportPage() {
             </div>
             <FlightCardGrid
                 rowSize={4}
+                columnSize={6}
                 flights={flights} />
         </>
     )

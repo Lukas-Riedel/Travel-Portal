@@ -5,12 +5,15 @@ import SubscriptionCard from "./SubscriptionCard.tsx"
 interface SubscriptionCardGridProps {
     subscriptions: Subscription[] | null
     rowSize: number
+    columnSize?: number
     onSubscriptionRemoved?: (subscriptionId: string) => Promise<void>
 }
 
-export default function SubscriptionCardGrid({ subscriptions, rowSize, onSubscriptionRemoved }: SubscriptionCardGridProps) {
+export default function SubscriptionCardGrid({ subscriptions, rowSize, columnSize, onSubscriptionRemoved }: SubscriptionCardGridProps) {
     return (
-        <CardGrid rowSize={rowSize}>
+        <CardGrid
+            rowSize={rowSize}
+            columnSize={columnSize}>
             {subscriptions?.map(subscription => (
                 <SubscriptionCard
                     key={subscription.id}

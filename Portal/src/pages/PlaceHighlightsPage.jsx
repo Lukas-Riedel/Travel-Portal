@@ -30,7 +30,9 @@ export default function PlaceHighlightsPage() {
 
     const handleHighlightCreated = async photoId => createPlaceHighlight(photoId)
         .then(highlight => {
-            setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            if (currentHighlights) {
+                setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            }
             return highlight
         })
 

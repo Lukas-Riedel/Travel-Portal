@@ -45,7 +45,9 @@ export default function YearHighlightsPage() {
 
     const handleHighlightCreated = async photoId => createYearHighlight(photoId)
         .then(highlight => {
-            setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            if (currentHighlights) {
+                setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            }
             return highlight
         })
 
