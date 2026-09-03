@@ -32,7 +32,7 @@ export default function SunAltitudeBar({ place }: SunAltitudeBarProps) {
                 ref={dateInputRef}
                 type="date"
                 value={formatTimestamp(date, "yyyy-MM-dd")}
-                onChange={e => setDate(new Date(e.target.value))}
+                onChange={e => setDate(e.target.value ? new Date(e.target.value) : new Date())}
                 className="absolute opacity-0 pointer-events-none" />
             {DISPLAYED_ALTITUDES.map((altitude, index) => (
                 <SunAltitudeIcon
