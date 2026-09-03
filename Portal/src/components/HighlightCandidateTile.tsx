@@ -1,18 +1,28 @@
-import { ImageUp, SendToBack } from "lucide-react"
+import { ImageUp, Plus, SendToBack } from "lucide-react"
 import PhotoTile from "./PhotoTile"
 import { useState } from "react"
-import type { Category, Photo } from "../types/CoreSwaggerTypes"
+import type { Category, Photo, Highlight } from "../types/CoreSwaggerTypes"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput"
 
 interface HighlightCandidateTileProps {
     name: string | null
     description: string | null
     photo: Photo
     categories?: Category[]
+    onHighlightCreated?: () => Promise<Highlight>
     onHighlightCandidateCreated?: () => Promise<void>
 }
 
-export default function HighlightCandidateTile({ name, description, categories, photo, onHighlightCandidateCreated }: HighlightCandidateTileProps) {
+export default function HighlightCandidateTile({ name, description, categories, photo, onHighlightCreated, onHighlightCandidateCreated }: HighlightCandidateTileProps) {
+    const { showCreateHighlightToast } = usePredefinedUserInput()
     const [overlayType, setOverlayType] = useState(0)
+
+
+    const handleHighlightCreated = () => {
+        if (onHighlightCreated) {
+            showCreateHighlightToast(onHighlightCreated)
+        }
+    }
 
     return (
         <div>
@@ -39,8 +49,15 @@ export default function HighlightCandidateTile({ name, description, categories, 
                     firstLineText={name}
                     secondLineText={description} />
             )}
-            {onHighlightCandidateCreated && (
+            {(onHighlightCreated || onHighlightCandidateCreated) && (
                 <div className="flex justify-center gap-2 mt-2">
+                    {onHighlightCreated && (
+                        <button
+                            onClick={handleHighlightCreated}
+                            className="btn-large-gray">
+                            <Plus size={16} />
+                        </button>
+                    )}
                     {onHighlightCandidateCreated && (
                         <button
                             onClick={onHighlightCandidateCreated}

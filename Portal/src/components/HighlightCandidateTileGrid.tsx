@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import HighlightCandidateTile from "./HighlightCandidateTile"
 import TileGrid from "./TileGrid.js"
 import { Expand } from "lucide-react"
-import type { Category, Photo } from "../types/CoreSwaggerTypes"
+import type { Category, Photo, Highlight } from "../types/CoreSwaggerTypes"
 import type { HighlightCandidatesGroup } from "../types/HighlightCandidatesGroup"
 
 interface HighlightCandidateTileGridProps {
@@ -10,10 +10,11 @@ interface HighlightCandidateTileGridProps {
     description: string | null
     categories?: Category[]
     highlightCandidatesGroups: HighlightCandidatesGroup[]
+    onHighlightCreated?: (photoId: string) => Promise<Highlight>
     onHighlightCandidateCreated?: (photo: Photo) => Promise<void>
 }
 
-export default function HighlightCandidateTileGrid({ name, description, categories, highlightCandidatesGroups, onHighlightCandidateCreated }: HighlightCandidateTileGridProps) {
+export default function HighlightCandidateTileGrid({ name, description, categories, highlightCandidatesGroups, onHighlightCreated, onHighlightCandidateCreated }: HighlightCandidateTileGridProps) {
     return highlightCandidatesGroups?.map(highlightCandidatesGroup => (
         <HighlightCandidateTileGridGroup
             key={highlightCandidatesGroup.title}
@@ -22,6 +23,7 @@ export default function HighlightCandidateTileGrid({ name, description, categori
             categories={categories}
             highlightCandidatesGroup={highlightCandidatesGroup}
             shouldLoadOnRender={highlightCandidatesGroups.length === 1}
+            onHighlightCreated={onHighlightCreated}
             onHighlightCandidateCreated={onHighlightCandidateCreated} />
     ))
 }
@@ -32,10 +34,11 @@ interface HighlightCandidateTileGridGroupProps {
     categories?: Category[]
     highlightCandidatesGroup: HighlightCandidatesGroup
     shouldLoadOnRender: boolean
+    onHighlightCreated?: (photoId: string) => Promise<Highlight>
     onHighlightCandidateCreated?: (photo: Photo) => Promise<void>
 }
 
-function HighlightCandidateTileGridGroup({ name, description, categories, highlightCandidatesGroup, shouldLoadOnRender, onHighlightCandidateCreated }: HighlightCandidateTileGridGroupProps) {
+function HighlightCandidateTileGridGroup({ name, description, categories, highlightCandidatesGroup, shouldLoadOnRender, onHighlightCreated, onHighlightCandidateCreated }: HighlightCandidateTileGridGroupProps) {
     const [photos, setPhotos] = useState<Photo[] | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -74,6 +77,7 @@ function HighlightCandidateTileGridGroup({ name, description, categories, highli
                             description={description}
                             categories={categories}
                             photo={photo}
+                            onHighlightCreated={onHighlightCreated && (() => onHighlightCreated(photo.id))}
                             onHighlightCandidateCreated={onHighlightCandidateCreated && (() => onHighlightCandidateCreated(photo))} />
                     ))}
                 </TileGrid>

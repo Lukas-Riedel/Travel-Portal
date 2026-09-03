@@ -29,8 +29,9 @@ export default function PlaceHighlightsPage() {
         })), [place])
 
     const handleHighlightCreated = async photoId => createPlaceHighlight(photoId)
-        .then(_ => {
+        .then(highlight => {
             setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            return highlight
         })
 
     const handleHighlightCandidateCreated = highlightCandidate => {
@@ -52,6 +53,7 @@ export default function PlaceHighlightsPage() {
                 description={getDateString(Date.now() / 1000)}
                 categories={place && [place.getCategory("mostSpecificWithMetadata")]}
                 highlightCandidatesGroups={highlightCandidates}
+                onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCreated}
                 onHighlightCandidateCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

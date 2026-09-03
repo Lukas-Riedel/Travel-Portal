@@ -22,8 +22,9 @@ export default function CategoryHighlightsPage() {
     })).filter(group => group.getPhotos()?.length), [category, places])
 
     const handleHighlightCreated = async photoId => createCategoryHighlight(photoId)
-        .then(_ => {
+        .then(highlight => {
             setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            return highlight
         })
 
     const handleHighlightCandidateCreated = highlightCandidate => {
@@ -44,6 +45,7 @@ export default function CategoryHighlightsPage() {
                 name={category?.name}
                 categories={category && [category]}
                 highlightCandidatesGroups={highlightCandidates}
+                onHighlightCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCreated}
                 onHighlightCandidateCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

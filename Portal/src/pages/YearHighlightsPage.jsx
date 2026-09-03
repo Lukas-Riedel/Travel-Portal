@@ -44,8 +44,9 @@ export default function YearHighlightsPage() {
     }, [places, year, trips])
 
     const handleHighlightCreated = async photoId => createYearHighlight(photoId)
-        .then(_ => {
+        .then(highlight => {
             setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            return highlight
         })
 
     const handleHighlightCandidateCreated = highlightCandidate => {
@@ -64,6 +65,7 @@ export default function YearHighlightsPage() {
             )}
             <HighlightCandidateTileGrid
                 highlightCandidatesGroups={highlightCandidates}
+                onHighlightCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCreated}
                 onHighlightCandidateCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )

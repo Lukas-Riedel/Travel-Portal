@@ -51,8 +51,9 @@ export default function TripHighlightsPage() {
         ), [places, trip])
 
     const handleHighlightCreated = async photoId => createTripHighlight(photoId)
-        .then(_ => {
+        .then(highlight => {
             setCurrentHighlights(currentHighlights.filter(h => h.id !== photoId))
+            return highlight
         })
 
     const handleHighlightCandidateCreated = highlightCandidate => {
@@ -74,6 +75,7 @@ export default function TripHighlightsPage() {
                 description={getDateRangeString(trip?.start, trip?.end)}
                 categories={places?.map(p => p.getCategory("mostSpecificWithMetadata")).filter(Boolean).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
                 highlightCandidatesGroups={highlightCandidates}
+                onHighlightCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCreated}
                 onHighlightCandidateCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCandidateCreated} />
         </>
     )
