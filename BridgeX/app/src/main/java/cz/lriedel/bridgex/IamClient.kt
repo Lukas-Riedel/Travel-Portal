@@ -3,6 +3,7 @@ package cz.lriedel.bridgex
 import com.google.gson.GsonBuilder
 import cz.lriedel.bridgex.authentication.IamResponse
 import cz.lriedel.bridgex.authentication.TokenRequest
+import cz.lriedel.bridgex.device.DeviceType
 import cz.lriedel.bridgex.notification.NotificationContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -37,6 +38,7 @@ interface IamClient {
                         requestBuilder.addHeader(key.toString(), value.toString())
                     }
                     val newRequest = requestBuilder
+                        .addHeader("Request-Origin", DeviceType.BRIDGEX.value)
                         .build()
                     chain.proceed(newRequest)
                 }.build()

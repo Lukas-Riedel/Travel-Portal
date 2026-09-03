@@ -5,6 +5,7 @@ import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceRequest
 import cz.lriedel.bridgex.fitness.FitnessRequest
 import cz.lriedel.bridgex.geocoding.AddressResponse
+import cz.lriedel.bridgex.device.DeviceType
 import cz.lriedel.bridgex.notification.NotificationContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -61,6 +62,7 @@ interface CoreClient {
                     }
                     val newRequest = requestBuilder
                         .addHeader("Authorization", "Bearer $accessToken")
+                        .addHeader("Request-Origin", DeviceType.BRIDGEX.value)
                         .build()
                     chain.proceed(newRequest)
                 }.build()
