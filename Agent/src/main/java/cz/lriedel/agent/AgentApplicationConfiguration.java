@@ -144,6 +144,9 @@ public class AgentApplicationConfiguration {
                         if (StringUtils.isNotBlank(transactionId)) {
                             loggingContext.setTransactionId(transactionId);
                         }
+                        else {
+                            loggingContext.setTransactionId(UUID.randomUUID().toString());
+                        }
                         return message;
                     };
                     factory.setAfterReceivePostProcessors(messagePostProcessor);
