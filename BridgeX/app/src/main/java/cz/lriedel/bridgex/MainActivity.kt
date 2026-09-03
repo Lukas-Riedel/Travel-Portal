@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         if (savedInstanceState == null) {
-            val bustParam = System.currentTimeMillis() / (3600 * 1000)
+            val bustParam = System.currentTimeMillis() / BUST_PARAM_MS
             val separator = if (url.contains("?")) "&" else "?"
             webView.loadUrl("$url${separator}t=$bustParam")
         }
@@ -141,5 +141,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME = "Android"
+        private const val BUST_PARAM_MS = 24 * 3600 * 1000
     }
 }
