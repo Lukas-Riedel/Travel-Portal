@@ -81,11 +81,12 @@ export default function HighlightCarousel({ place, highlights, onPhotoReplaced, 
     }, [])
 
     useEffect(() => {
-        if (slideshowAutostartEnabled) {
-            setShuffledHighlights([...(highlights ?? [])].sort(() => Math.random() - 0.5))
-        }
-        else {
-            setShuffledHighlights(highlights ?? [])
+        const newHighlights = slideshowAutostartEnabled
+            ? [...(highlights ?? [])].sort(() => Math.random() - 0.5)
+            : (highlights ?? [])
+        setShuffledHighlights(newHighlights)
+        if (newHighlights.length > 0) {
+            setCurrentHighlightIndex(previous => Math.min(previous, newHighlights.length - 1))
         }
     }, [highlights])
 
