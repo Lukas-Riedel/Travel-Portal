@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
-import { decapitalize } from "../utils/helpers.js"
 import { TailSpin } from "react-loader-spinner"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import type { Statistics } from "../types/CoreSwaggerTypes.ts"
@@ -120,6 +119,8 @@ export default function StatisticsPanel({ statistics }: StatisticsPanelProps) {
 
         e.preventDefault()
     }
+
+    const decapitalize = (str: string) => str[0].toLowerCase() + str.slice(1)
 
     const doubledStats = shuffledStatistics && [...shuffledStatistics, ...shuffledStatistics]
 

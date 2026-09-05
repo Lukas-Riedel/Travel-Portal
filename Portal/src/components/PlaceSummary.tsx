@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom"
 import { useMemo } from "react"
-import { getDateString } from "../utils/helpers.js"
 import { TailSpin } from "react-loader-spinner"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import type { Place } from "../classes/Place.ts"
@@ -8,6 +7,7 @@ import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
 import { useTranslation } from "react-i18next"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 
 interface PlaceSummaryProps {
     place: Place | null
@@ -42,7 +42,7 @@ export default function PlaceSummary({ place }: PlaceSummaryProps) {
                             {getEntityPrettyName(place.name)}
                         </AppLink>
                         <span className="text-gray-600 mb-4">
-                            {getDateString(Math.max(...place.dates.map(date => date.start)))}
+                            {formatTimestamp(Math.max(...place.dates.map(date => date.start)), t("general.format.date.year.included"))}
                         </span>
                         <p className="text-gray-600 mb-6">
                             {place.excerpt}

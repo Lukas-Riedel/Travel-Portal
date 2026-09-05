@@ -1,5 +1,4 @@
 import { useMemo } from "react"
-import { getDateRangeString } from "../utils/helpers"
 import PhotoTile from "./PhotoTile"
 import { useCategories } from "../hooks/useCategories"
 import type { Trip } from "../classes/Trip"

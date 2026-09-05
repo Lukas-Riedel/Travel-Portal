@@ -1,6 +1,6 @@
-import { format, isSameDay } from "date-fns"
+import { differenceInCalendarDays, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
 import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay } from "../types/CoreSwaggerTypes.ts"
-import { fromZonedTime } from "date-fns-tz"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { getTripFullName, isTripCandidate } from "../utils/formattingUtils.ts"
 
@@ -41,7 +41,19 @@ export class Trip implements ITrip {
     }
 
     public isCurrent(): boolean {
-        return this.start < getEndOfTodayOrMaximumAllowedTimestamp() && getStartOfTodayOrMaximumAllowedTimestamp() < this.end
+        return this.start <= getEndOfTodayOrMaximumAllowedTimestamp() && getStartOfTodayOrMaximumAllowedTimestamp() < this.end
+    }
+
+    public isDayInTrip(date: globalThis.Date): boolean {
+        return this.start * 1000 <= endOfDay(date).getTime() && startOfDay(date).getTime() < this.end * 1000
+    }
+
+    public isStartDayOfTrip(date: globalThis.Date): boolean {
+        return isSameDay(fromUnixTime(this.start), date)
+    }
+
+    public isEndDayOfTrip(date: globalThis.Date): boolean {
+        return isSameDay(fromUnixTime(this.end), date)
     }
 
     public getFullName(): string {
@@ -68,5 +80,9 @@ export class Trip implements ITrip {
     public getPublicHoliday(day: globalThis.Date): PublicHoliday | undefined {
         const dateString = format(day, PUBLIC_HOLIDAY_DATE_FORMAT)
         return this.publicHolidays?.find(h => h.date === dateString)
+    }
+
+    public getDaysCount(timezone?: string): number {
+        return differenceInCalendarDays(startOfDay(getZonedDate(this.end - 1, timezone)), startOfDay(getZonedDate(this.start, timezone))) + 1
     }
 }

@@ -8,9 +8,10 @@ import { fromUnixTime } from "date-fns"
 import Tooltip from "./Tooltip"
 import { useAuth } from "../contexts/AuthContext"
 import { useUserInput } from "../hooks/useUserInput.tsx"
-import { getEvents, isInTrip, sumEventHours } from "../utils/helpers"
+import { isInTrip } from "../utils/helpers"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
+import { getEvents, getEventHoursSum } from "../utils/eventUtils.ts"
 
 export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, onEventCreated, onEventRemoved }) {
     const { configuration } = useConfiguration()
@@ -114,13 +115,13 @@ export default function TrackerCalendar({ trips, isFreeDay, overtimeEvents, plan
             isInTrip: isInTrip(filteredTrips, day),
             standardWorkingHours,
             actualWorkingHours: (day > now ? 0 : standardWorkingHours)
-                + sumEventHours(positiveOvertime)
-                + sumEventHours(negativeOvertime)
-                + sumEventHours(vacation)
-                + sumEventHours(selfcare)
-                + sumEventHours(tenure),
+                + getEventHoursSum(positiveOvertime)
+                + getEventHoursSum(negativeOvertime)
+                + getEventHoursSum(vacation)
+                + getEventHoursSum(selfcare)
+                + getEventHoursSum(tenure),
             expectedWorkingHours: (isFreeDay(day) || isInTrip(filteredTrips, day) ? 0 : (standardWorkingHours + expectedOvertimeHoursPerDay))
-                + sumEventHours(plannedWork)
+                + getEventHoursSum(plannedWork)
         }
     }
 
