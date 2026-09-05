@@ -12,7 +12,7 @@ export default function AppLink({ to, children, ...props }: AppLinkProps) {
     return (
         <Link
             to={getPath(to, pathname)}
-            title={typeof children === "string" ? children : undefined}
+            title={typeof children === "string" || typeof children === "number" ? String(children) : undefined}
             {...props}>
             {children}
         </Link>

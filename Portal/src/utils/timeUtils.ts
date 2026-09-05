@@ -1,4 +1,4 @@
-import { eachDayOfInterval, endOfDay, format, fromUnixTime, startOfDay } from "date-fns"
+import { addDays, eachDayOfInterval, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getCoordinates } from "../clients/coreClient.ts"
 import type { Trip } from "../classes/Trip.ts"
@@ -88,6 +88,18 @@ export async function getAirportLocalTime(airportName: string, datetime: Date): 
     return Math.round(fromZonedTime(datetime, await getAirportTimezone(airportName))?.getTime() / 1000)
 }
 
+export function isToday(timestamp: number): boolean {
+    return isSameDay(fromUnixTime(timestamp), new Date())
+}
+
+export function getDaysFromTodayThrough(end: number, offsetDays?: number): Date[] {
+    return eachDayOfInterval({
+        start: startOfDay(offsetDays ? addDays(new Date(), 1) : new Date()),
+        end: startOfDay(fromUnixTime(end))
+    })
+}
+
+// TODO: Move to Trip?
 export function getTripDays(trip?: Trip, places?: Place[], timezone?: string): Date[] | undefined {
     const realTripStart = trip?.start ?? (places && places.length > 0 ? Math.min(...places.flatMap(place => place?.dates ?? []).map(date => date.start)) : undefined)
     const realTripEnd = trip?.end ?? (places && places.length > 0 ? Math.max(...places.flatMap(place => place?.dates ?? []).map(date => date.end)) : undefined)
@@ -103,6 +115,10 @@ export function isTodayOrFutureDay(date: Date, timezone?: string): boolean {
     return date >= todayStart
 }
 
-export function getCurrentHour(timezone?: string) {
+export function getCurrentHour(timezone?: string): number {
     return toZonedTime(new Date(), timezone || "UTC").getHours()
+}
+
+export function isBeginningOfCurrentYear(date: Date): boolean {
+    return date.getDate() === 1 && date.getMonth() === 0 && date.getFullYear() !== new Date().getFullYear()
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
-import { getCachedCoordinates, getDateRangeString, getTimeString } from "../utils/helpers"
+import { getCachedCoordinates } from "../utils/helpers"
 import DayCard from "./DayCard.tsx"
 import { Link } from "react-router-dom"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"

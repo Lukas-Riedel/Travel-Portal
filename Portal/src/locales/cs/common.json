@@ -440,6 +440,20 @@
         }
     },
     "tracker": {
+        "label": {
+            "hours": {
+                "overtime": {
+                    "available": "Dostupných hodin přesčasů",
+                    "missing": "Nejbližší další denní násobek je {{nextFullDayHours}} hodin (zbývá {{missingHours}} hodin)"
+                }
+            },
+            "days": {
+                "timeOff": {
+                    "available": "Dostupných dnů volna",
+                    "required": "Potřebných dnů volna"
+                }
+            }
+        },
         "prompt": {
             "create": {
                 "positive": {
@@ -1128,6 +1142,12 @@
         }
     },
     "trip": {
+        "label": {
+            "name": "Název",
+            "dates": "Termín",
+            "year": "Rok",
+            "days": "Dnů"
+        },
         "prompt": {
             "remove": {
                 "message": "Opravdu chceš odstranit tento výlet?",

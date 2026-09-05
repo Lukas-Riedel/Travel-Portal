@@ -1,20 +1,36 @@
-import { fromUnixTime, eachDayOfInterval, startOfDay, addDays, differenceInCalendarDays, isSameDay } from "date-fns"
+import { fromUnixTime, eachDayOfInterval, startOfDay, addDays, differenceInCalendarDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import { getDateRangeString, getEvents, sumEventHours, isInTrip } from "../utils/helpers"
+import { getDateRangeString } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useEffect, useMemo, useState } from "react"
 import Tooltip from "./Tooltip"
 import { ClockPlus } from "lucide-react"
+import type { Trip } from "../classes/Trip"
+import { TimeTrackingEventType } from "../types/CoreSwaggerTypes"
+import type { TimeTrackingEvent } from "../types/CoreSwaggerTypes"
+import { formatDateRange, getDaysFromTodayThrough, getTimezoneOrDefault, isBeginningOfCurrentYear, isToday } from "../utils/timeUtils"
+import { getEvents, getEventHoursSum } from "../utils/eventUtils"
+import { usePublicHolidays } from "../hooks/usePublicHolidays"
+import { useTranslation } from "react-i18next"
+import AppLink from "./AppLink"
 
-const loadingRowsCount = 5
+const LOADING_ROWS_COUNT = 5
+const HOURS_PER_MAN_DAY = 8
 
-export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents }) {
+interface TripTableProps {
+    trips: Trip[] | null
+    timeTrackingEvents?: Partial<Record<TimeTrackingEventType, TimeTrackingEvent[]>>
+}
+
+export default function TripTable({ trips, timeTrackingEvents }: TripTableProps) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
+    const { isFreeDay } = usePublicHolidays(trips?.at(-1)?.year)
 
+    // TODO: Rewrite to CSS.
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640)
-
     useEffect(() => {
         const onResize = () => setIsMobile(window.innerWidth < 640)
         onResize()
@@ -22,82 +38,85 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
         return () => window.removeEventListener("resize", onResize)
     }, [])
 
-    const includePlannedTimeOff = isFreeDay && overtimeEvents && plannedWorkEvents && vacationEvents && selfcareEvents && tenureEvents
-
-    const timezone = useMemo(() => configuration?.homeLocation?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", [configuration])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
-    const openingTimeOffHours = useMemo(() => Object.values(configuration?.timeTracking?.openingBalance ?? {}).reduce((sum, val) => sum + (val ?? 0), 0), [configuration])
+    const timezone = useMemo(() => getTimezoneOrDefault(configuration?.homeLocation?.timezone), [configuration])
+    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * configuration?.timeTracking?.currentFte || HOURS_PER_MAN_DAY, [configuration])
+    const openingTimeOffHours = useMemo(() => (Object.values(configuration?.timeTracking?.openingBalance ?? {}) as number[]).reduce((sum, value) => sum + (value ?? 0), 0), [configuration])
     const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay || 0, [configuration])
 
-    const latestAllowedDateStartOfDay = useMemo(() => startOfDay(fromUnixTime(trips?.at(-1)?.end)), [trips])
-
-    const days = eachDayOfInterval({
-        start: startOfDay(overtimeEvents?.some(event => isSameDay(fromUnixTime(event.timestamp), new Date())) ? addDays(new Date(), 1) : new Date()),
-        end: latestAllowedDateStartOfDay
-    })
+    const daysOffset = timeTrackingEvents?.[TimeTrackingEventType.Overtime]?.some(event => isToday(event.timestamp)) ? 1 : 0
+    const days = getDaysFromTodayThrough(trips?.at(-1)?.end, daysOffset)
 
     const tripBalances = useMemo(() => {
-        const tripBalances = {}    
+        const tripBalances: Record<string, { availableOvertimeHours: number, availableTimeOffHours: number, timeOffHoursNeeded?: number }> = {}
 
-        if (includePlannedTimeOff) {
+        const getEventTypeBalance = (eventType: TimeTrackingEventType) => timeTrackingEvents?.[eventType]?.[0]?.balance ?? 0
+
+        if (timeTrackingEvents) {
             let timeOffHoursNeededForCurrentTrip = 0
-            let currentTimeOffHoursBalance = (vacationEvents?.[0]?.balance ?? 0) + (selfcareEvents?.[0]?.balance ?? 0) + (tenureEvents?.[0]?.balance ?? 0)
-            let currentOvertimeHoursBalance = overtimeEvents?.[0]?.balance ?? 0
+            let currentExpectedOvertimeHoursBalance = getEventTypeBalance(TimeTrackingEventType.Overtime)
+            let currentExpectedTimeOffHoursBalance = getEventTypeBalance(TimeTrackingEventType.Vacation)
+                + getEventTypeBalance(TimeTrackingEventType.Selfcare)
+                + getEventTypeBalance(TimeTrackingEventType.Tenure)
 
             for (let i = 0; i < days.length; ++i) {
-                const startingTrip = trips?.find(trip => startOfDay(trip.start * 1000).getTime() === days[i].getTime())
+                const startingTrip = trips?.find(trip => trip.isStartDayOfTrip(days[i]))
                 if (startingTrip) {
                     tripBalances[startingTrip.id] = {
-                        availableOvertimeHours: currentOvertimeHoursBalance,
-                        availableTimeOffHours: currentTimeOffHoursBalance
+                        availableOvertimeHours: currentExpectedOvertimeHoursBalance,
+                        availableTimeOffHours: currentExpectedTimeOffHoursBalance
                     }
                 }
 
-                currentOvertimeHoursBalance += sumEventHours(getEvents(days[i], plannedWorkEvents, _ => true, timezone))
-                const submittedTimeOffHours = (-1) * (sumEventHours(getEvents(days[i], vacationEvents, _ => true, timezone))
-                    + sumEventHours(getEvents(days[i], selfcareEvents, _ => true, timezone))
-                    + sumEventHours(getEvents(days[i], tenureEvents, _ => true, timezone))
-                    + sumEventHours(getEvents(days[i], overtimeEvents, hours => hours < 0, timezone)))
+                const doGetEventHoursSum = (eventType: TimeTrackingEventType, filterHours: (hours: number) => boolean = _ => true) =>
+                    getEventHoursSum(getEvents(days[i], timeTrackingEvents?.[eventType], filterHours, timezone))
+
+                const submittedTimeOffHours = (-1) * (doGetEventHoursSum(TimeTrackingEventType.Vacation)
+                    + doGetEventHoursSum(TimeTrackingEventType.Selfcare)
+                    + doGetEventHoursSum(TimeTrackingEventType.Tenure)
+                    + doGetEventHoursSum(TimeTrackingEventType.Overtime, hours => hours < 0))
+
+                currentExpectedOvertimeHoursBalance += doGetEventHoursSum(TimeTrackingEventType.PlannedWork)
 
                 if (!isFreeDay(days[i])) {
-                    if (isInTrip(trips, days[i])) {
-                        currentOvertimeHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
+                    if (trips.some(trip => trip.isDayInTrip(days[i]))) {
+                        currentExpectedOvertimeHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                     }
                     else {
-                        currentOvertimeHoursBalance += expectedOvertimeHoursPerDay
+                        currentExpectedOvertimeHoursBalance += expectedOvertimeHoursPerDay
                     }
                 }
 
-                if (days[i].getDate() === 1 && days[i].getMonth() === 0 && days[i].getFullYear() !== new Date().getFullYear() && openingTimeOffHours) {
-                    currentTimeOffHoursBalance = Math.max(0, currentTimeOffHoursBalance) + openingTimeOffHours
+                if (openingTimeOffHours && isBeginningOfCurrentYear(days[i])) {
+                    currentExpectedTimeOffHoursBalance = Math.max(0, currentExpectedTimeOffHoursBalance) + openingTimeOffHours
                 }
 
-                currentOvertimeHoursBalance = Math.round(currentOvertimeHoursBalance * 10) / 10
+                currentExpectedOvertimeHoursBalance = Math.round(currentExpectedOvertimeHoursBalance * 10) / 10
 
-                if (currentOvertimeHoursBalance < 0) {
-                    currentOvertimeHoursBalance += standardWorkingHoursPerWorkingDay - submittedTimeOffHours
+                if (currentExpectedOvertimeHoursBalance < 0) {
+                    currentExpectedOvertimeHoursBalance += standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                     timeOffHoursNeededForCurrentTrip += standardWorkingHoursPerWorkingDay - submittedTimeOffHours
-                    currentTimeOffHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
+                    currentExpectedTimeOffHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                 }
 
-                const endingTrip = trips?.find(trip => startOfDay(trip.end * 1000).getTime() === days[i].getTime())
+                const endingTrip = trips?.find(trip => trip.isEndDayOfTrip(days[i]))
                 if (endingTrip) {
                     if (endingTrip.id in tripBalances) {
                         tripBalances[endingTrip.id].timeOffHoursNeeded = timeOffHoursNeededForCurrentTrip
                     }
+
                     timeOffHoursNeededForCurrentTrip = 0
                 }
             }
         }
 
         return tripBalances
-    }, [overtimeEvents, plannedWorkEvents, vacationEvents, selfcareEvents, tenureEvents, days, standardWorkingHoursPerWorkingDay, trips, expectedOvertimeHoursPerDay])
+    }, [timeTrackingEvents, trips, days, standardWorkingHoursPerWorkingDay, expectedOvertimeHoursPerDay])
 
     return (!trips || trips.length > 0) && (
         <div className="w-full rounded-xl my-4">
             <table className="w-full table-fixed divide-y divide-gray-200">
                 <colgroup>
-                    {includePlannedTimeOff && !isMobile ? (
+                    {timeTrackingEvents && !isMobile ? (
                         <>
                             <col className="w-[28%]" />
                             <col className="w-[12%]" />
@@ -119,27 +138,27 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                 <thead className="bg-gray-100">
                     <tr>
                         <th className="p-3 text-center">
-                            Název
+                            {t("trip.label.name")}
                         </th>
                         <th className="p-3 text-center">
-                            Termín
+                            {t("trip.label.dates")}
                         </th>
                         <th className="p-3 text-center">
-                            Rok
+                            {t("trip.label.year")}
                         </th>
                         <th className="p-3 text-center">
-                            Dnů
+                            {t("trip.label.days")}
                         </th>
-                        {includePlannedTimeOff && !isMobile && (
+                        {timeTrackingEvents && !isMobile && (
                             <>
                                 <th className="p-3 text-center">
-                                    Dostupných hodin přesčasů
+                                    {t("tracker.label.hours.overtime.available")}
                                 </th>
                                 <th className="p-3 text-center">
-                                    Potřebných dnů volna
+                                    {t("tracker.label.days.timeOff.required")}
                                 </th>
                                 <th className="p-3 text-center">
-                                    Dostupných dnů volna
+                                    {t("tracker.label.days.timeOff.available")}
                                 </th>
                             </>
                         )}
@@ -151,22 +170,22 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                             key={trip.id}
                             className="hover:bg-gray-100">
                             <td className="p-3 text-center">
-                                <Link to={`/trip/${trip.id}`}>
+                                <AppLink to={trip}>
                                     {trip.name}
-                                </Link>
+                                </AppLink>
                             </td>
                             <td className="p-3 text-center">
-                                {getDateRangeString(trip.start, trip.end, false)}
+                                {formatDateRange(trip.start, trip.end, t("general.format.date.year.excluded"))}
                             </td>
                             <td className="p-3 text-center">
-                                <Link to={`/year/${trip.year}`}>
+                                <AppLink to={trip.year}>
                                     {trip.year}
-                                </Link>
+                                </AppLink>
                             </td>
                             <td className="p-3 text-center">
-                                {differenceInCalendarDays(startOfDay(toZonedTime(fromUnixTime(trip.end - 1), timezone)), startOfDay(toZonedTime(fromUnixTime(trip.start), timezone))) + 1}
+                                {trip.getDaysCount(timezone)}
                             </td>
-                            {includePlannedTimeOff && !isMobile && (
+                            {timeTrackingEvents && !isMobile && (
                                 <>
                                     <td className="p-3 text-center relative group hover:cursor-help">
                                         {tripBalances[trip.id] ? (
@@ -174,7 +193,10 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                                                 {tripBalances[trip.id].availableOvertimeHours.toFixed(1)}
                                                 <Tooltip>
                                                     <ClockPlus size={16} />
-                                                    Nejbližší další denní násobek je {(Math.ceil(tripBalances[trip.id].availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay).toFixed(1)} hodin (zbývá {(Math.ceil(tripBalances[trip.id].availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay - tripBalances[trip.id].availableOvertimeHours).toFixed(1)} hodin)
+                                                    {t("tracker.label.hours.overtime.missing", {
+                                                        nextFullDayHours: (Math.ceil(tripBalances[trip.id].availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay).toFixed(1),
+                                                        missingHours: (Math.ceil(tripBalances[trip.id].availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay - tripBalances[trip.id].availableOvertimeHours).toFixed(1)
+                                                    })}
                                                 </Tooltip>
                                             </>
                                         ) : "---"}
@@ -188,12 +210,12 @@ export default function TripTable({ trips, isFreeDay, overtimeEvents, plannedWor
                                 </>
                             )}
                         </tr>
-                    )) : Array.from({ length: loadingRowsCount })
+                    )) : Array.from({ length: LOADING_ROWS_COUNT })
                         .map((_, index) => (
                             <tr key={index}>
                                 <td
                                     className="p-3"
-                                    colSpan={includePlannedTimeOff && !isMobile ? 7 : 4}>
+                                    colSpan={timeTrackingEvents && !isMobile ? 7 : 4}>
                                     <div className="flex justify-center items-center h-full w-full">
                                         <TailSpin
                                             color="black"

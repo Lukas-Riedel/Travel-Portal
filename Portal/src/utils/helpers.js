@@ -8,16 +8,6 @@ export function getDateString(timestamp) {
     return timestamp && format(fromUnixTime(timestamp), "d.M.yyyy")
 }
 
-// TODO: Replace by formatTimestamp in timeUtils.ts
-export function getDateTimeString(timestamp, includeYear = true) {
-    return timestamp && format(fromUnixTime(timestamp), includeYear ? "d.M.yyyy H:mm" : "d.M. H:mm")
-}
-
-// TODO: Replace by formatTimestamp in timeUtils.ts
-export function getTimeString(timestamp) {
-    return timestamp && format(fromUnixTime(timestamp), "H:mm")
-}
-
 export function getDateRangeString(start, end, includeYear = true) {
     if (!start || !end) {
         return null
@@ -34,26 +24,8 @@ export function getDateRangeString(start, end, includeYear = true) {
     return `${format(startDate, startFormat)} - ${format(endDate, (includeYear ? "d.M.yyyy" : "d.M."))}`
 }
 
-export function decapitalize(str) {
-    return str && (str[0].toLowerCase() + str.slice(1))
-}
-
 export function isInTrip(trips, date) {
-    return trips.some(({ start, end }) => start * 1000 <= endOfDay(date).getTime() && end * 1000 > startOfDay(date).getTime())
-}
-
-export function getEvents(day, events, hoursFilter, timezone) {
-    const targetDay = startOfDay(day).getTime()
-    return (events ?? []).filter(event => hoursFilter(event.hours) && startOfDay(toZonedTime(fromUnixTime(event.timestamp), timezone)).getTime() === targetDay)
-}
-
-export function sumEventHours(events) {
-    return events.map(e => e.hours).reduce((a, b) => a + b, 0)
-}
-
-export function isDaylightSavingTime(timestamp, timezone) {
-    const date = toZonedTime(fromUnixTime(timestamp), timezone)
-    return date.getTimezoneOffset() < Math.max(toZonedTime(new Date(date.getFullYear(), 0, 1), timezone).getTimezoneOffset(), toZonedTime(new Date(date.getFullYear(), 6, 1), timezone).getTimezoneOffset())
+    return trips.some(trip => trip.isDayInTrip(date))
 }
 
 export function getOnlyElement(arr) {

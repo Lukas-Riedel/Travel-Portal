@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Trash2, Plus, Bold, Italic, Link, Edit2, Check } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
-import { getDateTimeString } from "../utils/helpers.js"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import LoadingCard from "./LoadingCard.tsx"
 import type { Note } from "../types/CoreSwaggerTypes.ts"
 import Card from "./Card.tsx"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 
 interface NoteCardProps {
     note?: Note | null
@@ -122,7 +122,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             <div className="mt-2 flex items-center justify-between">
                 {!isBeingEdited && note && (
                     <span className="text-sm text-gray-400">
-                        {getDateTimeString(note.timestamp)}
+                        {formatTimestamp(note.timestamp, t("general.format.datetime.year.included"))}
                     </span>
                 )}
                 {!!(onNoteCreated || onNoteContentUpdated || onNoteRemoved) && (
