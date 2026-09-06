@@ -30,15 +30,13 @@ const app = initializeApp(firebaseConfig)
 const messaging = getMessaging(app)
 
 onBackgroundMessage(messaging, payload => {
-    console.log("[firebase-messaging-sw.js] Received background message", payload)
-
     if (payload.data.event === "NewDataConsistencyIssuesDetected") {
         const args = JSON.parse(payload.data.args)
 
         self.registration.showNotification("Vyskytly se nové problémy", {
             body: "Hlášeno " + args.count + " nových problémů",
             icon: "icon-192.png",
-            data: "/admin"
+            data: "/admin?tab=issues"
         })
     }
 
@@ -48,7 +46,7 @@ onBackgroundMessage(messaging, payload => {
         self.registration.showNotification("Blíží se termín úkolu", {
             body: args.task,
             icon: "icon-192.png",
-            data: "/admin"
+            data: "/admin?tab=tasks"
         })
     }
 
