@@ -18,8 +18,12 @@ const ALBUM_PAGE_PREFIX = "/album"
 const LABEL_PAGE_PREFIX = "/label"
 const ADMIN_PAGE_PREFIX = "/admin"
 const HIGHLIGHT_PAGE_PREFIX = "/highlight"
+const TRACKER_PAGE_PREFIX = "/tracker"
+const FLIGHT_PAGE_PREFIX = "/flight"
+const STATISTICS_PAGE_PREFIX = "/statistics"
+const FEED_PAGE_PREFIX = "/feed"
 
-const isYear = (to: Navigable): to is number => typeof to === "number" && (to as number) >= 2000
+const isYear = (to: Navigable): to is number => typeof to === "number" && (to as number) >= 1900
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
 const isAirport = (to: Navigable): to is Airport => (to as Airport).shortName !== undefined
 const isCategory = (to: Navigable): to is Category => (to as Category).category !== undefined
@@ -65,7 +69,34 @@ export function getPath(to: Navigable, currentPath?: string): string {
     }
     else if (isStaticNavigationTarget(to)) {
         if (to === StaticNavigationTarget.Highlights) {
-            path += currentPath + "/" + HIGHLIGHT_PAGE_PREFIX
+            path = currentPath + "/" + HIGHLIGHT_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Home) {
+            path = "/"
+        }
+        else if (to === StaticNavigationTarget.Feed) {
+            path = FEED_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Trips) {
+            path = TRIP_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Places) {
+            path = PLACE_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Flights) {
+            path = FLIGHT_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Statistics) {
+            path = STATISTICS_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Plan) {
+            path = PLAN_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Tracker) {
+            path = TRACKER_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Admin) {
+            path = ADMIN_PAGE_PREFIX
         }
     }
 

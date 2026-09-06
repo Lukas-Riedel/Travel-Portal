@@ -1,100 +1,89 @@
-import { Backpack, Calendar, CircleQuestionMark, Earth, House, Landmark, LogIn, LogOut, Map as MapIcon, MapPin, Plane, PlaneIcon, Search, Tag, TowerControl, TreePalm, Waves, XIcon } from "lucide-react"
+import { Backpack, Calendar, CircleQuestionMark, Earth, House, Landmark, LocateFixed, LogIn, LogOut, Map as MapIcon, MapPin, Pin, Plane, PlaneIcon, Search, Tag, TowerControl, TreePalm, Waves, XIcon } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
-import { useAuth } from "../contexts/AuthContext"
+import { useAuth } from "../contexts/AuthContext.tsx"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, IndexableEntityType, UserRole, type AirlineIdentifier, type AirportIdentifier, type CategoryIdentifier, type Highlight, type Label, type PlaceIdentifier, type SearchResult, type TripIdentifier, type YearIdentifier } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { search } from "../clients/coreClient.ts"
 import { useCategories } from "../hooks/useCategories.ts"
-import PhotoTile from "../components/PhotoTile.jsx"
-import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import PhotoTile from "../components/PhotoTile.js"
+import { getEntityPrettyName, getTripFullName } from "../utils/formattingUtils.ts"
+import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import type { Indexable } from "../types/Indexable.ts"
+import CategoryFlag from "../components/CategoryFlag.tsx"
+import AppLink from "../components/AppLink.tsx"
+import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
+import { getPath } from "../utils/navigationUtils.ts"
+import LoadingTile from "../components/LoadingTile.tsx"
 
-const searchableEntityTypeSelectors = {
-    "category": entity => categoryCategories[entity.category] ?? "Region",
-    "place": _ => "Místo",
-    "airport": _ => "Letiště",
-    "airline": _ => "Aerolinka",
-    "label": _ => "Štítek",
-    "trip": _ => "Výlet",
-    "year": _ => "Rok"
+const SEARCHABLE_ENTITY_ICON_SELECTORS = {
+    [IndexableEntityType.Category]: (entity: Indexable) => CATEGORY_CATEGORY_ICONS[(entity as CategoryIdentifier).category] ?? LocateFixed,
+    [IndexableEntityType.Place]: _ => MapPin,
+    [IndexableEntityType.Airport]: _ => TowerControl,
+    [IndexableEntityType.Airline]: _ => PlaneIcon,
+    [IndexableEntityType.Label]: _ => Tag,
+    [IndexableEntityType.Trip]: _ => Backpack,
+    [IndexableEntityType.Year]: _ => Calendar
 }
 
-const searchableEntityIconSelectors = {
-    "category": entity => categoryCategoryIcons[entity.category] ?? Map,
-    "place": _ => MapPin,
-    "airport": _ => TowerControl,
-    "airline": _ => PlaneIcon,
-    "label": _ => Tag,
-    "trip": _ => Backpack,
-    "year": _ => Calendar
+const CATEGORY_CATEGORY_ICONS = {
+    [CategoryCategory.Continent]: Earth,
+    [CategoryCategory.Country]: MapIcon,
+    [CategoryCategory.Administrative]: Landmark,
+    [CategoryCategory.Ocean]: Waves,
+    [CategoryCategory.Sea]: Waves,
+    [CategoryCategory.Bay]: Waves,
+    [CategoryCategory.Island]: TreePalm,
+    [CategoryCategory.Region]: MapIcon
 }
 
-// TODO: This is duplicated in CategoryPage. Replace by t(`category.category.${categoryCategory}`).
-const categoryCategories = {
-    continent: "Kontinent",
-    country: "Stát",
-    administrative: "Administrativní oblast",
-    ocean: "Oceán",
-    sea: "Moře",
-    bay: "Záliv",
-    island: "Ostrov",
-    region: "Geografický region"
-}
-
-const categoryCategoryIcons = {
-    continent: Earth,
-    country: MapIcon,
-    administrative: Landmark,
-    ocean: Waves,
-    sea: Waves,
-    bay: Waves,
-    island: TreePalm,
-    region: MapIcon
-}
-
-const searchableEntityNameSelectors = {
-    "category": entity => getEntityPrettyName(entity.name),
-    "place": entity => getEntityPrettyName(entity.name),
-    "airport": entity => entity.longName,
-    "airline": entity => entity.name,
-    "label": entity => entity.name,
-    "trip": entity => entity.name + " " + entity.year,
-    "year": entity => entity.id
+// TODO: Introduce getEntityPrettyName for Indexable - similary to the getPath function for Navigable.
+const SEARCHABLE_ENTITY_NAME_SELECTORS = {
+    [IndexableEntityType.Category]: (entity: Indexable) => getEntityPrettyName((entity as CategoryIdentifier).name),
+    [IndexableEntityType.Place]: (entity: Indexable) => getEntityPrettyName((entity as PlaceIdentifier).name),
+    [IndexableEntityType.Airport]: (entity: Indexable) => (entity as AirportIdentifier).longName,
+    [IndexableEntityType.Airline]: (entity: Indexable) => (entity as AirlineIdentifier).name,
+    [IndexableEntityType.Label]: (entity: Indexable) => (entity as Label).name,
+    [IndexableEntityType.Trip]: (entity: Indexable) => getTripFullName(entity as TripIdentifier),
+    [IndexableEntityType.Year]: (entity: Indexable) => (entity as YearIdentifier).id
 }
 
 const DEFAULT_FOUND_ENTITIES_COUNT = 10
 const DEFAULT_FOUND_HIGHLIGHTS_COUNT = 6
 
-export default function MainLayout({ children }) {
+interface MainLayoutProps {
+    children: React.ReactNode
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
     const { isLoggedIn, username, login, logout, hasRole } = useAuth()
     const location = useLocation()
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { t } = useTranslation()
     const { showLogoutToast, showLoginToast } = usePredefinedUserInput()
+
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isSearchOpen, setIsSearchOpen] = useState(false)
-    const [foundEntities, setFoundEntities] = useState(null)
-    const [foundHighlights, setFoundHighlights] = useState(null)
-    const [searchedText, setSearchedText] = useState(null)
-    const countryCategories = useCategories({ categories: ["country"] })
+    const [foundEntities, setFoundEntities] = useState<SearchResult[] | null>(null)
+    const [foundHighlights, setFoundHighlights] = useState<SearchResult[] | null>(null)
+    const [searchedText, setSearchedText] = useState<string | null>(null)
 
-    const countryCategoriesMap = useMemo(() => {
-        return new Map(countryCategories?.map(category => [category.name, category]))
-    }, [countryCategories])
+    const countryCategoriesMap = useCountryCategoriesMap()
 
+    // TODO: Handle allowed prefixes in a better way (i.e., through the getPath function somehow).
     const navigationItems = [
         { label: t("menu.label.search"), requiredRole: UserRole.SearchRead, onClick: () => setIsSearchOpen(true) },
-        { label: t("menu.label.feed"), to: "/feed", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
-        { label: t("menu.label.trips"), to: "/trip", requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
-        { label: t("menu.label.places"), to: "/place", requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
-        { label: t("menu.label.flights"), to: "/flight", requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
-        { label: t("menu.label.statistics"), to: "/statistics", requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
+        { label: t("menu.label.feed"), to: StaticNavigationTarget.Feed, requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
+        { label: t("menu.label.trips"), to: StaticNavigationTarget.Trips, requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
+        { label: t("menu.label.places"), to: StaticNavigationTarget.Places, requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
+        { label: t("menu.label.flights"), to: StaticNavigationTarget.Flights, requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
+        { label: t("menu.label.statistics"), to: StaticNavigationTarget.Statistics, requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
         // TODO: Find a better required role.
-        { label: t("menu.label.plan"), to: "/plan", requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
-        { label: t("menu.label.tracker"), to: "/tracker", requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
+        { label: t("menu.label.plan"), to: StaticNavigationTarget.Plan, requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
+        { label: t("menu.label.tracker"), to: StaticNavigationTarget.Tracker, requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
         // TODO: Find a better requried role.
-        { label: t("menu.label.admin"), to: "/admin", requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
-    ]
+        { label: t("menu.label.admin"), to: StaticNavigationTarget.Admin, requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
+    ].filter(({ to, requiredRole }) => !requiredRole || hasRole(requiredRole) || (to && location.pathname.startsWith(getPath(to))))
 
     const handleLogin = () => {
         requestPermissions()
@@ -106,6 +95,9 @@ export default function MainLayout({ children }) {
         showLogoutToast(logout)
     }
 
+    const getIndexableEntityTypeName = (entity: Indexable, type: IndexableEntityType): string => (entity as CategoryIdentifier).category
+        ? t([`category.category.${(entity as CategoryIdentifier).category}`, "general.label.category"]) : t([`general.label.${type}`, "general.label.entity"])
+
     useEffect(() => {
         const controller = new AbortController()
 
@@ -115,14 +107,14 @@ export default function MainLayout({ children }) {
                     const delay = setTimeout(async () => {
                         search(searchedText, {
                             limit: DEFAULT_FOUND_ENTITIES_COUNT,
-                            include: ["category", "place", "airport", "airline", "label", "trip", "year"]
+                            include: [IndexableEntityType.Category, IndexableEntityType.Place, IndexableEntityType.Airport, IndexableEntityType.Airline, IndexableEntityType.Label, IndexableEntityType.Trip, IndexableEntityType.Year]
                         }, {
                             signal: controller.signal
                         }).then(setFoundEntities)
 
                         search(searchedText, {
                             limit: DEFAULT_FOUND_HIGHLIGHTS_COUNT,
-                            include: ["highlight"]
+                            include: [IndexableEntityType.Highlight]
                         }, {
                             signal: controller.signal
                         }).then(setFoundHighlights)
@@ -142,61 +134,47 @@ export default function MainLayout({ children }) {
 
         fetchSearch()
 
-        return () => {
-            controller.abort()
-        }
+        return () => controller.abort()
     }, [searchedText])
 
     useEffect(() => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
                 setIsSearchOpen(false)
             }
-            if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+            if ((e.metaKey || e.ctrlKey) && e.key.toUpperCase() === "K") {
                 e.preventDefault()
                 setIsSearchOpen(true)
             }
-        };
+        }
+
         window.addEventListener("keydown", handleKeyDown)
         return () => window.removeEventListener("keydown", handleKeyDown)
     }, [])
 
-    const filteredItems = navigationItems.filter(({ to, requiredRole }) => !requiredRole || hasRole(requiredRole) || location.pathname.startsWith(to))
-
-    const renderIcon = (type, entity) => {
-        if (type === "place" || type === "airport") {
-            const country = countryCategoriesMap.get(entity.country)
-
-            if (country) {
-                return (
-                    <div className="w-5 h-5 flex items-center justify-center overflow-hidden rounded-sm flex-shrink-0">
-                        <img
-                            className="w-full h-full object-cover shadow-sm"
-                            src={`/img/flags/${country?.metadata?.unicode}.svg`}
-                            alt={country?.name}
-                        />
-                    </div>
-                )
-            }
+    const renderEntityIcon = (entity: Indexable, type: IndexableEntityType) => {
+        let countryName = undefined;
+        if (type === IndexableEntityType.Place) {
+            countryName = (entity as PlaceIdentifier).country
+        }
+        else if (type === IndexableEntityType.Airport) {
+            countryName = (entity as AirportIdentifier).country
+        }
+        else if (type === IndexableEntityType.Category && (entity as CategoryIdentifier).category === CategoryCategory.Country) {
+            countryName = (entity as CategoryIdentifier).name
         }
 
-        if (type === "category" && entity.category === "country") {
-            const country = countryCategoriesMap.get(entity.name)
-
-            if (country) {
-                return (
-                    <div className="w-5 h-5 flex items-center justify-center overflow-hidden rounded-sm flex-shrink-0">
-                        <img
-                            className="w-full h-full object-cover shadow-sm"
-                            src={`/img/flags/${country?.metadata?.unicode}.svg`}
-                            alt={country?.name}
-                        />
-                    </div>
-                )
-            }
+        if (countryName) {
+            return (
+                <div className="w-5 h-5 flex items-center justify-center overflow-hidden rounded-sm flex-shrink-0">
+                    <CategoryFlag
+                        category={countryCategoriesMap.get(countryName)}
+                        className="w-full h-full object-cover shadow-sm" />
+                </div>
+            )
         }
 
-        const Icon = searchableEntityIconSelectors[type]?.(entity) ?? CircleQuestionMark
+        const Icon = SEARCHABLE_ENTITY_ICON_SELECTORS[type]?.(entity) ?? CircleQuestionMark
         return (
             <span className="text-gray-400">
                 <Icon size={20} />
@@ -208,12 +186,11 @@ export default function MainLayout({ children }) {
         <div className="min-h-screen bg-gray-100 text-gray-900">
             <header className="bg-white shadow-md xl:sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-8 py-4 flex items-center justify-center md:justify-between">
-                    <Link
-                        to={"/"}>
+                    <AppLink to={StaticNavigationTarget.Home}>
                         <img
                             src="/icon.svg"
                             className="h-8 w-8 hidden md:block" />
-                    </Link>
+                    </AppLink>
                     <button
                         className="md:hidden p-2 rounded hover:bg-gray-200"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -228,10 +205,10 @@ export default function MainLayout({ children }) {
                         )}
                     </button>
                     <nav className="hidden md:flex space-x-6 items-center text-center">
-                        {filteredItems.map(({ label, to, onClick, allowedPrefixes }) => {
-                            const isActive = allowedPrefixes?.some(prefix => prefix === "/" ? location.pathname === prefix : location.pathname.startsWith(prefix))
+                        {navigationItems.map(({ label, to, onClick, allowedPrefixes }) => {
+                            const isActive = allowedPrefixes?.some(prefix => location.pathname.startsWith(prefix))
                             return to ? (
-                                <Link
+                                <AppLink
                                     key={label}
                                     to={to}
                                     onClick={onClick}
@@ -241,7 +218,7 @@ export default function MainLayout({ children }) {
                                             : "text-gray-700 hover:text-blue-700 hover:after:absolute hover:after:left-0 hover:after:bottom-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-blue-600"
                                         }`}>
                                     {label}
-                                </Link>
+                                </AppLink>
                             ) : (
                                 <button
                                     key={label}
@@ -260,12 +237,12 @@ export default function MainLayout({ children }) {
                 {isMenuOpen && (
                     <nav className="md:hidden bg-white border-t border-gray-200">
                         <ul className="flex flex-col p-4 space-y-2 items-center text-center">
-                            {filteredItems.map(({ label, to, onClick }) => (
+                            {navigationItems.map(({ label, to, onClick }) => (
                                 <li
                                     key={label}
                                     className="w-full">
                                     {to ? (
-                                        <Link
+                                        <AppLink
                                             to={to}
                                             className="block w-full px-3 py-2 rounded hover:bg-gray-100"
                                             onClick={() => {
@@ -275,7 +252,7 @@ export default function MainLayout({ children }) {
                                                 setIsMenuOpen(false)
                                             }}>
                                             {label}
-                                        </Link>
+                                        </AppLink>
                                     ) : (
                                         <button
                                             className="block w-full px-3 py-2 rounded hover:bg-gray-100"
@@ -309,7 +286,9 @@ export default function MainLayout({ children }) {
                                 placeholder="Zadej hledaný výraz"
                                 value={searchedText}
                                 onChange={e => setSearchedText(e.target.value)} />
-                            <button onClick={() => setIsSearchOpen(false)} className="text-xs p-1 bg-gray-100 rounded">
+                            <button
+                                onClick={() => setIsSearchOpen(false)}
+                                className="text-xs p-1 bg-gray-100 rounded">
                                 <XIcon size={16} />
                             </button>
                         </div>
@@ -317,29 +296,32 @@ export default function MainLayout({ children }) {
                             {foundEntities && (
                                 <>
                                     <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                                        <span>Výsledky hledání</span>
+                                        <span>
+                                            {t("search.label.result.text")}
+                                        </span>
                                         <div className="h-px bg-gray-100 flex-grow" />
                                     </div>
                                     {foundEntities.length ?
-                                        foundEntities.map(res => (
+                                        foundEntities.map(searchResult => (
+                                            // TODO: Using searchResult.type to obtain the link is a hack. Change to use AppLink (currently, there's no way to distinguish between AirlineIdentifier and Label, though).
                                             <Link
-                                                key={res.entity.id}
+                                                key={searchResult.entity.id}
                                                 className="p-3 hover:bg-blue-50 rounded-lg cursor-pointer flex justify-between"
-                                                to={`/${res.type}/${res.entity.id}`}
+                                                to={`/${searchResult.type}/${searchResult.entity.id}`}
                                                 onClick={() => setIsSearchOpen(false)}>
                                                 <span className="flex items-center gap-3">
-                                                    {renderIcon(res.type, res.entity)}
+                                                    {renderEntityIcon(searchResult.entity, searchResult.type)}
                                                     <span className="font-medium">
-                                                        {searchableEntityNameSelectors[res.type]?.(res.entity) ?? res.entity.id}
+                                                        {SEARCHABLE_ENTITY_NAME_SELECTORS[searchResult.type]?.(searchResult.entity) ?? searchResult.entity.id}
                                                     </span>
                                                 </span>
                                                 <span className="text-xs text-gray-400">
-                                                    {searchableEntityTypeSelectors[res.type]?.(res.entity) ?? res.type}
+                                                    {getIndexableEntityTypeName(searchResult.entity, searchResult.type)}
                                                 </span>
                                             </Link>
                                         )) : (
                                             <div className="p-3 text-center">
-                                                Nebyly nalezeny žádné výsledky
+                                                {t("search.label.result.empty")}
                                             </div>
                                         )}
                                 </>
@@ -347,24 +329,27 @@ export default function MainLayout({ children }) {
                             {(foundHighlights === null || foundHighlights.length > 0) && foundEntities && (
                                 <div className="mt-4">
                                     <div className="px-3 pt-2 pb-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
-                                        <span>Vizuální podobnost</span>
+                                        <span>
+                                            {t("search.label.result.visual")}
+                                        </span>
                                         <div className="h-px bg-gray-100 flex-grow" />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 px-2">
                                         {foundHighlights ? (
-                                            foundHighlights.map((res, idx) => (
+                                            foundHighlights.map((searchResult, i) => (
                                                 <PhotoTile
-                                                    key={idx}
+                                                    key={i}
                                                     className="w-full aspect-[3/2]"
-                                                    firstLineText={res.parent && res.parent.entity.name}
-                                                    categories={res.parent && [countryCategoriesMap.get(res.parent.entity.country)]}
-                                                    src={res.entity.url.thumbnail}
-                                                    to={res.parent && `/${res.parent.type}/${res.parent.entity.id}`}
+                                                    firstLineText={searchResult.parent && (SEARCHABLE_ENTITY_NAME_SELECTORS[searchResult.parent.type]?.(searchResult.parent.entity) ?? searchResult.parent.entity.id)}
+                                                    categories={searchResult.parent && "country" in searchResult.parent.entity && [countryCategoriesMap.get(searchResult.parent.entity.country)]}
+                                                    src={(searchResult.entity as Highlight).url.thumbnail}
+                                                    // TODO: Using searchResult.type to obtain the link is a hack. Change to use AppLink (currently, there's no way to distinguish between AirlineIdentifier and Label, though).
+                                                    to={searchResult.parent && `/${searchResult.parent.type}/${searchResult.parent.entity.id}`}
                                                     onClick={() => setIsSearchOpen(false)} />
                                             ))
                                         ) : (
                                             Array.from({ length: DEFAULT_FOUND_HIGHLIGHTS_COUNT }, (_, i) => i + 1).map(i => (
-                                                <PhotoTile
+                                                <LoadingTile
                                                     key={i}
                                                     className="w-full aspect-[3/2]" />
                                             ))
@@ -393,7 +378,7 @@ export default function MainLayout({ children }) {
     )
 }
 
-async function requestPermissions() {
+async function requestPermissions(): Promise<void> {
     if (!("Notification" in window)) {
         return
     }

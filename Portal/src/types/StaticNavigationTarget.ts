@@ -1,3 +1,12 @@
 export enum StaticNavigationTarget {
-    Highlights
+    Highlights,
+    Home,
+    Feed,
+    Trips,
+    Places,
+    Flights,
+    Statistics,
+    Plan,
+    Tracker,
+    Admin
 }

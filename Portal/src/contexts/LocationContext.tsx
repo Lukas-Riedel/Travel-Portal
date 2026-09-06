@@ -27,9 +27,7 @@ export function LocationProvider({ children }: LocationProviderProps) {
             }
         )
 
-        return () => {
-            navigator.geolocation.clearWatch(watchId)
-        }
+        return () => navigator.geolocation.clearWatch(watchId)
     }, [])
 
     return (

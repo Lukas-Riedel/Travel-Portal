@@ -1,7 +1,15 @@
 {
     "general": {
         "label": {
-            "day": "Den"
+            "day": "Den",
+            "place": "Místo",
+            "airport": "Letiště",
+            "airline": "Aerolinka",
+            "label": "Štítek",
+            "trip": "Výlet",
+            "year": "Rok",
+            "category": "Kategorie",
+            "entity": "Entita"
         },
         "format": {
             "time": "HH:mm",
@@ -132,6 +140,15 @@
                 }
             },
             "remaining": "Zbývá {{duration}}"
+        }
+    },
+    "search": {
+        "label": {
+            "result": {
+                "text": "Výsledky hledání",
+                "visual": "Vizuální podobnost",
+                "empty": "Nebyly nalezeny žádné výsledky"
+            }
         }
     },
     "statistics": {
