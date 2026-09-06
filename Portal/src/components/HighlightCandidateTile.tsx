@@ -6,7 +6,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput"
 
 interface HighlightCandidateTileProps {
     name: string | null
-    description: string | null
+    description?: string
     photo: Photo
     categories?: Category[]
     onHighlightCreated?: () => Promise<Highlight>

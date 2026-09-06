@@ -7,7 +7,7 @@ import type { HighlightCandidatesGroup } from "../types/HighlightCandidatesGroup
 
 interface HighlightCandidateTileGridProps {
     name: string | null
-    description: string | null
+    description?: string
     categories?: Category[]
     highlightCandidatesGroups: HighlightCandidatesGroup[]
     onHighlightCreated?: (photoId: string) => Promise<Highlight>
@@ -30,7 +30,7 @@ export default function HighlightCandidateTileGrid({ name, description, categori
 
 interface HighlightCandidateTileGridGroupProps {
     name: string | null
-    description: string | null
+    description?: string
     categories?: Category[]
     highlightCandidatesGroup: HighlightCandidatesGroup
     shouldLoadOnRender: boolean

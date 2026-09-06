@@ -31,8 +31,8 @@ const CHUNK_SIZE = 0x8000
 const SLIDESHOW_INTERVAL_MS = 7000
 
 interface HighlightCarouselProps {
-    place: Place | null
     highlights: Highlight[] | null
+    place?: Place
     onPhotoReplaced?: (agentId: string, placeId: string, albumId: string, placeName: string, photoId: string, path: string, sendNotification: boolean) => Promise<void>
     onPhotoCorrected?: (placeId: string, albumId: string, filename: string, base64Data: string, photoId: string) => Promise<Highlight>
     onHighlightRemoved?: (highlightId: string) => Promise<void>
@@ -41,7 +41,7 @@ interface HighlightCarouselProps {
     onHighlightCreated?: (photoId: string) => Promise<Highlight>
 }
 
-export default function HighlightCarousel({ place, highlights, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }: HighlightCarouselProps) {
+export default function HighlightCarousel({ highlights, place, onPhotoReplaced, onPhotoCorrected, onHighlightRemoved, onMainHighlightUpdated, onHighlightQualityAttributesUpdated, onHighlightCreated }: HighlightCarouselProps) {
     const { t } = useTranslation()
 
     const onlineAgents = useOnlineAgents()
