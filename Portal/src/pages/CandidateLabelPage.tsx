@@ -1,16 +1,17 @@
 import { useMemo } from "react"
 import { useParams } from "react-router-dom"
-import PageHeader from "../components/PageHeader"
-import PlaceMap from "../components/PlaceMap"
-import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
-import PlaceCardGrid from "../components/PlaceCardGrid"
-import { useLabel } from "../hooks/useLabel"
+import PageHeader from "../components/PageHeader.tsx"
+import PlaceMap from "../components/PlaceMap.tsx"
+import { useCandidatePlaces } from "../hooks/useCandidatePlaces.ts"
+import PlaceCardGrid from "../components/PlaceCardGrid.tsx"
+import { useLabel } from "../hooks/useLabel.ts"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, PlaceIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useAppNavigate } from "../hooks/useAppNavigate.ts"
-import FloatingButton from "../components/FloatingButton.jsx"
+import FloatingButton from "../components/FloatingButton.js"
 import { Plus } from "lucide-react"
+import { createCandidatePlace } from "../clients/coreClient.ts"
 
 export default function CandidateLabelPage() {
     const { labelId } = useParams()
@@ -19,9 +20,9 @@ export default function CandidateLabelPage() {
     const { hasRole } = useAuth()
 
     const { label, updateLabelName } = useLabel(labelId)
-    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelId, include: ["categories"] })
+    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ labelId, include: [PlaceIncludedEntity.Categories] })
 
-    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("country"))
+    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory(CategoryCategory.Country))
         ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])
 
     const handleCandidatePlaceCreated = () => {
