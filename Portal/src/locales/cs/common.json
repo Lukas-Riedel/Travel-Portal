@@ -130,7 +130,8 @@
                     "day_few": "Aktualizováno před {{count}} dny",
                     "day_other": "Aktualizováno před {{count}} dny"
                 }
-            }
+            },
+            "remaining": "Zbývá {{duration}}"
         }
     },
     "statistics": {
@@ -834,7 +835,6 @@
     "album": {
         "upload": {
             "active": "Nahrávání probíhá... ({{progress}} %)",
-            "remaining": "Zbývá {{duration}}",
             "finishing": "Nahrávání bude brzy dokončeno"
         },
         "prompt": {

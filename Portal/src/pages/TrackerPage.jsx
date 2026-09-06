@@ -12,18 +12,12 @@ export default function TrackerPage() {
 
     const { trips } = useRegularTrips({ include: ["flights"] })
     const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(["overtime", "vacation", "selfcare", "tenure", "plannedWork"])
-    const { isFreeDay } = usePublicHolidays(trips?.at(-1)?.year)
 
     return hasRole(UserRole.TrackerRead) && (
         <>
             <TrackerCalendar
                 trips={trips}
-                isFreeDay={isFreeDay}
-                overtimeEvents={timeTrackingEvents["overtime"]}
-                plannedWorkEvents={timeTrackingEvents["plannedWork"]}
-                vacationEvents={timeTrackingEvents["vacation"]}
-                selfcareEvents={timeTrackingEvents["selfcare"]}
-                tenureEvents={timeTrackingEvents["tenure"]}
+                timeTrackingEvents={timeTrackingEvents}
                 onEventCreated={hasRole(UserRole.TrackerEdit) && createTimeTrackingEvent}
                 onEventRemoved={hasRole(UserRole.TrackerEdit) && removeTimeTrackingEvent} />
             <TimeOffBalanceSummary timeTrackingEvents={timeTrackingEvents} />

@@ -1,7 +1,16 @@
 import { fromUnixTime, startOfDay } from "date-fns"
-import type { TimeTrackingEvent } from "../types/CoreSwaggerTypes"
+import { TimeTrackingEventType, type TimeTrackingEvent } from "../types/CoreSwaggerTypes"
 import { toZonedTime } from "date-fns-tz"
 import { getZonedDate } from "./timeUtils"
+import { ClockPlus, Palmtree, Pill, Shield } from "lucide-react"
+
+export const HOURS_PER_MAN_DAY = 8
+export const TIME_TRACKING_EVENT_TYPE_ICONS = {
+    [TimeTrackingEventType.Overtime]: ClockPlus,
+    [TimeTrackingEventType.Vacation]: Palmtree,
+    [TimeTrackingEventType.Selfcare]: Pill,
+    [TimeTrackingEventType.Tenure]: Shield
+}
 
 export function getEvents(date: Date, events: TimeTrackingEvent[] | null, filterHours: (hours: number) => boolean, timezone: string) {
     const targetStartOfDayTime = startOfDay(date).getTime()

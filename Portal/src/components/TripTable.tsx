@@ -11,13 +11,12 @@ import type { Trip } from "../classes/Trip"
 import { TimeTrackingEventType } from "../types/CoreSwaggerTypes"
 import type { TimeTrackingEvent } from "../types/CoreSwaggerTypes"
 import { formatDateRange, getDaysFromTodayThrough, getTimezoneOrDefault, isBeginningOfCurrentYear, isToday } from "../utils/timeUtils"
-import { getEvents, getEventHoursSum } from "../utils/eventUtils"
+import { getEvents, getEventHoursSum, HOURS_PER_MAN_DAY } from "../utils/eventUtils"
 import { usePublicHolidays } from "../hooks/usePublicHolidays"
 import { useTranslation } from "react-i18next"
 import AppLink from "./AppLink"
 
 const LOADING_ROWS_COUNT = 5
-const HOURS_PER_MAN_DAY = 8
 
 interface TripTableProps {
     trips: Trip[] | null
@@ -40,8 +39,8 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
 
     const timezone = useMemo(() => getTimezoneOrDefault(configuration?.homeLocation?.timezone), [configuration])
     const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * configuration?.timeTracking?.currentFte || HOURS_PER_MAN_DAY, [configuration])
+    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay as number || 0, [configuration])
     const openingTimeOffHours = useMemo(() => (Object.values(configuration?.timeTracking?.openingBalance ?? {}) as number[]).reduce((sum, value) => sum + (value ?? 0), 0), [configuration])
-    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay || 0, [configuration])
 
     const daysOffset = timeTrackingEvents?.[TimeTrackingEventType.Overtime]?.some(event => isToday(event.timestamp)) ? 1 : 0
     const days = getDaysFromTodayThrough(trips?.at(-1)?.end, daysOffset)

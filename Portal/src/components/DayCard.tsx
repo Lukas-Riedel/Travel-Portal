@@ -519,7 +519,7 @@ function RemainingUploadTime({ album }: RemainingUploadTimeProps) {
 
     return remaining ? (
         <span>
-            {t("album.upload.remaining", { duration: formatDuration(Math.max(0, remaining), true) })}
+            {t("general.time.remaining", { duration: formatDuration(Math.max(0, remaining), true) })}
         </span>
     ) : (
         <span>

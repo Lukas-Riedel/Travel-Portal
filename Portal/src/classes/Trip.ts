@@ -48,6 +48,10 @@ export class Trip implements ITrip {
         return this.start * 1000 <= endOfDay(date).getTime() && startOfDay(date).getTime() < this.end * 1000
     }
 
+    public isBetweenDates(start: globalThis.Date, end: globalThis.Date, timezone?: string): boolean {
+        return start < toZonedTime(fromUnixTime(this.end), timezone) && toZonedTime(fromUnixTime(this.start), timezone) < end
+    }
+
     public isStartDayOfTrip(date: globalThis.Date): boolean {
         return isSameDay(fromUnixTime(this.start), date)
     }

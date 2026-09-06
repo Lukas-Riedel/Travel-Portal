@@ -1,4 +1,4 @@
-import { addDays, eachDayOfInterval, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
+import { addDays, eachDayOfInterval, endOfDay, format, fromUnixTime, getDay, isSameDay, startOfDay } from "date-fns"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getCoordinates } from "../clients/coreClient.ts"
 import type { Trip } from "../classes/Trip.ts"
@@ -121,4 +121,14 @@ export function getCurrentHour(timezone?: string): number {
 
 export function isBeginningOfCurrentYear(date: Date): boolean {
     return date.getDate() === 1 && date.getMonth() === 0 && date.getFullYear() !== new Date().getFullYear()
+}
+
+export function getWeekday(date: Date): number {
+    return (getDay(date) + 6) % 7
+}
+
+export function getNoonTimestamp(date: Date): number {
+    const newDate = new Date(date)
+    newDate.setHours(12, 0, 0, 0)
+    return Math.floor(newDate.getTime() / 1000)
 }

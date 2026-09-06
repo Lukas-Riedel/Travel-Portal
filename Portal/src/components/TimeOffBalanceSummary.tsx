@@ -4,13 +4,7 @@ import { ClockPlus, Palmtree, Pill, Shield } from "lucide-react"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { TimeTrackingEventType, type TimeTrackingEvent } from "../types/CoreSwaggerTypes.ts"
-
-const TIME_TRACKING_EVENT_TYPE_ICONS = {
-    [TimeTrackingEventType.Overtime]: ClockPlus,
-    [TimeTrackingEventType.Vacation]: Palmtree,
-    [TimeTrackingEventType.Selfcare]: Pill,
-    [TimeTrackingEventType.Tenure]: Shield
-}
+import { TIME_TRACKING_EVENT_TYPE_ICONS } from "../utils/eventUtils.ts"
 
 interface TimeOffBalanceSummaryProps {
     timeTrackingEvents: Partial<Record<TimeTrackingEventType, TimeTrackingEvent[]>> | null
