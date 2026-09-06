@@ -266,7 +266,7 @@
             },
             "logo": {
                 "unassigned": {
-                    "name": "Aerolinka beu loga",
+                    "name": "Aerolinka bez loga",
                     "label": {
                         "name": "Název"
                     }
@@ -309,7 +309,7 @@
         },
         "region": {
             "duplicated": {
-                "name": "Duplicitní název geogragického regionu",
+                "name": "Duplicitní název geografického regionu",
                 "label": {
                     "name": "Název"
                 }
@@ -477,22 +477,22 @@
                     "vacation": {
                         "message": "Zadej počet hodin k využití dovolené:",
                         "confirmed": "Dovolená byla úspěšně využita",
-                        "failed": "Nepodařilo se využit dovolenou"
+                        "failed": "Nepodařilo se využít dovolenou"
                     },
                     "selfcare": {
                         "message": "Zadej počet hodin k využití sick daye:",
                         "confirmed": "Sick day byl úspěšně využit",
-                        "failed": "Nepodařilo se využit sick day"
+                        "failed": "Nepodařilo se využít sick day"
                     },
                     "tenure": {
                         "message": "Zadej počet hodin k využití bonusového volna:",
                         "confirmed": "Bonusové volno bylo úspěšně využito",
-                        "failed": "Nepodařilo se využit bonusové volno"
+                        "failed": "Nepodařilo se využít bonusové volno"
                     },
                     "overtime": {
                         "message": "Zadej počet hodin k využití přesčasu:",
                         "confirmed": "Přesčas byl úspěšně využit",
-                        "failed": "Nepodařilo se využit přesčas"
+                        "failed": "Nepodařilo se využít přesčas"
                     }
                 }
             },
@@ -1111,7 +1111,7 @@
         "prompt": {
             "update": {
                 "message": "Opravdu chceš modifikovat tento konfigurační záznam?",
-                "confirmed": "Konfigurační záznam byl uspěšně modifikován",
+                "confirmed": "Konfigurační záznam byl úspěšně modifikován",
                 "failed": "Nepodařilo se modifikovat konfigurační záznam"
             }
         }
@@ -1151,7 +1151,7 @@
         "prompt": {
             "remove": {
                 "message": "Opravdu chceš odstranit tento výlet?",
-                "confirmed": "Výlet byla úspěšně odstraněn",
+                "confirmed": "Výlet byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit výlet"
             },
             "move": {
@@ -1161,7 +1161,7 @@
             },
             "load": {
                 "message": "Vyber výlet k načtení:",
-                "confirmed": "Výlet byl úspěšně náčten",
+                "confirmed": "Výlet byl úspěšně načten",
                 "failed": "Nepodařilo se načíst výlet"
             },
             "copy": {
@@ -1192,7 +1192,7 @@
                 "rotation": "Rotace",
                 "zoom": "Zoom",
                 "x": "Osa X",
-                "y": "Osa y"
+                "y": "Osa Y"
             }
         },
         "prompt": {
