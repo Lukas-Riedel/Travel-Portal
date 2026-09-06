@@ -16,7 +16,6 @@ export default function AirlinePage() {
     const { hasRole } = useAuth()
 
     const { airline, updateAirlineName, removeAirline } = useAirline(airlineId)
-
     const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
     const countryCategoriesMap = useCountryCategoriesMap()
 

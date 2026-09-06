@@ -16,7 +16,6 @@ export default function AirportPage() {
     const { hasRole } = useAuth()
 
     const { airport, updateAirportLongName } = useAirport(airportId)
-
     const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
     const countryCategoriesMap = useCountryCategoriesMap()
 
