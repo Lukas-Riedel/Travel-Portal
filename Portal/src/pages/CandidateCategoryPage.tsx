@@ -1,13 +1,13 @@
 import { useParams } from "react-router-dom"
-import { useCategory } from "../hooks/useCategory"
-import PageHeader from "../components/PageHeader"
+import { useCategory } from "../hooks/useCategory.ts"
+import PageHeader from "../components/PageHeader.tsx"
 import { useMemo } from "react"
-import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
-import PlaceMap from "../components/PlaceMap"
-import PlaceCardGrid from "../components/PlaceCardGrid"
+import { useCandidatePlaces } from "../hooks/useCandidatePlaces.ts"
+import PlaceMap from "../components/PlaceMap.tsx"
+import PlaceCardGrid from "../components/PlaceCardGrid.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
-import FloatingButton from "../components/FloatingButton.jsx"
+import { CategoryCategory, PlaceIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
+import FloatingButton from "../components/FloatingButton.js"
 import { createCandidatePlace } from "../clients/coreClient.ts"
 import { useAppNavigate } from "../hooks/useAppNavigate.ts"
 import { Plus } from "lucide-react"
@@ -20,9 +20,9 @@ export default function CandidateCategoryPage() {
     const { hasRole } = useAuth()
 
     const { category, updateCategoryName } = useCategory(categoryId)
-    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: ["categories"] })
+    const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: [PlaceIncludedEntity.Categories] })
 
-    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory("country"))
+    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory(CategoryCategory.Country))
         ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])
 
     const handleCandidatePlaceCreated = () => {
