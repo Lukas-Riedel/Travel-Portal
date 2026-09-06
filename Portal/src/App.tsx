@@ -1,114 +1,118 @@
-import MainLayout from "./layouts/MainLayout"
+import MainLayout from "./layouts/MainLayout.tsx"
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom"
-import { useAuth } from "./contexts/AuthContext"
+import { useAuth } from "./contexts/AuthContext.tsx"
 import { useEffect } from "react"
 import { toast, Toaster } from "sonner"
-import CountriesPage from "./pages/CountriesPage"
-import PlacePage from "./pages/PlacePage"
-import YearsPage from "./pages/YearsPage"
-import TripPage from "./pages/TripPage"
-import CategoryPage from "./pages/CategoryPage"
-import LabelPage from "./pages/LabelPage"
-import YearPage from "./pages/YearPage"
-import TrackerPage from "./pages/TrackerPage"
-import FlightsPage from "./pages/FlightsPage"
-import AirportPage from "./pages/AirportPage"
-import AirlinePage from "./pages/AirlinePage"
-import PlansPage from "./pages/PlansPage"
-import CandidateCategoryPage from "./pages/CandidateCategoryPage"
-import CandidateLabelPage from "./pages/CandidateLabelPage"
-import { useEvents } from "./hooks/useEvents"
-import AlbumPage from "./pages/AlbumPage"
-import AdminPage from "./pages/AdminPage"
-import RecentPlacesPage from "./pages/RecentPlacesPage"
-import PlaceHighlightsPage from "./pages/PlaceHighlightsPage"
-import TripHighlightsPage from "./pages/TripHighlightsPage"
-import CategoryHighlightsPage from "./pages/CategoryHighlightsPage"
-import YearHighlightsPage from "./pages/YearHighlightsPage"
+import CountriesPage from "./pages/CountriesPage.jsx"
+import PlacePage from "./pages/PlacePage.jsx"
+import YearsPage from "./pages/YearsPage.jsx"
+import TripPage from "./pages/TripPage.jsx"
+import CategoryPage from "./pages/CategoryPage.jsx"
+import LabelPage from "./pages/LabelPage.jsx"
+import YearPage from "./pages/YearPage.jsx"
+import TrackerPage from "./pages/TrackerPage.jsx"
+import FlightsPage from "./pages/FlightsPage.jsx"
+import AirportPage from "./pages/AirportPage.jsx"
+import AirlinePage from "./pages/AirlinePage.jsx"
+import PlansPage from "./pages/PlansPage.jsx"
+import CandidateCategoryPage from "./pages/CandidateCategoryPage.jsx"
+import CandidateLabelPage from "./pages/CandidateLabelPage.jsx"
+import { useEvents } from "./hooks/useEvents.ts"
+import AlbumPage from "./pages/AlbumPage.jsx"
+import AdminPage from "./pages/AdminPage.jsx"
+import RecentPlacesPage from "./pages/RecentPlacesPage.jsx"
+import PlaceHighlightsPage from "./pages/PlaceHighlightsPage.jsx"
+import TripHighlightsPage from "./pages/TripHighlightsPage.jsx"
+import CategoryHighlightsPage from "./pages/CategoryHighlightsPage.jsx"
+import YearHighlightsPage from "./pages/YearHighlightsPage.jsx"
 import { format, fromUnixTime } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import StatisticsPage from "./pages/StatisticsPage"
+import StatisticsPage from "./pages/StatisticsPage.jsx"
 import { TailSpin } from "react-loader-spinner"
 import { UserRole } from "./types/CoreSwaggerTypes.ts"
 import { useFormatters } from "./hooks/useFormatters.ts"
+import { EventType } from "./types/EventType.ts"
+import { useTranslation } from "react-i18next"
+import { formatTimestamp } from "./utils/timeUtils.ts"
 
 export default function App() {
+    const { t } = useTranslation()
     const { formatNewProblems } = useFormatters()
 
-    const { events: newDataConsistencyIssuesDetectedEvents } = useEvents("NewDataConsistencyIssuesDetected")
+    const { events: newDataConsistencyIssuesDetectedEvents } = useEvents(EventType.NewDataConsistencyIssuesDetected)
     useEffect(() => {
         newDataConsistencyIssuesDetectedEvents.forEach(event => {
             event.markAsRead()
 
-            toast.success(`Hlášeno ${formatNewProblems(event.count)}`)
+            toast.success(t("notification.newDataConsistencyIssuesDetected", { formattedProblems: formatNewProblems(event.args.count) }))
         })
     }, [newDataConsistencyIssuesDetectedEvents])
-    
-    const { events: taskDeadlineReachedEvents } = useEvents("TaskDeadlineReached")
+
+    const { events: taskDeadlineReachedEvents } = useEvents(EventType.TaskDeadlineReached)
     useEffect(() => {
         taskDeadlineReachedEvents.forEach(event => {
             event.markAsRead()
 
-            toast.success(event.task)
+            toast.success(event.args.task)
         })
     }, [taskDeadlineReachedEvents])
 
-    const { events: flightLoggedEvents } = useEvents("FlightLogged")
+    const { events: flightLoggedEvents } = useEvents(EventType.FlightLogged)
     useEffect(() => {
         flightLoggedEvents.forEach(event => {
             event.markAsRead()
 
-            toast.success(`Let ${event.flight} přistál na letišti ${event.to} v ${format(toZonedTime(fromUnixTime(event.actualArrival), event.timezone), "HH:mm")} místního času`)
+            toast.success(t("notification.flightLogged", { flight: event.args.flight, airport: event.args.to, formattedLocalTime: formatTimestamp(event.args.actualArrival, t("general.format.time")) }))
         })
     }, [flightLoggedEvents])
 
-    const { events: flightReminderReceivedEvents } = useEvents("FlightReminderReceived")
+    const { events: flightReminderReceivedEvents } = useEvents(EventType.FlightReminderReceived)
     useEffect(() => {
         flightReminderReceivedEvents.forEach(event => {
             event.markAsRead()
 
-            toast.success(event.text)
+            toast.success(event.args.text)
         })
     }, [flightReminderReceivedEvents])
 
-    const { events: processingStartedEvents } = useEvents("ProcessingStarted")
+    const { events: processingStartedEvents } = useEvents(EventType.ProcessingStarted)
     useEffect(() => {
         processingStartedEvents.forEach(event => {
             event.markAsRead()
 
-            if (event.name === "PhotosUploadingTriggered" && event.args.sendNotification) {
-                toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo zahájeno`)
+            if (event.name === EventType.PhotosUploadingTriggered && event.args.sendNotification) {
+                toast.success(t("notification.processingStarted.photosUploadingTriggered", { placeName: event.args.placeName }))
             }
-            else if (event.name === "PhotoReplacingTriggered" && event.args.sendNotification) {
-                toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo zahájeno`)
+            else if (event.name === EventType.PhotoReplacingTriggered && event.args.sendNotification) {
+                toast.success(t("notification.processingStarted.photoReplacingTriggered", { placeName: event.args.placeName }))
             }
         })
     }, [processingStartedEvents])
 
-    const { events: processingEndedEvents } = useEvents("ProcessingEnded")
+    const { events: processingEndedEvents } = useEvents(EventType.ProcessingEnded)
     useEffect(() => {
         processingEndedEvents.forEach(event => {
             event.markAsRead()
 
-            if (event.name === "PhotosUploadingTriggered" && event.args.sendNotification) {
-                toast.success(`Nahrávání fotek pro místo ${event.args.placeName} bylo dokončeno`)
+            if (event.name === EventType.PhotosUploadingTriggered && event.args.sendNotification) {
+                toast.success(t("notification.processingEnded.photosUploadingTriggered", { placeName: event.args.placeName }))
             }
-            else if (event.name === "PhotoReplacingTriggered" && event.args.sendNotification) {
-                toast.success(`Nahrazování fotky pro místo ${event.args.placeName} bylo dokončeno`)
+            else if (event.name === EventType.PhotoReplacingTriggered && event.args.sendNotification) {
+                toast.success(t("notification.processingEnded.photoReplacingTriggered", { placeName: event.args.placeName }))
             }
         })
     }, [processingEndedEvents])
 
-    const { events: processingFailedEvents } = useEvents("ProcessingFailed")
+    const { events: processingFailedEvents } = useEvents(EventType.ProcessingFailed)
     useEffect(() => {
         processingFailedEvents.forEach(event => {
             event.markAsRead()
 
-            if (event.name === "PhotosUploadingTriggered" && event.args.sendNotification) {
-                toast.success(`Nahrávání fotek pro místo ${event.args.placeName} se nezdařilo`)
+            if (event.name === EventType.PhotosUploadingTriggered && event.args.sendNotification) {
+                toast.success(t("notification.processingFailed.photosUploadingTriggered", { placeName: event.args.placeName }))
             }
-            else if (event.name === "PhotoReplacingTriggered" && event.args.sendNotification) {
-                toast.success(`Nahrazování fotky pro místo ${event.args.placeName} se nezdařilo`)
+            else if (event.name === EventType.PhotoReplacingTriggered && event.args.sendNotification) {
+                toast.success(t("notification.processingFailed.photoReplacingTriggered", { placeName: event.args.placeName }))
             }
         })
     }, [processingFailedEvents])
@@ -117,7 +121,6 @@ export default function App() {
         <>
             <Toaster position="top-center" offset={96} />
             <BrowserRouter basename={"/"}>
-                <ScrollToTop />
                 <AppContent />
             </BrowserRouter>
         </>
@@ -126,8 +129,14 @@ export default function App() {
 
 function AppContent() {
     const { accessToken, hasRole } = useAuth()
+    const { pathname } = useLocation()
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [pathname])
 
     // TODO: Find a better rule for redirect to the admin page.
+    // TODO: Path prefixes are duplicated in navigationUtils.ts - find a common place for them.
     return accessToken ? (
         <Routes>
             <Route path="/" element={<Navigate to={hasRole(UserRole.ConfigurationEdit) ? "/admin" : "/feed"} replace />} />
@@ -166,14 +175,4 @@ function AppContent() {
             </div>
         </MainLayout>
     )
-}
-
-function ScrollToTop() {
-    const { pathname } = useLocation()
-
-    useEffect(() => {
-        window.scrollTo(0, 0)
-    }, [pathname])
-
-    return null
 }

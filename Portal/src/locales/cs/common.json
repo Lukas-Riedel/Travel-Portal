@@ -142,6 +142,22 @@
             "remaining": "Zbývá {{duration}}"
         }
     },
+    "notification": {
+        "newDataConsistencyIssuesDetected": "Hlášeno {{formattedProblems}}",
+        "flightLogged": "Let {{flight}} přistál na letišti {{airport}} v {{formattedLocalTime}} místního času",
+        "processingStarted": {
+            "photosUploadingTriggered": "Nahrávání fotek pro místo {{placeName}} bylo zahájeno",
+            "photoReplacingTriggered": "Nahrazování fotky pro místo {{placeName}} bylo zahájeno"
+        },
+        "processingEnded": {
+            "photosUploadingTriggered": "Nahrávání fotek pro místo {{placeName}} bylo dokončeno",
+            "photoReplacingTriggered": "Nahrazování fotky pro místo {{placeName}} bylo dokončeno"
+        },
+        "processingFailed": {
+            "photosUploadingTriggered": "Nahrávání fotek pro místo {{placeName}} se nezdařilo",
+            "photoReplacingTriggered": "Nahrazování fotky pro místo {{placeName}} se nezdařilo"
+        }
+    },
     "search": {
         "label": {
             "result": {

@@ -5,5 +5,9 @@ export enum EventType {
     FolderSynchronizationRequested = "FolderSynchronizationRequested",
     ProcessingStarted = "ProcessingStarted",
     ProcessingEnded = "ProcessingEnded",
-    ProcessingFailed = "ProcessingFailed"
+    ProcessingFailed = "ProcessingFailed",
+    NewDataConsistencyIssuesDetected = "NewDataConsistencyIssuesDetected",
+    TaskDeadlineReached = "TaskDeadlineReached",
+    FlightLogged = "FlightLogged",
+    FlightReminderReceived = "FlightReminderReceived"
 }
