@@ -1,26 +1,22 @@
-import { useMemo } from "react"
+import { useAuth } from "../contexts/AuthContext.jsx"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
+import { useRegularTrips } from "../hooks/useRegularTrips.js"
+import { useYears } from "../hooks/useYears.js"
+import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 import MapFrame from "../components/MapFrame.tsx"
 import PlaceMap from "../components/PlaceMap.jsx"
-import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
-import { useCategories } from "../hooks/useCategories.js"
-import { useRegularTrips } from "../hooks/useRegularTrips.js"
 import TripTable from "../components/TripTable.jsx"
-import { useAuth } from "../contexts/AuthContext.jsx"
-import { useYears } from "../hooks/useYears.js"
 import YearTripTileGrid from "../components/YearTripTileGrid.jsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getCurrentYear } from "../utils/timeUtils.ts"
 
 export default function YearsPage() {
     const { hasRole } = useAuth()
 
     const years = useYears()
-    const { places } = useTimeFilteredRegularPlaces({ sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ sort: PlaceSortingStrategy.ValueScore })
     const { trips } = useRegularTrips()
-    const countryCategories = useCategories({ categories: ["country"] })
-
-    const countryCategoriesMap = useMemo(() => {
-        return new Map(countryCategories?.map(category => [category.name, category]))
-    }, [countryCategories])
+    const countryCategoriesMap = useCountryCategoriesMap()
 
     return hasRole(UserRole.YearRead) && (
         <>
@@ -32,7 +28,7 @@ export default function YearsPage() {
             {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
             )}
-            {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [new Date().getFullYear()]).map(year => (
+            {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [getCurrentYear()]).map(year => (
                 <YearTripTileGrid
                     key={year}
                     year={year}
