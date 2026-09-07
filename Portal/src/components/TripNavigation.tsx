@@ -1,11 +1,9 @@
+import {MoveLeft, MoveRight } from "lucide-react"
 import { useMemo } from "react"
-import { useRegularTrips } from "../hooks/useRegularTrips.ts"
-import { Link } from "react-router-dom"
-import { MoveLeft, MoveRight, type LucideIcon } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext.tsx"
 import { TailSpin } from "react-loader-spinner"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+
 import type { Trip } from "../classes/Trip.ts"
+import { useRegularTrips } from "../hooks/useRegularTrips.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
 

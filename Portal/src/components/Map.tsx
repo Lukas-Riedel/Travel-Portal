@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react"
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
-import { TailSpin } from "react-loader-spinner"
+import type { Layer } from "@deck.gl/core"
 import { GoogleMapsOverlay } from "@deck.gl/google-maps"
 import { IconLayer, LineLayer } from "@deck.gl/layers"
-import type { Layer } from "@deck.gl/core"
-import type { MapPoint } from "../types/MapPoint.ts"
-import type { MapLine } from "../types/MapLine.ts"
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
 import type { GeoJSON } from "geojson"
+import { useEffect, useRef, useState } from "react"
+import { TailSpin } from "react-loader-spinner"
+
+import type { MapLine } from "../types/MapLine.ts"
+import type { MapPoint } from "../types/MapPoint.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 
 const DEFAULT_MAP_ZOOM = 8

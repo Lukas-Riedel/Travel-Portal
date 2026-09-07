@@ -1,8 +1,9 @@
-import { useQueryClient, useQuery as doUseQuery } from "@tanstack/react-query"
 import type { UndefinedInitialDataOptions } from "@tanstack/react-query"
-import type { UseQueryResult } from "../types/UseQueryResult.ts"
+import { useQuery as doUseQuery,useQueryClient } from "@tanstack/react-query"
+
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import type { UseQueryResult } from "../types/UseQueryResult.ts"
 
 export const useQuery = <T>(options: UndefinedInitialDataOptions<T, Error, T, string[]>): UseQueryResult<T> => {
     const { hasRole } = useAuth()

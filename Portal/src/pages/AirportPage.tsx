@@ -1,16 +1,16 @@
-import { useParams } from "react-router-dom"
-import StaticMapFrame from "../components/StaticMapFrame.tsx"
-import PageHeader from "../components/PageHeader.tsx"
 import { useMemo } from "react"
-import { useCategories } from "../hooks/useCategories.ts"
-import { useRegularTrips } from "../hooks/useRegularTrips.ts"
+import { useParams } from "react-router-dom"
+
 import FlightCardGrid from "../components/FlightCardGrid.tsx"
 import FlightMap from "../components/FlightMap.tsx"
-import { useAirport } from "../hooks/useAirport.ts"
+import PageHeader from "../components/PageHeader.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
+import { useAirport } from "../hooks/useAirport.ts"
+import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import { useRegularTrips } from "../hooks/useRegularTrips.ts"
 import { TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
-import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 
 export default function AirportPage() {
     const { airportId } = useParams()

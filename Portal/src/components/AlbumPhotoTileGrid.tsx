@@ -1,7 +1,7 @@
-import TileGrid from "./TileGrid.jsx"
-import AlbumPhotoTile from "./AlbumPhotoTile.tsx"
 import type { Place } from "../classes/Place.ts"
 import type { Album, Photo } from "../types/CoreSwaggerTypes.ts"
+import AlbumPhotoTile from "./AlbumPhotoTile.tsx"
+import TileGrid from "./TileGrid.jsx"
 
 interface AlbumPhotoTileGridProps {
     place: Place | null

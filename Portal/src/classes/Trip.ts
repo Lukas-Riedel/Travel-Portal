@@ -1,8 +1,9 @@
 import { differenceInCalendarDays, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
-import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay, Task } from "../types/CoreSwaggerTypes.ts"
-import { fromZonedTime, toZonedTime } from "date-fns-tz"
-import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS, getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
+import { fromZonedTime } from "date-fns-tz"
+
+import type { Date, Expense, Fitness, Flight, Highlight, Note, Place, PublicHoliday, Statistics, Stay, Task,Trip as ITrip } from "../types/CoreSwaggerTypes.ts"
 import { getTripFullName } from "../utils/formattingUtils.ts"
+import { getCurrentOrMaximumAllowedTimestamp, getEndOfTodayOrMaximumAllowedTimestamp,getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { getCalendarEvents, isTripCandidate } from "../utils/tripUtils.ts"
 
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"

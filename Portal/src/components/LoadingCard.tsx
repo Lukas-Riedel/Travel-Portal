@@ -1,4 +1,5 @@
 import { TailSpin } from "react-loader-spinner"
+
 import Card from "./Card.tsx"
 
 export default function LoadingCard() {

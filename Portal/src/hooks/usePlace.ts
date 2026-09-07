@@ -1,17 +1,17 @@
-import {
-    getPlace, updatePlaceName, getCoordinates, updatePlaceLocation, removePlaceHighlight,
-    updatePlaceMainHighlight, updateHighlightQualityAttributes, createPlaceLabel, removePlaceLabel,
-    updatePlaceExcerpt, refreshPlaceAlbum, createPlaceHighlight, createPlaceNote, removePlaceNote,
-    updatePlaceAlbumsReviewed,
-    updatePlaceNoteContent,
-    updatePlaceCountry,
-    refreshPlaceHighlights
-} from "../clients/coreClient.ts"
 import { useEffect } from "react"
+
 import { Place } from "../classes/Place.ts"
-import { useQuery } from "./useQuery.ts"
-import { useAlbumsBeingUploaded } from "./useAlbumsBeingUploaded.ts"
+import {
+createPlaceHighlight, createPlaceLabel, createPlaceNote, getCoordinates,     getPlace, refreshPlaceAlbum,     refreshPlaceHighlights,
+removePlaceHighlight,
+removePlaceLabel,
+removePlaceNote,
+updateHighlightQualityAttributes,     updatePlaceAlbumsReviewed,
+    updatePlaceCountry,
+    updatePlaceExcerpt, updatePlaceLocation,     updatePlaceMainHighlight, updatePlaceName,     updatePlaceNoteContent} from "../clients/coreClient.ts"
 import type { UsePlaceResult } from "../types/UsePlaceResult.ts"
+import { useAlbumsBeingUploaded } from "./useAlbumsBeingUploaded.ts"
+import { useQuery } from "./useQuery.ts"
 
 const ALBUM_UPLOADING_REFETCH_INTERVAL_SECONDS = 5
 

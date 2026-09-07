@@ -1,5 +1,6 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
+
 import csCommon from "./locales/cs/common.json" with { type: "json" }
 
 i18n

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react"
-import SunAltitudeIcon from "./SunAltitudeIcon.tsx"
-import { formatTimestamp, getCurrentTimestamp, getDate } from "../utils/timeUtils.ts"
+import { useEffect,useRef, useState } from "react"
+
 import type { Place } from "../types/CoreSwaggerTypes.ts"
+import { formatTimestamp, getCurrentTimestamp, getDate } from "../utils/timeUtils.ts"
+import SunAltitudeIcon from "./SunAltitudeIcon.tsx"
 
 interface SunAltitudeBarProps {
     place: Place | null

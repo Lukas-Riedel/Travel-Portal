@@ -1,4 +1,3 @@
-import type { HighlightType } from "./CoreSwaggerTypes.ts"
 import type { Event } from "./Event.ts"
 
 export interface UseEventsResult {

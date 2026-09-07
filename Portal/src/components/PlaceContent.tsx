@@ -1,16 +1,12 @@
-import { ImagePlus, LocationEdit, RefreshCcw, SquarePen, TriangleAlert } from "lucide-react"
-import { useUserInput } from "../hooks/useUserInput.tsx"
-import PlaceMap from "./PlaceMap.jsx"
-import { TailSpin } from "react-loader-spinner"
 import { getTime, parseISO } from "date-fns"
-import { useDevices } from "../hooks/useDevices"
-import { useEffect, useState } from "react"
-import { DeviceType, UserRole } from "../types/CoreSwaggerTypes.ts"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { ImagePlus, LocationEdit, RefreshCcw, SquarePen } from "lucide-react"
+import { TailSpin } from "react-loader-spinner"
+
 import type { Place } from "../classes/Place.ts"
-import { isDeviceOnline } from "../utils/deviceUtils.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import PlaceMap from "./PlaceMap.jsx"
 
 interface PlaceContentProps {
     place: Place | null

@@ -1,14 +1,15 @@
+import { CircleArrowUp, SquarePen, Trash2 } from "lucide-react"
 import { useMemo } from "react"
-import { CircleArrowUp, Diff, SquarePen, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import LoadingCard from "./LoadingCard.tsx"
+
+import type { Trip } from "../classes/Trip.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
-import Card from "./Card.tsx"
-import PropertyCardContent from "./PropertyCardContent.tsx"
-import type { Trip } from "../classes/Trip.ts"
 import AppLink from "./AppLink.tsx"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
+import PropertyCardContent from "./PropertyCardContent.tsx"
 
 interface TaskCardProps {
     task: Task | null

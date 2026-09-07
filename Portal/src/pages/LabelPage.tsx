@@ -1,16 +1,17 @@
-import { useMemo } from "react"
-import StaticMapFrame from "../components/StaticMapFrame.tsx"
-import { useParams } from "react-router-dom"
-import PageHeader from "../components/PageHeader"
-import PlaceTileGrid from "../components/PlaceTileGrid"
-import PlaceMap from "../components/PlaceMap"
-import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { useLabel } from "../hooks/useLabel"
-import { useAuth } from "../contexts/AuthContext.tsx"
-import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { Folder } from "lucide-react"
+import { useMemo } from "react"
+import { useParams } from "react-router-dom"
+
 import AppLink from "../components/AppLink.tsx"
+import PageHeader from "../components/PageHeader"
+import PlaceMap from "../components/PlaceMap"
+import PlaceTileGrid from "../components/PlaceTileGrid"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { useLabel } from "../hooks/useLabel"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { AppLinkTarget } from "../types/AppLinkTarget.ts"
+import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function LabelPage() {
     const { labelId } = useParams()

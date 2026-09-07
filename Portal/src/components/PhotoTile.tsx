@@ -1,9 +1,10 @@
-import { Link, type To } from "react-router-dom"
-import LoadingTile from "./LoadingTile.tsx"
-import { cn, getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { Link } from "react-router-dom"
+
 import type { Category } from "../types/CoreSwaggerTypes.ts"
 import type { Navigable } from "../types/Navigable.ts"
+import { cn, getEntityPrettyName } from "../utils/formattingUtils.ts"
 import AppLink from "./AppLink.tsx"
+import LoadingTile from "./LoadingTile.tsx"
 
 interface PhotoTileProps {
     src: string | null

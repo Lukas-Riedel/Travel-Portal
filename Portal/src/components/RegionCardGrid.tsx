@@ -1,7 +1,8 @@
+import type { GeoJSON } from "geojson"
+
 import type { Region } from "../types/Region.ts"
 import CardGrid from "./CardGrid.tsx"
 import RegionCard from "./RegionCard.tsx"
-import type { GeoJSON } from "geojson"
 
 interface RegionCardGridProps {
     regions: Region[] | null

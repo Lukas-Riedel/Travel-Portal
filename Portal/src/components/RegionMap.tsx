@@ -1,8 +1,9 @@
+import type { Feature, GeoJSON } from "geojson"
 import { useMemo } from "react"
-import Map from "./Map"
+
 import type { GeographicalRegion } from "../types/CoreSwaggerTypes"
-import type { GeoJSON, Feature, Geometry } from "geojson"
 import { tryExtractPointCoordinates } from "../utils/geocodingUtils"
+import Map from "./Map"
 
 const DEFAULT_POINT_COLOR = "#4285F4"
 

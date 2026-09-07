@@ -1,5 +1,5 @@
-import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 import type { UseCacheResult } from "../types/UseCacheResult.ts"
+import { getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 export const useCache = <T>(key: string, storage: Storage = localStorage): UseCacheResult<T> => {
     return {

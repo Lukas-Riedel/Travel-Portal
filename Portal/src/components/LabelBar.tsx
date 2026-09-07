@@ -1,10 +1,8 @@
 import { Plus, Trash2 } from "lucide-react"
-import clsx from "clsx"
-import { Link } from "react-router-dom"
 import { useMemo } from "react"
-import { TailSpin } from "react-loader-spinner"
-import { useLabels } from "../hooks/useLabels.ts"
+
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
+import { useLabels } from "../hooks/useLabels.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Label } from "../types/CoreSwaggerTypes.ts"
 import AppLink from "./AppLink.tsx"

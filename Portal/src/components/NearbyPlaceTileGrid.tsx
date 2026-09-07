@@ -1,8 +1,8 @@
-import TileGrid from "./TileGrid"
-import PlaceTile from "./PlaceTile"
 import { Place } from "../classes/Place.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import PlaceTile from "./PlaceTile"
+import TileGrid from "./TileGrid"
 
 interface NearbyPlaceTileGridProps {
     place: Place | null

@@ -1,8 +1,9 @@
 import { useCallback } from "react"
+
 import { getCoordinates } from "../clients/coreClient.ts"
-import { useCache } from "./useCache.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import type { UseCachedCoordinatesResult } from "../types/UseCachedCoordinatesResult.ts"
+import { useCache } from "./useCache.ts"
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const coordinatesCache = useCache<Record<string, Coordinates>>("useCachedCoordinates:coordinates")

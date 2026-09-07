@@ -1,9 +1,9 @@
-import { createTripTask, listRegularTrips, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } from "../clients/coreClient.ts"
 import { Trip } from "../classes/Trip.ts"
+import { createTripTask, listRegularTrips, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } from "../clients/coreClient.ts"
 import type { TaskPriority, TripIncludedEntity } from "../types/CoreSwaggerTypes.ts"
-import { useQuery } from "./useQuery.ts"
-import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import type { UseRegularTripsResult } from "../types/UseRegularTripsResult.ts"
+import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import { useQuery } from "./useQuery.ts"
 
 interface UseRegularTripsProps {
     year?: number

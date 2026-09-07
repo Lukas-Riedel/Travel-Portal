@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { TailSpin } from "react-loader-spinner"
+import { useEffect, useMemo, useState } from "react"
+
 import { useRegions } from "../hooks/useRegions"
-import RegionCardGrid from "./RegionCardGrid"
-import RegionMap from "./RegionMap"
-import { useSearchParams } from "react-router-dom"
-import { ExternalLink } from "lucide-react"
-import AppLink from "./AppLink"
 import type { Category } from "../types/CoreSwaggerTypes"
 import Editor from "./Editor"
+import RegionCardGrid from "./RegionCardGrid"
+import RegionMap from "./RegionMap"
 
 interface RegionEditorProps {
     categories: Category[] | null

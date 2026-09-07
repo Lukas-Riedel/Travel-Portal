@@ -1,9 +1,10 @@
-import { useState } from "react"
 import { MapPin, Plane } from "lucide-react"
+import { useState } from "react"
+
 import type { Place } from "../classes/Place"
 import type { Airport, Category, Flight } from "../types/CoreSwaggerTypes"
-import PlaceMap from "./PlaceMap"
 import FlightMap from "./FlightMap"
+import PlaceMap from "./PlaceMap"
 
 interface PlaceMapAndFlightMapToggleProps {
     places: Place[] | null

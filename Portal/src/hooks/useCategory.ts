@@ -1,4 +1,4 @@
-import { getCategory, removeCategoryHighlight, updateCategoryMainHighlight, updateHighlightQualityAttributes, updateCategoryMetadata, createCategoryHighlight, updateCategoryCategory, removeCategory, updateCategoryName, refreshCategoryHighlights } from "../clients/coreClient.ts"
+import { createCategoryHighlight, getCategory, refreshCategoryHighlights,removeCategory, removeCategoryHighlight, updateCategoryCategory, updateCategoryMainHighlight, updateCategoryMetadata, updateCategoryName, updateHighlightQualityAttributes } from "../clients/coreClient.ts"
 import type { CategoryCategory, CategoryMetadata } from "../types/CoreSwaggerTypes.ts"
 import type { UseCategoryResult } from "../types/UseCategoryResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"

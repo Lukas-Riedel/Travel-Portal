@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import type { Place } from "../classes/Place.ts"
 import CardGrid from "./CardGrid.tsx"

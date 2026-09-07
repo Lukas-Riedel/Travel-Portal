@@ -1,10 +1,10 @@
-import { useAuth } from "../contexts/AuthContext"
-import { useRegularTrips } from "../hooks/useRegularTrips"
-import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents"
 import TimeOffBalanceSummary from "../components/TimeOffBalanceSummary"
 import TrackerCalendar from "../components/TrackerCalendar"
 import TripTable from "../components/TripTable"
-import { TripIncludedEntity, TimeTrackingEventType, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { useAuth } from "../contexts/AuthContext"
+import { useRegularTrips } from "../hooks/useRegularTrips"
+import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents"
+import { TimeTrackingEventType, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function TrackerPage() {
     const { hasRole } = useAuth()

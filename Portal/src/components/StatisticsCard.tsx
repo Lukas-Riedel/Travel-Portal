@@ -1,12 +1,13 @@
 import { useMemo } from "react"
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts"
 import { useTranslation } from "react-i18next"
-import LoadingCard from "./LoadingCard.tsx"
+import { Bar, BarChart, Cell,Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
-import { getCurrentYear } from "../utils/timeUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
-import { StatisticsName, StatisticsUnit, type Statistics, type Year } from "../types/CoreSwaggerTypes.ts"
+import { type Statistics, StatisticsName, type StatisticsUnit, type Year } from "../types/CoreSwaggerTypes.ts"
+import { getCurrentYear } from "../utils/timeUtils.ts"
 import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 interface StatisticsCardProps {
     statistics: Statistics | null

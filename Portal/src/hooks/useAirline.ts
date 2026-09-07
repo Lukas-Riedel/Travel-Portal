@@ -1,4 +1,4 @@
-import { getAirline, removeAirline, updateAirlineName, updateAirlineLogo } from "../clients/coreClient.ts"
+import { getAirline, removeAirline, updateAirlineLogo,updateAirlineName } from "../clients/coreClient.ts"
 import type { UseAirlineResult } from "../types/UseAirlineResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"

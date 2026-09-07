@@ -1,7 +1,8 @@
 import { create } from "zustand"
-import { useCache } from "./useCache.ts"
+
 import type { IamResponse } from "../types/CoreSwaggerTypes.ts"
 import type { UseAuthStoreResult } from "../types/UseAuthStoreResult.ts"
+import { useCache } from "./useCache.ts"
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const accessTokenCache = useCache<string>("useAuthStore:accessToken")

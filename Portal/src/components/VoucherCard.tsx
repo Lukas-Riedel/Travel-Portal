@@ -1,11 +1,12 @@
-import { useMemo } from "react"
 import { Diff, Trash2 } from "lucide-react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import LoadingCard from "./LoadingCard.tsx"
+
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Voucher } from "../types/CoreSwaggerTypes.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
 import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 import PropertyCardContent from "./PropertyCardContent.tsx"
 
 interface VoucherCardProps {

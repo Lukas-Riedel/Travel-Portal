@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
-import { useNotifications } from "../contexts/NotificationContext.jsx"
+
 import { createEvent } from "../clients/coreClient.ts"
+import { useNotifications } from "../contexts/NotificationContext.jsx"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
 

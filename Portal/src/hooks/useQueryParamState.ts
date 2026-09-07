@@ -1,5 +1,6 @@
 import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
+
 import type { UseQueryParamStateResult } from "../types/UseQueryParamStateResult"
 []
 export function useQueryParamState(paramName: string, defaultValue?: string): UseQueryParamStateResult {

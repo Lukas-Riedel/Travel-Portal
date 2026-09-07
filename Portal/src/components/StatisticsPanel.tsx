@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
-import { useConfiguration } from "../contexts/ConfigContext.tsx"
+import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
+
+import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import type { Statistics } from "../types/CoreSwaggerTypes.ts"
-import { useTranslation } from "react-i18next"
 
 const LOADING_STATISTICS_COUNT = 20
 const MAX_STATISTICS_VALUES_COUNT = 5

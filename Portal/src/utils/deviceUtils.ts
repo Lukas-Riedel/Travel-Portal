@@ -1,4 +1,4 @@
-import { DeviceType, type Device } from "../types/CoreSwaggerTypes.ts"
+import { type Device,DeviceType } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentTimestamp } from "./timeUtils.ts"
 
 const AGENT_ONLINE_STATUS_THRESHOLD_SECONDS = 60

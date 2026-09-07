@@ -1,14 +1,15 @@
-import { useTranslation } from "react-i18next"
-import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
-import { useUserInput } from "./useUserInput.tsx"
-import { type Airline, type Album, type Document, type Expense, type Flight, type Highlight, type Note, type Subscription, type Voucher, type Place, type Year, type Category, type Label, type Airport, type Device, type TimeBasedFitness, type Fitness, type CategoryMetadata, type GeographicalRegion, type HighlightAttributes, type CompositeRegion, CategoryCategory, type TimeTrackingEvent, TimeTrackingEventType, FlightType, type Task, TaskPriority, ExpenseCurrency, type Photo } from "../types/CoreSwaggerTypes.ts"
 import { format, fromUnixTime } from "date-fns"
-import type { Highlightable } from "../types/Highlightable.ts"
-import { formatTimestamp } from "../utils/timeUtils.ts"
-import { useConfiguration } from "../contexts/ConfigContext.tsx"
-import type { Trip } from "../classes/Trip.ts"
 import type { GeoJSON } from "geojson"
+import { useTranslation } from "react-i18next"
+
+import type { Trip } from "../classes/Trip.ts"
+import { useConfiguration } from "../contexts/ConfigContext.tsx"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Voucher } from "../types/CoreSwaggerTypes.ts"
+import type { Highlightable } from "../types/Highlightable.ts"
+import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 import { useFormatters } from "./useFormatters.ts"
+import { useUserInput } from "./useUserInput.tsx"
 
 export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()

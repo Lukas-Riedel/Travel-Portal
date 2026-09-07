@@ -1,13 +1,14 @@
-import { useParams } from "react-router-dom"
-import { useAuth } from "../contexts/AuthContext.tsx"
 import { useMemo, useState } from "react"
-import { useYear } from "../hooks/useYear"
-import { useRegularTrips } from "../hooks/useRegularTrips"
-import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useParams } from "react-router-dom"
+
 import { listPlaceAlbumPhotos } from "../clients/coreClient"
-import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
-import { PlaceIncludedEntity, PlaceSortingStrategy, TripIncludedEntity, UserRole, type Photo } from "../types/CoreSwaggerTypes.ts"
+import HighlightCarousel from "../components/HighlightCarousel.tsx"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useRegularTrips } from "../hooks/useRegularTrips"
+import { useYear } from "../hooks/useYear"
+import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function YearHighlightsPage() {
     const { year: yearParameter } = useParams()

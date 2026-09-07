@@ -1,11 +1,12 @@
 import { useEffect } from "react"
-import { createPermanentPlace, listRegularPlaces, removePermanentPlace } from "../clients/coreClient.ts"
+
 import { Place } from "../classes/Place.ts"
-import type { UseRegularPlacesResult } from "../types/UseRegularPlacesResult.ts"
+import { createPermanentPlace, listRegularPlaces, removePermanentPlace } from "../clients/coreClient.ts"
 import type { PlaceIncludedEntity, PlaceSortingStrategy } from "../types/CoreSwaggerTypes.ts"
+import type { UseRegularPlacesResult } from "../types/UseRegularPlacesResult.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
-import { useQuery } from "./useQuery.ts"
 import { useAlbumsBeingUploaded } from "./useAlbumsBeingUploaded.ts"
+import { useQuery } from "./useQuery.ts"
 
 const RESPONSE_VALIDITY_SECONDS = ONE_HOUR_SECONDS
 const ALBUM_UPLOADING_REFETCH_INTERVAL_SECONDS = 5

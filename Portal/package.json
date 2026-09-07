@@ -11,7 +11,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --watch",
-    "start:dev": "npm run generate:api && npm-run-all --parallel dev typecheck"
+    "start:dev": "npm run generate:api && npm-run-all --parallel dev typecheck",
+    "prepare": "cd .. && npx husky || true"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.6",
@@ -69,6 +75,8 @@
     "eslint": "^9.39.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.26",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "swagger-typescript-api": "^13.2.18",

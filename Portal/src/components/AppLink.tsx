@@ -1,9 +1,10 @@
-import { Link, useLocation, type LinkProps } from "react-router-dom"
-import type { Navigable } from "../types/Navigable.ts"
-import { getPath } from "../utils/navigationUtils.ts"
 import type { ReactNode } from "react"
 import React from "react"
+import { Link, type LinkProps,useLocation } from "react-router-dom"
+
 import { AppLinkTarget } from "../types/AppLinkTarget.ts"
+import type { Navigable } from "../types/Navigable.ts"
+import { getPath } from "../utils/navigationUtils.ts"
 
 interface AppLinkProps extends Omit<Omit<LinkProps, "target">, "to"> {
     to: Navigable

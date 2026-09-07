@@ -1,22 +1,21 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
-import type { Highlightable } from "../types/Highlightable.ts"
 import { AnimatePresence, motion } from "framer-motion"
-import { Pause, Play, Trash2, Star, SlidersVertical, Edit2, Plus, Upload, Check } from "lucide-react"
-import { TailSpin } from "react-loader-spinner"
-import { useConfiguration } from "../contexts/ConfigContext"
-import { useRegularPlaces } from "../hooks/useRegularPlaces"
-import { useDevices } from "../hooks/useDevices.ts"
-import Cropper from "react-easy-crop"
-import type { Area } from "react-easy-crop"
-import Slider from "../components/Slider.tsx"
-import { listPlaceAlbumPhotos } from "../clients/coreClient.ts"
+import { Check,Edit2, Pause, Play, Plus, SlidersVertical, Star, Trash2, Upload } from "lucide-react"
 import piexif from "piexifjs"
-import { v4 as uuidv4 } from "uuid"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { DeviceType, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
-import type { Highlight, Photo, Place } from "../types/CoreSwaggerTypes.ts"
-import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import { useCallback,useEffect, useMemo, useState } from "react"
+import type { Area } from "react-easy-crop"
+import Cropper from "react-easy-crop"
 import { useTranslation } from "react-i18next"
+import { TailSpin } from "react-loader-spinner"
+import { v4 as uuidv4 } from "uuid"
+
+import { listPlaceAlbumPhotos } from "../clients/coreClient.ts"
+import Slider from "../components/Slider.tsx"
+import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import type { Highlight, Photo, Place } from "../types/CoreSwaggerTypes.ts"
+import { PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
+import type { Highlightable } from "../types/Highlightable.ts"
 import { getOnlyElement } from "../utils/collectionUtils.ts"
 
 const DEFAULT_ROTATION = 0
@@ -372,7 +371,7 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: Area, rotation: number
     canvas.height = pixelCrop.height
     ctx.putImageData(data, 0, 0)
 
-    let croppedBase64 = canvas.toDataURL("image/jpeg", 0.5)
+    const croppedBase64 = canvas.toDataURL("image/jpeg", 0.5)
     const exifBytes = piexif.dump(exifObj)
     const finalBase64 = piexif.insert(exifBytes, croppedBase64)
 

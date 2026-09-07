@@ -1,13 +1,14 @@
-import { useParams } from "react-router-dom"
-import { useAuth } from "../contexts/AuthContext.tsx"
 import { useMemo, useState } from "react"
-import { usePlace } from "../hooks/usePlace"
-import { listPlaceAlbumPhotos } from "../clients/coreClient"
-import HighlightCarousel from "../components/HighlightCarousel.tsx"
-import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
-import { UserRole, type Photo } from "../types/CoreSwaggerTypes.ts"
-import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+
+import { listPlaceAlbumPhotos } from "../clients/coreClient"
+import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
+import HighlightCarousel from "../components/HighlightCarousel.tsx"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { usePlace } from "../hooks/usePlace"
+import { type Photo,UserRole } from "../types/CoreSwaggerTypes.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 export default function PlaceHighlightsPage() {

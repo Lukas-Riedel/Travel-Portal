@@ -1,0 +1,2 @@
+cd Portal
+npx lint-staged

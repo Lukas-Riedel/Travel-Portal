@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom"
-import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos.ts"
-import AlbumPhotoTileGrid from "../components/AlbumPhotoTileGrid.tsx"
-import { usePlace } from "../hooks/usePlace.ts"
-import { useEvents } from "../hooks/useEvents.ts"
 import { useMemo } from "react"
+import { useParams } from "react-router-dom"
+
+import AlbumPhotoTileGrid from "../components/AlbumPhotoTileGrid.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
+import { useEvents } from "../hooks/useEvents.ts"
+import { usePlace } from "../hooks/usePlace.ts"
+import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function AlbumPage() {

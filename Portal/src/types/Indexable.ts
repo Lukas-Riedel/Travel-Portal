@@ -1,6 +1,3 @@
-import type { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
-import type { Airline, AirlineIdentifier, Airport, AirportIdentifier, Category, CategoryIdentifier, Highlight, Label, Photo, Place, PlaceIdentifier, Trip, TripIdentifier, Year, YearIdentifier } from "./CoreSwaggerTypes.ts"
-import type { PlaceAlbum } from "./PlaceAlbum.ts"
-import type { StaticNavigationTarget } from "./StaticNavigationTarget.ts"
+import type { AirlineIdentifier, AirportIdentifier, CategoryIdentifier, Highlight, Label, Photo, PlaceIdentifier, TripIdentifier, YearIdentifier } from "./CoreSwaggerTypes.ts"
 
 export type Indexable = CategoryIdentifier | PlaceIdentifier | AirportIdentifier | AirlineIdentifier | Label | TripIdentifier | YearIdentifier | Photo | Highlight

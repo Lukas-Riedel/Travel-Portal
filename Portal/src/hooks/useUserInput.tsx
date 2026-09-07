@@ -1,10 +1,11 @@
+import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
-import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
-import type { FormField } from "../types/FormField.ts"
-import { useCallback, useRef } from "react"
-import type { SelectFormField } from "../types/SelectFormField.ts"
+
 import type { BranchingToastBranch } from "../types/BranchingToastBranch.ts"
+import type { FormField } from "../types/FormField.ts"
+import type { SelectFormField } from "../types/SelectFormField.ts"
+import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
 
 export const useUserInput = (): UseUserInputResult => {
     const { t } = useTranslation()

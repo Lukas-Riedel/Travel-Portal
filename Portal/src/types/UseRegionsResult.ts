@@ -1,5 +1,6 @@
-import type { CompositeRegion, GeographicalRegion } from "./CoreSwaggerTypes.ts"
 import type { GeoJSON } from "geojson"
+
+import type { CompositeRegion, GeographicalRegion } from "./CoreSwaggerTypes.ts"
 
 export interface UseRegionsResult {
     regions?: (GeographicalRegion | CompositeRegion)[]

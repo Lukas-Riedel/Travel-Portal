@@ -1,7 +1,8 @@
 import { useMemo } from "react"
+
+import type { UseUpcomingOrCurrentTripResult } from "../types/UseUpcomingOrCurrentTripResult.ts"
 import { useRegularTrips } from "./useRegularTrips.js"
 import { useTrip } from "./useTrip.ts"
-import type { UseUpcomingOrCurrentTripResult } from "../types/UseUpcomingOrCurrentTripResult.ts"
 
 export const useUpcomingOrCurrentTrip = (): UseUpcomingOrCurrentTripResult => {
     const { trips } = useRegularTrips()

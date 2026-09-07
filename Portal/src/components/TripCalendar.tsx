@@ -1,17 +1,18 @@
-import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
-import DayCard from "./DayCard.tsx"
-import { useConfiguration } from "../contexts/ConfigContext"
-import { useMemo, useState } from "react"
+import { fromUnixTime } from "date-fns"
+import { fromZonedTime } from "date-fns-tz"
 import { ArrowRightLeft, Calendar, Copy, Earth, House, Upload } from "lucide-react"
-import CardGrid from "./CardGrid.tsx"
-import { fromZonedTime, toZonedTime } from "date-fns-tz"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { formatTimestamp, getTripDays, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
-import type { Trip } from "../classes/Trip.ts"
+
 import type { Place } from "../classes/Place.ts"
+import type { Trip } from "../classes/Trip.ts"
+import { useConfiguration } from "../contexts/ConfigContext"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Note } from "../types/CoreSwaggerTypes.ts"
 import { getGoogleCalendarLink } from "../utils/navigationUtils.ts"
+import { formatTimestamp, getTripDays, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import CardGrid from "./CardGrid.tsx"
+import DayCard from "./DayCard.tsx"
 
 interface TripCalendarProps {
     trip: Trip | null

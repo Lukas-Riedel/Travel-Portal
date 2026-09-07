@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { Trash2, Plus, Bold, Italic, Link, Edit2, Check } from "lucide-react"
+import { Bold, Check,Edit2, Italic, Link, Plus, Trash2 } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
+
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import LoadingCard from "./LoadingCard.tsx"
 import type { Note } from "../types/CoreSwaggerTypes.ts"
-import Card from "./Card.tsx"
 import { formatTimestamp } from "../utils/timeUtils.ts"
+import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 interface NoteCardProps {
     note?: Note | null

@@ -1,13 +1,14 @@
-import { useMemo } from "react"
 import { FolderSync } from "lucide-react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import LoadingCard from "./LoadingCard.tsx"
-import { formatDeviceType } from "../utils/formattingUtils.ts"
+
 import type { Device } from "../types/CoreSwaggerTypes.ts"
 import { isDeviceOnline } from "../utils/deviceUtils.ts"
+import { formatDeviceType } from "../utils/formattingUtils.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
-import PropertyCardContent from "./PropertyCardContent.tsx"
 import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
+import PropertyCardContent from "./PropertyCardContent.tsx"
 
 interface SynchronizedFolder {
     path: string

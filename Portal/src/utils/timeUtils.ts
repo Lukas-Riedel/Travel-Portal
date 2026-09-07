@@ -1,8 +1,9 @@
 import { addDays, eachDayOfInterval, endOfDay, format, fromUnixTime, getDay, isSameDay, startOfDay } from "date-fns"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
-import { getCoordinates } from "../clients/coreClient.ts"
-import type { Trip } from "../classes/Trip.ts"
+
 import type { Place } from "../classes/Place.ts"
+import type { Trip } from "../classes/Trip.ts"
+import { getCoordinates } from "../clients/coreClient.ts"
 
 export const ONE_MINUTE_SECONDS = 60
 export const ONE_HOUR_SECONDS = 60 * ONE_MINUTE_SECONDS

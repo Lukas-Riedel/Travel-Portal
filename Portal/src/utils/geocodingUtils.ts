@@ -1,5 +1,6 @@
+import type { Feature, GeoJSON, Geometry } from "geojson"
+
 import type { Coordinates } from "../types/Coordinates.ts"
-import type { GeoJSON, Feature, Geometry } from "geojson"
 
 export const EARTH_RADIUS_KILOMETERS = 6371.0
 

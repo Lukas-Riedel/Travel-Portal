@@ -1,9 +1,9 @@
-import { TailSpin } from "react-loader-spinner"
 import { useMemo } from "react"
-import { ClockPlus, Palmtree, Pill, Shield } from "lucide-react"
+import { TailSpin } from "react-loader-spinner"
+
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useFormatters } from "../hooks/useFormatters.ts"
-import { TimeTrackingEventType, type TimeTrackingEvent } from "../types/CoreSwaggerTypes.ts"
+import { type TimeTrackingEvent,type TimeTrackingEventType } from "../types/CoreSwaggerTypes.ts"
 import { TIME_TRACKING_EVENT_TYPE_ICONS } from "../utils/eventUtils.ts"
 
 interface TimeOffBalanceSummaryProps {

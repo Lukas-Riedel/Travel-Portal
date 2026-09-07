@@ -1,15 +1,16 @@
-import { useMemo } from "react"
-import { Copy, Map, Wrench } from "lucide-react"
-import { useTranslation } from "react-i18next"
-import LoadingCard from "./LoadingCard.tsx"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { useFormatters } from "../hooks/useFormatters.ts"
-import type { GeographicalRegion, CompositeRegion, CategoryIdentifier } from "../types/CoreSwaggerTypes.ts"
-import type { Region } from "../types/Region.ts"
-import PropertyCardContent from "./PropertyCardContent.tsx"
-import Card from "./Card.tsx"
 import type { GeoJSON } from "geojson"
+import { Copy, Map, Wrench } from "lucide-react"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { useFormatters } from "../hooks/useFormatters.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { CategoryIdentifier,CompositeRegion, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
+import type { Region } from "../types/Region.ts"
 import { getGeoFeatures, getGeoJson, tryExtractPointCoordinates } from "../utils/geocodingUtils.ts"
+import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
+import PropertyCardContent from "./PropertyCardContent.tsx"
 
 interface RegionCardProps {
     region: Region | null

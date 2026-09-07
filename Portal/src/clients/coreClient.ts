@@ -1,20 +1,20 @@
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 import axios from "axios"
 import * as authRefresh from "axios-auth-refresh"
-import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
-import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType, } from "../types/CoreSwaggerTypes.ts"
-import type {
-    Album, Expense, Flight, Year, Voucher, Document, Device, Label, Airport, Highlight, CategoryCategory, CategoryIncludedEntity, Category, IndexableEntityType,
-    GeographicalRegion, CompositeRegion, CategoryMetadata, Fitness, Address, Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, PendingPhoto, Photo,
-    DataConsistencyIssue, Statistics, Subscription, TimeTrackingEventType, TimeTrackingEvent, TripIncludedEntity, Trip as ITrip, ExpenseType, Note, Airline, YearIncludedEntity,
-    Location, SearchResult, TaskPriority, Task,
-    ExpenseCurrency
-} from "../types/CoreSwaggerTypes.ts"
+import type { GeoJSON } from "geojson"
+
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
+import type {
+Address, Airline, Airport,     Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata, CompositeRegion,     DataConsistencyIssue, Device, Document, Expense,     ExpenseCurrency,
+ExpenseType, Fitness, Flight,     GeographicalRegion, Highlight, IndexableEntityType,
+Label,     Location, Note, PendingPhoto, Photo,
+Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip as ITrip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
+import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType, } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
-import type { GeoJSON } from "geojson"
+import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
 
 export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
     coreClient.post<Highlight[]>(createQueryPath(`places/${placeId}/highlights/refresh`,

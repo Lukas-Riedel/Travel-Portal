@@ -1,8 +1,9 @@
 import { useMemo } from "react"
-import { useEvents } from "./useEvents.ts"
-import { EventType } from "../types/EventType.ts"
+
 import type { Date } from "../types/CoreSwaggerTypes.ts"
+import { EventType } from "../types/EventType.ts"
 import type { UseAlbumsBeingUploadedResult } from "../types/UseAlbumsBeingUploadedResult.ts"
+import { useEvents } from "./useEvents.ts"
 
 export const useAlbumsBeingUploaded = (): UseAlbumsBeingUploadedResult => {
     const { events: processingStartedEvents } = useEvents(EventType.ProcessingStarted)

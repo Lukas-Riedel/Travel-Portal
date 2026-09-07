@@ -1,10 +1,11 @@
+import { addMinutes, startOfDay } from "date-fns"
 import { Sun, Sunrise, Sunset } from "lucide-react"
 import { useMemo } from "react"
-import type { Place } from "../types/CoreSwaggerTypes.ts"
-import { addMinutes, startOfDay } from "date-fns"
 import { useTranslation } from "react-i18next"
-import { formatTimestamp } from "../utils/timeUtils.ts"
+
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { getSunAltitude } from "../utils/sunUtils.ts"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 
 interface SunAltitudeIconProps {
     place: Place | null

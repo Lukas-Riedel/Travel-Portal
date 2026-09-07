@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react"
-import Lightbox, { type SlideImage } from "yet-another-react-lightbox"
-import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen"
-import Counter from "yet-another-react-lightbox/plugins/counter"
 import "yet-another-react-lightbox/styles.css"
 import "yet-another-react-lightbox/plugins/counter.css"
-import PhotoTile from "./PhotoTile.tsx"
-import { TailSpin } from "react-loader-spinner"
+
 import { ExternalLink, Images, RefreshCcw } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { TailSpin } from "react-loader-spinner"
+import Lightbox, { type SlideImage } from "yet-another-react-lightbox"
+import Counter from "yet-another-react-lightbox/plugins/counter"
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen"
+
+import type { Place } from "../classes/Place.ts"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import type { Place } from "../classes/Place.ts"
-import type { Album, Date, Photo } from "../types/CoreSwaggerTypes.ts"
-import { useTranslation } from "react-i18next"
-import { formatTimestamp } from "../utils/timeUtils.ts"
+import type { Album, Date } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
+import PhotoTile from "./PhotoTile.tsx"
 
 interface DateTileProps {
     place: Place | null

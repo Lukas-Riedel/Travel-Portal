@@ -1,11 +1,12 @@
-import { useParams } from "react-router-dom"
 import { useMemo, useState } from "react"
-import HighlightCarousel from "../components/HighlightCarousel.tsx"
+import { useParams } from "react-router-dom"
+
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid.tsx"
-import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
-import { useCategory } from "../hooks/useCategory.ts"
+import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { PlaceIncludedEntity, PlaceSortingStrategy, UserRole, type Photo } from "../types/CoreSwaggerTypes.ts"
+import { useCategory } from "../hooks/useCategory.ts"
+import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
+import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function CategoryHighlightsPage() {
     const { categoryId } = useParams()

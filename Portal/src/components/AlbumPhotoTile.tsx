@@ -1,15 +1,14 @@
 import { Edit2, SendToBack, Star } from "lucide-react"
-import PhotoTile from "./PhotoTile.tsx"
 import { useState } from "react"
-import { useDevices } from "../hooks/useDevices.ts"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { isDeviceOnline } from "../utils/deviceUtils.ts"
-import type { Place } from "../classes/Place.ts"
-import { DeviceType, type Album, type Photo } from "../types/CoreSwaggerTypes.ts"
 import { useTranslation } from "react-i18next"
+
+import type { Place } from "../classes/Place.ts"
+import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { type Album, type Photo } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
-import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
+import PhotoTile from "./PhotoTile.tsx"
 
 interface AlbumPhotoTileProps {
     place: Place | null

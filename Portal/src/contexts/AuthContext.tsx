@@ -1,11 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react"
+import { jwtDecode } from "jwt-decode"
+import { createContext, type ReactNode,useCallback, useContext, useMemo } from "react"
+
 import { getIamResponseWithCredentials } from "../clients/iamClient.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
-import type { UseAuthResult } from "../types/UseAuthResult.ts"
-import type { Credentials } from "../types/Credentials.ts"
-import { jwtDecode } from "jwt-decode"
-import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
 import type { UserRole } from "../types/CoreSwaggerTypes.ts"
+import type { Credentials } from "../types/Credentials.ts"
+import type { UseAuthResult } from "../types/UseAuthResult.ts"
+import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
 
 const AuthContext = createContext<UseAuthResult | undefined>(undefined)
 

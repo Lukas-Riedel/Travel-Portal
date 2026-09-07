@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react"
-import type { Weather } from "../types/CoreSwaggerTypes.ts"
-import WeatherRow from "./WeatherRow.tsx"
-import type { Coordinates } from "../types/Coordinates.ts"
 import { ChevronUp } from "lucide-react"
-import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import type { Coordinates } from "../types/Coordinates.ts"
+import type { Weather } from "../types/CoreSwaggerTypes.ts"
+import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import WeatherRow from "./WeatherRow.tsx"
 
 interface WeatherSummaryProps {
     weather: Weather[]

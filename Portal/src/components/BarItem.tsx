@@ -1,6 +1,7 @@
 import React from "react"
-import { cn } from "../utils/formattingUtils.ts"
+
 import type { Navigable } from "../types/Navigable.ts"
+import { cn } from "../utils/formattingUtils.ts"
 import AppLink from "./AppLink.tsx"
 
 interface BarItemProps {

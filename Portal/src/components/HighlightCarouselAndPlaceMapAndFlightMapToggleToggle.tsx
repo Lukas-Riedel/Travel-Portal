@@ -1,11 +1,12 @@
+import { Images,Map as MapIcon } from "lucide-react"
 import { useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Map as MapIcon, Images } from "lucide-react"
-import HighlightCarousel from "./HighlightCarousel.tsx"
-import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
-import PlaceMapAndFlightMapToggle from "./PlaceMapAndFlightMapToggle.tsx"
-import type { Highlightable } from "../types/Highlightable.ts"
+
 import type { Place } from "../classes/Place.ts"
 import type { Airport, Category, Flight, Highlight, Photo } from "../types/CoreSwaggerTypes.ts"
+import type { Highlightable } from "../types/Highlightable.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import HighlightCarousel from "./HighlightCarousel.tsx"
+import PlaceMapAndFlightMapToggle from "./PlaceMapAndFlightMapToggle.tsx"
 
 interface HighlightCarouselAndPlaceMapAndFlightMapToggleToggleProps {
     entity: Highlightable | null

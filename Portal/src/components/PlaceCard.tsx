@@ -1,15 +1,16 @@
-import { useMemo } from "react"
 import { Earth, Trash2 } from "lucide-react"
-import LoadingCard from "./LoadingCard.tsx"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { getEntityPrettyName } from "../utils/formattingUtils.ts"
-import { useFormatters } from "../hooks/useFormatters.ts"
-import type { Place } from "../classes/Place.ts"
-import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { useMemo } from "react"
+
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
-import Card from "./Card.tsx"
+import type { Place } from "../classes/Place.ts"
+import { useFormatters } from "../hooks/useFormatters.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import AppLink from "./AppLink.tsx"
+import Card from "./Card.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 interface PlaceCardProps {
     place: Place | DistanceAwarePlace | null

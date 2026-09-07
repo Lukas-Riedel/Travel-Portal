@@ -1,9 +1,10 @@
-import { listTimeTrackingEvents, removeTimeTrackingEvent, createTimeTrackingEvent } from "../clients/coreClient.ts"
 import { useMemo } from "react"
+
+import { createTimeTrackingEvent,listTimeTrackingEvents, removeTimeTrackingEvent } from "../clients/coreClient.ts"
 import type { TimeTrackingEventType } from "../types/CoreSwaggerTypes.ts"
-import { useQuery } from "./useQuery.ts"
-import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import type { UseTimeTrackingEventsResult } from "../types/UseTimeTrackingEventsResult.ts"
+import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import { useQuery } from "./useQuery.ts"
 
 export const useTimeTrackingEvents = (allowedTypes: TimeTrackingEventType[]): UseTimeTrackingEventsResult => {
     const queries = allowedTypes.map(type =>

@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react"
-import ReactJson from "react-json-view"
-import { TailSpin } from "react-loader-spinner"
-import { useAuth } from "../contexts/AuthContext.tsx"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import ReactJson from "react-json-view"
+
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import Editor from "./Editor.tsx"
 
 interface ConfigurationEditorProps {

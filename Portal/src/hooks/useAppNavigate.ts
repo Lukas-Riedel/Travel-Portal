@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom"
+
+import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 import type { UseAppNavigateResult } from "../types/UseAppNavigateResult.ts"
 import { getPath } from "../utils/navigationUtils.ts"
-import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 
 export const useAppNavigate = (target: AppLinkTarget = AppLinkTarget.Default): UseAppNavigateResult => {
     const { pathname } = useLocation()

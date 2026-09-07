@@ -1,12 +1,12 @@
-import { Link } from "react-router-dom"
-import LoadingCard from "./LoadingCard.tsx"
 import { Trash2, Wrench } from "lucide-react"
+import { useTranslation } from "react-i18next"
+
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Airline } from "../types/CoreSwaggerTypes.ts"
-import Card from "./Card.tsx"
-import { useTranslation } from "react-i18next"
 import { getSafeSvgString } from "../utils/imageUtils.ts"
 import AppLink from "./AppLink.tsx"
+import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 interface AirlineCardProps {
     airline: Airline | null

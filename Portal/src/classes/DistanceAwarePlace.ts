@@ -1,5 +1,5 @@
-import { Place } from "./Place.ts"
 import type { Place as IPlace } from "../types/CoreSwaggerTypes.ts"
+import { Place } from "./Place.ts"
 
 export class DistanceAwarePlace extends Place {
     distance?: number

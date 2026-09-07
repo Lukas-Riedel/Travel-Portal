@@ -1,13 +1,13 @@
-import { Link } from "react-router-dom"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
-import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+
 import type { Place } from "../classes/Place.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { formatTimestamp } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
-import { useTranslation } from "react-i18next"
-import { formatTimestamp } from "../utils/timeUtils.ts"
 
 interface PlaceSummaryProps {
     place: Place | null

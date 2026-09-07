@@ -1,7 +1,7 @@
 import { useAuth } from "../contexts/AuthContext.jsx"
-import { UserRole, type PlaceIncludedEntity, type PlaceSortingStrategy } from "../types/CoreSwaggerTypes.ts"
+import { type PlaceIncludedEntity, type PlaceSortingStrategy,UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { UseTimeFilteredRegularPlacesResult } from "../types/UseTimeFilteredRegularPlacesResult.ts"
-import { getCurrentTimestamp, getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { useRegularPlaces } from "./useRegularPlaces.ts"
 
 interface UseTimeFilteredRegularPlacesProps {

@@ -1,5 +1,6 @@
+import { cs,enUS } from "date-fns/locale"
 import { useTranslation } from "react-i18next"
-import { cs, enUS, de } from "date-fns/locale"
+
 import type { UseLocaleResult } from "../types/UseLocaleResult.ts"
 
 const locales = {

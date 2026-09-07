@@ -1,13 +1,13 @@
 import { useMemo } from "react"
-import StaticMapFrame from "../components/StaticMapFrame.tsx"
-import { useCategories } from "../hooks/useCategories"
-import FlightMap from "../components/FlightMap"
-import { useRegularTrips } from "../hooks/useRegularTrips"
+
 import FlightCardGrid from "../components/FlightCardGrid"
+import FlightMap from "../components/FlightMap"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { CategoryCategory, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
-import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import { useRegularTrips } from "../hooks/useRegularTrips"
+import { TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 export default function FlightsPage() {
     const { hasRole } = useAuth()

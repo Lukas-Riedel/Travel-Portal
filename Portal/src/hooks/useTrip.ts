@@ -1,18 +1,17 @@
-import {
-    getTrip, removeTrip, replaceTrip, updateTripStart, updateTripName, createTripHighlight, removeTripHighlight,
-    updateTripMainHighlight, updateHighlightQualityAttributes, createTripExpense, removeTripExpense,
-    updateTripExpenseDescription, updateTripExpenseValue, createTripNote, removeTripNote,
-    updateTripNoteContent, refreshTripHighlights,
-    createTripTask,
-    updateTripTaskDescription,
-    updateTripTaskPriority,
-    removeTripTask
-} from "../clients/coreClient.ts"
 import { Trip } from "../classes/Trip.ts"
-import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
-import { useQuery } from "./useQuery.ts"
+import {
+createTripExpense, createTripHighlight, createTripNote,     createTripTask,
+    getTrip, refreshTripHighlights,
+removeTrip, removeTripExpense,
+removeTripHighlight,
+removeTripNote,
+    removeTripTask,
+replaceTrip, updateHighlightQualityAttributes,     updateTripExpenseDescription, updateTripExpenseValue,     updateTripMainHighlight, updateTripName,     updateTripNoteContent, updateTripStart,     updateTripTaskDescription,
+    updateTripTaskPriority} from "../clients/coreClient.ts"
 import type { ExpenseCurrency, ExpenseType, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import type { UseTripResult } from "../types/UseTripResult.ts"
+import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import { useQuery } from "./useQuery.ts"
 
 export const useTrip = (tripId?: string): UseTripResult => {
     const { response, setResponse, refetchResponse } = useQuery({

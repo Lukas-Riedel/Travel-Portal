@@ -1,15 +1,15 @@
 import { useMemo } from "react"
+
+import PlaceMapAndFlightMapToggle from "../components/PlaceMapAndFlightMapToggle"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
+import StatisticsCardGrid from "../components/StatisticsCardGrid"
 import { useAuth } from "../contexts/AuthContext.tsx"
+import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import { useRegularTrips } from "../hooks/useRegularTrips.ts"
 import { useStatistics } from "../hooks/useStatistics"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { useRegularTrips } from "../hooks/useRegularTrips.ts"
-import { useCategories } from "../hooks/useCategories"
 import { useYears } from "../hooks/useYears.ts"
-import StaticMapFrame from "../components/StaticMapFrame.tsx"
-import PlaceMapAndFlightMapToggle from "../components/PlaceMapAndFlightMapToggle"
-import StatisticsCardGrid from "../components/StatisticsCardGrid"
-import { CategoryCategory, PlaceSortingStrategy, TripIncludedEntity, UserRole, YearIncludedEntity } from "../types/CoreSwaggerTypes.ts"
-import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import { PlaceSortingStrategy, TripIncludedEntity, UserRole, YearIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 
 export default function StatisticsPage() {
     const { hasRole } = useAuth()

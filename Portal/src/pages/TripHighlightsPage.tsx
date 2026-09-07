@@ -1,15 +1,16 @@
-import { useParams } from "react-router-dom"
-import { useAuth } from "../contexts/AuthContext.tsx"
 import { useMemo, useState } from "react"
-import { useTrip } from "../hooks/useTrip"
-import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+
 import { listPlaceAlbumPhotos } from "../clients/coreClient"
-import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
-import { PlaceIncludedEntity, PlaceSortingStrategy, UserRole, type Photo } from "../types/CoreSwaggerTypes.ts"
+import HighlightCarousel from "../components/HighlightCarousel.tsx"
+import { useAuth } from "../contexts/AuthContext.tsx"
+import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useTrip } from "../hooks/useTrip"
+import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { formatDateRange } from "../utils/timeUtils.ts"
-import { useTranslation } from "react-i18next"
 
 export default function TripHighlightsPage() {
     const { tripId } = useParams()

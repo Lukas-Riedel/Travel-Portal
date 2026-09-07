@@ -1,8 +1,9 @@
 import { useMemo } from "react"
-import Map from "./Map"
+
+import { useAppNavigate } from "../hooks/useAppNavigate"
 import type { Airport, Category, Flight } from "../types/CoreSwaggerTypes"
 import type { FlightPath } from "../types/FlightPath"
-import { useAppNavigate } from "../hooks/useAppNavigate"
+import Map from "./Map"
 
 const PATH_COLORS = [
     "#b0b0b0",

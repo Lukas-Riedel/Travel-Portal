@@ -1,11 +1,12 @@
-import { ArrowUpLeftFromCircle, ChevronDown, Clock, Cloud, CloudRain, CloudSun, Droplets, HelpCircle, Sun, Wind, type LucideIcon } from "lucide-react"
-import type { Weather } from "../types/CoreSwaggerTypes.ts"
+import { ArrowUpLeftFromCircle, ChevronDown, Clock, Cloud, CloudRain, CloudSun, Droplets, HelpCircle, type LucideIcon,Sun, Wind } from "lucide-react"
 import { useMemo } from "react"
-import Tooltip from "./Tooltip.jsx"
 import { useTranslation } from "react-i18next"
-import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
+
 import type { Coordinates } from "../types/Coordinates.ts"
+import type { Weather } from "../types/CoreSwaggerTypes.ts"
 import { getSunAltitude, getSunAzimuth } from "../utils/sunUtils.ts"
+import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
+import Tooltip from "./Tooltip.jsx"
 
 interface WeatherRowProps {
     coordinates: Coordinates

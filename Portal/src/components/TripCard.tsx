@@ -1,17 +1,17 @@
-import { useMemo } from "react"
-import { Link } from "react-router-dom"
 import { Calendar, Trash2 } from "lucide-react"
-import LoadingCard from "./LoadingCard.tsx"
+import { useMemo } from "react"
+
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces.js"
-import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
-import { CategoryCategory, PlaceIncludedEntity, type Date, type Place, type Trip } from "../types/CoreSwaggerTypes.ts"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
+import { CategoryCategory, type Date, type Place, PlaceIncludedEntity, type Trip } from "../types/CoreSwaggerTypes.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
-import AppLink from "./AppLink.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 interface TripCardProps {
     trip: Trip | null

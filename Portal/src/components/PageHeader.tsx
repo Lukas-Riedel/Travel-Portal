@@ -1,11 +1,11 @@
 import { Images, RefreshCcw, Share2, SquarePen, Trash2 } from "lucide-react"
 import React, { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import type { Category, Highlight } from "../types/CoreSwaggerTypes.ts"
-import AppLink from "./AppLink.tsx"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
 
 const MOBILE_WIDTH_THRESHOLD = 768

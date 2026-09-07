@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import type { BridgeXDeviceData } from "../types/BridgeXDeviceData.ts"
+import type { Coordinates } from "../types/Coordinates.ts"
+import { DeviceType } from "../types/CoreSwaggerTypes.ts"
+import type { KnownAddress } from "../types/KnownAddress.ts"
+import { KnownAddressType } from "../types/KnownAddressType.ts"
+import type { SpecificDevice } from "../types/SpecificDevice.ts"
+import type { UseLastSeenBridgeXDeviceResult } from "../types/UseLastSeenBridgeXDeviceResult.ts"
+import { getEuclideanDistance } from "../utils/geocodingUtils.ts"
 import { useAirports } from "./useAirports.ts"
 import { useCachedCoordinates } from "./useCachedCoordinates.ts"
 import { useDevices } from "./useDevices.ts"
-import { getEuclideanDistance } from "../utils/geocodingUtils.ts"
-import { DeviceType } from "../types/CoreSwaggerTypes.ts"
-import type { SpecificDevice } from "../types/SpecificDevice.ts"
-import type { BridgeXDeviceData } from "../types/BridgeXDeviceData.ts"
-import type { KnownAddress } from "../types/KnownAddress.ts"
-import type { Coordinates } from "../types/Coordinates.ts"
-import { useTranslation } from "react-i18next"
-import type { UseLastSeenBridgeXDeviceResult } from "../types/UseLastSeenBridgeXDeviceResult.ts"
-import { KnownAddressType } from "../types/KnownAddressType.ts"
 
 const RADIUSES = {
     [KnownAddressType.Airport]: 3.0,

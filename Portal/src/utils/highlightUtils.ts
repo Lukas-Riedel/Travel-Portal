@@ -1,5 +1,5 @@
-import { HighlightsTier } from "../types/HighlightsTier"
 import type { Highlight } from "../types/CoreSwaggerTypes"
+import { HighlightsTier } from "../types/HighlightsTier"
 
 const LOW_IMPRESSION_THRESHOLD = 100
 const LOW_COMPOSITION_THRESHOLD = 100

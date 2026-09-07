@@ -1,8 +1,9 @@
+import type { GeoJSON } from "geojson"
+
 import { createCompositeRegion, createGeographicalRegion, listRegions } from "../clients/coreClient.ts"
 import type { UseRegionsResult } from "../types/UseRegionsResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
-import type { GeoJSON } from "geojson"
 
 interface UseRegionsProps {
     name?: string

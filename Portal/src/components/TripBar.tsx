@@ -1,10 +1,7 @@
-import { TailSpin } from "react-loader-spinner"
-import { Link } from "react-router-dom"
-import type { Trip } from "../classes/Trip"
-import BarItem from "./BarItem"
-import Bar from "./Bar"
 import type { TripIdentifier } from "../types/CoreSwaggerTypes"
 import { getTripFullName } from "../utils/formattingUtils"
+import Bar from "./Bar"
+import BarItem from "./BarItem"
 
 interface TripBarProps {
     trips: TripIdentifier[] | null

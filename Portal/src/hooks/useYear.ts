@@ -1,5 +1,5 @@
 
-import { getYear, removeYearHighlight, updateYearMainHighlight, updateHighlightQualityAttributes, createYearHighlight, refreshYearHighlights } from "../clients/coreClient.ts"
+import { createYearHighlight, getYear, refreshYearHighlights,removeYearHighlight, updateHighlightQualityAttributes, updateYearMainHighlight } from "../clients/coreClient.ts"
 import type { UseYearResult } from "../types/UseYearResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"

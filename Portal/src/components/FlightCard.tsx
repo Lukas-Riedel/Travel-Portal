@@ -1,18 +1,15 @@
-import { useMemo } from "react"
-import { Plane, Clock, MapPin, PlaneTakeoff, PlaneLanding, type LucideProps, type LucideIcon } from "lucide-react"
-import { format, fromUnixTime } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
-import { Link } from "react-router-dom"
+import { Clock, type LucideIcon,PlaneLanding, PlaneTakeoff } from "lucide-react"
 import { useTranslation } from "react-i18next"
+
 import { useAirline } from "../hooks/useAirline.ts"
-import LoadingCard from "./LoadingCard.tsx"
-import { getSafeSvgString } from "../utils/imageUtils.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
-import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
 import type { Airport, Flight } from "../types/CoreSwaggerTypes.ts"
-import Card from "./Card.tsx"
+import { getSafeSvgString } from "../utils/imageUtils.ts"
 import { getAircraftLink, getFlightLink, getFlightPriceLink } from "../utils/navigationUtils.ts"
+import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
+import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 interface FlightCardProps {
     flight: Flight | null

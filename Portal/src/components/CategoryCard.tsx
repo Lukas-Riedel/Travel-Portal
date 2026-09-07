@@ -1,17 +1,18 @@
 import { MapPin, Move, Trash2 } from "lucide-react"
 import { useMemo } from "react"
-import LoadingCard from "./LoadingCard.tsx"
-import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import { CategoryCategory, type Category } from "../types/CoreSwaggerTypes.ts"
-import type { Place } from "../classes/Place.ts"
-import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
-import { getEntityPrettyName } from "../utils/formattingUtils.ts"
-import Card from "./Card.tsx"
-import AppLink from "./AppLink.tsx"
 import { useTranslation } from "react-i18next"
+
+import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
+import type { Place } from "../classes/Place.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
-import CategoryFlag from "./CategoryFlag.tsx"
+import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import { type Category,CategoryCategory } from "../types/CoreSwaggerTypes.ts"
 import { getOnlyElement } from "../utils/collectionUtils.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import AppLink from "./AppLink.tsx"
+import Card from "./Card.tsx"
+import CategoryFlag from "./CategoryFlag.tsx"
+import LoadingCard from "./LoadingCard.tsx"
 
 const MAXIMUM_PLACES_COUNT = 5
 

@@ -1,8 +1,9 @@
 import { ImageUp, Plus, SendToBack } from "lucide-react"
-import PhotoTile from "./PhotoTile"
 import { useState } from "react"
-import type { Category, Photo, Highlight } from "../types/CoreSwaggerTypes"
+
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput"
+import type { Category, Highlight,Photo } from "../types/CoreSwaggerTypes"
+import PhotoTile from "./PhotoTile"
 
 interface HighlightCandidateTileProps {
     name: string | null

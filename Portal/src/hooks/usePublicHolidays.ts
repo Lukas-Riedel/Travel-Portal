@@ -1,9 +1,10 @@
 import { format, isWeekend } from "date-fns"
-import { getCurrentYear, ONE_MONTH_SECONDS } from "../utils/timeUtils.ts"
-import { useQuery } from "./useQuery.ts"
+import { useCallback } from "react"
+
 import { useConfiguration } from "../contexts/ConfigContext.jsx"
 import type { UsePublicHolidaysResult } from "../types/UsePublicHolidaysResult.ts"
-import { useCallback } from "react"
+import { getCurrentYear, ONE_MONTH_SECONDS } from "../utils/timeUtils.ts"
+import { useQuery } from "./useQuery.ts"
 
 export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => {
     const { configuration } = useConfiguration()

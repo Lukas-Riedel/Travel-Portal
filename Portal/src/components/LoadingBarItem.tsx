@@ -1,4 +1,5 @@
 import { TailSpin } from "react-loader-spinner"
+
 import BarItem from "./BarItem"
 
 export default function LoadingBarItem() {

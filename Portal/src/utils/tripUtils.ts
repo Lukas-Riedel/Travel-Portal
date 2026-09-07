@@ -1,4 +1,5 @@
 import { isSameDay } from "date-fns"
+
 import type { Trip } from "../classes/Trip"
 import type { Date, Flight, Place, TripIdentifier } from "../types/CoreSwaggerTypes"
 import { getMaximumAllowedTimetamp, getZonedDate } from "./timeUtils"

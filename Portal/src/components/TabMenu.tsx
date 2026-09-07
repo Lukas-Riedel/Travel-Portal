@@ -1,5 +1,5 @@
-import { useMemo, useEffect, useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useCallback } from "react"
+
 import type { TabMenuTab } from "../types/TabMenuTab"
 
 interface TabMenuProps {

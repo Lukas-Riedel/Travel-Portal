@@ -1,9 +1,9 @@
-import { listCandidateTrips, removeTrip } from "../clients/coreClient.ts"
 import { Trip } from "../classes/Trip.ts"
+import { listCandidateTrips, removeTrip } from "../clients/coreClient.ts"
 import type { TripIncludedEntity } from "../types/CoreSwaggerTypes.ts"
+import type { UseCandidateTripsResult } from "../types/UseCandidateTripsResult.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
-import type { UseCandidateTripsResult } from "../types/UseCandidateTripsResult.ts"
 
 interface UseCandidateTripsProps {
     include?: TripIncludedEntity[]

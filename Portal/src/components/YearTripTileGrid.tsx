@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom"
-import TripTileGrid from "./TripTileGrid"
 import { useMemo } from "react"
+
 import type { Trip } from "../classes/Trip"
 import AppLink from "./AppLink"
+import TripTileGrid from "./TripTileGrid"
 
 interface YearTripTileGridProps {
     year: number

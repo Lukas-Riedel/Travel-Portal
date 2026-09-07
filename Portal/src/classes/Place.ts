@@ -1,10 +1,11 @@
 import { fromUnixTime, isSameDay } from "date-fns"
-import type { Place as IPlace, Category, Date, Highlight, Label, Note, TripIdentifier, Album, PlaceIdentifier } from "../types/CoreSwaggerTypes.ts"
+
+import type { Coordinates } from "../types/Coordinates.ts"
+import type { Album, Category, Date, Highlight, Label, Note, Place as IPlace, PlaceIdentifier,TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
-import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import type { Coordinates } from "../types/Coordinates.ts"
 
 export class Place implements IPlace {
     id: string

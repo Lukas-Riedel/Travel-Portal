@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { EditorKey } from "../types/EditorKey";
+import { ExternalLink } from "lucide-react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { TailSpin } from "react-loader-spinner";
-import { useSearchParams } from "react-router-dom";
+
+import type { EditorKey } from "../types/EditorKey";
 import AppLink from "./AppLink";
-import { ExternalLink } from "lucide-react";
 
 interface EditorProps {
     keys: EditorKey[] | null

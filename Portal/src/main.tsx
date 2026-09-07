@@ -1,16 +1,18 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
-import App from "./App.jsx"
 import "./index.css"
 import "./i18n.js"
-import { AuthProvider } from "./contexts/AuthContext.js"
-import { ConfigurationProvider } from "./contexts/ConfigContext.js"
+
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { persistQueryClient } from "@tanstack/react-query-persist-client"
 import localforage from "localforage"
-import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister"
-import { NotificationProvider } from "./contexts/NotificationContext.js"
+import React from "react"
+import ReactDOM from "react-dom/client"
+
+import App from "./App.jsx"
+import { AuthProvider } from "./contexts/AuthContext.js"
+import { ConfigurationProvider } from "./contexts/ConfigContext.js"
 import { LocationProvider } from "./contexts/LocationContext.js"
+import { NotificationProvider } from "./contexts/NotificationContext.js"
 
 const queryClient = new QueryClient({
     defaultOptions: {

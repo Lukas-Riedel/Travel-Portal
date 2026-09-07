@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react"
+import { Expand } from "lucide-react"
+import { useEffect,useState } from "react"
+
+import type { Category, Highlight,Photo } from "../types/CoreSwaggerTypes"
+import type { HighlightCandidatesGroup } from "../types/HighlightCandidatesGroup"
 import HighlightCandidateTile from "./HighlightCandidateTile"
 import TileGrid from "./TileGrid.js"
-import { Expand } from "lucide-react"
-import type { Category, Photo, Highlight } from "../types/CoreSwaggerTypes"
-import type { HighlightCandidatesGroup } from "../types/HighlightCandidatesGroup"
 
 interface HighlightCandidateTileGridProps {
     name: string | null

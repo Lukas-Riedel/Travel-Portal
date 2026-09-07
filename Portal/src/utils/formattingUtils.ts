@@ -1,7 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue,clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { TripIdentifier } from "../types/CoreSwaggerTypes"
+
 import type { Trip } from "../classes/Trip"
+import type { TripIdentifier } from "../types/CoreSwaggerTypes"
 import { isTripCandidate } from "./tripUtils"
 
 export function cn(...inputs: ClassValue[]): string {

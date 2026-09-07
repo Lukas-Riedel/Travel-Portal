@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
+
+import { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
+import { createCandidatePlace, listCandidatePlaces, removeCandidatePlace } from "../clients/coreClient.ts"
 import { useLocation } from "../contexts/LocationContext.jsx"
-import { listCandidatePlaces, createCandidatePlace, removeCandidatePlace } from "../clients/coreClient.ts"
 import type { PlaceIncludedEntity, PlaceSortingStrategy } from "../types/CoreSwaggerTypes.ts"
 import type { UseCandidatePlacesResult } from "../types/UseCandidatePlacesResult.ts"
-import { useQuery } from "./useQuery.ts"
-import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
-import { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
+import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { useQuery } from "./useQuery.ts"
 
 interface UseCandidatePlacesProps {
     tripId?: string

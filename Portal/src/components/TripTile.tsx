@@ -1,10 +1,11 @@
 import { useMemo } from "react"
-import PhotoTile from "./PhotoTile"
-import { useCategories } from "../hooks/useCategories"
+import { useTranslation } from "react-i18next"
+
 import type { Trip } from "../classes/Trip"
+import { useCategories } from "../hooks/useCategories"
 import { CategoryCategory } from "../types/CoreSwaggerTypes"
 import { formatDateRange } from "../utils/timeUtils"
-import { useTranslation } from "react-i18next"
+import PhotoTile from "./PhotoTile"
 
 interface TripTileProps {
     trip: Trip

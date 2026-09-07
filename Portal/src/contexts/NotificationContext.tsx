@@ -1,11 +1,12 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { getToken, onMessage } from "firebase/messaging"
+import { createContext, type ReactNode,useContext, useEffect, useState } from "react"
+
+import { createDevice } from "../clients/coreClient.ts"
 import { messaging } from "../lib/firebase.ts"
+import type { Message } from "../types/Message.ts"
+import type { UseNotificationsResult } from "../types/UseNotificationsResult.ts"
 import { useAuth } from "./AuthContext.tsx"
 import { useConfiguration } from "./ConfigContext.tsx"
-import { createDevice } from "../clients/coreClient.ts"
-import type { UseNotificationsResult } from "../types/UseNotificationsResult.ts"
-import type { Message } from "../types/Message.ts"
 
 const NotificationContext = createContext<UseNotificationsResult | undefined>(undefined)
 

@@ -1,8 +1,8 @@
-import { fromUnixTime, startOfDay } from "date-fns"
-import { TimeTrackingEventType, type TimeTrackingEvent } from "../types/CoreSwaggerTypes"
-import { toZonedTime } from "date-fns-tz"
-import { getZonedDate } from "./timeUtils"
+import { startOfDay } from "date-fns"
 import { ClockPlus, Palmtree, Pill, Shield } from "lucide-react"
+
+import { type TimeTrackingEvent,TimeTrackingEventType } from "../types/CoreSwaggerTypes"
+import { getZonedDate } from "./timeUtils"
 
 export const HOURS_PER_MAN_DAY = 8
 export const TIME_TRACKING_EVENT_TYPE_ICONS = {

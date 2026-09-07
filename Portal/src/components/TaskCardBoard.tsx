@@ -1,10 +1,11 @@
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Minus } from "lucide-react"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
 import type { Trip } from "../classes/Trip.ts"
 import { type Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
-import { Signal, SignalHigh, SignalMedium, SignalLow, SignalZero, Flame, ChevronUp, Circle, ChevronDown, ArrowDown, ArrowUp, Minus } from "lucide-react"
 import CardGrid from "./CardGrid.tsx"
 import TaskCard from "./TaskCard.tsx"
-import { useTranslation } from "react-i18next"
-import { useMemo } from "react"
 
 interface TaskCardBoardProps {
     tasksWithTrips: { task: Task, trip: Trip }[] | null

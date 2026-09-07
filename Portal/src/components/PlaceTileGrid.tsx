@@ -1,7 +1,7 @@
-import TileGrid from "./TileGrid"
-import PlaceTile from "./PlaceTile"
-import type { Category } from "../types/CoreSwaggerTypes"
 import type { Place } from "../classes/Place"
+import type { Category } from "../types/CoreSwaggerTypes"
+import PlaceTile from "./PlaceTile"
+import TileGrid from "./TileGrid"
 
 interface PlaceTileGridProps {
     places: Place[] | null

@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import type { UseLocationResult } from "../types/UseLocationResult.ts"
+import { createContext, type ReactNode,useContext, useEffect, useState } from "react"
+
 import type { Coordinates } from "../types/Coordinates.ts"
+import type { UseLocationResult } from "../types/UseLocationResult.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 
 const LocationContext = createContext<UseLocationResult | undefined>(undefined)

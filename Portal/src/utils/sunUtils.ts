@@ -1,4 +1,5 @@
 import SunCalc from "suncalc"
+
 import type { Coordinates } from "../types/Coordinates.ts"
 import { toDegrees } from "./geocodingUtils.ts"
 import { getDate } from "./timeUtils.ts"

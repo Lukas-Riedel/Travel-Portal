@@ -1,12 +1,13 @@
-import { useMemo } from "react"
 import { Trash2 } from "lucide-react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import LoadingCard from "./LoadingCard.tsx"
+
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Document } from "../types/CoreSwaggerTypes.ts"
-import Card from "./Card.tsx"
-import PropertyCardContent from "./PropertyCardContent.tsx"
 import { formatTimestamp } from "../utils/timeUtils.ts"
+import Card from "./Card.tsx"
+import LoadingCard from "./LoadingCard.tsx"
+import PropertyCardContent from "./PropertyCardContent.tsx"
 
 interface DocumentCardProps {
     document: Document | null

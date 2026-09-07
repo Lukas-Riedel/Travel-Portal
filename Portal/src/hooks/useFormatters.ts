@@ -1,5 +1,6 @@
-import { useTranslation } from "react-i18next"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+
 import { StatisticsUnit } from "../types/CoreSwaggerTypes.ts"
 import type { UseFormattersResult } from "../types/UseFormattersResult.ts"
 import { getCurrentTimestamp } from "../utils/timeUtils.ts"

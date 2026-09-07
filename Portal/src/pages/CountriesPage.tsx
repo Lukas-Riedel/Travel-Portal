@@ -1,12 +1,12 @@
-import { useCategories } from "../hooks/useCategories"
-import StaticMapFrame from "../components/StaticMapFrame.tsx"
-import CategoryTileGrid from "../components/CategoryTileGrid"
 import { useMemo } from "react"
+
+import CategoryTileGrid from "../components/CategoryTileGrid"
 import PlaceMap from "../components/PlaceMap"
-import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { CategoryCategory, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
+import { PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function CountriesPage() {
     const { hasRole } = useAuth()

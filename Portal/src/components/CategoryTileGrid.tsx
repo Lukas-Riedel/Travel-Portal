@@ -1,6 +1,6 @@
-import TileGrid from "./TileGrid.tsx"
-import CategoryTile from "./CategoryTile.tsx"
 import type { Category } from "../types/CoreSwaggerTypes.ts"
+import CategoryTile from "./CategoryTile.tsx"
+import TileGrid from "./TileGrid.tsx"
 
 interface CategoryTileGridProps {
     categories: Category[] | null

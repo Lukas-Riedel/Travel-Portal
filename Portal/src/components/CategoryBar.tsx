@@ -1,6 +1,5 @@
 import type { Category } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
-import AppLink from "./AppLink.tsx"
 import Bar from "./Bar.tsx"
 import BarItem from "./BarItem.tsx"
 
