@@ -8,7 +8,7 @@ const DEFAULT_POINT_COLOR = "#4285F4"
 
 interface RegionMapProps {
     regions: GeographicalRegion[] | null
-    onClick?: (featureId?: string) => Promise<void>
+    onClick?: (region?: GeographicalRegion) => Promise<void>
 }
 
 export default function RegionMap({ regions, onClick }: RegionMapProps) {
@@ -29,6 +29,6 @@ export default function RegionMap({ regions, onClick }: RegionMapProps) {
         <Map
             points={points}
             geoJsons={geoJsons}
-            onClick={onClick} />
+            onClick={featureId => onClick(regions.find(region => (region.geoJson as Feature).properties.id === featureId))} />
     )
 }

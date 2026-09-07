@@ -469,7 +469,11 @@
                 "regions": "Regiony",
                 "documents": "Dokumenty",
                 "vouchers": "Poukazy",
-                "tasks": "Úkoly"
+                "tasks": "Úkoly",
+                "consideredPlaces": "Zvažovaná místa",
+                "visitedPlaces": "Navštívená místa",
+                "visitedRegions": "Navštívené regiony",
+                "consideredTrips": "Návrhy výletů"
             }
         }
     },
@@ -1025,6 +1029,12 @@
                     "failed": "Nepodařilo se aktualizovat kompozitní region"
                 }
             }
+        }
+    },
+    "plan": {
+        "slider": {
+            "maxDistance": "Maximální vzdálenost",
+            "maxQuality": "Maximální kvalita"
         }
     },
     "place": {
