@@ -11,10 +11,10 @@ export const useAlbumsBeingUploaded = (): UseAlbumsBeingUploadedResult => {
     const { events: processingFailedEvents } = useEvents(EventType.ProcessingFailed)
 
     const uploadedTimestamps = useMemo<Set<number>>(() => new Set([...(processingEndedEvents ?? []), ...(processingFailedEvents ?? [])]
-        .filter(event => event.name === EventType.PhotosUploadingTriggered).map(event => event.args.timestamp)), [processingEndedEvents, processingFailedEvents])
+        .filter(event => event.name === EventType.PhotosUploadingTriggered).map(event => event.args.timestamp ?? 0)), [processingEndedEvents, processingFailedEvents])
     // TODO: This won't work for repeated uploads for the same date.
-    const timestampsBeingUploaded = useMemo<Set<number>>(() => new Set(processingStartedEvents?.filter(event => event.name === EventType.PhotosUploadingTriggered)?.filter(event => !uploadedTimestamps.has(event.args.timestamp))
-        ?.map(event => event.args.timestamp) ?? []), [uploadedTimestamps, processingStartedEvents])
+    const timestampsBeingUploaded = useMemo<Set<number>>(() => new Set(processingStartedEvents?.filter(event => event.name === EventType.PhotosUploadingTriggered)?.filter(event => !uploadedTimestamps.has(event.args.timestamp ?? 0))
+        ?.map(event => event.args.timestamp ?? 0) ?? []), [uploadedTimestamps, processingStartedEvents])
 
     return {
         startedUploadingsCount: processingStartedEvents?.length ?? 0,

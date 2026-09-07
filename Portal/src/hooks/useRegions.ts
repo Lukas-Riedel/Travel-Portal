@@ -12,7 +12,7 @@ interface UseRegionsProps {
 
 export const useRegions = ({ name, enabled }: UseRegionsProps = {}): UseRegionsResult => {
     const { response, refetchResponse } = useQuery({
-        queryKey: ["listRegions", name],
+        queryKey: ["listRegions", name ?? ""],
         queryFn: () => listRegions({ name }),
         staleTime: ONE_DAY_SECONDS * 1000,
         enabled

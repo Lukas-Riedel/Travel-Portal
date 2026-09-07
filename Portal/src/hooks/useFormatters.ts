@@ -15,7 +15,7 @@ export function useFormatters(): UseFormattersResult {
         const m = Math.floor((value % 3600) / 60)
         const s = Math.round(value % 60)
 
-        const parts = []
+        const parts: string[] = []
         if (h > 0) {
             parts.push(t("general.unit.hour", { count: h }))
         }

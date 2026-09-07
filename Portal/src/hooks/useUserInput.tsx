@@ -54,7 +54,7 @@ export const useUserInput = (): UseUserInputResult => {
                         const inputRefs = useRef<(HTMLInputElement | HTMLSelectElement | null)[]>([])
 
                         const handleSubmit = async () => {
-                            if (fields.filter(Boolean).some((field, index) => field.required && !inputRefs.current[index]?.value)) {
+                            if (fields.filter((f): f is FormField<unknown> => f != null).some((field, index) => field.required && !inputRefs.current[index]?.value)) {
                                 return
                             }
 
@@ -122,7 +122,7 @@ export const useUserInput = (): UseUserInputResult => {
                                             {message}
                                         </div>
                                     )}
-                                    {fields.filter(Boolean).map((field, index) => {
+                                    {fields.filter((f): f is FormField<unknown> => f != null).map((field, index) => {
                                         const roundedDefaultValue = (() => {
                                             if (!isSelectFormField(field)) {
                                                 return undefined

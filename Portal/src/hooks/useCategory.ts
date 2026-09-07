@@ -7,22 +7,22 @@ import { useQuery } from "./useQuery.ts"
 export const useCategory = (categoryId?: string): UseCategoryResult => {
     const { response, setResponse, refetchResponse } = useQuery({
         queryKey: ["getCategory", categoryId],
-        queryFn: () => getCategory(categoryId),
+        queryFn: () => getCategory(categoryId!),
         enabled: !!categoryId,
         staleTime: ONE_DAY_SECONDS * 1000
     })
 
     return {
         category: response,
-        updateCategoryName: (name: string) => updateCategoryName(categoryId, name).then(setResponse),
-        updateCategoryCategory: (category: CategoryCategory) => updateCategoryCategory(categoryId, category).then(setResponse),
-        updateCategoryMetadata: (metadata: CategoryMetadata) => updateCategoryMetadata(categoryId, metadata).then(setResponse),
-        createCategoryHighlight: (photoId: string) => createCategoryHighlight(categoryId, photoId).then(refetchResponse),
-        removeCategoryHighlight: (highlightId: string) => removeCategoryHighlight(categoryId, highlightId).then(refetchResponse),
-        updateCategoryMainHighlight: (highlightId: string) => updateCategoryMainHighlight(categoryId, highlightId).then(setResponse),
+        updateCategoryName: (name: string) => updateCategoryName(categoryId!, name).then(setResponse),
+        updateCategoryCategory: (category: CategoryCategory) => updateCategoryCategory(categoryId!, category).then(setResponse),
+        updateCategoryMetadata: (metadata: CategoryMetadata) => updateCategoryMetadata(categoryId!, metadata).then(setResponse),
+        createCategoryHighlight: (photoId: string) => createCategoryHighlight(categoryId!, photoId).then(refetchResponse),
+        removeCategoryHighlight: (highlightId: string) => removeCategoryHighlight(categoryId!, highlightId).then(refetchResponse),
+        updateCategoryMainHighlight: (highlightId: string) => updateCategoryMainHighlight(categoryId!, highlightId).then(setResponse),
         updateCategoryHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere, impression).then(refetchResponse),
-        removeCategory: () => removeCategory(categoryId),
-        refreshCategoryHighlights: (count: number) => refreshCategoryHighlights(categoryId, count).then(refetchResponse)
+        removeCategory: () => removeCategory(categoryId!),
+        refreshCategoryHighlights: (count: number) => refreshCategoryHighlights(categoryId!, count).then(refetchResponse)
     }
 }

@@ -30,13 +30,13 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, nearbyPlaces, 
     }, [resolvedLocation])
 
     const { response, refetchResponse } = useQuery({
-        queryKey: ["listCandidatePlaces", tripId, categoryId, labelId, `${nearbyPlaces}`, ...(include ?? []), sort],
+        queryKey: ["listCandidatePlaces", tripId, categoryId, labelId, `${nearbyPlaces}`, ...(include ?? []), sort ?? ""],
         queryFn: () => listCandidatePlaces({ tripId, categoryId, labelId, nearbyPlaces, include, sort }),
         staleTime: ONE_DAY_SECONDS * 1000
     })
 
     return {
-        candidatePlaces: useMemo(() => response?.map(place => new DistanceAwarePlace(place, currentLocation && getHaversineDistance(place, currentLocation))), [response, currentLocation]),
+        candidatePlaces: useMemo(() => response?.map(place => new DistanceAwarePlace(place, currentLocation ? getHaversineDistance(place, currentLocation) : undefined)), [response, currentLocation]),
         changeCurrentLocation: setCurrentLocation,
         createCandidatePlace: (name: string, address: string) => createCandidatePlace(name, address).then(refetchResponse),
         removeCandidatePlace: (placeId: string) => removeCandidatePlace(placeId).then(refetchResponse)

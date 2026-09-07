@@ -60,7 +60,7 @@ export class Place implements IPlace {
             (this.dates ?? [])
                 .filter(date => date.start < getCurrentOrMaximumAllowedTimestamp())
                 .map(date => date.trip)
-                .filter(Boolean)
+                .filter((trip): trip is TripIdentifier => trip != null)
                 .map(trip => [trip.id, trip]))
             .values()]
     }
@@ -69,7 +69,7 @@ export class Place implements IPlace {
         return [...new Map(
             (this.dates ?? [])
                 .map(date => date.trip)
-                .filter(Boolean)
+                .filter((trip): trip is TripIdentifier => trip != null)
                 .map(trip => [trip.id, trip]))
             .values()]
     }

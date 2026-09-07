@@ -9,5 +9,5 @@ const locales = {
 
 export const useLocale = (): UseLocaleResult => {
     const { i18n } = useTranslation()
-    return locales[i18n.language?.split("-")[0]] || enUS
+    return locales[i18n.language?.split("-")[0] as keyof typeof locales] ?? enUS
 };

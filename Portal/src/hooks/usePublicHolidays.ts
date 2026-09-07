@@ -9,11 +9,13 @@ import { useQuery } from "./useQuery.ts"
 export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => {
     const { configuration } = useConfiguration()
 
+    const countryCode = configuration?.homeLocation?.countryCode
+
     const { response: publicHolidays = [], isLoading } = useQuery({
         queryKey: ["publicHolidays", `${getCurrentYear()}`, `${maxYear}`],
-        queryFn: () => fetchAllPublicHolidays(configuration?.homeLocation?.countryCode, maxYear),
+        queryFn: () => fetchAllPublicHolidays(countryCode!, maxYear),
         staleTime: ONE_MONTH_SECONDS * 1000,
-        enabled: !!configuration?.homeLocation?.countryCode,
+        enabled: !!countryCode,
         refetchOnWindowFocus: false
     })
 

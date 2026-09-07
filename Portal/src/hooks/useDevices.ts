@@ -10,7 +10,7 @@ interface UseDevicesProps {
 
 export const useDevices = ({ type }: UseDevicesProps = {}): UseDevicesResults => {
     const { response } = useQuery({
-        queryKey: ["listDevices", type],
+        queryKey: ["listDevices", type ?? ""],
         queryFn: () => listDevices({ type }),
         staleTime: ONE_MINUTE_SECONDS * 1000
     })

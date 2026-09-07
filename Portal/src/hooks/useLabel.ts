@@ -7,13 +7,13 @@ import { useQuery } from "./useQuery.ts"
 export const useLabel = (labelId?: string): UseLabelResult => {
     const { response, setResponse } = useQuery({
         queryKey: ["getLabel", labelId],
-        queryFn: () => getLabel(labelId),
+        queryFn: () => getLabel(labelId!),
         enabled: !!labelId,
         staleTime: ONE_DAY_SECONDS * 1000
     })
 
     return {
         label: response,
-        updateLabelName: (name: string) => updateLabelName(labelId, name).then(setResponse)
+        updateLabelName: (name: string) => updateLabelName(labelId!, name).then(setResponse)
     }
 }

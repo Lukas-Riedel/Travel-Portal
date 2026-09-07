@@ -10,11 +10,13 @@ const accessTokenCache = useCache<string>("useAuthStore:accessToken")
 const refreshTokenCache = useCache<string>("useAuthStore:refreshToken")
 
 export const useAuthStore = create<UseAuthStoreResult>(set => ({
-    accessToken: accessTokenCache.get(),
-    refreshToken: refreshTokenCache.get(),
+    accessToken: accessTokenCache.get() ?? undefined,
+    refreshToken: refreshTokenCache.get() ?? undefined,
     setIamResponse: (iamResponse: IamResponse) => {
         accessTokenCache.set(iamResponse.accessToken, iamResponse.expiresIn)
-        refreshTokenCache.set(iamResponse.refreshToken, iamResponse.refreshExpiresIn)
+        if (iamResponse.refreshToken != null && iamResponse.refreshExpiresIn != null) {
+            refreshTokenCache.set(iamResponse.refreshToken, iamResponse.refreshExpiresIn)
+        }
 
         set(iamResponse)
     }

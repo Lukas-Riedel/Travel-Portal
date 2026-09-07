@@ -23,7 +23,7 @@ export const useTimeTrackingEvents = (allowedTypes: TimeTrackingEventType[]): Us
     }
 
     return {
-        timeTrackingEvents: useMemo(() => allowedTypes.reduce((acc, type, i) => ({ ...acc, [type]: queries[i].response }), {}), [allowedTypes, ...queries.map(q => q.response)]),
+        timeTrackingEvents: useMemo(() => allowedTypes.reduce((acc, type, i) => ({ ...acc, [type]: queries[i]?.response }), {}), [allowedTypes, ...queries.map(q => q.response)]),
         createTimeTrackingEvent: (type: TimeTrackingEventType, description: string, hours: number, timestamp: number) => createTimeTrackingEvent(type, hours, description, timestamp).then(refetchTimeTrackingEvents),
         removeTimeTrackingEvent: (eventId: string) => removeTimeTrackingEvent(eventId).then(refetchTimeTrackingEvents)
     }

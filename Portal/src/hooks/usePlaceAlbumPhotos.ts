@@ -6,7 +6,7 @@ import { useQuery } from "./useQuery.ts"
 export const usePlaceAlbumPhotos = (placeId?: string, albumId?: string): UsePlaceAlbumPhotosResult => {
     const { response } = useQuery({
         queryKey: ["listPlaceAlbumPhotos", placeId, albumId],
-        queryFn: () => listPlaceAlbumPhotos(placeId, albumId),
+        queryFn: () => listPlaceAlbumPhotos(placeId!, albumId!),
         enabled: !!placeId && !!albumId,
         staleTime: ONE_MINUTE_SECONDS * 1000
     })

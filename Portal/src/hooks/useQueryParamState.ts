@@ -6,7 +6,7 @@ import type { UseQueryParamStateResult } from "../types/UseQueryParamStateResult
 export function useQueryParamState(paramName: string, defaultValue?: string): UseQueryParamStateResult {
     const [searchParams, setSearchParams] = useSearchParams()
 
-    const value = searchParams.get(paramName) ?? defaultValue
+    const value = searchParams.get(paramName) ?? defaultValue ?? null
 
     const setValue = useCallback(
         (newValue: string | null) => {

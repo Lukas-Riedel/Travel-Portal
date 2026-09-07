@@ -6,15 +6,15 @@ import { useQuery } from "./useQuery.ts"
 export const useAirline = (airlineId?: string): UseAirlineResult => {
     const { response, setResponse } = useQuery({
         queryKey: ["getAirline", airlineId],
-        queryFn: () => getAirline(airlineId),
+        queryFn: () => getAirline(airlineId!),
         enabled: !!airlineId,
         staleTime: ONE_DAY_SECONDS * 1000
     })
 
     return {
         airline: response,
-        updateAirlineName: name => updateAirlineName(airlineId, name).then(setResponse),
-        updateAirlineLogo: logo => updateAirlineLogo(airlineId, logo).then(setResponse),
-        removeAirline: () => removeAirline(airlineId)
+        updateAirlineName: name => updateAirlineName(airlineId!, name).then(setResponse),
+        updateAirlineLogo: logo => updateAirlineLogo(airlineId!, logo).then(setResponse),
+        removeAirline: () => removeAirline(airlineId!)
     }
 }
