@@ -6,6 +6,7 @@ import type { Coordinates } from "../types/Coordinates.ts"
 import { formatTimestamp } from "./timeUtils.ts"
 import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
+import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 
 const PLAN_PAGE_PREFIX = "/plan"
 const YEAR_PAGE_PREFIX = "/year"
@@ -34,9 +35,9 @@ const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).pla
 const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => (to as AdminNavigationTarget).tab !== undefined
 const isStaticNavigationTarget = (to: Navigable): to is StaticNavigationTarget => StaticNavigationTarget[to as number] !== undefined
 
-export function getPath(to: Navigable, currentPath?: string): string {
+export function getPath(to: Navigable, target: AppLinkTarget = AppLinkTarget.Default, currentPath?: string): string {
     let path = ""
-    if (currentPath?.startsWith(PLAN_PAGE_PREFIX)) {
+    if (target === AppLinkTarget.Plans || currentPath?.startsWith(PLAN_PAGE_PREFIX)) {
         path += PLAN_PAGE_PREFIX
     }
 

@@ -1,44 +1,36 @@
 import { useParams } from "react-router-dom"
-import { useCategory } from "../hooks/useCategory"
-import PageHeader from "../components/PageHeader"
+import { useCategory } from "../hooks/useCategory.ts"
+import PageHeader from "../components/PageHeader.tsx"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
-import PlaceTileGrid from "../components/PlaceTileGrid"
-import StatisticsPanel from "../components/StatisticsPanel"
+import PlaceTileGrid from "../components/PlaceTileGrid.tsx"
+import StatisticsPanel from "../components/StatisticsPanel.tsx"
 import { useMemo } from "react"
-import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { useEvents } from "../hooks/useEvents"
-import { useAuth } from "../contexts/AuthContext"
+import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
+import { useEvents } from "../hooks/useEvents.ts"
+import { useAuth } from "../contexts/AuthContext.tsx"
 import { Edit2, Folder } from "lucide-react"
-import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
+import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient.ts"
 import { useUserInput } from "../hooks/useUserInput.tsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { getHighlightsTier } from "../utils/highlightUtils.ts"
-
-// TODO: This is duplicated in MainLayout. Replace by t(`category.category.${categoryCategory}`).
-const categoryCategories = {
-    continent: "Kontinent",
-    country: "Stát",
-    administrative: "Administrativní oblast",
-    ocean: "Oceán",
-    sea: "Moře",
-    bay: "Záliv",
-    island: "Ostrov",
-    region: "Geografický region"
-}
+import { useTranslation } from "react-i18next"
+import AppLink from "../components/AppLink.tsx"
+import { AppLinkTarget } from "../types/AppLinkTarget.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 
 export default function CategoryPage() {
     const { categoryId } = useParams()
+    const { t } = useTranslation()
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
     const { showUpdateCategoryToast } = usePredefinedUserInput()
-
     const { hasRole } = useAuth()
 
     const { category, updateCategoryName, updateCategoryCategory, updateCategoryMetadata, removeCategory, refreshCategoryHighlights,
         removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
-    const { places } = useTimeFilteredRegularPlaces({ categoryId, include: ["categories"], sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ categoryId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
-    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
+    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
     const totalScore = useMemo(() => places?.map(place => place.score)?.filter(Boolean)
@@ -48,14 +40,17 @@ export default function CategoryPage() {
     const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)?.length, [places])
 
     const attributes = {
-        "Kategorie": categoryCategories[category?.category] ?? category?.category,
-        "Průměrná kvalita": totalQuality && `${Math.round(totalQuality / placesWithQualityCount)}%`,
-        "Tier": category && getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
-        "Celkové skóre": totalScore,
-        "Počet highlightů": category?.highlights?.length
+        [t("category.attribute.category")]: category?.category && t(`category.category.${category?.category}`),
+        [t("category.attribute.averageQuality")]: totalQuality && `${Math.round(totalQuality / placesWithQualityCount)}%`,
+        [t("category.attribute.tier")]: category && getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
+        [t("category.attribute.totalScore")]: totalScore,
+        [t("category.attribute.highlightsCount")]: category?.highlights?.length
     }
 
-    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
+    const handlePhotoCorrected = async (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => createPlaceAlbumPhoto(placeId, albumId, fileName, base64Data, photoId)
+        .then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
+        .then(_ => listPlaceAlbumPhotos(placeId, albumId))
+        .then(photos => photos.find(photo => photo.id === photoId))
 
     const getPlaceCategory = place => {
         if (countryCategoriesMap.size > 1) {
@@ -64,7 +59,7 @@ export default function CategoryPage() {
         if (place?.country === category?.name) {
             return category
         }
-        return place?.getCategory("mostSpecificWithMetadata")
+        return place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
     }
 
     const handleMetadataChanged = () => {
@@ -79,7 +74,7 @@ export default function CategoryPage() {
                 internalAttributes={hasRole(UserRole.CategoryEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName}
-                onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== "country" && removeCategory} />
+                onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== CategoryCategory.Country && removeCategory} />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
                 entity={category}
                 places={places}
@@ -95,11 +90,14 @@ export default function CategoryPage() {
                 placeMainCategorySelector={getPlaceCategory} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">
-                    <a
-                        href={`/plan/category/${category?.id}`}
-                        className="btn-chip-gray">
-                        <Folder size={16} />
-                    </a>
+                    {category && (
+                        <AppLink
+                            target={AppLinkTarget.Plans}
+                            to={category}
+                            className="btn-chip-gray">
+                            <Folder size={16} />
+                        </AppLink>
+                    )}
                     {hasRole(UserRole.CategoryEdit) && (
                         <button
                             onClick={handleMetadataChanged}

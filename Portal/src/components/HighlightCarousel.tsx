@@ -15,7 +15,7 @@ import piexif from "piexifjs"
 import { v4 as uuidv4 } from "uuid"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { DeviceType, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
-import type { Highlight, Place } from "../types/CoreSwaggerTypes.ts"
+import type { Highlight, Photo, Place } from "../types/CoreSwaggerTypes.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 import { useTranslation } from "react-i18next"
 
@@ -34,7 +34,7 @@ interface HighlightCarouselProps {
     highlights: Highlight[] | null
     place?: Place
     onPhotoReplaced?: (agentId: string, placeId: string, albumId: string, placeName: string, photoId: string, path: string, sendNotification: boolean) => Promise<void>
-    onPhotoCorrected?: (placeId: string, albumId: string, filename: string, base64Data: string, photoId: string) => Promise<Highlight>
+    onPhotoCorrected?: (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => Promise<Photo>
     onHighlightRemoved?: (highlightId: string) => Promise<void>
     onMainHighlightUpdated?: (highlightId: string) => Promise<Highlightable>
     onHighlightQualityAttributesUpdated?: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>

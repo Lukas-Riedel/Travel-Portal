@@ -5,7 +5,7 @@ import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import PlaceMapAndFlightMapToggle from "./PlaceMapAndFlightMapToggle.tsx"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { Place } from "../classes/Place.ts"
-import type { Airport, Category, Flight, Highlight } from "../types/CoreSwaggerTypes.ts"
+import type { Airport, Category, Flight, Highlight, Photo } from "../types/CoreSwaggerTypes.ts"
 
 interface HighlightCarouselAndPlaceMapAndFlightMapToggleToggleProps {
     entity: Highlightable | null
@@ -14,7 +14,7 @@ interface HighlightCarouselAndPlaceMapAndFlightMapToggleToggleProps {
     placeMainCategorySelector: (place: Place) => Category
     airportMainCategorySelector?: (airport: Airport) => Category | null
     onPhotoReplaced?: (agentId: string, placeId: string, albumId: string, placeName: string, photoId: string, path: string, sendNotification: boolean) => Promise<void>
-    onPhotoCorrected?: (placeId: string, albumId: string, filename: string, base64Data: string, photoId: string) => Promise<Highlight>
+    onPhotoCorrected?: (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => Promise<Photo>
     onHighlightRemoved?: (highlightId: string) => Promise<void>
     onMainHighlightUpdated?: (highlightId: string) => Promise<Highlightable>
     onHighlightQualityAttributesUpdated?: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>

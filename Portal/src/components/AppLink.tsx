@@ -3,17 +3,19 @@ import type { Navigable } from "../types/Navigable.ts"
 import { getPath } from "../utils/navigationUtils.ts"
 import type { ReactNode } from "react"
 import React from "react"
+import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 
-interface AppLinkProps extends Omit<LinkProps, "to"> {
+interface AppLinkProps extends Omit<Omit<LinkProps, "target">, "to"> {
     to: Navigable
+    target?: AppLinkTarget
 }
 
-export default function AppLink({ to, children, ...props }: AppLinkProps) {
+export default function AppLink({ to, target = AppLinkTarget.Default, children, ...props }: AppLinkProps) {
     const { pathname } = useLocation()
 
     return (
         <Link
-            to={getPath(to, pathname)}
+            to={getPath(to, target, pathname)}
             title={getTitle(children)}
             {...props}>
             {children}

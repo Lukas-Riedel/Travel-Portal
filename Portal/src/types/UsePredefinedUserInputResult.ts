@@ -1,6 +1,6 @@
 import type { Place } from "../classes/Place.ts"
 import type { Trip } from "../classes/Trip.ts"
-import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Subscription, Task, TaskPriority, TimeBasedFitness, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Photo, Subscription, Task, TaskPriority, TimeBasedFitness, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 import type { GeoJSON } from "geojson"
 
@@ -52,7 +52,8 @@ export interface UsePredefinedUserInputResult {
     showLogFlightToast: (logFlight: (actualDeparture?: Date, actualArrival?: Date, fromCode?: string, toCode?: string, aircraft?: string, registration?: string) => Promise<Flight>) => Promise<boolean>
     showCreateHighlightToast: (createHighlight: () => Promise<Highlight>) => Promise<boolean>
     showUpdateMainHighlightToast: <T extends Highlightable> (updateMainHighlight: () => Promise<T>) => Promise<boolean>
-    showUpdateHighlightToast: (updateHighlight: () => Promise<Highlight>) => Promise<boolean>
+    // TODO: According to usage, this should be renamed to showUpdatePhotoToast.
+    showUpdateHighlightToast: (updateHighlight: () => Promise<Photo>) => Promise<boolean>
     showRemoveHighlightToast: (removeHighlight: () => Promise<void>) => Promise<boolean>
     showAssignLabelToast: (createLabel: () => Promise<Label>) => Promise<boolean>
     showUnassignLabelToast: (removeLabel: () => Promise<void>) => Promise<boolean>

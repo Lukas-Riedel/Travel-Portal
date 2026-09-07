@@ -13,10 +13,10 @@ const MOBILE_WIDTH_THRESHOLD = 768
 interface PageHeaderProps<T> {
     name: string
     categories?: Category[]
-    internalAttributes?: string[]
+    internalAttributes?: Record<string, string | number>
     onNameChanged?: (name: string) => Promise<T>
     onRemoved?: () => Promise<void>
-    onHighlightsRefreshed?: () => Promise<Highlight[]>
+    onHighlightsRefreshed?: (count: number) => Promise<Highlight[]>
 }
 
 export default function PageHeader<T,>({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }: PageHeaderProps<T>) {

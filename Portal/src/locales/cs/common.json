@@ -1113,6 +1113,13 @@
         }
     },
     "category": {
+        "attribute": {
+            "category": "Kategorie",
+            "averageQuality": "Průměrná kvalita",
+            "totalScore": "Celkové skóre",
+            "tier": "Tier",
+            "highlightsCount": "Počet highlightů"
+        },
         "category": {
             "continent": "Kontinent",
             "country": "Stát",
