@@ -99,7 +99,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
         )), [detailedView])
 
     const filteredExpenseCandidates = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
-        expense.description.startsWith(candidate.description) && expense.type === candidate.type)) ?? []), duplicatedExpense],
+        expense.description.startsWith(candidate.description ?? "") && expense.type === candidate.type)) ?? []), duplicatedExpense],
         [expenseCandidates, expenses, duplicatedExpense])
 
     const expenseCandidateRows = useMemo(() => filteredExpenseCandidates.map((expenseCandidate, index) => (
@@ -362,7 +362,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const handleExpenseCreated = () => {
         if (onExpenseCreated) {
             showCreateExpenseToast(subscriptions ?? [], (vouchers ?? []).filter(voucher => voucher.currency === newCurrency),
-                (subscriptionId) => onExpenseCreated(newType, newDescription, newValue, newCurrency, subscriptionId),
+                (subscriptionId) => onExpenseCreated(newType!, newDescription, newValue ?? 0, newCurrency, subscriptionId),
                 (voucherId, value) => updateVoucherValue(voucherId, value), (voucherId) => removeVoucher(voucherId))
         }
     }

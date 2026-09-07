@@ -42,7 +42,7 @@ export default function PlaceSummary({ place }: PlaceSummaryProps) {
                             {getEntityPrettyName(place.name)}
                         </AppLink>
                         <span className="text-gray-600 mb-4">
-                            {formatTimestamp(Math.max(...place.dates.map(date => date.start)), t("general.format.date.year.included"))}
+                            {formatTimestamp(Math.max(...(place.dates ?? []).map(date => date.start)), t("general.format.date.year.included"))}
                         </span>
                         <p className="text-gray-600 mb-6">
                             {place.excerpt}

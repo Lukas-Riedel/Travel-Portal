@@ -60,7 +60,7 @@ export default function PlaceCard({ place, onPlaceRemoved }: PlaceCardProps) {
             </div>
             {hasDistance(place) && (
                 <div className="text-sm text-gray-400">
-                    {formatKilometers(place.distance)}
+                    {formatKilometers(place.distance!)}
                 </div>
             )}
             {place.categories?.length && (

@@ -58,24 +58,28 @@ export default function FlightMap({ flights, airportMainCategorySelector }: Flig
 
     return (
         <Map
-            points={airports.map(airport => ({
-                name: airport.longName ?? airport.code,
-                latitude: airport.latitude,
-                longitude: airport.longitude,
-                color: airportMainCategorySelector(airport)?.metadata?.color,
-                unicode: airportMainCategorySelector(airport)?.metadata?.unicode,
-                onClick: () => Promise.resolve(navigate(airport))
-            }))}
-            lines={flightPaths.map(fp => ({
-                from: {
-                    latitude: fp.from.latitude,
-                    longitude: fp.from.longitude
-                },
-                to: {
-                    latitude: fp.to.latitude,
-                    longitude: fp.to.longitude
-                },
-                color: getColorByFlightCount(fp.count, maxFlightsPerFlightPathCount)
-            }))} />
+            points={airports
+                .filter(airport => airport.latitude != null && airport.longitude != null)
+                .map(airport => ({
+                    name: airport.longName ?? airport.code ?? airport.shortName,
+                    latitude: airport.latitude!,
+                    longitude: airport.longitude!,
+                    color: airportMainCategorySelector(airport)?.metadata?.color,
+                    unicode: airportMainCategorySelector(airport)?.metadata?.unicode,
+                    onClick: () => Promise.resolve(navigate(airport))
+                }))}
+            lines={flightPaths
+                .filter(fp => fp.from.latitude != null && fp.from.longitude != null && fp.to.latitude != null && fp.to.longitude != null)
+                .map(fp => ({
+                    from: {
+                        latitude: fp.from.latitude!,
+                        longitude: fp.from.longitude!
+                    },
+                    to: {
+                        latitude: fp.to.latitude!,
+                        longitude: fp.to.longitude!
+                    },
+                    color: getColorByFlightCount(fp.count, maxFlightsPerFlightPathCount)
+                }))} />
     )
 }

@@ -8,9 +8,9 @@ interface CategoryTileProps {
 export default function CategoryTile({ category }: CategoryTileProps) {
     return (!category || category.mainHighlight) && (
         <PhotoTile
-            src={category?.mainHighlight?.url?.thumbnail ?? category?.mainHighlight?.url?.full}
+            src={category?.mainHighlight?.url?.thumbnail ?? category?.mainHighlight?.url?.full ?? null}
             firstLineText={category?.name}
             categories={category ? [category] : []}
-            to={category} />
+            to={category ?? undefined} />
     )
 }

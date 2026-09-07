@@ -27,7 +27,7 @@ export default function DeviceCard({ device, onFolderSynchronizationRequested }:
 
     const handleFolderSynchronizedRequested = () => {
         if (onFolderSynchronizationRequested) {
-            onFolderSynchronizationRequested(device.id)
+            onFolderSynchronizationRequested(device!.id)
         }
     }
 

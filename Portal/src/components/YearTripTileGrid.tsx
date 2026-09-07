@@ -11,9 +11,9 @@ interface YearTripTileGridProps {
 
 export default function YearTripTileGrid({ year, trips }: YearTripTileGridProps) {
     // TODO: This should be ensured by the caller.
-    const yearTrips = useMemo(() => trips?.filter(trip => trip.year == year && trip.isPast()), [trips, year])
+    const yearTrips = useMemo(() => trips?.filter(trip => trip.year == year && trip.isPast()) ?? [], [trips, year])
 
-    return yearTrips?.length > 0 && (
+    return yearTrips.length > 0 && (
         <div className="my-4">
             <div className="flex justify-center mb-2">
                 <AppLink

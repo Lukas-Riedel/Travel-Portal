@@ -20,7 +20,7 @@ export default function CategoryCardGrid({ categories, categoriesPlaces, rowSize
     const getSortedPlaces = (categoryName: string) => {
         const places = categoriesPlaces?.[categoryName] || []
         return haveDistance(places)
-            ? [...places].sort((a, b) => a.distance - b.distance)
+            ? [...places].sort((a, b) => a.distance! - b.distance!)
             : places
     }
 

@@ -19,9 +19,9 @@ export default function TripTile({ trip }: TripTileProps) {
 
     return (
         <PhotoTile
-            src={trip.mainHighlight?.url?.thumbnail ?? trip.mainHighlight?.url?.full}
+            src={trip.mainHighlight?.url?.thumbnail ?? trip.mainHighlight?.url?.full ?? null}
             firstLineText={trip.getFullName()}
-            secondLineText={formatDateRange(trip.start, trip.end, t("general.format.date.year.included"))}
+            secondLineText={formatDateRange(trip.start!, trip.end!, t("general.format.date.year.included"))}
             categories={categories}
             to={trip} />
     )

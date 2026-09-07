@@ -11,7 +11,7 @@ interface PlaceTileProps {
 export default function PlaceTile({ place, mainCategory, secondLineText }: PlaceTileProps) {
     return (
         <PhotoTile
-            src={place.mainHighlight?.url?.thumbnail ?? place.mainHighlight?.url?.full}
+            src={place.mainHighlight?.url?.thumbnail ?? place.mainHighlight?.url?.full ?? null}
             firstLineText={place.name}
             secondLineText={secondLineText}
             categories={mainCategory && [mainCategory]}

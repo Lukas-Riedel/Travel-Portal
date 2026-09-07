@@ -14,7 +14,7 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
     const { configuration } = useConfiguration()
     const { formatDuration, formatDays } = useFormatters()
 
-    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * configuration?.timeTracking?.currentFte || 8, [configuration])
+    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * (configuration?.timeTracking?.currentFte ?? 1), [configuration])
     const availableEventTypes = useMemo(() => timeTrackingEvents ? Object.keys(timeTrackingEvents) : Object.keys(TIME_TRACKING_EVENT_TYPE_ICONS), [timeTrackingEvents])
 
     const getBalance = (events: TimeTrackingEvent[]) => events[0]?.balance ?? 0
@@ -24,7 +24,7 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
             <div className="flex flex-col sm:flex-row gap-4 px-2 items-stretch">
                 {availableEventTypes.map(type => {
                     const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[type as TimeTrackingEventType]
-                    const balance = timeTrackingEvents?.[type] && getBalance(timeTrackingEvents[type as TimeTrackingEventType])
+                    const balance = timeTrackingEvents?.[type] && getBalance(timeTrackingEvents[type as TimeTrackingEventType]!)
 
                     return Icon && (
                         <div

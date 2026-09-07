@@ -31,23 +31,23 @@ export default function HighlightCandidateTile({ name, description, categories, 
                 <PhotoTile
                     // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + (photo.url.endsWith(".jpg") ? "" : "=w350-h233")}
-                    to={photo.permalink} />
+                    to={photo.permalink ?? undefined} />
             )}
             {overlayType === 1 && (
                 <PhotoTile
                     // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + (photo.url.endsWith(".jpg") ? "" : "=w350-h233")}
-                    to={photo.permalink}
+                    to={photo.permalink ?? undefined}
                     categories={categories}
-                    firstLineText={name} />
+                    firstLineText={name ?? undefined} />
             )}
             {overlayType === 2 && (
                 <PhotoTile
                     // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo.url + (photo.url.endsWith(".jpg") ? "" : "=w350-h233")}
-                    to={photo.permalink}
+                    to={photo.permalink ?? undefined}
                     categories={categories}
-                    firstLineText={name}
+                    firstLineText={name ?? undefined}
                     secondLineText={description} />
             )}
             {(onHighlightCreated || onHighlightCandidateCreated) && (

@@ -20,7 +20,7 @@ export default function DocumentCard({ document, onDocumentRemoved }: DocumentCa
 
     const handleDelete = () => {
         if (onDocumentRemoved) {
-            showRemoveDocumentToast(() => onDocumentRemoved(document.id))
+            showRemoveDocumentToast(() => onDocumentRemoved(document!.id))
         }
     }
 

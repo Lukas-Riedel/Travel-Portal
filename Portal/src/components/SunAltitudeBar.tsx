@@ -1,4 +1,4 @@
-import { useEffect,useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { formatTimestamp, getCurrentTimestamp, getDate } from "../utils/timeUtils.ts"
@@ -12,7 +12,7 @@ const DISPLAYED_ALTITUDES = [+0, +20, +30, -30, -20, -0]
 
 export default function SunAltitudeBar({ place }: SunAltitudeBarProps) {
     const [date, setDate] = useState(new Date())
-    const dateInputRef = useRef(null)
+    const dateInputRef = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
         if (!place?.dates) {
@@ -28,7 +28,7 @@ export default function SunAltitudeBar({ place }: SunAltitudeBarProps) {
     return (
         <div
             className="grid grid-cols-3 sm:grid-cols-6 gap-4 my-6 text-center relative hover:cursor-pointer"
-            onClick={() => dateInputRef.current.showPicker()}>
+            onClick={() => dateInputRef.current!.showPicker()}>
             <input
                 ref={dateInputRef}
                 type="date"

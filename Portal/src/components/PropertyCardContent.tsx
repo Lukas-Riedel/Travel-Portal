@@ -1,7 +1,7 @@
 import type React from "react"
 
 interface PropertyCardContentProps {
-    properties: Record<string, React.ReactNode | null>
+    properties: Record<string, React.ReactNode | null> | null
 }
 
 export default function PropertyCardContent({ properties }: PropertyCardContentProps) {

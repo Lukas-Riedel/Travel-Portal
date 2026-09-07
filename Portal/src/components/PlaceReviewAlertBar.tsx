@@ -36,7 +36,7 @@ export default function PlaceReviewAlertBar({ place, onPlaceReviewed }: PlaceRev
         }
     }
 
-    return onPlaceReviewed && place?.dates?.map(date => date.album)?.filter(Boolean)?.some(album => !album.reviewed) && (
+    return onPlaceReviewed && place?.dates?.map(date => date.album)?.filter((album): album is NonNullable<typeof album> => album != null)?.some(album => !album.reviewed) && (
         <div className="bg-orange-100 border border-gray-200 rounded-2xl shadow-sm p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2 text-orange-600">

@@ -20,7 +20,7 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
 
     const handleDelete = () => {
         if (onSubscriptionRemoved) {
-            showRemoveSubscriptionToast(() => onSubscriptionRemoved(subscription.id))
+            showRemoveSubscriptionToast(() => onSubscriptionRemoved(subscription!.id))
         }
     }
 

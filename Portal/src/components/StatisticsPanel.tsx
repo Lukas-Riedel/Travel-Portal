@@ -18,7 +18,7 @@ export default function StatisticsPanel({ statistics }: StatisticsPanelProps) {
     const { configuration } = useConfiguration()
     const { formatStatisticsUnit } = useFormatters()
 
-    const createShuffledStatistics = () => [...statistics].sort(() => Math.random() - 0.5)
+    const createShuffledStatistics = () => [...(statistics ?? [])].sort(() => Math.random() - 0.5)
 
     const containerRef = useRef<HTMLDivElement | null>(null)
     const isDraggingRef = useRef(false)
@@ -121,7 +121,7 @@ export default function StatisticsPanel({ statistics }: StatisticsPanelProps) {
         e.preventDefault()
     }
 
-    const decapitalize = (str: string) => str[0].toLowerCase() + str.slice(1)
+    const decapitalize = (str: string) => (str[0]?.toLowerCase() ?? "") + str.slice(1)
 
     const doubledStats = shuffledStatistics && [...shuffledStatistics, ...shuffledStatistics]
 
@@ -151,14 +151,14 @@ export default function StatisticsPanel({ statistics }: StatisticsPanelProps) {
                                                     </span>
                                                     {" "}
                                                     <span className="text-gray-400">
-                                                        ({decapitalize(formatStatisticsUnit(stat.unit, Number(item.value), configuration?.expensify?.mainCurrency))})
+                                                        ({decapitalize(formatStatisticsUnit(stat.unit!, Number(item.value), configuration?.expensify?.mainCurrency))})
                                                     </span>
                                                 </li>
                                             ))}
                                         </ol>
                                     ) : (
                                         <div className="text-lg">
-                                            {formatStatisticsUnit(stat.unit, Number(stat.value), configuration?.expensify?.mainCurrency)}
+                                            {formatStatisticsUnit(stat.unit!, Number(stat.value), configuration?.expensify?.mainCurrency)}
                                         </div>
                                     )}
                                 </div>
