@@ -1,5 +1,5 @@
 import { differenceInCalendarDays, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
-import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay } from "../types/CoreSwaggerTypes.ts"
+import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay, Task } from "../types/CoreSwaggerTypes.ts"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { getTripFullName, isTripCandidate } from "../utils/formattingUtils.ts"
@@ -23,6 +23,7 @@ export class Trip implements ITrip {
     highlights?: Highlight[]
     statistics?: Statistics[]
     publicHolidays?: PublicHoliday[]
+    tasks?: Task[]
 
     public constructor(data: ITrip) {
         Object.assign(this, data)

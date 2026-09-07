@@ -126,3 +126,7 @@ export function getFlightPriceLink(flight: Flight): string {
 export function getGoogleCalendarLink(date: Date): string {
     return `https://calendar.google.com/calendar/u/0/r/week/${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
 }
+
+export function getGoogleCloudAuthenticationLink(): string {
+    return (window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL) + "/google/auth"
+}
