@@ -10,6 +10,10 @@
     "noUncheckedIndexedAccess": true,
     "allowJs": false,
     "strict": false,
+    "alwaysStrict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "noImplicitThis": true,
     "lib": [
       "dom",
       "dom.iterable",

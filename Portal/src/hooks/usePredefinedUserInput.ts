@@ -1,5 +1,5 @@
 import { format, fromUnixTime } from "date-fns"
-import type { Feature, GeoJSON } from "geojson"
+import type { Feature, GeoJSON, Geometry } from "geojson"
 import { useTranslation } from "react-i18next"
 
 import type { Trip } from "../classes/Trip.ts"
@@ -56,7 +56,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true,
                     label: t("general.prompt.login.label.password")
                 }
-            ],
+            ] as const,
             login,
             t("general.prompt.login.confirmed"),
             t("general.prompt.login.failed")
@@ -317,7 +317,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     }))
                 }
             ] as const,
-            async (name, logo, codes) => {
+            async (name: string, logo: string, codes: string | string[]) => {
                 if (airline.name !== name) {
                     await updateAirlineName(name)
                 }
@@ -326,7 +326,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     await updateAirlineLogo(logo)
                 }
 
-                await Promise.all(airline.codes.filter(code => !codes.includes(code)).map(code => removeAirlineCode(code)))
+                const codesArray = Array.isArray(codes) ? codes : codes ? [codes] : []
+                await Promise.all(airline.codes.filter(code => !codesArray.includes(code)).map(code => removeAirlineCode(code)))
             },
             t("airline.prompt.update.all.confirmed"),
             t("airline.prompt.update.all.failed")
@@ -387,7 +388,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ] as const,
-            async (aircraft?: string, registration?: string, fromCode?: string, actualDeparture?: Date, toCode?: string, actualArrival?: Date) => logFlight(actualDeparture, actualArrival, fromCode, toCode, aircraft, registration),
+            async (aircraft?: string, registration?: string, fromCode?: string, actualDeparture?: string, toCode?: string, actualArrival?: string) => logFlight(actualDeparture ? new Date(actualDeparture) : undefined, actualArrival ? new Date(actualArrival) : undefined, fromCode, toCode, aircraft, registration),
             t("flight.prompt.log.confirmed"),
             t("flight.prompt.log.failed")
         )
@@ -995,7 +996,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true,
                     min: 0
                 }
-            ] as const,
+            ],
             (description: string, hours: number) => createOvertime(description, hours),
             t("tracker.prompt.create.positive.overtime.confirmed"),
             t("tracker.prompt.create.positive.overtime.failed")
@@ -1133,7 +1134,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("document.prompt.create.label.expiration"),
                     required: false
                 }
-            ] as const,
+            ],
             (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration && new Date(expiration)),
             t("document.prompt.create.confirmed"),
             t("document.prompt.create.failed")
@@ -1242,7 +1243,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     min: 0,
                     defaultValue: templateRegion?.radius
                 }
-            ] as const,
+            ],
             (name: string, category: CategoryCategory, geoJson: string, country?: string, radius?: number) => createGeographicalRegion(name, category, JSON.parse(geoJson), country, radius),
             t("region.prompt.create.geographical.confirmed"),
             t("region.prompt.create.geographical.failed")
@@ -1282,7 +1283,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("region.prompt.create.composite.failed")
         )
 
-    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
+    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geometry: Geometry) => GeoJSON, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
         showBranchingToast(
             t("region.prompt.create.selected.message"),
             {
@@ -1313,7 +1314,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                                 }
                                 await showCreateGeographicalRegionToast(countryCategories, createGeographicalRegion, templateRegion)
                             }
-                            catch (error) {
+                            catch (_) {
                                 continue
                             }
                         }

@@ -1,4 +1,4 @@
-import type { GeoJSON } from "geojson"
+import type { GeoJSON, Geometry } from "geojson"
 
 import type { Place } from "../classes/Place.ts"
 import type { Trip } from "../classes/Trip.ts"
@@ -77,7 +77,7 @@ export interface UsePredefinedUserInputResult {
     showSynchronizePhotosToast: (synchronizePhotos: (path: string, expiration: Date) => Promise<void>) => Promise<boolean>
     showCreateGeographicalRegionToast: (countryCategories: Category[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, templateRegion?: GeographicalRegion) => Promise<boolean>
     showCreateCompositeRegionToast: (createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
-    showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
+    showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geometry: Geometry) => GeoJSON, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCopyTripItineraryToast: (copyTripItinerary: () => Promise<void>) => Promise<boolean>
     showCopyDayItineraryToast: (copyDayItinerary: () => Promise<void>) => Promise<boolean>
     showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: Date) => Promise<Task>) => Promise<boolean>
