@@ -195,6 +195,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 .then(async expense => {
                     if (voucherId) {
                         const voucher = vouchers.find(voucher => voucher.id === voucherId)
+                        if (!voucher) {
+                            return Promise.reject("Voucher not found.")
+                        }
+
                         if (voucher.currency !== expense.currency) {
                             return Promise.reject("The voucher currency (" + voucher.currency + ") must match the expense currency (" + expense.currency + ").")
                         }
@@ -616,7 +620,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("category.prompt.update.label.calendar"),
                     defaultValue: category.metadata?.publicHolidaysCalendar
                 },
-                updateCategory && {
+                updateCategory ? {
                     type: "select",
                     required: true,
                     label: t("category.prompt.update.label.category"),
@@ -625,7 +629,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         name: t(`category.category.${categoryCategory}`)
                     })),
                     defaultValue: category.category
-                },
+                } : undefined,
             ],
             (color: string | undefined, unicode: string | undefined, publicHolidaysCalendar: string | undefined, category: string) => {
                 const promise = updateMetadata({ color, unicode, publicHolidaysCalendar })
@@ -840,20 +844,20 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         name: t(`highlight.prompt.update.attribute.option.impression.${id}`)
                     }))
                 },
-                timestamp && {
+                timestamp ? {
                     type: "text",
                     label: t("highlight.prompt.update.attribute.label.date"),
                     required: false,
                     disabled: true,
                     defaultValue: formatTimestamp(timestamp, t("general.format.date.year.included")),
-                },
-                focalLength && {
+                } : undefined,
+                focalLength ? {
                     type: "text",
                     label: t("highlight.prompt.update.attribute.label.focalLength"),
                     required: false,
                     disabled: true,
                     defaultValue: formatMillimeters(focalLength)
-                }
+                } : undefined
             ],
             (composition: string | undefined, sky: string | undefined, shadows: string | undefined, circumstantes: string | undefined, atmosphere: string | undefined, impression: string | undefined) => updateHighlightAttributes(
                 composition !== "" ? Number(composition) : null,
@@ -907,7 +911,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (includedCategoryNames: string, excludedCategoryNames: string | undefined) => overwriteCompositeRegion(includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
+            (includedCategoryNames: string, excludedCategoryNames: string | undefined) => overwriteCompositeRegion(includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",").map(name => name.trim()).filter(Boolean) ?? []),
             t("region.prompt.overwrite.composite.confirmed"),
             t("region.prompt.overwrite.composite.failed")
         )
@@ -1135,7 +1139,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration && new Date(expiration)),
+            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration ? new Date(expiration) : undefined),
             t("document.prompt.create.confirmed"),
             t("document.prompt.create.failed")
         )
@@ -1175,7 +1179,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ] as const,
-            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration && new Date(expiration)),
+            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration ? new Date(expiration) : undefined),
             t("voucher.prompt.create.confirmed"),
             t("voucher.prompt.create.failed")
         )
@@ -1241,10 +1245,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     label: t("region.prompt.create.geographical.label.radius"),
                     required: false,
                     min: 0,
-                    defaultValue: templateRegion?.radius
+                    defaultValue: templateRegion?.radius as string | undefined
                 }
             ],
-            (name: string, category: CategoryCategory, geoJson: string, country?: string, radius?: number) => createGeographicalRegion(name, category, JSON.parse(geoJson), country, radius),
+            (name: string, category: string, geoJson: string, country?: string, radius?: string) => createGeographicalRegion(name, category as CategoryCategory, JSON.parse(geoJson), country, radius ? Number(radius) : undefined),
             t("region.prompt.create.geographical.confirmed"),
             t("region.prompt.create.geographical.failed")
         )
@@ -1278,7 +1282,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (name: string, category: string, includedCategoryNames: string, excludedCategoryNames: string | undefined) => createCompositeRegion(name, category as CategoryCategory, includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
+            (name: string, category: string, includedCategoryNames: string, excludedCategoryNames: string | undefined) => createCompositeRegion(name, category as CategoryCategory, includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",").map(name => name.trim()).filter(Boolean) ?? []),
             t("region.prompt.create.composite.confirmed"),
             t("region.prompt.create.composite.failed")
         )
@@ -1306,7 +1310,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                                         id: "",
                                         // TODO: Use the value from the previous toast (if any).
                                         category: CategoryCategory.Administrative,
-                                        name: Object.keys(geoFeature.properties).map(property => property + " - " + geoFeature.properties[property]).join(", ")
+                                        name: Object.keys(geoFeature.properties ?? {}).map(property => property + " - " + (geoFeature.properties ?? {})[property]).join(", ")
                                     },
                                     // TODO: Use the value from the previous toast (if any).
                                     radius: 0,

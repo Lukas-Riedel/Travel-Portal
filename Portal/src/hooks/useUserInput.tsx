@@ -45,7 +45,7 @@ export const useUserInput = (): UseUserInputResult => {
             })
         }), [t])
 
-    const showFormToast = useCallback(<F extends readonly FormField<unknown>[],>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<unknown>, success?: string, error?: string): Promise<boolean> =>
+    const showFormToast = useCallback(<F extends readonly (FormField<unknown> | undefined)[],>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<unknown>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             toast.custom(
                 id => {
