@@ -1,4 +1,4 @@
-import type { GeoJSON } from "geojson"
+import type { GeoJSON, Point } from "geojson"
 import { Copy, Map, Wrench } from "lucide-react"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,9 +14,9 @@ import PropertyCardContent from "./PropertyCardContent.tsx"
 
 interface RegionCardProps {
     region: Region | null
-    onCategorySelected?: (category: any) => void
-    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<any>
-    onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<any>
+    onCategorySelected?: (category: CategoryIdentifier) => void
+    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
+    onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<CompositeRegion>
     onRegionVisualized?: (region: Region) => void
 }
 
@@ -66,7 +66,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
         [t("region.label.radius")]: isGeographicalRegion(region) && region.radius > 0 && formatKilometers(region.radius),
         [t("region.label.country")]: isGeographicalRegion(region) && region.countryCategory?.name,
         [t("region.label.subtype")]: isGeographicalRegion(region) && isGeopgraphicalExtension(region) ? t("region.subtype.point") : t("region.subtype.area"),
-        [t("region.label.coordinates")]: isGeographicalRegion(region) && isGeopgraphicalExtension(region) && (region.geoJson as any).geometry.coordinates.map(coordinate => coordinate.toFixed(4)).join(", "),
+        [t("region.label.coordinates")]: isGeographicalRegion(region) && isGeopgraphicalExtension(region) && (region.geoJson as Point).coordinates.map((coordinate: number) => coordinate.toFixed(4)).join(", "),
         [t("region.label.includedRegions")]: isCompositeRegion(region) && region.includedCategories && (
             <ul className="space-y-0.5 list-inside list-disc">
                 {region.includedCategories.map(category => (

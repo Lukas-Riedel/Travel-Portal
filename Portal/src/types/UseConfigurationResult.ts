@@ -1,5 +1,7 @@
+import type { AppConfiguration } from "./AppConfiguration.ts"
+
 export interface UseConfigurationResult {
-    configuration?: Record<string, any>
+    configuration?: AppConfiguration
     deviceId: string
-    updateConfigurationEntry: (key: string, value: any) => Promise<Record<string, any>>
+    updateConfigurationEntry: (key: string, value: unknown) => Promise<AppConfiguration>
 }

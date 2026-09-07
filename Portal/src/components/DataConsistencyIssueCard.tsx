@@ -35,6 +35,9 @@ interface DataConsistencyIssueCardProps {
     onPlaceCountryChanged?: (placeId: string, country: string) => Promise<Place>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DataConsistencyIssueHandlerMap = Record<DataConsistencyIssueName, DataConsistencyIssueHandler<any>>
+
 interface DataConsistencyIssueHandler<T> {
     name: string
     isResolvable: boolean
@@ -135,7 +138,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     }
 
     // TODO: Is it worth it to wrap this by useMemo?
-    const dataConsistencyIssueHandlers: Record<DataConsistencyIssueName, DataConsistencyIssueHandler<any>> = {
+    const dataConsistencyIssueHandlers: DataConsistencyIssueHandlerMap = {
         [DataConsistencyIssueName.ConflictingFitnessRecords]: {
             name: t("issue.fitness.conflict.name"),
             isResolvable: !!onFitnessReplaced,
@@ -390,6 +393,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataConsistencyIssueHandler = useMemo<DataConsistencyIssueHandler<any> | undefined>(() =>
         dataConsistencyIssue && dataConsistencyIssueHandlers[dataConsistencyIssue.name], [dataConsistencyIssue, dataConsistencyIssueHandlers])
 

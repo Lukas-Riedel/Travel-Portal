@@ -1,4 +1,4 @@
-import { jwtDecode } from "jwt-decode"
+import { jwtDecode, type JwtPayload } from "jwt-decode"
 import { createContext, type ReactNode,useCallback, useContext, useMemo } from "react"
 
 import { getIamResponseWithCredentials } from "../clients/iamClient.ts"
@@ -7,6 +7,12 @@ import type { UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { Credentials } from "../types/Credentials.ts"
 import type { UseAuthResult } from "../types/UseAuthResult.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
+
+interface AccessTokenPayload extends JwtPayload {
+    preferred_username?: string
+    name?: string
+    resource_access?: Record<string, { roles: string[] }>
+}
 
 const AuthContext = createContext<UseAuthResult | undefined>(undefined)
 
@@ -31,8 +37,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         try {
-            // TODO: Introduce an interface for the JWT token type.
-            const decodedAccessToken = jwtDecode<any>(accessToken)
+            const decodedAccessToken = jwtDecode<AccessTokenPayload>(accessToken)
             return decodedAccessToken?.preferred_username && decodedAccessToken?.preferred_username !== GUEST_CREDENTIALS.username
         }
         catch {
@@ -46,8 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         try {
-            // TODO: Introduce an interface for the JWT token type.
-            const decodedAccessToken = jwtDecode<any>(accessToken)
+            const decodedAccessToken = jwtDecode<AccessTokenPayload>(accessToken)
             return decodedAccessToken?.resource_access?.[window.env?.VITE_IAM_APP_CLIENT_ID || import.meta.env.VITE_IAM_APP_CLIENT_ID]?.roles || []
         }
         catch {
@@ -61,8 +65,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         try {
-            // TODO: Introduce an interface for the JWT token type.
-            const decodedAccessToken = jwtDecode<any>(accessToken)
+            const decodedAccessToken = jwtDecode<AccessTokenPayload>(accessToken)
             return decodedAccessToken?.name
         }
         catch {

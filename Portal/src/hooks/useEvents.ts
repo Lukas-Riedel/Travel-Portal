@@ -5,7 +5,7 @@ import { useNotifications } from "../contexts/NotificationContext.jsx"
 import { EventType } from "../types/EventType.ts"
 import type { UseEventsResult } from "../types/UseEventsResult.ts"
 
-export const useEvents = (eventType?: EventType): UseEventsResult => {
+export const useEvents = <T extends EventType>(eventType?: T): UseEventsResult<T> => {
     const { messages } = useNotifications()
 
     const [readMessageIds, setReadMessageIds] = useState(() => new Set<string>())
@@ -16,7 +16,7 @@ export const useEvents = (eventType?: EventType): UseEventsResult => {
 
     const events = useMemo(() => messages
         ?.filter(message => message.data?.event === eventType && !readMessageIds.has(message.messageId))
-        ?.map(message => ({ ...(message.data?.args ?? {}), markAsRead: () => markAsRead(message.messageId) })), [messages, readMessageIds])
+        ?.map(message => ({ ...(message.data?.args as Record<string, unknown> ?? {}), markAsRead: () => markAsRead(message.messageId) }) as NonNullable<UseEventsResult<T>["events"]>[number]), [messages, readMessageIds])
 
     return {
         events,

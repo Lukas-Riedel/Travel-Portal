@@ -10,7 +10,7 @@ import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
 export const useUserInput = (): UseUserInputResult => {
     const { t } = useTranslation()
 
-    const showConfirmToast = useCallback(<R extends any>(message: string, onConfirmed?: () => Promise<R>, success?: string, error?: string): Promise<boolean> =>
+    const showConfirmToast = useCallback(<R,>(message: string, onConfirmed?: () => Promise<R>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             const id = toast(message, {
                 action: {
@@ -45,7 +45,7 @@ export const useUserInput = (): UseUserInputResult => {
             })
         }), [t])
 
-    const showFormToast = useCallback(<F extends readonly FormField<any>[], R extends any>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<R>, success?: string, error?: string): Promise<boolean> =>
+    const showFormToast = useCallback(<F extends readonly FormField<unknown>[], R,>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<R>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             toast.custom(
                 id => {
@@ -111,8 +111,8 @@ export const useUserInput = (): UseUserInputResult => {
                             resolve(false)
                         }
 
-                        const isSelectFormField = <T extends any>(field: FormField<T>): field is SelectFormField<T> => field.type === "select"
-                        const isCheckbox = <T extends any>(field: FormField<T>): boolean => field.type === "checkbox"
+                        const isSelectFormField = <T,>(field: FormField<T>): field is SelectFormField<T> => field.type === "select"
+                        const isCheckbox = <T,>(field: FormField<T>): boolean => field.type === "checkbox"
 
                         return (
                             <div className="w-full flex justify-center">
@@ -199,7 +199,7 @@ export const useUserInput = (): UseUserInputResult => {
                                                             <option
                                                                 key={option.id}
                                                                 value={option.id}>
-                                                                {option.name}
+                                                                {option.name as string}
                                                             </option>
                                                         ))}
                                                     </select>
@@ -213,7 +213,7 @@ export const useUserInput = (): UseUserInputResult => {
                                                             }}
                                                             type="checkbox"
                                                             className="sr-only peer"
-                                                            defaultChecked={field.defaultValue}
+                                                            defaultChecked={field.defaultValue as boolean}
                                                             disabled={field.disabled}
                                                             onChange={e => {
                                                                 if (field.onChange) {
@@ -237,8 +237,8 @@ export const useUserInput = (): UseUserInputResult => {
                                                         type={field.type ?? "text" /** TODO: Remove the default type after the transition to TypeScript is done. */}
                                                         min={field.min}
                                                         max={field.max}
-                                                        placeholder={field.placeholder}
-                                                        defaultValue={field.defaultValue}
+                                                        placeholder={field.placeholder as string}
+                                                        defaultValue={field.defaultValue as string}
                                                         disabled={field.disabled}
                                                         onChange={e => {
                                                             if (field.onChange) {
@@ -274,7 +274,7 @@ export const useUserInput = (): UseUserInputResult => {
             )
         }), [t])
 
-    const showInputToast = <T extends any, R extends any>(message: string, onSubmitted?: (value: T) => Promise<R>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
+    const showInputToast = <T, R,>(message: string, onSubmitted?: (value: T) => Promise<R>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
         showFormToast(message, [{ type: "text", required: true, defaultValue }], onSubmitted, success, error)
 
     const showBranchingToast = useCallback((title: string, branches: Record<string, BranchingToastBranch>) => {

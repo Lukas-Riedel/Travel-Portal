@@ -1,18 +1,20 @@
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
-import axios from "axios"
+import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
+import axios, { AxiosHeaders } from "axios"
 import * as authRefresh from "axios-auth-refresh"
 import type { GeoJSON } from "geojson"
 
 import { Place } from "../classes/Place.ts"
 import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
+import type { AppConfiguration } from "../types/AppConfiguration.ts"
 import type {
-Address, Airline, Airport,     Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata, CompositeRegion,     DataConsistencyIssue, Device, Document, Expense,     ExpenseCurrency,
-ExpenseType, Fitness, Flight,     GeographicalRegion, Highlight, IndexableEntityType,
-Label,     Location, Note, PendingPhoto, Photo,
-Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
-TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip as ITrip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
-import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType, } from "../types/CoreSwaggerTypes.ts"
+    Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
+    CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
+    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, Location, Note, PendingPhoto, Photo,
+    Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip as ITrip, TripIncludedEntity, Voucher, Year, YearIncludedEntity,
+} from "../types/CoreSwaggerTypes.ts"
+import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
 import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
 
@@ -99,7 +101,7 @@ export const getDocument = async (documentId: string): Promise<Document> =>
 export const removeDocument = async (documentId: string): Promise<void> =>
     coreClient.delete(`documents/${documentId}`)
 
-export const createDevice = async (id: string, data: Record<string, any>): Promise<Device> =>
+export const createDevice = async (id: string, data: Record<string, unknown>): Promise<Device> =>
     coreClient.post<Device>("devices",
         {
             id,
@@ -301,12 +303,12 @@ export const createCategoryHighlight = async (categoryId: string, photoId: strin
 export const removeCategoryHighlight = async (categoryId: string, highlightId: string): Promise<void> =>
     coreClient.delete(`categories/${categoryId}/highlights/${highlightId}`)
 
-export const listConfigurationEntries = async (): Promise<Record<string, any>> =>
-    coreClient.get<Record<string, any>>("configuration")
+export const listConfigurationEntries = async (): Promise<AppConfiguration> =>
+    coreClient.get<AppConfiguration>("configuration")
         .then(extractData)
 
-export const replaceConfigurationEntry = async <T>(key: string, value: T): Promise<Record<string, T>> =>
-    coreClient.put<Record<string, T>>(`configuration/${key}`, value).then(extractData)
+export const replaceConfigurationEntry = async (key: string, value: unknown): Promise<AppConfiguration> =>
+    coreClient.put<AppConfiguration>(`configuration/${key}`, value).then(extractData)
 
 export const replaceFitness = async (timestamp: number, steps: number, seconds: number, distance: number, overwrite: boolean = false): Promise<Fitness> =>
     coreClient.put<Fitness>(createQueryPath(`fitness/${timestamp}`,
@@ -336,7 +338,7 @@ export const getAddress = async (latitude: number, longitude: number): Promise<A
         }
     )).then(extractData)
 
-export const createEvent = async (name: string, args?: Record<string, any>): Promise<void> =>
+export const createEvent = async (name: string, args?: Record<string, unknown>): Promise<void> =>
     coreClient.post("events",
         {
             name,
@@ -873,7 +875,7 @@ export const refreshAccessToken = async (): Promise<string> => {
         setIamResponse(newIamResponse)
         return Promise.resolve(newIamResponse.accessToken)
     }
-    catch (error) {
+    catch (_) {
         const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
         setIamResponse(newIamResponse)
         return Promise.resolve(newIamResponse.accessToken)
@@ -888,19 +890,22 @@ const coreClient: AxiosInstance = axios.create({
     }
 })
 
-const doRefreshAccessToken = async (error: any): Promise<AxiosRequestConfig> => {
+const doRefreshAccessToken = async (error: AxiosError): Promise<AxiosRequestConfig> => {
     const failedRequestConfig = error.response?.config
 
     if (!failedRequestConfig) {
         return Promise.reject(error)
     }
 
-    failedRequestConfig.headers = failedRequestConfig.headers || {}
+    failedRequestConfig.headers = failedRequestConfig.headers instanceof AxiosHeaders
+        ? failedRequestConfig.headers
+        : new AxiosHeaders(failedRequestConfig.headers)
     failedRequestConfig.headers["Authorization"] = `Bearer ${await refreshAccessToken()}`
 
     return failedRequestConfig
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createAuthRefreshInterceptor = (authRefresh as any).default ?? (authRefresh as any)
 createAuthRefreshInterceptor(coreClient, doRefreshAccessToken)
 

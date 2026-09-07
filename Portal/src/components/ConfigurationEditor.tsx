@@ -3,12 +3,13 @@ import { useTranslation } from "react-i18next"
 import ReactJson from "react-json-view"
 
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { AppConfiguration } from "../types/AppConfiguration.ts"
 import Editor from "./Editor.tsx"
 
 interface ConfigurationEditorProps {
-    configuration: Record<string, any> | null
+    configuration: AppConfiguration | null
     selectedKey?: string
-    onConfigurationUpdated?: (key: string, value: any) => Promise<Record<string, any>>
+    onConfigurationUpdated?: (key: string, value: unknown) => Promise<AppConfiguration>
     onKeySelected?: (key: string) => void
 }
 
@@ -18,7 +19,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
 
     const formatConfigurationKeyName = (key: string) => key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase()).trim()
 
-    const handleConfigurationUpdated = (value: any) => {
+    const handleConfigurationUpdated = (value: unknown) => {
         if (selectedKey && onConfigurationUpdated) {
             showUpdateConfigurationEntryToast(() => onConfigurationUpdated(selectedKey, value))
         }

@@ -6,11 +6,11 @@ precacheAndRoute(self.__WB_MANIFEST || [])
 import { initializeApp } from "firebase/app"
 import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw"
 
-self.addEventListener("install", event => {
+self.addEventListener("install", _ => {
     self.skipWaiting()
 })
 
-self.addEventListener("activate", event => {
+self.addEventListener("activate", _ => {
     self.clients.claim()
 })
 

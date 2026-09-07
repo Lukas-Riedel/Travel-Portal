@@ -28,6 +28,9 @@ export default tseslint.config(
         },
         rules: {
             ...js.configs.recommended.rules,
+            "no-unused-vars": ["error", {
+                argsIgnorePattern: "^_",
+            }],
         },
     },
     {

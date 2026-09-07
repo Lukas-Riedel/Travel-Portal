@@ -8,6 +8,7 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 import { useLocale } from "../hooks/useLocale.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Coordinates } from "../types/Coordinates.ts"
 import { type Album, type Date as PlaceDate, type Fitness, type Flight, type Note, type Place, type PublicHoliday, type Stay, type TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { getFlightLink, getMapLink, getSatelliteLink } from "../utils/navigationUtils.ts"
@@ -356,7 +357,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                         {isPlace(event) && event.weather?.length > 0 && (
                             <WeatherSummary
                                 weather={event.weather}
-                                coordinates={event as any}
+                                coordinates={event as Coordinates}
                                 start={event.start}
                                 end={event.end}
                                 timezone={timezone || event.timezone} />

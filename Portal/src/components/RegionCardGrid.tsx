@@ -1,5 +1,6 @@
 import type { GeoJSON } from "geojson"
 
+import type { CategoryIdentifier, CompositeRegion, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
 import type { Region } from "../types/Region.ts"
 import CardGrid from "./CardGrid.tsx"
 import RegionCard from "./RegionCard.tsx"
@@ -8,9 +9,9 @@ interface RegionCardGridProps {
     regions: Region[] | null
     rowSize: number
     columnSize?: number
-    onCategorySelected?: (category: any) => void
-    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<any>
-    onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<any>
+    onCategorySelected?: (category: CategoryIdentifier) => void
+    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
+    onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<CompositeRegion>
     onRegionVisualized?: (region: Region) => void
 }
 

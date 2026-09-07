@@ -355,7 +355,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
             setNewType(expenseCandidate?.type || getSortedExpenseTypes()[0])
             setNewDescription(expenseCandidate?.description || "")
             setNewValue(expenseCandidate?.value !== undefined ? expenseCandidate.value : null)
-            setNewCurrency(expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || Object.values(ExpenseCurrency)[0])
+            setNewCurrency((expenseCandidate?.currency || lastAddedExpense?.currency || configuration?.expensify?.mainCurrency || Object.values(ExpenseCurrency)[0]) as ExpenseCurrency)
         }
     }, [expenseCandidate])
 

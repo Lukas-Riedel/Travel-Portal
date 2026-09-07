@@ -1,9 +1,10 @@
 import { format, fromUnixTime } from "date-fns"
-import type { GeoJSON } from "geojson"
+import type { Feature, GeoJSON } from "geojson"
 import { useTranslation } from "react-i18next"
 
 import type { Trip } from "../classes/Trip.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
+import type { AppConfiguration } from "../types/AppConfiguration.ts"
 import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
@@ -109,7 +110,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("document.prompt.remove.failed")
         )
 
-    const showUpdateConfigurationEntryToast = (updateConfigurationEntry: () => Promise<Record<string, any>>) =>
+    const showUpdateConfigurationEntryToast = (updateConfigurationEntry: () => Promise<AppConfiguration>) =>
         showConfirmToast(
             t("configuration.prompt.update.message"),
             updateConfigurationEntry,
@@ -1281,7 +1282,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("region.prompt.create.composite.failed")
         )
 
-    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
+    const showCreateSelectedRegionToast = (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) =>
         showBranchingToast(
             t("region.prompt.create.selected.message"),
             {
@@ -1297,7 +1298,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     name: t("region.prompt.create.selected.label.multiple"),
                     handle: () => showCreateMultipleGeographicalRegionsToast(async geoJson => {
                         const geoFeatures = extractGeoJsonFeatures(geoJson)
-                        for (const geoFeature of geoFeatures) {
+                        for (const geoFeature of geoFeatures as Feature[]) {
                             try {
                                 const templateRegion = {
                                     category: {

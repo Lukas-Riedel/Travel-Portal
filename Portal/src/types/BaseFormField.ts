@@ -4,5 +4,5 @@ export interface BaseFormField<T, V> {
   label?: string
   defaultValue?: T
   disabled?: boolean
-  onChange?: (value: any, refs: (HTMLInputElement | HTMLSelectElement | null)[]) => void
+  onChange?: (value: unknown, refs: (HTMLInputElement | HTMLSelectElement | null)[]) => void
 }

@@ -2,6 +2,7 @@ import type { GeoJSON } from "geojson"
 
 import type { Place } from "../classes/Place.ts"
 import type { Trip } from "../classes/Trip.ts"
+import type { AppConfiguration } from "./AppConfiguration.ts"
 import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Photo, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 
@@ -35,7 +36,7 @@ export interface UsePredefinedUserInputResult {
     showRefreshPlaceExcerptToast: (refreshPlaceExcerpt: () => Promise<Place>) => Promise<boolean>
     showUpdateNoteToast: (updateNote: () => Promise<Note>) => Promise<boolean>
     showRemoveDocumentToast: (removeDocument: () => Promise<void>) => Promise<boolean>
-    showUpdateConfigurationEntryToast: (updateConfigurationEntry: () => Promise<Record<string, any>>) => Promise<boolean>
+    showUpdateConfigurationEntryToast: (updateConfigurationEntry: () => Promise<AppConfiguration>) => Promise<boolean>
     showRemovePlaceToast: (placesOrRemovePlace: Place[] | (() => Promise<void>), removePlace?: (placeId: string) => Promise<void>) => Promise<boolean>
     showRefreshAlbumToast: (refreshAlbum: () => Promise<Album>) => Promise<boolean>
     showRemoveAlbumToast: (removeAlbum: () => Promise<void>) => Promise<boolean>
@@ -76,7 +77,7 @@ export interface UsePredefinedUserInputResult {
     showSynchronizePhotosToast: (synchronizePhotos: (path: string, expiration: Date) => Promise<void>) => Promise<boolean>
     showCreateGeographicalRegionToast: (countryCategories: Category[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, templateRegion?: GeographicalRegion) => Promise<boolean>
     showCreateCompositeRegionToast: (createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
-    showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => any[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
+    showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geoJson: GeoJSON) => object, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCopyTripItineraryToast: (copyTripItinerary: () => Promise<void>) => Promise<boolean>
     showCopyDayItineraryToast: (copyDayItinerary: () => Promise<void>) => Promise<boolean>
     showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: Date) => Promise<Task>) => Promise<boolean>

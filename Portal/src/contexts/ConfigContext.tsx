@@ -36,7 +36,7 @@ export function ConfigurationProvider({ children }: ConfigProviderProps) {
         <ConfigContext.Provider value={{
             configuration: response,
             deviceId,
-            updateConfigurationEntry: (key: string, value: any) => replaceConfigurationEntry(key, value).then(refetchResponse)
+            updateConfigurationEntry: (key: string, value: unknown) => replaceConfigurationEntry(key, value).then(refetchResponse)
         }}>
             {children}
         </ConfigContext.Provider>
