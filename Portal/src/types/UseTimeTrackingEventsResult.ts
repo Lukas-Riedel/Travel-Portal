@@ -2,6 +2,6 @@ import type { TimeTrackingEvent, TimeTrackingEventType } from "./CoreSwaggerType
 
 export interface UseTimeTrackingEventsResult {
     timeTrackingEvents: Partial<Record<TimeTrackingEventType, TimeTrackingEvent[]>>
-    createTimeTrackingEvent: (type: TimeTrackingEventType, description: string, hours: number, timestamp: number) => Promise<void>
+    createTimeTrackingEvent: (type: TimeTrackingEventType, description: string, hours: number, timestamp: number) => Promise<TimeTrackingEvent>
     removeTimeTrackingEvent: (eventId: string) => Promise<void>
 }

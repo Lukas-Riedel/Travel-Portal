@@ -14,8 +14,9 @@ export const useTimeTrackingEvents = (allowedTypes: TimeTrackingEventType[]): Us
         })
     )
 
-    const refetchTimeTrackingEvents = async () => {
+    const refetchTimeTrackingEvents = async <T>(input: T) => {
         await Promise.all(queries.map(query => query.refetchResponse(query)))
+        return input
     }
 
     return {
