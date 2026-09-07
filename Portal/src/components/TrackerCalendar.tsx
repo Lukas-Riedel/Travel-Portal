@@ -14,7 +14,7 @@ import { getEvents, getEventHoursSum, HOURS_PER_MAN_DAY, TIME_TRACKING_EVENT_TYP
 import type { Trip } from "../classes/Trip.ts"
 import { TimeTrackingEventType, type TimeTrackingEvent } from "../types/CoreSwaggerTypes.ts"
 import { usePublicHolidays } from "../hooks/usePublicHolidays.ts"
-import { formatTimestamp, getNoonTimestamp, getTimezoneOrDefault, getWeekday, ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import { formatTimestamp, getNoonTimestamp, getTimezoneOrDefault, getWeekday, getZonedDate, ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
 import { useTranslation } from "react-i18next"
 import { useLocale } from "../hooks/useLocale.ts"
 import { getFlightLink } from "../utils/navigationUtils.ts"
@@ -75,7 +75,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
             }
 
             const firstFlight = flights[0]
-            if (firstFlight && isSameDay(toZonedTime(fromUnixTime(firstFlight.start), timezone), day)) {
+            if (firstFlight && isSameDay(getZonedDate(firstFlight.start, timezone), day)) {
                 return {
                     flight: firstFlight.flight,
                     from: firstFlight.from.shortName,
@@ -86,7 +86,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
             }
 
             const lastFlight = flights.at(-1)
-            if (lastFlight && isSameDay(toZonedTime(fromUnixTime(lastFlight.end), timezone), day)) {
+            if (lastFlight && isSameDay(getZonedDate(lastFlight.end, timezone), day)) {
                 return {
                     flight: lastFlight.flight,
                     from: lastFlight.from.shortName,

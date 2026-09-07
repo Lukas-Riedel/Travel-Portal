@@ -2,7 +2,8 @@ import { differenceInCalendarDays, endOfDay, format, fromUnixTime, isSameDay, st
 import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay, Task } from "../types/CoreSwaggerTypes.ts"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS, getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
-import { getTripFullName, isTripCandidate } from "../utils/formattingUtils.ts"
+import { getTripFullName } from "../utils/formattingUtils.ts"
+import { getCalendarEvents, isTripCandidate } from "../utils/tripUtils.ts"
 
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"
 
@@ -29,8 +30,16 @@ export class Trip implements ITrip {
         Object.assign(this, data)
     }
 
+    public getFullName(): string {
+        return getTripFullName(this)
+    }
+
     public isCandidate(): boolean {
         return isTripCandidate(this)
+    }
+
+    public getCalendarEvents(date: globalThis.Date, places: Place[], timezone?: string): (Flight | (Place & Date))[] {
+        return getCalendarEvents(date, this.flights, this.watchedFlights, places, timezone)
     }
 
     public isPast(): boolean {
@@ -50,7 +59,7 @@ export class Trip implements ITrip {
     }
 
     public isBetweenDates(start: globalThis.Date, end: globalThis.Date, timezone?: string): boolean {
-        return start < toZonedTime(fromUnixTime(this.end), timezone) && toZonedTime(fromUnixTime(this.start), timezone) < end
+        return start < getZonedDate(this.end, timezone) && getZonedDate(this.start, timezone) < end
     }
 
     public isStartDayOfTrip(date: globalThis.Date): boolean {
@@ -59,22 +68,6 @@ export class Trip implements ITrip {
 
     public isEndDayOfTrip(date: globalThis.Date): boolean {
         return isSameDay(fromUnixTime(this.end), date)
-    }
-
-    public getFullName(): string {
-        return getTripFullName(this)
-    }
-
-    public getCalendarEvents(date: globalThis.Date, places: Place[], timezone?: string): (Flight | (Place & Date))[] {
-        const flightEvents = (this.flights ?? [])
-            .filter(f => f.start < getMaximumAllowedTimetamp() && isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
-        const watchedFlightEvents = (this.watchedFlights ?? [])
-            .filter(f => f.start < getMaximumAllowedTimetamp() && isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
-            .map(f => ({ ...f, flight: undefined }))
-        const placeEvents = (places ?? []).flatMap(place => place.dates
-            .filter(d => d.start < getMaximumAllowedTimetamp() && isSameDay(date, getZonedDate(d.start, timezone || place.timezone)))
-            .map(date => ({ ...date, ...place })))
-        return [...flightEvents, ...watchedFlightEvents, ...placeEvents].sort((a, b) => a.start - b.start)
     }
 
     public getStay(date: globalThis.Date, timezone?: string): Stay | undefined {

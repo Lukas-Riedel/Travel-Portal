@@ -1198,6 +1198,11 @@
             }
         }
     },
+    "year": {
+        "attribute": {
+            "highlightsCount": "Počet highlightů"
+        }
+    },
     "trip": {
         "attribute": {
             "highlightsCount": "Počet highlightů"

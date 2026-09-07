@@ -45,7 +45,7 @@ export function getTimezoneOrDefault(timezone?: string): string {
 }
 
 export function formatTimestamp(dateOrTimestamp: number | Date, timestampFormat: string, timezone?: string) {
-    return format(toZonedTime(fromUnixTime(typeof dateOrTimestamp === "number" ? dateOrTimestamp : (dateOrTimestamp.getTime() / 1000)), getTimezoneOrDefault(timezone)), timestampFormat)
+    return format(getZonedDate(typeof dateOrTimestamp === "number" ? dateOrTimestamp : (dateOrTimestamp.getTime() / 1000), getTimezoneOrDefault(timezone)), timestampFormat)
 }
 
 export function formatDateRange(startDateOrTimestamp: number | Date, endDateOrTimestamp: number | Date, timestampFormat: string): string {
@@ -105,8 +105,8 @@ export function getTripDays(trip?: Trip, places?: Place[], timezone?: string): D
     const realTripEnd = trip?.end ?? (places && places.length > 0 ? Math.max(...places.flatMap(place => place?.dates ?? []).map(date => date.end)) : undefined)
 
     return realTripStart && realTripEnd && eachDayOfInterval({
-        start: startOfDay(toZonedTime(fromUnixTime(realTripStart), timezone)),
-        end: startOfDay(toZonedTime(fromUnixTime(realTripEnd - 1), timezone))
+        start: startOfDay(getZonedDate(realTripStart, timezone)),
+        end: startOfDay(getZonedDate(realTripEnd - 1, timezone))
     })
 }
 
