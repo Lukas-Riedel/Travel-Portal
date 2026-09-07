@@ -85,7 +85,7 @@ export default function TripPage() {
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000))}
                 placeMainCategorySelector={getPlaceCategory} />
-            {!trip?.isCandidate() && (
+            {hasRole(UserRole.TripExpenseRead) && !trip?.isCandidate() && (
                 <ExpenseSummary
                     expenses={trip && (trip.expenses ?? [])}
                     expenseCandidates={trip?.isPast() ? [] : [

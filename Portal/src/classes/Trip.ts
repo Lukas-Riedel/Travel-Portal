@@ -1,7 +1,7 @@
 import { differenceInCalendarDays, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
 import type { Date, Expense, Fitness, Flight, Highlight, Trip as ITrip, Note, Place, PublicHoliday, Statistics, Stay, Task } from "../types/CoreSwaggerTypes.ts"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
-import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { getCurrentTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getCurrentOrMaximumAllowedTimestamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS, getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
 import { getTripFullName, isTripCandidate } from "../utils/formattingUtils.ts"
 
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"
@@ -67,12 +67,12 @@ export class Trip implements ITrip {
 
     public getCalendarEvents(date: globalThis.Date, places: Place[], timezone?: string): (Flight | (Place & Date))[] {
         const flightEvents = (this.flights ?? [])
-            .filter(f => isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
+            .filter(f => f.start < getMaximumAllowedTimetamp() && isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
         const watchedFlightEvents = (this.watchedFlights ?? [])
-            .filter(f => isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
+            .filter(f => f.start < getMaximumAllowedTimetamp() && isSameDay(date, getZonedDate(f.start, timezone || f.from.timezone)))
             .map(f => ({ ...f, flight: undefined }))
         const placeEvents = (places ?? []).flatMap(place => place.dates
-            .filter(d => isSameDay(date, getZonedDate(d.start, timezone || place.timezone)))
+            .filter(d => d.start < getMaximumAllowedTimetamp() && isSameDay(date, getZonedDate(d.start, timezone || place.timezone)))
             .map(date => ({ ...date, ...place })))
         return [...flightEvents, ...watchedFlightEvents, ...placeEvents].sort((a, b) => a.start - b.start)
     }

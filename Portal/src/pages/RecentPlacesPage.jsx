@@ -8,7 +8,7 @@ import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
 import TripSummary from "../components/TripSummary.tsx"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
-import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { getCurrentOrMaximumAllowedTimestamp, getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { useEvents } from "../hooks/useEvents.ts"
 
@@ -76,7 +76,7 @@ export default function RecentPlacesPage() {
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
             </div>
-            {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (
+            {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && upcomingOrCurrentTrip?.end < getMaximumAllowedTimetamp() && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}
                     displayDeviceData={hasRole(UserRole.PortalFutureRead)}

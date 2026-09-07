@@ -87,7 +87,9 @@ export default function YearPage() {
                         onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
                 ))}
             </CardGrid>
-            <ExpenseSummary expenses={yearTrips?.filter(trip => trip.isPast() || trip.isCurrent())?.flatMap(trip => trip.expenses ?? [])} />
+            {hasRole(UserRole.TripExpenseRead) && (
+                <ExpenseSummary expenses={yearTrips?.filter(trip => trip.isPast() || trip.isCurrent())?.flatMap(trip => trip.expenses ?? [])} />
+            )}
         </>
     )
 }
