@@ -3,7 +3,9 @@ import { useCache } from "./useCache.ts"
 import type { IamResponse } from "../types/CoreSwaggerTypes.ts"
 import type { UseAuthStoreResult } from "../types/UseAuthStoreResult.ts"
 
+// eslint-disable-next-line react-hooks/rules-of-hooks
 const accessTokenCache = useCache<string>("useAuthStore:accessToken")
+// eslint-disable-next-line react-hooks/rules-of-hooks
 const refreshTokenCache = useCache<string>("useAuthStore:refreshToken")
 
 export const useAuthStore = create<UseAuthStoreResult>(set => ({

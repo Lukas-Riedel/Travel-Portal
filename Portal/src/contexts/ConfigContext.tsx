@@ -8,6 +8,7 @@ import { useQuery } from "../hooks/useQuery.ts"
 
 const ConfigContext = createContext<UseConfigurationResult | undefined>(undefined)
 
+// eslint-disable-next-line react-hooks/rules-of-hooks
 const deviceIdCache = useCache<string>("ConfigContext:deviceId")
 
 const deviceId = (() => {
