@@ -1,62 +1,69 @@
 import { useParams } from "react-router-dom"
+import { useAuth } from "../contexts/AuthContext"
+import { useTranslation } from "react-i18next"
+import { useEvents } from "../hooks/useEvents"
+import { useMemo } from "react"
 import { useTrip } from "../hooks/useTrip"
+import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
+import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
+import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
+import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient"
 import PageHeader from "../components/PageHeader"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
 import StatisticsPanel from "../components/StatisticsPanel"
 import PlaceTileGrid from "../components/PlaceTileGrid"
-import { useMemo } from "react"
 import TripCalendar from "../components/TripCalendar.tsx"
 import TripNavigation from "../components/TripNavigation"
-import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import ExpenseSummary from "../components/ExpenseSummary"
-import { useAuth } from "../contexts/AuthContext"
-import { useCandidateTrips } from "../hooks/useCandidateTrips"
-import { useEvents } from "../hooks/useEvents"
-import { createPlaceAlbumPhoto, refreshPlaceAlbum } from "../clients/coreClient"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
-import { useCategories } from "../hooks/useCategories.ts"
+import { CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole, type Airport } from "../types/CoreSwaggerTypes.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import type { Place } from "../classes/Place.ts"
 
 export default function TripPage() {
-    const { hasRole } = useAuth()
-    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
-
     const { tripId } = useParams()
+    const { hasRole } = useAuth()
+    const { t } = useTranslation()
+    const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
 
     const { trip, removeTrip, moveTrip, loadTrip, updateTripName, removeTripHighlight, updateTripMainHighlight,
         createTripExpense, updateTripExpenseDescription, updateTripExpenseValue, updateTripNoteContent,
         removeTripExpense, createTripNote, removeTripNote, updateTripHighlightQualityAttributes, refreshTripHighlights } = useTrip(tripId)
     const { trips: candidateTrips } = useCandidateTrips()
-    const { places } = useRegularPlaces({ tripId, include: ["categories", "dates", "notes"], sort: "-score" })
-    const { candidatePlaces } = useCandidatePlaces({ tripId, include: ["categories", "dates", "notes"], sort: "-score" })
-    const countryCategories = useCategories({ categories: ["country"] })
+    const { places } = useRegularPlaces({ tripId, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], sort: PlaceSortingStrategy.ValueScore })
+    const { candidatePlaces } = useCandidatePlaces({ tripId, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], sort: PlaceSortingStrategy.ValueScore })
+    const countryCategoriesMap = useCountryCategoriesMap()
 
     const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : places, [trip, places, candidatePlaces])
     const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
 
-    const countryCategoriesMap = useMemo(() => {
-        return new Map(countryCategories?.map(category => [category.name, category]))
-    }, [countryCategories])
-    const visitedCountriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory("country"))
+    const visitedCountriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
         ?.filter(Boolean)?.map(category => [category.name, category])), [tripPlacesWithoutLayover])
 
-    const getPlaceCategory = place => {
+    const attributes = {
+        [t("trip.attribute.highlightsCount")]: trip?.highlights?.length
+    }
+
+    const getPlaceCategory = (place: Place) => {
         if (visitedCountriesMap.size > 1) {
             return visitedCountriesMap.get(place?.country)
         }
-        return place?.getCategory("mostSpecificWithMetadata")
+        return place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
     }
-    const getAirportCategory = airport => countryCategoriesMap.get(airport.country)
+    const getAirportCategory = (airport: Airport) => countryCategoriesMap.get(airport.country)
 
-    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
+    const handlePhotoCorrected = async (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => createPlaceAlbumPhoto(placeId, albumId, fileName, base64Data, photoId)
+        .then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
+        .then(_ => listPlaceAlbumPhotos(placeId, albumId))
+        .then(photos => photos.find(photo => photo.id === photoId))
 
     return hasRole(UserRole.TripRead) && (
         <>
             <PageHeader
                 name={trip && trip.getFullName()}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={hasRole(UserRole.TripEdit) && { "Počet highlightů": trip?.highlights?.length }}
+                internalAttributes={hasRole(UserRole.TripEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => refreshTripHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.TripEdit) && updateTripName}
                 onRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
@@ -89,8 +96,8 @@ export default function TripPage() {
                 <ExpenseSummary
                     expenses={trip && (trip.expenses ?? [])}
                     expenseCandidates={trip?.isPast() ? [] : [
-                        ...(trip?.flights?.map(flight => ({ type: "flight", description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
-                        ...(trip?.stays?.map(stay => ({ type: "hotel", description: stay.name })) ?? [])
+                        ...(trip?.flights?.map(flight => ({ type: ExpenseType.Flight, description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
+                        ...(trip?.stays?.map(stay => ({ type: ExpenseType.Hotel, description: stay.name })) ?? [])
                     ]}
                     onExpenseCreated={hasRole(UserRole.TripExpenseEdit) && createTripExpense}
                     onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseDescription}

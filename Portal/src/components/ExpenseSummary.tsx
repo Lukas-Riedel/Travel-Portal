@@ -50,7 +50,7 @@ const LOADING_ROWS_COUNT = 5
 
 interface ExpenseSummaryProps {
     expenses: Expense[] | null
-    expenseCandidates?: Expense[]
+    expenseCandidates?: ExpenseCandidate[]
     onExpenseCreated?: (type: ExpenseType, description: string, value: number, currency: ExpenseCurrency, subscriptionId?: string) => Promise<Expense>
     onExpenseDescriptionUpdated?: (expenseId: string, description: string) => Promise<Expense>
     onExpenseValueUpdated?: (expenseId: string, value: number, currency: ExpenseCurrency) => Promise<Expense>

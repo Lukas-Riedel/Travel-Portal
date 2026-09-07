@@ -1199,6 +1199,9 @@
         }
     },
     "trip": {
+        "attribute": {
+            "highlightsCount": "Počet highlightů"
+        },
         "label": {
             "name": "Název",
             "dates": "Termín",
