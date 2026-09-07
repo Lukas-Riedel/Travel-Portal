@@ -12,7 +12,7 @@ export function getHighlightsTier(highlights: Highlight[], mainHighlight?: Highl
         return HighlightsTier.F
     }
 
-    const highlightsWithLowImpressionCount = highlights.filter(highlight => highlight.attributes.impression < LOW_IMPRESSION_THRESHOLD).length
+    const highlightsWithLowImpressionCount = highlights.filter(highlight => highlight.attributes.impression != null && highlight.attributes.impression < LOW_IMPRESSION_THRESHOLD).length
     if (highlightsWithLowImpressionCount > highlights.length / 2) {
         return HighlightsTier.E
     }
@@ -21,11 +21,15 @@ export function getHighlightsTier(highlights: Highlight[], mainHighlight?: Highl
         return HighlightsTier.D
     }
 
-    const highlightsWithLowCompositionCount = highlights.filter(highlight => highlight.attributes.composition < LOW_COMPOSITION_THRESHOLD).length
-    const higlightsWithLowShadowsCount = highlights.filter(highlight => highlight.attributes.shadows < LOW_SHADOWS_THRESHOLD).length
-    const highlightsWithLowSkyCount = highlights.filter(highlight => highlight.attributes.sky < LOW_SKY_THRESHOLD).length
+    const highlightsWithLowCompositionCount = highlights.filter(highlight => highlight.attributes.composition != null && highlight.attributes.composition < LOW_COMPOSITION_THRESHOLD).length
+    const higlightsWithLowShadowsCount = highlights.filter(highlight => highlight.attributes.shadows != null && highlight.attributes.shadows < LOW_SHADOWS_THRESHOLD).length
+    const highlightsWithLowSkyCount = highlights.filter(highlight => highlight.attributes.sky != null && highlight.attributes.sky < LOW_SKY_THRESHOLD).length
     if (highlightsWithLowCompositionCount === highlights.length || higlightsWithLowShadowsCount === highlights.length || highlightsWithLowSkyCount === highlights.length
-        || mainHighlight && (mainHighlight.attributes.composition < LOW_COMPOSITION_THRESHOLD || mainHighlight.attributes.shadows < LOW_SHADOWS_THRESHOLD || mainHighlight.attributes.sky < LOW_SKY_THRESHOLD)) {
+        || mainHighlight && (
+            (mainHighlight.attributes.composition != null && mainHighlight.attributes.composition < LOW_COMPOSITION_THRESHOLD)
+            || (mainHighlight.attributes.shadows != null && mainHighlight.attributes.shadows < LOW_SHADOWS_THRESHOLD)
+            || (mainHighlight.attributes.sky != null && mainHighlight.attributes.sky < LOW_SKY_THRESHOLD)
+        )) {
         return HighlightsTier.C
     }
 

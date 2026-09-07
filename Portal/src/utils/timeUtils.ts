@@ -105,19 +105,23 @@ export function getTripDays(trip?: Trip, places?: Place[], timezone?: string): D
     const realTripStart = trip?.start ?? (places && places.length > 0 ? Math.min(...places.flatMap(place => place?.dates ?? []).map(date => date.start)) : undefined)
     const realTripEnd = trip?.end ?? (places && places.length > 0 ? Math.max(...places.flatMap(place => place?.dates ?? []).map(date => date.end)) : undefined)
 
-    return realTripStart && realTripEnd && eachDayOfInterval({
-        start: startOfDay(getZonedDate(realTripStart, timezone)),
-        end: startOfDay(getZonedDate(realTripEnd - 1, timezone))
+    if (!realTripStart || !realTripEnd) {
+        return undefined
+    }
+
+    return eachDayOfInterval({
+        start: startOfDay(getZonedDate(realTripStart, getTimezoneOrDefault(timezone))),
+        end: startOfDay(getZonedDate(realTripEnd - 1, getTimezoneOrDefault(timezone)))
     })
 }
 
 export function isTodayOrFutureDay(date: Date, timezone?: string): boolean {
-    const todayStart = startOfDay(toZonedTime(new Date(), timezone))
+    const todayStart = startOfDay(toZonedTime(new Date(), getTimezoneOrDefault(timezone)))
     return date >= todayStart
 }
 
 export function getCurrentHour(timezone?: string): number {
-    return toZonedTime(new Date(), timezone || "UTC").getHours()
+    return toZonedTime(new Date(), getTimezoneOrDefault(timezone)).getHours()
 }
 
 export function isBeginningOfCurrentYear(date: Date): boolean {

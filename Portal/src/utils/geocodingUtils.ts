@@ -29,14 +29,14 @@ export function toDegrees(radians: number): number {
 export function tryExtractPointCoordinates(geoJson: GeoJSON): Coordinates | null {
     if (geoJson.type === "Feature") {
         return geoJson.geometry?.type !== "Point" ? null : {
-            latitude: geoJson.geometry.coordinates[1],
-            longitude: geoJson.geometry.coordinates[0]
+            latitude: geoJson.geometry.coordinates[1] ?? 0,
+            longitude: geoJson.geometry.coordinates[0] ?? 0
         }
     }
 
     return geoJson.type !== "Point" ? null : {
-        latitude: geoJson.coordinates[1],
-        longitude: geoJson.coordinates[0]
+        latitude: geoJson.coordinates[1] ?? 0,
+        longitude: geoJson.coordinates[0] ?? 0
     }
 }
 
@@ -54,7 +54,7 @@ export function getGeoFeatures(geoJson: GeoJSON): Feature[] {
             {
                 type: "Feature",
                 properties: {},
-                geometry: geoJson.geometries[0]
+                geometry: geoJson.geometries[0]!
             }
         ]
     }
