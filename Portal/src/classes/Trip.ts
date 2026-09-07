@@ -9,8 +9,8 @@ import { getCalendarEvents, isTripCandidate } from "../utils/tripUtils.ts"
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"
 
 export class Trip implements ITrip {
-    id: string
-    name: string
+    declare id: string
+    declare name: string
     year?: number
     mainHighlight?: Highlight
     start?: number

@@ -8,15 +8,15 @@ import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUt
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 export class Place implements IPlace {
-    id: string
-    name: string
-    country: string
-    latitude: number
-    longitude: number
-    elevation: number
-    timezone: string
+    declare id: string
+    declare name: string
+    declare country: string
+    declare latitude: number
+    declare longitude: number
+    declare elevation: number
+    declare timezone: string
     mainHighlight?: Highlight
-    score: number
+    declare score: number
     quality?: number
     excerpt?: string
     categories?: Category[]
