@@ -3,7 +3,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useRegularTrips } from "../hooks/useRegularTrips.js"
 import { useYears } from "../hooks/useYears.js"
 import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import PlaceMap from "../components/PlaceMap.jsx"
 import TripTable from "../components/TripTable.jsx"
 import YearTripTileGrid from "../components/YearTripTileGrid.jsx"
@@ -20,11 +20,11 @@ export default function YearsPage() {
 
     return hasRole(UserRole.YearRead) && (
         <>
-            <MapFrame>
+            <StaticMapFrame>
                 <PlaceMap
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-            </MapFrame>
+            </StaticMapFrame>
             {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
             )}

@@ -5,7 +5,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useRegularTrips } from "../hooks/useRegularTrips.ts"
 import { useCategories } from "../hooks/useCategories"
 import { useYears } from "../hooks/useYears.ts"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import PlaceMapAndFlightMapToggle from "../components/PlaceMapAndFlightMapToggle"
 import StatisticsCardGrid from "../components/StatisticsCardGrid"
 import { CategoryCategory, PlaceSortingStrategy, TripIncludedEntity, UserRole, YearIncludedEntity } from "../types/CoreSwaggerTypes.ts"
@@ -24,13 +24,13 @@ export default function StatisticsPage() {
 
     return hasRole(UserRole.StatisticsRead) && (
         <>
-            <MapFrame>
+            <StaticMapFrame>
                 <PlaceMapAndFlightMapToggle
                     places={places}
                     flights={flights}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
-            </MapFrame>
+            </StaticMapFrame>
             <StatisticsCardGrid
                 rowSize={2}
                 statistics={statistics}

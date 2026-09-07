@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import PageHeader from "../components/PageHeader.tsx"
 import { useMemo } from "react"
 import { useCategories } from "../hooks/useCategories.ts"
@@ -34,11 +34,11 @@ export default function AirportPage() {
                 name={airport && (airport.longName ?? airport.code)}
                 categories={airport?.country ? [countryCategoriesMap.get(airport.country)] : []}
                 onNameChanged={hasRole(UserRole.AirportEdit) && updateAirportLongName} />
-            <MapFrame>
+            <StaticMapFrame>
                 <FlightMap
                     flights={flights}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
-            </MapFrame>
+            </StaticMapFrame>
             <FlightCardGrid
                 rowSize={4}
                 columnSize={6}

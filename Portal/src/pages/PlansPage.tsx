@@ -10,7 +10,7 @@ import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { useCandidateTrips } from "../hooks/useCandidateTrips"
 import { useRegions } from "../hooks/useRegions.ts"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import PlaceMap from "../components/PlaceMap"
 import CategoryCardGrid from "../components/CategoryCardGrid"
 import TripCardGrid from "../components/TripCardGrid"
@@ -156,11 +156,11 @@ export default function PlansPage() {
                 onTabSelected={setSelectedTab} />
             {hasRole(UserRole.PlaceRead) && activeTab === PlansMenuTabName.ConsideredPlaces && (
                 <>
-                    <MapFrame>
+                    <StaticMapFrame>
                         <PlaceMap
                             places={filteredCandidatePlaces}
                             placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-                    </MapFrame>
+                    </StaticMapFrame>
                     {furthestPlace && (
                         <Slider
                             name={t("plan.slider.maxDistance")}
@@ -182,11 +182,11 @@ export default function PlansPage() {
             )}
             {hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead) && activeTab === PlansMenuTabName.VisitedPlaces && (
                 <>
-                    <MapFrame>
+                    <StaticMapFrame>
                         <PlaceMap
                             places={filteredVisitedPlaces}
                             placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-                    </MapFrame>
+                    </StaticMapFrame>
                     <Slider
                         name={t("plan.slider.maxQuality")}
                         valueFormatter={value => `${value}%`}
@@ -203,11 +203,11 @@ export default function PlansPage() {
             )}
             {hasRole(UserRole.RegionRead) && hasRole(UserRole.PortalFutureRead) && activeTab === PlansMenuTabName.VisitedRegions && (
                 <>
-                    <MapFrame>
+                    <StaticMapFrame>
                         <RegionMap
                             regions={regionGeojsonsWithMetadata}
                             onClick={geographicalRegion => Promise.resolve(navigate(geographicalRegion.category))} />
-                    </MapFrame>
+                    </StaticMapFrame>
                     <CategoryCardGrid
                         rowSize={5}
                         categories={regionGeojsonsWithMetadata?.map(region => region.category)}

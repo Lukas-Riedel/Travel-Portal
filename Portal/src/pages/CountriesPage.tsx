@@ -1,5 +1,5 @@
 import { useCategories } from "../hooks/useCategories"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import CategoryTileGrid from "../components/CategoryTileGrid"
 import { useMemo } from "react"
 import PlaceMap from "../components/PlaceMap"
@@ -31,11 +31,11 @@ export default function CountriesPage() {
 
     return hasRole(UserRole.CategoryRead) && (
         <>
-            <MapFrame>
+            <StaticMapFrame>
                 <PlaceMap
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-            </MapFrame>
+            </StaticMapFrame>
             <CategoryTileGrid categories={countries} />
         </>
     )

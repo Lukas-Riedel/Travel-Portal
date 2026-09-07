@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import { useCategories } from "../hooks/useCategories"
 import FlightMap from "../components/FlightMap"
 import { useRegularTrips } from "../hooks/useRegularTrips"
@@ -24,11 +24,11 @@ export default function FlightsPage() {
 
     return hasRole(UserRole.TripFlightRead) && (
         <>
-            <MapFrame>
+            <StaticMapFrame>
                 <FlightMap
                     flights={flights}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
-            </MapFrame>
+            </StaticMapFrame>
             <FlightCardGrid
                 rowSize={4}
                 columnSize={6}

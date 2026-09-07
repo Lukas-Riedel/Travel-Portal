@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import { useParams } from "react-router-dom"
 import PageHeader from "../components/PageHeader"
 import PlaceTileGrid from "../components/PlaceTileGrid"
@@ -28,12 +28,12 @@ export default function LabelPage() {
                 name={label?.name}
                 onNameChanged={hasRole(UserRole.LabelEdit) && updateLabelName}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
-            <MapFrame>
+            <StaticMapFrame>
                 <PlaceMap
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
-            </MapFrame>
+            </StaticMapFrame>
             <PlaceTileGrid
                 places={places}
                 placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />

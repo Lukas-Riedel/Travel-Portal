@@ -5,7 +5,7 @@ import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { useCategories } from "../hooks/useCategories.js"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
-import MapFrame from "../components/MapFrame.tsx"
+import StaticMapFrame from "../components/StaticMapFrame.tsx"
 import PlaceMap from "../components/PlaceMap.jsx"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
 import TripSummary from "../components/TripSummary.tsx"
@@ -68,12 +68,12 @@ export default function RecentPlacesPage() {
 
     return hasRole(UserRole.PlaceRead) && (
         <>
-            <MapFrame>
+            <StaticMapFrame>
                 <PlaceMap
                     places={allPlaces}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
-            </MapFrame>
+            </StaticMapFrame>
             {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && upcomingOrCurrentTrip?.end < getMaximumAllowedTimetamp() && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}
