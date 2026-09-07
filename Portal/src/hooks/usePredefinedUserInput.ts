@@ -191,7 +191,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     }))
                 }
             ],
-            (subscriptionId, voucherId) => createExpense(subscriptionId)
+            (subscriptionId: string | undefined, voucherId: string | undefined) => createExpense(subscriptionId)
                 .then(async expense => {
                     if (voucherId) {
                         const voucher = vouchers.find(voucher => voucher.id === voucherId)
@@ -589,7 +589,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     }))
                 }
             ],
-            selectedFitnessRecordIndex => replaceFitness(Number(selectedFitnessRecordIndex)),
+            (selectedFitnessRecordIndex: string) => replaceFitness(Number(selectedFitnessRecordIndex)),
             t("fitness.prompt.replace.confirmed"),
             t("fitness.prompt.replace.failed")
         )
@@ -627,7 +627,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: category.category
                 },
             ],
-            (color, unicode, publicHolidaysCalendar, category) => {
+            (color: string | undefined, unicode: string | undefined, publicHolidaysCalendar: string | undefined, category: string) => {
                 const promise = updateMetadata({ color, unicode, publicHolidaysCalendar })
                 return updateCategory ? promise.then(() => updateCategory(category as CategoryCategory)) : promise
             },
@@ -725,7 +725,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         defaultValue: sendNotification !== undefined ? sendNotification : true
                     }
                 ],
-                (path, agentId, mainPhotoPosition, sendNotification) => (uploadPhotos as (path: string, agentId: string, sendNotification?: boolean, mainPhotoPosition?: number) => Promise<void>)(String(path), String(agentId), Boolean(sendNotification), mainPhotoPosition && Number(mainPhotoPosition)),
+                (path: string, agentId: string, mainPhotoPosition: string | undefined, sendNotification: boolean) => (uploadPhotos as (path: string, agentId: string, sendNotification?: boolean, mainPhotoPosition?: number) => Promise<void>)(path, agentId, sendNotification, mainPhotoPosition ? Number(mainPhotoPosition) : undefined),
                 t("photo.prompt.upload.confirmed"),
                 t("photo.prompt.upload.failed")
             )
@@ -771,7 +771,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                         defaultValue: sendNotification !== undefined ? sendNotification : true
                     }
                 ],
-                (date, path, agentId, mainPhotoPosition, sendNotification) => (uploadPhotos as (date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>)(String(date), String(path), String(agentId), Boolean(sendNotification), mainPhotoPosition && Number(mainPhotoPosition)),
+                (date: string, path: string, agentId: string, mainPhotoPosition: string | undefined, sendNotification: boolean) => (uploadPhotos as (date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>)(date, path, agentId, sendNotification, mainPhotoPosition ? Number(mainPhotoPosition) : undefined),
                 t("photo.prompt.upload.confirmed"),
                 t("photo.prompt.upload.failed")
             )
@@ -855,7 +855,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: formatMillimeters(focalLength)
                 }
             ],
-            (composition, sky, shadows, circumstantes, atmosphere, impression) => updateHighlightAttributes(
+            (composition: string | undefined, sky: string | undefined, shadows: string | undefined, circumstantes: string | undefined, atmosphere: string | undefined, impression: string | undefined) => updateHighlightAttributes(
                 composition !== "" ? Number(composition) : null,
                 sky !== "" ? Number(sky) : null,
                 shadows !== "" ? Number(shadows) : null,
@@ -885,7 +885,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true
                 }
             ],
-            (radius, geoJson) => overwriteGeographicalRegion(Number(radius), JSON.parse(String(geoJson))),
+            (radius: string, geoJson: string) => overwriteGeographicalRegion(Number(radius), JSON.parse(geoJson)),
             t("region.prompt.overwrite.geographical.confirmed"),
             t("region.prompt.overwrite.geographical.failed")
         )
@@ -907,7 +907,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (includedCategoryNames, excludedCategoryNames) => overwriteCompositeRegion(includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
+            (includedCategoryNames: string, excludedCategoryNames: string | undefined) => overwriteCompositeRegion(includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
             t("region.prompt.overwrite.composite.confirmed"),
             t("region.prompt.overwrite.composite.failed")
         )
@@ -1278,7 +1278,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (name, category, includedCategoryNames, excludedCategoryNames) => createCompositeRegion(name, category as CategoryCategory, includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
+            (name: string, category: string, includedCategoryNames: string, excludedCategoryNames: string | undefined) => createCompositeRegion(name, category as CategoryCategory, includedCategoryNames.split(",").map(name => name.trim()).filter(Boolean), excludedCategoryNames?.split(",")?.map(name => name.trim())?.filter(Boolean)),
             t("region.prompt.create.composite.confirmed"),
             t("region.prompt.create.composite.failed")
         )
@@ -1372,7 +1372,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (tripId, description, priority, deadline) => createTripTask(tripId, description, priority as TaskPriority, deadline && new Date(deadline)),
+            (tripId: string, description: string, priority: string, deadline: string | undefined) => createTripTask(tripId, description, priority as TaskPriority, deadline ? new Date(deadline) : undefined),
             t("task.prompt.create.confirmed"),
             t("task.prompt.create.failed")
         )
