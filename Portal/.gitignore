@@ -26,3 +26,6 @@ dist-ssr
 vite.config.development.ts
 .env.development
 src/types/CoreSwaggerTypes.ts
+
+# ESLint output files
+.eslint-*.json
