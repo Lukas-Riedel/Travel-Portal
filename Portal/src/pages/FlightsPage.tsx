@@ -4,14 +4,14 @@ import FlightMap from "../components/FlightMap"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import FlightCardGrid from "../components/FlightCardGrid"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 
 export default function FlightsPage() {
     const { hasRole } = useAuth()
 
-    const { trips } = useRegularTrips({ include: ["flights"] })
-    const countryCategories = useCategories({ categories: ["country"] })
+    const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
 
     const flights = useMemo(() => {
         const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)
@@ -19,9 +19,7 @@ export default function FlightsPage() {
         return filteredFlights && [...filteredFlights].reverse()
     }, [trips])
 
-    const countryCategoriesMap = useMemo(() => {
-        return new Map(countryCategories?.map(category => [category.name, category]))
-    }, [countryCategories])
+    const countryCategoriesMap = useCountryCategoriesMap()
 
     return hasRole(UserRole.TripFlightRead) && (
         <>
