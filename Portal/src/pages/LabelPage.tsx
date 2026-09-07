@@ -6,17 +6,19 @@ import PlaceMap from "../components/PlaceMap"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { useLabel } from "../hooks/useLabel"
 import { useAuth } from "../contexts/AuthContext.tsx"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { Folder } from "lucide-react"
+import AppLink from "../components/AppLink.tsx"
+import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 
 export default function LabelPage() {
     const { labelId } = useParams()
     const { hasRole } = useAuth()
 
     const { label, updateLabelName } = useLabel(labelId)
-    const { places } = useTimeFilteredRegularPlaces({ labelId, include: ["categories"], sort: "-score" })
+    const { places } = useTimeFilteredRegularPlaces({ labelId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
-    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory("country"))
+    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
         ?.filter(Boolean)?.map(category => [category.name, category])), [places])
 
     return hasRole(UserRole.LabelRead) && (
@@ -36,11 +38,14 @@ export default function LabelPage() {
                 placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">
-                    <a
-                        href={`/plan/label/${label?.id}`}
-                        className="btn-chip-gray">
-                        <Folder size={16} />
-                    </a>
+                    {label && (
+                        <AppLink
+                            target={AppLinkTarget.Plans}
+                            to={label}
+                            className="btn-chip-gray">
+                            <Folder size={16} />
+                        </AppLink>
+                    )}
                 </div>
             </div>
         </>
