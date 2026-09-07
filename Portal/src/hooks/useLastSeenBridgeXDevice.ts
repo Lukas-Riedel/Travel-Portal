@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useAirports } from "./useAirports.ts"
-import { getCachedCoordinates } from "../utils/helpers.js"
+import { useCachedCoordinates } from "./useCachedCoordinates.ts"
 import { useDevices } from "./useDevices.ts"
-import { getCoordinates } from "../clients/coreClient.ts"
 import { getEuclideanDistance } from "../utils/geocodingUtils.ts"
 import { DeviceType } from "../types/CoreSwaggerTypes.ts"
 import type { SpecificDevice } from "../types/SpecificDevice.ts"
@@ -21,6 +20,7 @@ const RADIUSES = {
 
 export const useLastSeenBridgeXDevice = (knownAddresses: KnownAddress[] = []): UseLastSeenBridgeXDeviceResult => {
     const { t } = useTranslation()
+    const getCachedCoordinates = useCachedCoordinates()
 
     const { airports } = useAirports()
     const devices = useDevices({ type: DeviceType.Bridgex })
@@ -45,7 +45,7 @@ export const useLastSeenBridgeXDevice = (knownAddresses: KnownAddress[] = []): U
             ]
 
             for (const candidate of candidates) {
-                const candidateCoordinates = await getCachedCoordinates(candidate.address, getCoordinates)
+                const candidateCoordinates = await getCachedCoordinates(candidate.address)
 
                 if (candidateCoordinates) {
                     const distance = getEuclideanDistance(candidateCoordinates, lastSeenBridgeXDevice.data as Coordinates)

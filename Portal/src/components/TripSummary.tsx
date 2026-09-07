@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { eachDayOfInterval, fromUnixTime, startOfDay } from "date-fns"
-import { getCachedCoordinates } from "../utils/helpers"
+import { useCachedCoordinates } from "../hooks/useCachedCoordinates.ts"
 import DayCard from "./DayCard.tsx"
 import { Link } from "react-router-dom"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
@@ -11,7 +11,6 @@ import { useEvents } from "../hooks/useEvents"
 import { toZonedTime } from "date-fns-tz"
 import { useAuth } from "../contexts/AuthContext"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
-import { getCoordinates } from "../clients/coreClient.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { CategoryCategory, PlaceIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
@@ -44,6 +43,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
     const { configuration } = useConfiguration()
     const { t } = useTranslation()
     const { formatRefreshedBefore } = useFormatters()
+    const getCachedCoordinates = useCachedCoordinates()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], enabled: !!trip?.id })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
@@ -95,7 +95,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         }
 
         let isMounted = true
-        getCachedCoordinates(targetAddress, getCoordinates).then(coordinates => {
+        getCachedCoordinates(targetAddress).then(coordinates => {
             if (isMounted) {
                 setTargetLocation(coordinates)
             }

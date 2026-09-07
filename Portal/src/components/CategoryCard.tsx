@@ -11,7 +11,7 @@ import AppLink from "./AppLink.tsx"
 import { useTranslation } from "react-i18next"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import CategoryFlag from "./CategoryFlag.tsx"
-import { getOnlyElement } from "../utils/helpers.js"
+import { getOnlyElement } from "../utils/collectionUtils.ts"
 
 const MAXIMUM_PLACES_COUNT = 5
 

@@ -3,7 +3,6 @@ import type { Highlightable } from "../types/Highlightable.ts"
 import { AnimatePresence, motion } from "framer-motion"
 import { Pause, Play, Trash2, Star, SlidersVertical, Edit2, Plus, Upload, Check } from "lucide-react"
 import { TailSpin } from "react-loader-spinner"
-import { getOnlyElement } from "../utils/helpers"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useDevices } from "../hooks/useDevices.ts"
@@ -18,6 +17,7 @@ import { DeviceType, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import type { Highlight, Photo, Place } from "../types/CoreSwaggerTypes.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 import { useTranslation } from "react-i18next"
+import { getOnlyElement } from "../utils/collectionUtils.ts"
 
 const DEFAULT_ROTATION = 0
 const DEFAULT_ZOOM = 1

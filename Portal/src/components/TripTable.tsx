@@ -1,6 +1,5 @@
 import { fromUnixTime, eachDayOfInterval, startOfDay, addDays, differenceInCalendarDays } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import { getDateRangeString } from "../utils/helpers"
 import { Link } from "react-router-dom"
 import { TailSpin } from "react-loader-spinner"
 import { useConfiguration } from "../contexts/ConfigContext"
