@@ -1028,6 +1028,13 @@
         }
     },
     "place": {
+        "attribute": {
+            "quality": "Kvalita",
+            "tier": "Tier",
+            "score": "Skóre",
+            "highlightsCount": "Počet highlightů",
+            "elevation": "Nadmořská výška"
+        },
         "expand": "Zobrazit více",
         "show": {
             "more_one": "Zobrazit další {{count}} místo",

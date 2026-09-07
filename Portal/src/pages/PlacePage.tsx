@@ -1,3 +1,11 @@
+import { useParams } from "react-router-dom"
+import { useAuth } from "../contexts/AuthContext.jsx"
+import { useEvents } from "../hooks/useEvents.js"
+import { useFormatters } from "../hooks/useFormatters.ts"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { usePlace } from "../hooks/usePlace.js"
+import { createPlaceAlbumPhoto, listPlaceAlbumPhotos } from "../clients/coreClient.js"
 import PageHeader from "../components/PageHeader.jsx"
 import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import CategoryBar from "../components/CategoryBar.jsx"
@@ -6,36 +14,42 @@ import DateTileGrid from "../components/DateTileGrid.jsx"
 import TripBar from "../components/TripBar.jsx"
 import PlaceContent from "../components/PlaceContent.jsx"
 import NearbyPlaceTileGrid from "../components/NearbyPlaceTileGrid.jsx"
-import { useParams } from "react-router-dom"
 import SunAltitudeBar from "../components/SunAltitudeBar.jsx"
-import { usePlace } from "../hooks/usePlace.js"
-import { useAuth } from "../contexts/AuthContext.jsx"
-import { useEvents } from "../hooks/useEvents.js"
-import { useMemo } from "react"
-import { createPlaceAlbumPhoto } from "../clients/coreClient.js"
 import NoteCardGrid from "../components/NoteCardGrid.jsx"
-import { HighlightType, UserRole } from "../types/CoreSwaggerTypes.ts"
-import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
-import { useFormatters } from "../hooks/useFormatters.ts"
 import PlaceReviewAlertBar from "../components/PlaceReviewAlertBar.tsx"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { getHighlightsTier } from "../utils/highlightUtils.ts"
 
-const nearbyPlacesCount = 3
+const NEARBY_PLACES_COUNT = 3
 
 export default function PlacePage() {
-    const { hasRole } = useAuth()
     const { placeId } = useParams()
+    const { hasRole } = useAuth()
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
-    const { formatMeters, formatMillimeters } = useFormatters()
+    const { t } = useTranslation()
+    const { formatMeters } = useFormatters()
 
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
-        createPlaceNote, removePlaceNote, refreshPlaceHighlights } = usePlace(placeId, nearbyPlacesCount)
+        createPlaceNote, removePlaceNote, refreshPlaceHighlights } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
-    const mostSpecificCategory = useMemo(() => place?.getCategory("mostSpecificWithMetadata"), [place])
+    const mostSpecificCategory = useMemo(() => place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata), [place])
 
-    const handlePhotoCorrected = async (placeId, albumId, fileName, data, replacedPhotoId) => createPlaceAlbumPhoto(placeId, albumId, fileName, data, replacedPhotoId).then(({ batchId }) => refreshPlaceAlbum(albumId, undefined, batchId))
+    const attributes = {
+        [t("place.attribute.quality")]: place?.quality && `${Math.round(place.quality)}%`,
+        [t("place.attribute.tier")]: place && getHighlightsTier(place?.highlights ?? [], place?.mainHighlight),
+        [t("place.attribute.score")]: place?.score,
+        [t("place.attribute.highlightsCount")]: place?.highlights?.length,
+        [t("place.attribute.elevation")]: place?.elevation && formatMeters(place.elevation)
+    }
+
+    const handlePhotoCorrected = async (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => createPlaceAlbumPhoto(placeId, albumId, fileName, base64Data, photoId)
+        .then(({ batchId }) => refreshPlaceAlbum(albumId, undefined, batchId))
+        .then(_ => listPlaceAlbumPhotos(placeId, albumId))
+        .then(photos => photos.find(photo => photo.id === photoId))
 
     return hasRole(UserRole.PlaceRead) && (
         <>
@@ -45,7 +59,7 @@ export default function PlacePage() {
             <PageHeader
                 name={place?.name}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
-                internalAttributes={hasRole(UserRole.PlaceEdit) && { "Kvalita": place?.quality && `${Math.round(place.quality)}%`, "Tier": place && getHighlightsTier(place?.highlights ?? [], place?.mainHighlight), "Skóre": place?.score, "Počet highlightů": place?.highlights?.length, "Nadmořská výška": place?.elevation && formatMeters(place.elevation) }}
+                internalAttributes={hasRole(UserRole.PlaceEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => refreshPlaceHighlights(highlightsCount))}
                 onNameChanged={hasRole(UserRole.PlaceEdit) && updatePlaceName} />
             <HighlightCarousel
