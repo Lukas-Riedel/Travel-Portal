@@ -43,4 +43,11 @@ export function ConfigurationProvider({ children }: ConfigProviderProps) {
     )
 }
 
-export const useConfiguration = (): UseConfigurationResult => useContext(ConfigContext)
+export const useConfiguration = (): UseConfigurationResult => {
+    const context = useContext(ConfigContext)
+    if (!context) {
+        throw new Error("The useConfiguration hook must be used within ConfigurationProvider.")
+    }
+
+    return context
+}

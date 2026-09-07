@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         try {
             const decodedAccessToken = jwtDecode<AccessTokenPayload>(accessToken)
-            return decodedAccessToken?.preferred_username && decodedAccessToken?.preferred_username !== GUEST_CREDENTIALS.username
+            return !!(decodedAccessToken?.preferred_username && decodedAccessToken?.preferred_username !== GUEST_CREDENTIALS.username)
         }
         catch {
             return false
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             accessToken,
             hasRole,
             isLoggedIn,
-            username: isLoggedIn && username,
+            username: isLoggedIn ? username ?? undefined : undefined,
             login,
             logout: () => login(GUEST_CREDENTIALS)
         }}>
@@ -100,4 +100,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     )
 }
 
-export const useAuth = (): UseAuthResult => useContext(AuthContext)
+export const useAuth = (): UseAuthResult => {
+    const context = useContext(AuthContext)
+    if (!context) {
+        throw new Error("useAuth must be used within AuthProvider")
+    }
+    return context
+}

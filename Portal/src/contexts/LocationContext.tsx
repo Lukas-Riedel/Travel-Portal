@@ -38,4 +38,11 @@ export function LocationProvider({ children }: LocationProviderProps) {
     )
 }
 
-export const useLocation = (): UseLocationResult => useContext(LocationContext)
+export const useLocation = (): UseLocationResult => {
+    const context = useContext(LocationContext)
+    if (context === undefined) {
+        throw new Error("The useLocation hook must be used within LocationProvider.")
+    }
+
+    return context
+}

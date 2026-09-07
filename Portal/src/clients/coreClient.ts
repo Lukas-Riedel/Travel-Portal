@@ -485,7 +485,7 @@ export const updatePlaceAlbumsReviewed = async (placeId: string, albumId: string
         }
     ).then(extractData)
 
-export const createPlaceAlbumPhoto = async (placeId: string, albumId: string, fileName: string, data: string, replacedPhotoId: string = undefined): Promise<PendingPhoto> =>
+export const createPlaceAlbumPhoto = async (placeId: string, albumId: string, fileName: string, data: string, replacedPhotoId: string | undefined = undefined): Promise<PendingPhoto> =>
     coreClient.post<PendingPhoto>(`places/${placeId}/albums/${albumId}/photos`,
         {
             fileName,

@@ -75,4 +75,11 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     )
 }
 
-export const useNotifications = (): UseNotificationsResult => useContext(NotificationContext)
+export const useNotifications = (): UseNotificationsResult => {
+    const context = useContext(NotificationContext)
+    if (!context) {
+        throw new Error("The useNotifications hook must be used within NotificationProvider.")
+    }
+
+    return context
+}
