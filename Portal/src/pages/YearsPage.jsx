@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import MapFrame from "../components/MapFrame.tsx"
 import PlaceMap from "../components/PlaceMap.jsx"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.js"
 import { useCategories } from "../hooks/useCategories.js"
@@ -23,11 +24,11 @@ export default function YearsPage() {
 
     return hasRole(UserRole.YearRead) && (
         <>
-            <div className="h-[400px] md:h-[700px] my-4">
+            <MapFrame>
                 <PlaceMap
                     places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-            </div>
+            </MapFrame>
             {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
             )}

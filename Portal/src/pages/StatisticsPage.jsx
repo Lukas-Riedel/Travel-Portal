@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import MapFrame from "../components/MapFrame.tsx"
 import PlaceMapAndFlightMapToggle from "../components/PlaceMapAndFlightMapToggle";
 import StatisticsCardGrid from "../components/StatisticsCardGrid";
 import { useStatistics } from "../hooks/useStatistics";
@@ -25,13 +26,13 @@ export default function StatisticsPage() {
 
     return hasRole(UserRole.StatisticsRead) && (
         <>
-            <div className="h-[400px] md:h-[700px] my-4">
+            <MapFrame>
                 <PlaceMapAndFlightMapToggle
                     places={places}
                     flights={flights}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
-            </div>
+            </MapFrame>
             <StatisticsCardGrid
                 rowSize={2}
                 statistics={statistics}

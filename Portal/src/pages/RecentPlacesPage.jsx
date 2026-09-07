@@ -1,4 +1,5 @@
 import { useCategories } from "../hooks/useCategories.js"
+import MapFrame from "../components/MapFrame.tsx"
 import { useEffect, useMemo, useRef, useState } from "react"
 import PlaceMap from "../components/PlaceMap.jsx"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
@@ -70,12 +71,12 @@ export default function RecentPlacesPage() {
 
     return hasRole(UserRole.PlaceRead) && (
         <>
-            <div className="h-[400px] md:h-[700px] my-4">
+            <MapFrame>
                 <PlaceMap
                     places={allPlaces}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
                 />
-            </div>
+            </MapFrame>
             {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && upcomingOrCurrentTrip?.end < getMaximumAllowedTimetamp() && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}

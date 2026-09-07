@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
+import MapFrame from "../components/MapFrame.tsx"
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces"
 import { useCategories } from "../hooks/useCategories"
 import PlaceMap from "../components/PlaceMap"
@@ -160,11 +161,11 @@ export default function PlansPage() {
                 onTabSelected={setSelectedTab} />
             {hasRole(UserRole.PlaceRead) && activeTab === 0 && (
                 <>
-                    <div className="h-[400px] md:h-[700px] my-4">
+                    <MapFrame>
                         <PlaceMap
                             places={filteredCandidatePlaces}
                             placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-                    </div>
+                    </MapFrame>
                     {furthestPlace && (
                         <Slider
                             name="Maximální vzdálenost"
@@ -186,11 +187,11 @@ export default function PlansPage() {
             )}
             {hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 1 && (
                 <>
-                    <div className="h-[400px] md:h-[700px] my-4">
+                    <MapFrame>
                         <PlaceMap
                             places={filteredVisitedPlaces}
                             placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-                    </div>
+                    </MapFrame>
                     <Slider
                         name="Maximální kvalita"
                         valueFormatter={value => `${value}%`}
@@ -207,11 +208,11 @@ export default function PlansPage() {
             )}
             {hasRole(UserRole.RegionRead) && hasRole(UserRole.PortalFutureRead) && activeTab === 2 && (
                 <>
-                    <div className="h-[400px] md:h-[700px] my-4">
+                    <MapFrame>
                         <RegionMap
                             regions={regionGeojsonsWithMetadata}
                             onClick={categoryId => simpleNavigate("/category/" + categoryId)} />
-                    </div>
+                    </MapFrame>
                     <CategoryCardGrid
                         rowSize={5}
                         categories={regionGeojsonsWithMetadata?.map(region => region.category)}

@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom"
+import MapFrame from "../components/MapFrame.tsx"
 import PageHeader from "../components/PageHeader.tsx"
 import { useMemo } from "react"
 import { useCategories } from "../hooks/useCategories.ts"
@@ -32,11 +33,11 @@ export default function AirlinePage() {
                 name={airline?.name}
                 onNameChanged={hasRole(UserRole.AirlineEdit) && updateAirlineName}
                 onRemoved={hasRole(UserRole.AirlineEdit) && removeAirline} />
-            <div className="h-[400px] md:h-[700px] my-4">
+            <MapFrame>
                 <FlightMap
                     flights={flights}
                     airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
-            </div>
+            </MapFrame>
             <FlightCardGrid
                 rowSize={4}
                 columnSize={6}

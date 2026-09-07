@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom"
+import MapFrame from "../components/MapFrame.tsx"
 import { useCategory } from "../hooks/useCategory.ts"
 import PageHeader from "../components/PageHeader.tsx"
 import { useMemo } from "react"
@@ -35,11 +36,11 @@ export default function CandidateCategoryPage() {
                 name={category?.name}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName} />
-            <div className="h-[400px] md:h-[700px] my-4">
+            <MapFrame>
                 <PlaceMap
                     places={candidatePlaces}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
-            </div>
+            </MapFrame>
             <PlaceCardGrid
                 places={candidatePlaces}
                 rowSize={5}
