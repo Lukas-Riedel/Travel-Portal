@@ -58,8 +58,13 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
     const handleFitnessReplaced = ({ timestamp, fitness }: TimeBasedFitnessCollection) => {
         if (onFitnessReplaced) {
-            showReplaceFitnessToast(fitness, fitnessIndex => onFitnessReplaced(timestamp, fitness[fitnessIndex].steps,
-                fitness[fitnessIndex].seconds, fitness[fitnessIndex].distance, true))
+            showReplaceFitnessToast(fitness, fitnessIndex => {
+                const f = fitness[fitnessIndex]
+                if (!f) {
+                    return Promise.reject(`There is no fitness record with the index ${fitnessIndex}.`)
+                }
+                return onFitnessReplaced(timestamp, f.steps, f.seconds, f.distance, true)
+            })
         }
     }
 
@@ -87,7 +92,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
     const handleAirlineCodeAssigned = (code: string) => {
         if (onAirlineCodeAssigned) {
-            showAssignAirlineCodeToast(airlines, airlineId => onAirlineCodeAssigned(airlineId, code))
+            showAssignAirlineCodeToast(airlines ?? [], airlineId => onAirlineCodeAssigned(airlineId, code))
         }
     }
 
@@ -111,14 +116,14 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     }
 
     const handleAirportNameChanged = (airport: Airport) => {
-        if (onAirportNameChanged) {
-            showUpdateAirportNameToast(name => onAirportNameChanged(airport.id, name))
+        if (onAirportNameChanged && airport.id) {
+            showUpdateAirportNameToast(name => onAirportNameChanged(airport.id!, name))
         }
     }
 
     const handleAirportCountryAssigned = (airport: Airport) => {
-        if (onAirportCountryChanged) {
-            showUpdateAirportCountryToast(country => onAirportCountryChanged(airport.id, country))
+        if (onAirportCountryChanged && airport.id) {
+            showUpdateAirportCountryToast(country => onAirportCountryChanged(airport.id!, country))
         }
     }
 
@@ -198,7 +203,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             isResolvable: true,
             getProperties: (photo: Photo) => (
                 {
-                    [t("issue.photo.replaced.label.timestamp")]: formatTimestamp(photo.timestamp, t("general.format.datetime.year.included"))
+                    [t("issue.photo.replaced.label.timestamp")]: photo.timestamp ? formatTimestamp(photo.timestamp, t("general.format.datetime.year.included")) : ""
                 }
             ),
             resolve: handlePhotoRemoved
@@ -262,10 +267,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 {
                     [t("issue.place.date.time.nonset.label.name")]: place.name,
                     [t("issue.place.date.time.nonset.label.country")]: place.country,
-                    [t("issue.place.date.time.nonset.label.date")]: formatTimestamp(place.dates[0].start, t("general.format.date.year.included"))
+                    [t("issue.place.date.time.nonset.label.date")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.date.year.included"))
                 }
             ),
-            resolve: (place: Place) => openGoogleCalendar(place.dates[0].end)
+            resolve: (place: Place) => openGoogleCalendar(place.dates?.[0]?.end ?? 0)
         },
         [DataConsistencyIssueName.TripWithoutTime]: {
             name: t("issue.trip.time.nonset.name"),
@@ -273,11 +278,11 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (trip: Trip) => (
                 {
                     [t("issue.trip.time.nonset.label.name")]: trip.name,
-                    [t("issue.trip.time.nonset.label.from")]: formatTimestamp(trip.start, t("general.format.date.year.included")),
-                    [t("issue.trip.time.nonset.label.to")]: formatTimestamp(trip.end, t("general.format.date.year.included"))
+                    [t("issue.trip.time.nonset.label.from")]: formatTimestamp(trip.start ?? 0, t("general.format.date.year.included")),
+                    [t("issue.trip.time.nonset.label.to")]: formatTimestamp(trip.end ?? 0, t("general.format.date.year.included"))
                 }
             ),
-            resolve: (trip: Trip) => openGoogleCalendar(trip.start)
+            resolve: (trip: Trip) => openGoogleCalendar(trip.start ?? 0)
         },
         [DataConsistencyIssueName.LoggedFlightWithoutFlightEvent]: {
             name: t("issue.flight.nonlinked.name"),
@@ -285,8 +290,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (flight: Flight) => (
                 {
                     [t("issue.flight.nonlinked.label.flight")]: flight.flight,
-                    [t("issue.flight.nonlinked.label.from")]: flight.from.code,
-                    [t("issue.flight.nonlinked.label.to")]: flight.to.code,
+                    [t("issue.flight.nonlinked.label.from")]: flight.from.code ?? flight.from.shortName,
+                    [t("issue.flight.nonlinked.label.to")]: flight.to.code ?? flight.to.shortName,
                     [t("issue.flight.nonlinked.label.departure")]: formatTimestamp(flight.start, t("general.format.datetime.year.included")),
                     [t("issue.flight.nonlinked.label.arrival")]: formatTimestamp(flight.end, t("general.format.datetime.year.included"))
                 }
@@ -300,11 +305,11 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 {
                     [t("issue.place.date.time.unaligned.label.name")]: place.name,
                     [t("issue.place.date.time.unaligned.label.country")]: place.country,
-                    [t("issue.place.date.time.unaligned.label.date")]: formatTimestamp(place.dates[0].start, t("general.format.date.year.included")),
-                    [t("issue.place.date.time.unaligned.label.time")]: formatTimestamp(place.dates[0].start, t("general.format.time"))
+                    [t("issue.place.date.time.unaligned.label.date")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.date.year.included")),
+                    [t("issue.place.date.time.unaligned.label.time")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.time"))
                 }
             ),
-            resolve: (place: Place) => openGoogleCalendar(place.dates[0].start)
+            resolve: (place: Place) => openGoogleCalendar(place.dates?.[0]?.start ?? 0)
         },
         [DataConsistencyIssueName.DateWithIncorrectDuration]: {
             name: t("issue.place.date.duration.unaligned.name"),
@@ -313,11 +318,11 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 {
                     [t("issue.place.date.duration.unaligned.label.name")]: place.name,
                     [t("issue.place.date.duration.unaligned.label.country")]: place.country,
-                    [t("issue.place.date.duration.unaligned.label.date")]: formatTimestamp(place.dates[0].start, t("general.format.date.year.included")),
-                    [t("issue.place.date.duration.unaligned.label.duration")]: formatDuration(place.dates[0].end - place.dates[0].start)
+                    [t("issue.place.date.duration.unaligned.label.date")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.date.year.included")),
+                    [t("issue.place.date.duration.unaligned.label.duration")]: formatDuration((place.dates?.[0]?.end ?? 0) - (place.dates?.[0]?.start ?? 0))
                 }
             ),
-            resolve: (place: Place) => openGoogleCalendar(place.dates[0].start)
+            resolve: (place: Place) => openGoogleCalendar(place.dates?.[0]?.start ?? 0)
         },
         [DataConsistencyIssueName.DuplicatedPlace]: {
             name: t("issue.place.duplicated.name"),
@@ -325,11 +330,12 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (places: Place[]) => {
                 const records = places.map((place, i) => [
                     t("issue.place.duplicated.label.place", { index: i + 1 }),
-                    [place.name, place.dates?.length && formatEvents(place.dates.length)].filter(Boolean).join(", ")
+                    [place.name, place.dates?.length ? formatEvents(place.dates.length) : undefined].filter(Boolean).join(", ")
                 ])
 
+                const first = places[0]
                 return {
-                    [t("issue.place.duplicated.label.coordinates")]: `${places[0].latitude.toFixed(4)}, ${places[0].longitude.toFixed(4)}`,
+                    [t("issue.place.duplicated.label.coordinates")]: first ? `${first.latitude.toFixed(4)}, ${first.longitude.toFixed(4)}` : "",
                     ...Object.fromEntries(records)
                 }
             },
@@ -341,7 +347,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (airport: Airport) => (
                 {
                     [t("issue.airport.unnamed.label.name")]: airport.shortName,
-                    [t("issue.airport.unnamed.label.code")]: airport.code
+                    [t("issue.airport.unnamed.label.code")]: airport.code ?? ""
                 }
             ),
             resolve: handleAirportNameChanged
@@ -352,7 +358,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             getProperties: (airport: Airport) => (
                 {
                     [t("issue.airport.unnamed.label.name")]: airport.shortName,
-                    [t("issue.airport.unnamed.label.code")]: airport.code
+                    [t("issue.airport.unnamed.label.code")]: airport.code ?? ""
                 }
             ),
             resolve: handleAirportCountryAssigned

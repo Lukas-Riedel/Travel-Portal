@@ -35,35 +35,35 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
     const weatherAggregate = useMemo(() => weather.reduce<WeatherAggregate>((acc, record) => ({
         temperature: acc.temperature + record.temperature,
         precipitation: {
-            probability: record.precipitation.probability != null
-                ? (acc.precipitation.probability === null ? record.precipitation.probability : Math.max(acc.precipitation.probability, record.precipitation.probability))
+            probability: record.precipitation.probability !== undefined
+                ? (acc.precipitation.probability === undefined ? record.precipitation.probability : Math.max(acc.precipitation.probability ?? 0, record.precipitation.probability))
                 : acc.precipitation.probability,
-            total: record.precipitation.total != null ? acc.precipitation.total + record.precipitation.total : acc.precipitation.total
+            total: record.precipitation.total !== undefined ? acc.precipitation.total + record.precipitation.total : acc.precipitation.total
         },
         clouds: {
-            total: record.clouds?.total != null ? acc.clouds.total + record.clouds?.total : acc.clouds.total,
-            low: record.clouds?.low != null ? acc.clouds.low + record.clouds?.low : acc.clouds.low,
-            medium: record.clouds?.medium != null ? acc.clouds.medium + record.clouds?.medium : acc.clouds.medium,
-            high: record.clouds?.high != null ? acc.clouds.high + record.clouds?.high : acc.clouds.high,
-            confidence: record.clouds?.confidence != null ? acc.clouds.confidence + record.clouds?.confidence : acc.clouds.confidence
+            total: record.clouds?.total !== undefined ? (acc.clouds?.total ?? 0) + record.clouds?.total : (acc.clouds?.total ?? 0),
+            low: record.clouds?.low !== undefined ? (acc.clouds?.low ?? 0) + record.clouds?.low : (acc.clouds?.low ?? 0),
+            medium: record.clouds?.medium !== undefined ? (acc.clouds?.medium ?? 0) + record.clouds?.medium : (acc.clouds?.medium ?? 0),
+            high: record.clouds?.high !== undefined ? (acc.clouds?.high ?? 0) + record.clouds?.high : (acc.clouds?.high ?? 0),
+            confidence: record.clouds?.confidence !== undefined ? (acc.clouds?.confidence ?? 0) + record.clouds?.confidence : (acc.clouds?.confidence ?? 0)
         },
         wind: acc.wind + record.wind,
-        humidity: record.humidity != null ? acc.humidity + record.humidity : acc.humidity,
+        humidity: record.humidity !== undefined ? (acc.humidity ?? 0) + record.humidity : (acc.humidity ?? 0),
         lastUpdate: record.lastUpdate < acc.lastUpdate ? record.lastUpdate : acc.lastUpdate,
         validity: record.validity < acc.validity ? record.validity : acc.validity,
         counts: {
             temperature: acc.counts.temperature + 1,
-            precipitationProbability: record.precipitation.probability != null ? acc.counts.precipitationProbability + 1 : acc.counts.precipitationProbability,
+            precipitationProbability: record.precipitation.probability !== undefined ? acc.counts.precipitationProbability + 1 : acc.counts.precipitationProbability,
             precipitationTotal: acc.counts.precipitationTotal + 1,
-            clouds: record.clouds?.total != null ? acc.counts.clouds + 1 : acc.counts.clouds,
-            cloudsConfidence: record.clouds?.confidence != null ? acc.counts.cloudsConfidence + 1 : acc.counts.cloudsConfidence,
+            clouds: record.clouds?.total !== undefined ? acc.counts.clouds + 1 : acc.counts.clouds,
+            cloudsConfidence: record.clouds?.confidence !== undefined ? acc.counts.cloudsConfidence + 1 : acc.counts.cloudsConfidence,
             wind: acc.counts.wind + 1,
-            humidity: record.humidity != null ? acc.counts.humidity + 1 : acc.counts.humidity
+            humidity: record.humidity !== undefined ? acc.counts.humidity + 1 : acc.counts.humidity
         }
     }), {
         temperature: 0,
         precipitation: {
-            probability: null,
+            probability: undefined,
             total: 0
         },
         clouds: {
@@ -88,34 +88,32 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
         }
     }), [weather])
 
-    const weatherSummary = useMemo<Weather>(() => ({
+    const weatherSummary = useMemo(() => ({
         temperature: weatherAggregate.counts.temperature > 0
             ? weatherAggregate.temperature / weatherAggregate.counts.temperature
-            : null,
+            : 0,
         precipitation: {
             probability: weatherAggregate.precipitation.probability,
-            total: weatherAggregate.counts.precipitationTotal > 0
-                ? weatherAggregate.precipitation.total
-                : null
+            total: weatherAggregate.counts.precipitationTotal
         },
-        clouds: weatherAggregate.counts.clouds > 0 ? {
+        clouds: weatherAggregate.clouds && weatherAggregate.counts.clouds > 0 ? {
             total: Math.round(weatherAggregate.clouds.total / weatherAggregate.counts.clouds),
-            low: Math.round(weatherAggregate.clouds.low / weatherAggregate.counts.clouds),
-            medium: Math.round(weatherAggregate.clouds.medium / weatherAggregate.counts.clouds),
-            high: Math.round(weatherAggregate.clouds.high / weatherAggregate.counts.clouds),
-            confidence: weatherAggregate.counts.cloudsConfidence > 0
+            low: weatherAggregate.clouds.low && Math.round(weatherAggregate.clouds.low / weatherAggregate.counts.clouds),
+            medium: weatherAggregate.clouds.medium && Math.round(weatherAggregate.clouds.medium / weatherAggregate.counts.clouds),
+            high: weatherAggregate.clouds.high && Math.round(weatherAggregate.clouds.high / weatherAggregate.counts.clouds),
+            confidence: weatherAggregate.clouds.confidence && weatherAggregate.counts.cloudsConfidence > 0
                 ? Math.round(weatherAggregate.clouds.confidence / weatherAggregate.counts.cloudsConfidence)
-                : null
-        } : null,
+                : undefined
+        } : undefined,
         wind: weatherAggregate.counts.wind > 0
             ? weatherAggregate.wind / weatherAggregate.counts.wind
-            : null,
-        humidity: weatherAggregate.counts.humidity > 0
+            : 0,
+        humidity: weatherAggregate.humidity && weatherAggregate.counts.humidity > 0
             ? Math.round(weatherAggregate.humidity / weatherAggregate.counts.humidity)
-            : null,
-        lastUpdate: weatherAggregate.lastUpdate === Number.MAX_VALUE ? null : weatherAggregate.lastUpdate,
-        validity: weatherAggregate.validity === Number.MAX_VALUE ? null : weatherAggregate.validity
-    }), [weatherAggregate])
+            : undefined,
+        lastUpdate: weatherAggregate.lastUpdate === Number.MAX_VALUE ? 0 : weatherAggregate.lastUpdate,
+        validity: weatherAggregate.validity === Number.MAX_VALUE ? 0 : weatherAggregate.validity
+    } satisfies Weather), [weatherAggregate])
 
     return isExpanded ? (
         <div className="pb-2">
@@ -148,6 +146,6 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
             weather={weatherSummary}
             start={start}
             end={end}
-            onWeatherForecastExpanded={weather.length > 1 && (() => setIsExpanded(true))} />
+            onWeatherForecastExpanded={weather.length > 1 ? () => setIsExpanded(true) : undefined} />
     )
 }

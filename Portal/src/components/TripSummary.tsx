@@ -1,5 +1,5 @@
 import { fromUnixTime, startOfDay } from "date-fns"
-import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon, type LucideIcon,Moon, Sun, SunMoon } from "lucide-react"
+import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon, type LucideIcon, Moon, Sun, SunMoon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
@@ -11,7 +11,7 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import type { Coordinates } from "../types/Coordinates.ts"
-import type { Note } from "../types/CoreSwaggerTypes.ts"
+import type { Date as PlaceDate, Flight, Note, Place } from "../types/CoreSwaggerTypes.ts"
 import { CategoryCategory, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
@@ -44,13 +44,13 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], enabled: !!trip?.id })
     const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
-        ...(trip?.stays?.map(stay => ({ name: stay.name, address: stay.address, type: KnownAddressType.Stay })) ?? []),
+        ...(trip?.stays?.filter(stay => stay.address)?.map(stay => ({ name: stay.name, address: stay.address!, type: KnownAddressType.Stay })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.from.shortName }), address: t("airport.format", { name: flight.from.shortName }), type: KnownAddressType.Airport })) ?? []),
         ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.to.shortName }), address: t("airport.format", { name: flight.to.shortName }), type: KnownAddressType.Airport })) ?? [])
     ])
 
-    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude && Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)), [lastSeenBridgeXDevice?.data])
-    const SunAltitudeIcon = useMemo<LucideIcon>(() => currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon, [currentSunAltitude])
+    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude ? Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)) : undefined, [lastSeenBridgeXDevice?.data])
+    const SunAltitudeIcon = useMemo<LucideIcon>(() => currentSunAltitude != null && currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude != null && currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon, [currentSunAltitude])
 
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
 
@@ -77,7 +77,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
 
     const tripPlacesWithoutLayover = useMemo(() => trip && places?.filter(place => !place.dates?.some(date => date?.layover)), [trip, places])
     const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter(Boolean)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
 
     const [targetLocation, setTargetLocation] = useState<Coordinates | null>(null)
 
@@ -103,7 +103,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         }
     }, [targetAddress])
 
-    const tripProgress = trip?.isCurrent() && (Math.min(Math.max(((getCurrentTimestamp() - trip.start) / (trip.end - trip.start)) * 100, 0), 100))
+    const tripProgress = trip?.isCurrent() ? Math.min(Math.max(((getCurrentTimestamp() - (trip.start ?? 0)) / ((trip.end ?? 1) - (trip.start ?? 0))) * 100, 0), 100) : undefined
 
     if (!trip) {
         return (
@@ -134,31 +134,39 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                     className="my-2 text-2xl font-semibold">
                     {trip.name}
                 </AppLink>
-                <div className="text-xl text-gray-700">
-                    {formatDateRange(trip.start, trip.end, t("general.format.date.year.included"))}
-                </div>
+                {trip.start && trip.end && (
+                    <div className="text-xl text-gray-700">
+                        {formatDateRange(trip.start, trip.end, t("general.format.date.year.included"))}
+                    </div>
+                )}
                 {lastSeenBridgeXDevice && (displayDeviceData || trip.isCurrent()) && (
                     <>
                         {lastSeenBridgeXDevice.lastSeen + LOCATION_UNAVAILABLE_THRESHOLD_SECONDS > getCurrentTimestamp() ? (
                             <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-4 hover:underline hover:text-green-400 transition-colors duration-200">
                                 <LocateFixedIcon size={16} />
-                                <a
-                                    className="text-xs truncate"
-                                    href={getMapLink(lastSeenBridgeXDevice.data.address.address)}
-                                    target="_blank"
-                                    rel="noopener noreferrer">
-                                    {lastSeenBridgeXDevice.data.address.name}
-                                </a>
+                                {lastSeenBridgeXDevice.data.address?.address ? (
+                                    <a
+                                        className="text-xs truncate"
+                                        href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
+                                        target="_blank"
+                                        rel="noopener noreferrer">
+                                        {lastSeenBridgeXDevice.data.address?.name}
+                                    </a>
+                                ) : (
+                                    <span className="text-xs truncate">
+                                        {lastSeenBridgeXDevice.data.address?.name}
+                                    </span>
+                                )}
                             </div>
                         ) : (
                             <div className="flex items-center justify-center w-full text-red-600 space-x-1 mt-6 hover:underline hover:text-red-400 transition-colors duration-200">
                                 <LocateOffIcon size={16} />
                                 <a
                                     className="text-xs truncate"
-                                    href={getMapLink(lastSeenBridgeXDevice.data.address.address)}
+                                    href={getMapLink(lastSeenBridgeXDevice.data.address?.address ?? "")}
                                     target="_blank"
                                     rel="noopener noreferrer">
-                                    {lastSeenBridgeXDevice.data.address.name}
+                                    {lastSeenBridgeXDevice.data.address?.name}
                                 </a>
                             </div>
                         )}
@@ -218,7 +226,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                 {formatRefreshedBefore(lastSeenBridgeXDevice.lastSeen)}
                             </li>
                         </ul>
-                        {tripProgress > 0 && (
+                        {tripProgress && (
                             <div className="w-full mt-4">
                                 <div className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700 relative">
                                     <div
@@ -240,10 +248,10 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                 <DayCard
                     key={index}
                     day={day}
-                    events={places && trip?.getCalendarEvents(day, places, timezone)}
+                    events={(places && trip?.getCalendarEvents(day, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
                     stay={trip?.getStay(day, configuration?.homeLocation?.timezone)}
-                    fitness={trip?.fitness[(day.getTime() - startOfDay(fromUnixTime(trip?.start)).getTime()) / (ONE_DAY_SECONDS * 1000)]}
-                    noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
+                    fitness={trip?.fitness?.[(day.getTime() - startOfDay(fromUnixTime(trip?.start ?? 0)).getTime()) / (ONE_DAY_SECONDS * 1000)]}
+                    noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
                     publicHoliday={trip?.getPublicHoliday(day)}
                     timezone={timezone}
                     displayWarnings={displayWarnings}

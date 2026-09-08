@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion"
-import { Check,Edit2, Pause, Play, Plus, SlidersVertical, Star, Trash2, Upload } from "lucide-react"
+import { Check, Edit2, Pause, Play, Plus, SlidersVertical, Star, Trash2, Upload } from "lucide-react"
 import piexif from "piexifjs"
-import { useCallback,useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import type { Area } from "react-easy-crop"
 import Cropper from "react-easy-crop"
 import { useTranslation } from "react-i18next"
@@ -58,7 +58,7 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
 
     const { places: currentHighlightPlaces } = useRegularPlaces({ enabled: !!shuffledHighlights[currentHighlightIndex]?.photo?.id, photoId: shuffledHighlights[currentHighlightIndex]?.photo?.id, include: [PlaceIncludedEntity.Dates] })
-    const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)?.map(date => date.album).filter(Boolean).map(album => album.id)), [currentHighlightPlaces])
+    const currentHighlightAlbumId = useMemo(() => getOnlyElement(currentHighlightPlaces?.flatMap(place => place.dates)?.map(date => date?.album).filter((a): a is NonNullable<typeof a> => a != null).map(album => album.id)), [currentHighlightPlaces])
     const [currentHighlightReferencePhotoUrl, setCurrentHighlightReferencePhotoUrl] = useState<string | null>(null)
 
     useEffect(() => {
@@ -72,7 +72,10 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
         }
 
         setCurrentHighlightReferencePhotoUrl(null)
-        fetchAndSetPhotoUrl(shuffledHighlights[currentHighlightIndex]?.photo?.id)
+        const photoId = shuffledHighlights[currentHighlightIndex]?.photo?.id
+        if (photoId) {
+            fetchAndSetPhotoUrl(photoId)
+        }
     }, [place?.id, currentHighlightAlbumId, shuffledHighlights, currentHighlightIndex])
 
     const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
@@ -100,6 +103,9 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
 
     const handleHighlightCreated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+        if (!highlight || !onHighlightCreated) {
+            return
+        }
 
         showCreateHighlightToast(() => onHighlightCreated(highlight.photo.id)
             .then(result => {
@@ -112,14 +118,22 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
     }
 
     const handlePhotoReplaced = () => {
-        showReplacePhotoToast(onlineAgents, (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, shuffledHighlights[currentHighlightIndex].photo.id, path, sendNotification)
+        const highlight = shuffledHighlights[currentHighlightIndex]
+        if (!onlineAgents || !onPhotoReplaced || !place || !highlight || !currentHighlightAlbumId) {
+            return
+        }
+
+        showReplacePhotoToast(onlineAgents, (path, agentId, sendNotification) => onPhotoReplaced(agentId, place.id, currentHighlightAlbumId, place.name, highlight.photo.id, path, sendNotification)
             .then(() => {
-                window.open(shuffledHighlights[currentHighlightIndex].photo.permalink, "_blank")
+                window.open(highlight.photo.permalink, "_blank")
             }))
     }
 
     const handlePhotoCorrected = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+        if (!currentHighlightReferencePhotoUrl || !onPhotoCorrected || !place || !highlight || !croppedAreaPixels || !currentHighlightAlbumId) {
+            return
+        }
 
         showUpdateHighlightToast(() => getCroppedImg(currentHighlightReferencePhotoUrl, croppedAreaPixels, rotation)
             .then(base64Data => onPhotoCorrected(place.id, currentHighlightAlbumId, uuidv4() + JPG_FILE_SUFFIX, base64Data, highlight.photo.id))
@@ -137,6 +151,7 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
 
     const handleHighlightRemoved = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+        if (!highlight || !onHighlightRemoved) return
 
         showRemoveHighlightToast(() => onHighlightRemoved(highlight.id).then(() => {
             const newHighlights = [...shuffledHighlights]
@@ -148,15 +163,17 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
 
     const handleMainHighlightUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+        if (!highlight || !onMainHighlightUpdated) return
 
         showUpdateMainHighlightToast(() => onMainHighlightUpdated(highlight.id))
     }
 
     const handleHighlightQualityAttributesUpdated = () => {
         const highlight = shuffledHighlights[currentHighlightIndex]
+        if (!highlight || !onHighlightQualityAttributesUpdated) return
 
         showUpdateHighlightAttributesToast((composition, sky, shadows, circumstances, atmosphere, impression) => onHighlightQualityAttributesUpdated(highlight.id, composition,
-            sky, shadows, circumstances, atmosphere, impression), highlight?.attributes, highlight.photo.timestamp, highlight.photo.focalLength)
+            sky, shadows, circumstances, atmosphere, impression), highlight.attributes, highlight.photo.timestamp, highlight.photo.focalLength)
     }
 
     if (shuffledHighlights.length === 0) {
@@ -178,7 +195,7 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
         <div className={`relative w-full [aspect-ratio:3/2] overflow-hidden rounded-xl shadow-lg my-4 ${showEditor && "ring-8 ring-red-600"}`}>
             {showEditor ? (
                 <Cropper
-                    image={currentHighlightReferencePhotoUrl}
+                    image={currentHighlightReferencePhotoUrl ?? undefined}
                     crop={crop}
                     zoom={zoom}
                     rotation={rotation}
@@ -345,6 +362,9 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: Area, rotation: number
     const image = await createImage(imageSrc)
     const canvas = document.createElement("canvas")
     const ctx = canvas.getContext("2d")
+    if (!ctx) {
+        throw new Error("Could not get 2d context")
+    }
 
     const safeArea = Math.max(image.naturalWidth, image.naturalHeight) * 2
     canvas.width = safeArea

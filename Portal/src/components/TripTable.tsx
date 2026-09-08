@@ -35,12 +35,12 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
     }, [])
 
     const timezone = useMemo(() => getTimezoneOrDefault(configuration?.homeLocation?.timezone), [configuration])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * configuration?.timeTracking?.currentFte || HOURS_PER_MAN_DAY, [configuration])
+    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * (configuration?.timeTracking?.currentFte ?? 1) || HOURS_PER_MAN_DAY, [configuration])
     const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay as number || 0, [configuration])
     const openingTimeOffHours = useMemo(() => (Object.values(configuration?.timeTracking?.openingBalance ?? {}) as number[]).reduce((sum, value) => sum + (value ?? 0), 0), [configuration])
 
     const daysOffset = timeTrackingEvents?.[TimeTrackingEventType.Overtime]?.some(event => isToday(event.timestamp)) ? 1 : 0
-    const days = getDaysFromTodayThrough(trips?.at(-1)?.end, daysOffset)
+    const days = getDaysFromTodayThrough(trips?.at(-1)?.end ?? 0, daysOffset)
 
     const tripBalances = useMemo(() => {
         const tripBalances: Record<string, { availableOvertimeHours: number, availableTimeOffHours: number, timeOffHoursNeeded?: number }> = {}
@@ -55,7 +55,12 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                 + getEventTypeBalance(TimeTrackingEventType.Tenure)
 
             for (let i = 0; i < days.length; ++i) {
-                const startingTrip = trips?.find(trip => trip.isStartDayOfTrip(days[i]))
+                const day = days[i]
+                if (day == null) {
+                    continue
+                }
+
+                const startingTrip = trips?.find(trip => trip.isStartDayOfTrip(day))
                 if (startingTrip) {
                     tripBalances[startingTrip.id] = {
                         availableOvertimeHours: currentExpectedOvertimeHoursBalance,
@@ -64,7 +69,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                 }
 
                 const doGetEventHoursSum = (eventType: TimeTrackingEventType, filterHours: (hours: number) => boolean = _ => true) =>
-                    getEventHoursSum(getEvents(days[i], timeTrackingEvents?.[eventType], filterHours, timezone))
+                    getEventHoursSum(getEvents(day, timeTrackingEvents?.[eventType] ?? null, filterHours, timezone))
 
                 const submittedTimeOffHours = (-1) * (doGetEventHoursSum(TimeTrackingEventType.Vacation)
                     + doGetEventHoursSum(TimeTrackingEventType.Selfcare)
@@ -73,8 +78,8 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
 
                 currentExpectedOvertimeHoursBalance += doGetEventHoursSum(TimeTrackingEventType.PlannedWork)
 
-                if (!isFreeDay(days[i])) {
-                    if (trips.some(trip => trip.isDayInTrip(days[i]))) {
+                if (!isFreeDay(day)) {
+                    if ((trips ?? []).some(trip => trip.isDayInTrip(day))) {
                         currentExpectedOvertimeHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                     }
                     else {
@@ -82,7 +87,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                     }
                 }
 
-                if (openingTimeOffHours && isBeginningOfCurrentYear(days[i])) {
+                if (openingTimeOffHours && isBeginningOfCurrentYear(day)) {
                     currentExpectedTimeOffHoursBalance = Math.max(0, currentExpectedTimeOffHoursBalance) + openingTimeOffHours
                 }
 
@@ -94,10 +99,11 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                     currentExpectedTimeOffHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                 }
 
-                const endingTrip = trips?.find(trip => trip.isEndDayOfTrip(days[i]))
+                const endingTrip = trips?.find(trip => trip.isEndDayOfTrip(day))
                 if (endingTrip) {
-                    if (endingTrip.id in tripBalances) {
-                        tripBalances[endingTrip.id].timeOffHoursNeeded = timeOffHoursNeededForCurrentTrip
+                    const endingBalance = tripBalances[endingTrip.id]
+                    if (endingBalance) {
+                        endingBalance.timeOffHoursNeeded = timeOffHoursNeededForCurrentTrip
                     }
 
                     timeOffHoursNeededForCurrentTrip = 0
@@ -161,52 +167,59 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {trips ? trips.map(trip => (
-                        <tr
-                            key={trip.id}
-                            className="hover:bg-gray-100">
-                            <td className="p-3 text-center">
-                                <AppLink to={trip}>
-                                    {trip.name}
-                                </AppLink>
-                            </td>
-                            <td className="p-3 text-center">
-                                {formatDateRange(trip.start, trip.end, t("general.format.date.year.excluded"))}
-                            </td>
-                            <td className="p-3 text-center">
-                                <AppLink to={trip.year}>
-                                    {trip.year}
-                                </AppLink>
-                            </td>
-                            <td className="p-3 text-center">
-                                {trip.getDaysCount(timezone)}
-                            </td>
-                            {timeTrackingEvents && !isMobile && (
-                                <>
-                                    <td className="p-3 text-center relative group hover:cursor-help">
-                                        {tripBalances[trip.id] ? (
-                                            <>
-                                                {tripBalances[trip.id].availableOvertimeHours.toFixed(1)}
-                                                <Tooltip>
-                                                    <ClockPlus size={16} />
-                                                    {t("tracker.label.hours.overtime.missing", {
-                                                        nextFullDayHours: (Math.ceil(tripBalances[trip.id].availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay).toFixed(1),
-                                                        missingHours: (Math.ceil(tripBalances[trip.id].availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay - tripBalances[trip.id].availableOvertimeHours).toFixed(1)
-                                                    })}
-                                                </Tooltip>
-                                            </>
-                                        ) : "---"}
-                                    </td>
-                                    <td className="p-3 text-center">
-                                        {tripBalances[trip.id] ? (tripBalances[trip.id].timeOffHoursNeeded / standardWorkingHoursPerWorkingDay).toFixed(0) : "---"}
-                                    </td>
-                                    <td className={`p-3 text-center ${tripBalances[trip.id] && Math.round(tripBalances[trip.id].availableTimeOffHours) > tripBalances[trip.id].timeOffHoursNeeded ? "text-green-600" : "text-red-600"}`}>
-                                        {tripBalances[trip.id] ? (+(tripBalances[trip.id].availableTimeOffHours / standardWorkingHoursPerWorkingDay).toFixed(0)) : "---"}
-                                    </td>
-                                </>
-                            )}
-                        </tr>
-                    )) : Array.from({ length: LOADING_ROWS_COUNT })
+                    {trips ? trips.map(trip => {
+                        const balance = tripBalances[trip.id]
+                        return (
+                            <tr
+                                key={trip.id}
+                                className="hover:bg-gray-100">
+                                <td className="p-3 text-center">
+                                    <AppLink to={trip}>
+                                        {trip.name}
+                                    </AppLink>
+                                </td>
+                                <td className="p-3 text-center">
+                                    {trip.start && trip.end && (
+                                        formatDateRange(trip.start, trip.end, t("general.format.date.year.excluded"))
+                                    )}
+                                </td>
+                                <td className="p-3 text-center">
+                                    {trip.year && (
+                                        <AppLink to={trip.year}>
+                                            {trip.year}
+                                        </AppLink>
+                                    )}
+                                </td>
+                                <td className="p-3 text-center">
+                                    {trip.getDaysCount(timezone)}
+                                </td>
+                                {timeTrackingEvents && !isMobile && (
+                                    <>
+                                        <td className="p-3 text-center relative group hover:cursor-help">
+                                            {balance ? (
+                                                <>
+                                                    {balance.availableOvertimeHours.toFixed(1)}
+                                                    <Tooltip>
+                                                        <ClockPlus size={16} />
+                                                        {t("tracker.label.hours.overtime.missing", {
+                                                            nextFullDayHours: (Math.ceil(balance.availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay).toFixed(1),
+                                                            missingHours: (Math.ceil(balance.availableOvertimeHours / standardWorkingHoursPerWorkingDay) * standardWorkingHoursPerWorkingDay - balance.availableOvertimeHours).toFixed(1)
+                                                        })}
+                                                    </Tooltip>
+                                                </>
+                                            ) : "---"}
+                                        </td>
+                                        <td className="p-3 text-center">
+                                            {balance ? ((balance.timeOffHoursNeeded ?? 0) / standardWorkingHoursPerWorkingDay).toFixed(0) : "---"}
+                                        </td>
+                                        <td className={`p-3 text-center ${balance && Math.round(balance.availableTimeOffHours) > (balance.timeOffHoursNeeded ?? 0) ? "text-green-600" : "text-red-600"}`}>
+                                            {balance ? (+(balance.availableTimeOffHours / standardWorkingHoursPerWorkingDay).toFixed(0)) : "---"}
+                                        </td>
+                                    </>
+                                )}
+                            </tr>
+                        )
+                    }) : Array.from({ length: LOADING_ROWS_COUNT })
                         .map((_, index) => (
                             <tr key={index}>
                                 <td

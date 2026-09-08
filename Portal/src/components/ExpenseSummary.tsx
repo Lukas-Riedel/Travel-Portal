@@ -348,7 +348,7 @@ function ExpenseCandidateRow({ expenseCandidate, lastAddedExpense, onExpenseCrea
     const [newType, setNewType] = useState(getSortedExpenseTypes()[0])
     const [newDescription, setNewDescription] = useState("")
     const [newValue, setNewValue] = useState<number | null>(0)
-    const [newCurrency, setNewCurrency] = useState(Object.values(ExpenseCurrency)[0])
+    const [newCurrency, setNewCurrency] = useState(Object.values(ExpenseCurrency)[0]!)
 
     useEffect(() => {
         if (!wasEdited) {

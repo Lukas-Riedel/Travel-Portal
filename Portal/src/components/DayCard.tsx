@@ -1,5 +1,5 @@
 import { format, isToday } from "date-fns"
-import { Bed, Copy,Footprints, ImagePlus, MapPin, NotebookPen, OctagonAlert, PartyPopper, Plane, PlaneTakeoff, Ship, Sunrise, Sunset, Trash2, Upload } from "lucide-react"
+import { Bed, Copy, Footprints, ImagePlus, MapPin, NotebookPen, OctagonAlert, PartyPopper, Plane, PlaneTakeoff, Ship, Sunrise, Sunset, Trash2, Upload } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
@@ -13,7 +13,7 @@ import { type Album, type Date as PlaceDate, type Fitness, type Flight, type Not
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { getFlightLink, getMapLink, getSatelliteLink } from "../utils/navigationUtils.ts"
 import { getSunAltitude, getSunrise, getSunset } from "../utils/sunUtils.ts"
-import { formatTimestamp, getCurrentTimestamp, getDayIndex } from "../utils/timeUtils.ts"
+import { formatTimestamp, getCurrentTimestamp, getDayIndex, getTimezoneOrDefault } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
 import LoadingCard from "./LoadingCard.tsx"
@@ -124,13 +124,13 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
             return null
         }
 
-        showCopyDayItineraryToast(() => navigator.clipboard.writeText(events.map(formatDayEvent).filter(Boolean).join("\n")))
+        showCopyDayItineraryToast(() => navigator.clipboard.writeText((events ?? []).map(formatDayEvent).filter(Boolean).join("\n")))
     }
 
     const handlePhotosAdded = (placeId: string, placeName: string, albumId?: string, timestamp?: number, sendNotification?: boolean, trip?: TripIdentifier) => {
-        if (onPhotosAdded) {
+        if (onPhotosAdded && onlineAgents) {
             showUploadPhotosToast(onlineAgents, (path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) =>
-                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification, trip && timestamp && `${trip.year}/${trip.name} ${trip.year}/${placeName} ${formatTimestamp(timestamp, t("general.format.date.year.included"))}`)
+                onPhotosAdded(agentId, placeId, placeName, path, sendNotification, albumId, timestamp, mainPhotoPosition), sendNotification, trip && timestamp ? `${trip.year}/${trip.name} ${trip.year}/${placeName} ${formatTimestamp(timestamp, t("general.format.date.year.included"))}` : undefined)
         }
     }
 
@@ -167,7 +167,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                 return true
             }
 
-            if (event.weather?.some(w => w.precipitation?.probability > PRECIPITATION_PROBABILITY_THRESHOLD && w.precipitation?.total > PRECIPITATION_TOTAL_THRESHOLD)) {
+            if (event.weather?.some(w => (w.precipitation?.probability ?? 0) > PRECIPITATION_PROBABILITY_THRESHOLD && (w.precipitation?.total ?? 0) > PRECIPITATION_TOTAL_THRESHOLD)) {
                 return true
             }
         }
@@ -257,7 +257,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                         <PlaneTakeoff size={16} />
                                     </span>
                                     <span className={`font-medium ${getColor(event, "text-sky-600")}`}>
-                                        {doFormatTimestamp(event.start, event.from.timezone)}
+                                        {doFormatTimestamp(event.start, getTimezoneOrDefault(event.from.timezone))}
                                     </span>
                                     <span className={`whitespace-nowrap ${getColor(event, "text-sky-600")}`}>
                                         {event.from.id ? (
@@ -354,7 +354,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                 </div>
                             )
                         ])}
-                        {isPlace(event) && event.weather?.length > 0 && (
+                        {isPlace(event) && event.weather?.length && (
                             <WeatherSummary
                                 weather={event.weather}
                                 coordinates={event as Coordinates}
@@ -438,19 +438,19 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                     ))}
                 </ul>
             )}
-            {fitness?.steps > 0 && (
+            {fitness && (
                 <>
                     <div className="mt-3 flex items-center text-green-600 space-x-1">
                         <Footprints
                             className="mr-1"
                             size={16} />
                         <span>
-                            {formatSteps(fitness.steps)}
+                            {formatSteps(fitness.steps ?? 0)}
                         </span>
                     </div>
                     {renderDescriptionRow("text-green-600", [
-                        fitness.distance && formatKilometers(Math.round(fitness.distance) / 1000),
-                        fitness.seconds && formatDuration(fitness.seconds)
+                        fitness.distance != null ? formatKilometers(Math.round(fitness.distance) / 1000) : undefined,
+                        fitness.seconds != null ? formatDuration(fitness.seconds) : undefined
                     ])}
                 </>
             )}
@@ -499,9 +499,10 @@ function RemainingUploadTime({ album }: RemainingUploadTimeProps) {
     const { formatDuration } = useFormatters()
 
     const computedRemaining = useMemo(() => {
-        if (album.uploadingProgress > 0 && album.uploadingProgress < 100) {
-            const elapsed = getCurrentTimestamp() - album.uploadingStart
-            return elapsed * 100 / album.uploadingProgress - elapsed
+        const progress = album.uploadingProgress ?? 0
+        if (progress > 0 && progress < 100) {
+            const elapsed = getCurrentTimestamp() - (album.uploadingStart ?? 0)
+            return elapsed * 100 / progress - elapsed
         }
         return null
     }, [album.uploadingProgress, album.uploadingStart])
