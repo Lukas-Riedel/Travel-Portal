@@ -10,11 +10,11 @@ import PlaceMap from "./PlaceMap.jsx"
 
 interface PlaceContentProps {
     place: Place | null
-    onPhotosAdded: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
-    onExcerptChanged: (excerpt: string) => Promise<Place>
-    onAddressChanged: (address: string) => Promise<Place>
-    onExcerptRefreshed: () => Promise<Place>
-    onLocationChanged: (latitude: number, longitude: number) => Promise<Place>
+    onPhotosAdded?: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
+    onExcerptChanged?: (excerpt: string) => Promise<Place>
+    onAddressChanged?: (address: string) => Promise<Place>
+    onExcerptRefreshed?: () => Promise<Place>
+    onLocationChanged?: (latitude: number, longitude: number) => Promise<Place>
 }
 
 export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, onAddressChanged, onExcerptRefreshed, onLocationChanged }: PlaceContentProps) {
@@ -22,7 +22,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     const { showUploadPhotosToast, showRefreshPlaceExcerptToast, showUpdatePlaceLocationToast, showUpdatePlaceExcerptToast, showUpdatePlaceAddressToast } = usePredefinedUserInput()
 
     const handleExcerptChanged = () => {
-        if (onExcerptChanged) {
+        if (onExcerptChanged && place) {
             showUpdatePlaceExcerptToast(place, onExcerptChanged)
         }
     }
@@ -40,7 +40,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     }
 
     const handlePhotosAdded = () => {
-        if (onlineAgents && onPhotosAdded) {
+        if (onlineAgents && onPhotosAdded && place) {
             showUploadPhotosToast(onlineAgents, (date, path, agentId, sendNotification, mainPhotoPosition) => {
                 const placeDate = place.getDate(parseISO(date))
                 const timestamp = Math.floor(getTime(parseISO(date)) / 1000)
@@ -54,7 +54,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     }
 
     const handleAddressChanged = () => {
-        if (onAddressChanged) {
+        if (onAddressChanged && place) {
             showUpdatePlaceAddressToast(place, onAddressChanged)
         }
     }
@@ -76,7 +76,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                 <p className="text-justify">
                     {place.excerpt}
                 </p>
-                {!!(onAddressChanged || onExcerptRefreshed || onExcerptChanged || onPhotosAdded) && (
+                {(onAddressChanged || onExcerptRefreshed || onExcerptChanged || onPhotosAdded) && (
                     <div className="flex justify-end space-x-2 mt-2">
                         {onAddressChanged && (
                             <button
@@ -111,8 +111,8 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
             </div>
             <PlaceMap
                 places={[place]}
-                placeMainCategorySelector={place => place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)}
-                onRightClick={onLocationChanged && ((latitude, longitude) => Promise.resolve(handleLocationUpdated(latitude, longitude)))} />
+                placeMainCategorySelector={place => (place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ?? null)}
+                onRightClick={onLocationChanged ? ((latitude, longitude) => Promise.resolve(handleLocationUpdated(latitude, longitude))) : undefined} />
         </div>
     )
 }

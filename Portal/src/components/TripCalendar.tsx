@@ -8,7 +8,7 @@ import type { Place } from "../classes/Place.ts"
 import type { Trip } from "../classes/Trip.ts"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import type { Note } from "../types/CoreSwaggerTypes.ts"
+import type { Date as PlaceDate, Flight, Note } from "../types/CoreSwaggerTypes.ts"
 import { getGoogleCalendarLink } from "../utils/navigationUtils.ts"
 import { formatTimestamp, getTripDays, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import CardGrid from "./CardGrid.tsx"
@@ -34,20 +34,24 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
 
     const handleMoved = () => {
-        showMoveTripToast(start => onTripMoved(Math.round(fromZonedTime(start.toISOString().slice(0, -1), configuration?.homeLocation?.timezone).getTime() / 1000)))
+        if (onTripMoved) {
+            showMoveTripToast(start => onTripMoved(Math.round(fromZonedTime(start.toISOString().slice(0, -1), configuration?.homeLocation?.timezone ?? "").getTime() / 1000)))
+        }
     }
 
     const handleLoaded = () => {
-        showLoadTripToast(tripCandidates ?? [], onTripLoaded)
+        if (onTripLoaded) {
+            showLoadTripToast(tripCandidates ?? [], onTripLoaded)
+        }
     }
 
     const handleTripItineraryCopied = () => {
         const getItineraryPart = (title: string, items: string[]) => items.length > 0 && `## ${title}\n${items.map(item => `- ${item}`).join("\n")}`
 
-        const convertedPlaces = (places ?? []).flatMap(place => place.dates.map(date => ({ text: `${place.name} (${formatTimestamp(date.start, t("general.format.datetime.year.excluded"), place.timezone)} - ${formatTimestamp(date.end, t("general.format.datetime.year.excluded"), place.timezone)})`, start: date.start }))).sort((a, b) => a.start - b.start).map(item => item.text)
-        const convertedFlights = [...(trip.flights ?? []), ...(trip.watchedFlights ?? [])].map(flight => `${flight.from.shortName} - ${flight.to.shortName} (${formatTimestamp(flight.start, t("general.format.datetime.year.excluded"), flight.from.timezone)} - ${formatTimestamp(flight.end, t("general.format.datetime.year.excluded"), flight.to.timezone)})`)
-        const convertedStays = (trip.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
-        const convertedNotes = (trip.notes ?? []).map(note => note.content)
+        const convertedPlaces = (places ?? []).flatMap(place => (place.dates ?? []).map(date => ({ text: `${place.name} (${formatTimestamp(date.start, t("general.format.datetime.year.excluded"), place.timezone)} - ${formatTimestamp(date.end, t("general.format.datetime.year.excluded"), place.timezone)})`, start: date.start }))).sort((a, b) => a.start - b.start).map(item => item.text)
+        const convertedFlights = [...((trip?.flights ?? [])), ...((trip?.watchedFlights ?? []))].map(flight => `${flight.from.shortName} - ${flight.to.shortName} (${formatTimestamp(flight.start, t("general.format.datetime.year.excluded"), flight.from.timezone)} - ${formatTimestamp(flight.end, t("general.format.datetime.year.excluded"), flight.to.timezone)})`)
+        const convertedStays = (trip?.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
+        const convertedNotes = (trip?.notes ?? []).map(note => note.content)
 
         const itineraryParts = [
             getItineraryPart(t("trip.itinerary.places"), convertedPlaces),
@@ -62,14 +66,14 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
     return (
         <div className="relative w-full my-4">
             <CardGrid rowSize={4}>
-                {getTripDays(trip, places, timezone)?.map((day, index) => (
+                {getTripDays(trip ?? undefined, places ?? undefined, timezone)?.map((day, index) => (
                     <DayCard
                         key={day.getTime()}
                         day={day}
-                        events={places && trip?.getCalendarEvents(day, places, timezone)}
+                        events={(places && trip?.getCalendarEvents(day, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
                         stay={trip?.getStay(day, configuration?.homeLocation?.timezone)}
-                        noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) }))}
-                        fitness={trip?.fitness && trip.fitness[index]}
+                        noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
+                        fitness={trip?.fitness && trip.fitness[index] || undefined}
                         publicHoliday={trip?.getPublicHoliday(day)}
                         timezone={timezone}
                         displayWarnings={displayWarnings}
@@ -100,7 +104,7 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
                 )}
                 {onTripMoved && (
                     <button
-                        onClick={() => window.open(getGoogleCalendarLink(fromUnixTime(trip.start)), "_blank")}
+                        onClick={() => window.open(getGoogleCalendarLink(fromUnixTime(trip?.start ?? 0)), "_blank")}
                         className="btn-chip-gray">
                         <Calendar size={16} />
                     </button>

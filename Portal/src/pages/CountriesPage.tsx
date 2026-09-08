@@ -34,7 +34,7 @@ export default function CountriesPage() {
             <StaticMapFrame>
                 <PlaceMap
                     places={places ?? null}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)!} />
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
             </StaticMapFrame>
             <CategoryTileGrid categories={countries} />
         </>

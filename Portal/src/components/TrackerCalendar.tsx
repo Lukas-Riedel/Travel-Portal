@@ -38,7 +38,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
 
     const now = new Date()
     const timezone = useMemo(() => getTimezoneOrDefault(configuration?.homeLocation?.timezone), [configuration])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * configuration?.timeTracking?.currentFte || HOURS_PER_MAN_DAY, [configuration])
+    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * (configuration?.timeTracking?.currentFte ?? 1), [configuration])
     const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay as number || 0, [configuration])
 
     const [date, setDate] = useState(() => startOfMonth(now))
@@ -105,12 +105,12 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
         const standardWorkingHours = isFreeDay(day) ? 0 : standardWorkingHoursPerWorkingDay
         const isInTrip = filteredTrips.some(trip => trip.isDayInTrip(day))
 
-        const positiveOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime], hours => hours > 0, timezone)
-        const negativeOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime], hours => hours < 0, timezone)
-        const vacation = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Vacation], hours => hours < 0, timezone)
-        const selfcare = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Selfcare], hours => hours < 0, timezone)
-        const tenure = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Tenure], hours => hours < 0, timezone)
-        const plannedWork = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.PlannedWork], _ => true, timezone)
+        const positiveOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime] ?? null, hours => hours > 0, timezone)
+        const negativeOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime] ?? null, hours => hours < 0, timezone)
+        const vacation = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Vacation] ?? null, hours => hours < 0, timezone)
+        const selfcare = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Selfcare] ?? null, hours => hours < 0, timezone)
+        const tenure = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Tenure] ?? null, hours => hours < 0, timezone)
+        const plannedWork = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.PlannedWork] ?? null, _ => true, timezone)
 
         return {
             day,
@@ -135,13 +135,17 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
     }
 
     const handleCreatePositiveOvertimeEvent = (day: Date, expectedWorkingHours: number) => {
-        showCreateOvertimeToast(+Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1),
-            async (description, hours) => onEventCreated(TimeTrackingEventType.Overtime, description, hours, getNoonTimestamp(day)))
+        if (onEventCreated) {
+            showCreateOvertimeToast(+Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1),
+                async (description, hours) => onEventCreated(TimeTrackingEventType.Overtime, description, hours, getNoonTimestamp(day)))
+        }
     }
 
     const handleBalanceUsageEvent = (day: Date, type: TimeTrackingEventType) => {
-        showCreateNegativeTimeTrackingEventToast(type, +standardWorkingHoursPerWorkingDay.toFixed(1),
-            async (hours) => onEventCreated(type, BALANCE_USAGE_EVENT_DESCRIPTION, (-1) * hours, getNoonTimestamp(day)))
+        if (onEventCreated) {
+            showCreateNegativeTimeTrackingEventToast(type, +standardWorkingHoursPerWorkingDay.toFixed(1),
+                async (hours) => onEventCreated(type, BALANCE_USAGE_EVENT_DESCRIPTION, (-1) * hours, getNoonTimestamp(day)))
+        }
     }
 
     const handleCreateNegativeOvertimeEvent = (day: Date) => {
@@ -161,12 +165,16 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
     }
 
     const handleCreatePlannedWorkEvent = (day: Date) => {
-        showCreatePlannedWorkToast(+standardWorkingHoursPerWorkingDay.toFixed(1),
-            async (hours) => onEventCreated(TimeTrackingEventType.PlannedWork, PLANNED_WORK_EVENT_DESCRIPTION, hours, getNoonTimestamp(day)))
+        if (onEventCreated) {
+            showCreatePlannedWorkToast(+standardWorkingHoursPerWorkingDay.toFixed(1),
+                async (hours) => onEventCreated(TimeTrackingEventType.PlannedWork, PLANNED_WORK_EVENT_DESCRIPTION, hours, getNoonTimestamp(day)))
+        }
     }
 
     const handleRemoveEvent = (event: TimeTrackingEvent) => {
-        showRemoveTimeTrackingEventToast(() => onEventRemoved(event.id))
+        if (onEventRemoved) {
+            showRemoveTimeTrackingEventToast(() => onEventRemoved(event.id))
+        }
     }
 
     const handleCopyToClipboard = (event: TimeTrackingEvent) => {
@@ -272,7 +280,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                     ${isSameDay(dayDate, now) ? "text-yellow-300 font-extrabold drop-shadow-[0_0_1px_yellow]" : ""}`}>
                                                     {dayDate.getDate()}
                                                 </span>
-                                                {onEventCreated && (
+                                                {onEventCreated && daySummary && (
                                                     <div className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto w-full transition-opacity duration-200">
                                                         <ul className="flex gap-1 list-none p-0 m-0">
                                                             <li key="positiveOvertime">

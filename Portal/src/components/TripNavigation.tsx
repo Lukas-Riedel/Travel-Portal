@@ -15,8 +15,8 @@ interface TripNavigationProps {
 export default function TripNavigation({ trip, canDisplayFutureTrips }: TripNavigationProps) {
     const { trips } = useRegularTrips()
 
-    const previousTrip = useMemo(() => trip?.isCandidate() ? undefined : trips?.findLast(t => t?.start < trip?.start), [trip, trips])
-    const nextTrip = useMemo(() => trip?.isCandidate() ? undefined : trips?.find(t => t?.start > trip?.start), [trip, trips])
+    const previousTrip = useMemo(() => trip?.isCandidate() ? null : trips?.findLast(t => (t?.start ?? 0) < (trip?.start ?? 0)) ?? null, [trip, trips])
+    const nextTrip = useMemo(() => trip?.isCandidate() ? null : trips?.find(t => (t?.start ?? Infinity) > (trip?.start ?? Infinity)) ?? null, [trip, trips])
 
     return (
         <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">
@@ -53,7 +53,7 @@ interface TripLinkProps {
 function TripLink({ trip, isLoaded, canDisplayFutureTrips, children }: TripLinkProps) {
     return isLoaded ? (
         <>
-            {trip && (trip.start < getCurrentOrMaximumAllowedTimestamp() || canDisplayFutureTrips) && (
+            {trip && ((trip.start ?? 0) < getCurrentOrMaximumAllowedTimestamp() || canDisplayFutureTrips) && (
                 <div>
                     <AppLink
                         className="flex w-full text-center items-center justify-center px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-100 transition"

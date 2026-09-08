@@ -20,17 +20,17 @@ export default function PlaceHighlightsPage() {
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
-    const highlightCandidates = useMemo(() => place?.dates
+    const highlightCandidates = useMemo(() => (place?.dates ?? [])
         .map(date => date.album)
-        .filter(Boolean)
+        .filter((a): a is NonNullable<typeof a> => a != null)
         .reverse()
         .map(album => ({
             title: album.name,
-            getPhotos: () => listPlaceAlbumPhotos(placeId, album.id)
+            getPhotos: () => listPlaceAlbumPhotos(placeId!, album.id)
                 .then(photos => photos
-                    .filter(photo => !place.highlights
+                    .filter(photo => !place?.highlights
                         ?.some(highlight => highlight.photo.id === photo.id)))
-        })), [place])
+        })), [place, placeId])
 
     const handleHighlightCreated = async (photoId: string) => createPlaceHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))
@@ -40,7 +40,7 @@ export default function PlaceHighlightsPage() {
     }
 
     const handleHighlightRemoved = async (photoId: string) => {
-        setCurrentPhotos(previous => previous.filter(photo => photo.id !== photoId))
+        setCurrentPhotos(previous => previous?.filter(photo => photo.id !== photoId) ?? null)
     }
 
     return hasRole(UserRole.PlaceHighlightRead) && (
@@ -49,16 +49,16 @@ export default function PlaceHighlightsPage() {
                 <HighlightCarousel
                     // TODO: Create a class with the method to obtain the full/thumbnail URL.
                     highlights={currentPhotos?.map(currentHighlightCandidate => ({ id: currentHighlightCandidate.id, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url + "=w1200-h800", thumbnail: currentHighlightCandidate.url + "=w350-h233" }, attributes: {} }))}
-                    onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCreated}
-                    onHighlightRemoved={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightRemoved} />
+                    onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) ? handleHighlightCreated : undefined}
+                    onHighlightRemoved={hasRole(UserRole.PlaceHighlightEdit) ? handleHighlightRemoved : undefined} />
             )}
             <HighlightCandidateTileGrid
-                name={place?.name}
+                name={place?.name ?? null}
                 description={formatTimestamp(getCurrentTimestamp(), t("general.format.date.year.included"))}
-                categories={place && [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)]}
-                highlightCandidatesGroups={highlightCandidates}
-                onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCreated}
-                onHighlightCandidateCreated={hasRole(UserRole.PlaceHighlightEdit) && handleHighlightCandidateCreated} />
+                categories={place ? [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
+                highlightCandidatesGroups={highlightCandidates ?? []}
+                onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) ? handleHighlightCreated : undefined}
+                onHighlightCandidateCreated={hasRole(UserRole.PlaceHighlightEdit) ? handleHighlightCandidateCreated : undefined} />
         </>
     )
 }

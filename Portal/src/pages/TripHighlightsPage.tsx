@@ -23,16 +23,16 @@ export default function TripHighlightsPage() {
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
     const highlightCandidates = useMemo(() => places
-        ?.flatMap(place => place.dates
+        ?.flatMap(place => (place.dates ?? [])
             .reverse()
             .map(date => date.album)
-            .filter(Boolean)
+            .filter((a): a is NonNullable<typeof a> => a != null)
             .reverse()
             .map(album => ({
                 title: album.name,
                 getPhotos: () => listPlaceAlbumPhotos(place.id, album.id)
                     .then(photos => photos
-                        .filter(photo => !trip.highlights
+                        .filter(photo => !trip?.highlights
                             ?.some(highlight => highlight.photo.id === photo.id)))
                     .then(photos => {
                         const highlightIds = new Set(places?.flatMap(place => place.highlights ?? []).map(h => h.photo.id))
@@ -62,7 +62,7 @@ export default function TripHighlightsPage() {
     }
 
     const handleHighlightRemoved = async (photoId: string) => {
-        setCurrentPhotos(previous => previous.filter(photo => photo.id !== photoId))
+        setCurrentPhotos(previous => previous?.filter(photo => photo.id !== photoId) ?? null)
     }
 
     return hasRole(UserRole.TripHighlightRead) && (
@@ -71,16 +71,16 @@ export default function TripHighlightsPage() {
                 <HighlightCarousel
                     // TODO: Create a class with the method to obtain the full/thumbnail URL.
                     highlights={currentPhotos?.map(currentHighlightCandidate => ({ id: currentHighlightCandidate.id, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url + "=w1200-h800", thumbnail: currentHighlightCandidate.url + "=w350-h233" }, attributes: {} }))}
-                    onHighlightCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCreated}
-                    onHighlightRemoved={hasRole(UserRole.TripHighlightEdit) && handleHighlightRemoved} />
+                    onHighlightCreated={hasRole(UserRole.TripHighlightEdit) ? handleHighlightCreated : undefined}
+                    onHighlightRemoved={hasRole(UserRole.TripHighlightEdit) ? handleHighlightRemoved : undefined} />
             )}
             <HighlightCandidateTileGrid
-                name={trip?.getFullName()}
-                description={formatDateRange(trip?.start, trip?.end, t("general.format.date.year.included"))}
-                categories={places?.map(place => place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)).filter(Boolean).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
-                highlightCandidatesGroups={highlightCandidates}
-                onHighlightCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCreated}
-                onHighlightCandidateCreated={hasRole(UserRole.TripHighlightEdit) && handleHighlightCandidateCreated} />
+                name={trip?.getFullName() ?? null}
+                description={formatDateRange(trip?.start ?? 0, trip?.end ?? 0, t("general.format.date.year.included"))}
+                categories={places?.map(place => place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)).filter((c): c is NonNullable<typeof c> => c != null).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
+                highlightCandidatesGroups={highlightCandidates ?? []}
+                onHighlightCreated={hasRole(UserRole.TripHighlightEdit) ? handleHighlightCreated : undefined}
+                onHighlightCandidateCreated={hasRole(UserRole.TripHighlightEdit) ? handleHighlightCandidateCreated : undefined} />
         </>
     )
 }

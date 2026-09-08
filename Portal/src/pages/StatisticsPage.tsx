@@ -20,20 +20,20 @@ export default function StatisticsPage() {
     const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const flights = useMemo(() => (trips ?? []).flatMap(trip => trip.flights).filter(Boolean).filter(flight => flight.registration), [trips])
+    const flights = useMemo(() => (trips ?? []).flatMap(trip => trip.flights ?? []).filter(flight => flight.registration), [trips])
 
     return hasRole(UserRole.StatisticsRead) && (
         <>
             <StaticMapFrame>
                 <PlaceMapAndFlightMapToggle
-                    places={places}
-                    flights={flights}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
-                    airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
+                    places={places ?? null}
+                    flights={flights ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null}
+                    airportMainCategorySelector={airport => countryCategoriesMap?.get(airport.country ?? "") ?? null} />
             </StaticMapFrame>
             <StatisticsCardGrid
                 rowSize={2}
-                statistics={statistics}
+                statistics={statistics ?? null}
                 years={years} />
         </>
     )

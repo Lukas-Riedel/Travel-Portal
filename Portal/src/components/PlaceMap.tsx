@@ -5,7 +5,7 @@ import Map from "./Map"
 
 interface PlaceMapProps {
     places: Place[] | null
-    placeMainCategorySelector: (place: Place) => Category
+    placeMainCategorySelector?: (place: Place) => Category | null
     onRightClick?: (latitude: number, longitude: number) => Promise<void>
 }
 
@@ -18,8 +18,8 @@ export default function PlaceMap({ places, placeMainCategorySelector, onRightCli
                 name: place.name,
                 latitude: place.latitude,
                 longitude: place.longitude,
-                color: placeMainCategorySelector(place)?.metadata?.color,
-                unicode: placeMainCategorySelector(place)?.metadata?.unicode,
+                color: placeMainCategorySelector?.(place)?.metadata?.color,
+                unicode: placeMainCategorySelector?.(place)?.metadata?.unicode,
                 onClick: () => Promise.resolve(navigate(place))
             }))}
             onRightClick={onRightClick} />

@@ -34,7 +34,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
     const [images, setImages] = useState<SlideImage[]>([])
 
     useEffect(() => {
-        if (isLoading && photos?.length > 0) {
+        if (isLoading && photos && photos.length > 0) {
             setImages(photos.map(photo => ({ src: photo.url + "=d" })))
             setIsLoading(false)
             setIsGalleryOpen(true)
@@ -42,7 +42,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
     }, [photos, isLoading])
 
     const openGallery = () => {
-        if (photos?.length > 0) {
+        if (photos && photos.length > 0) {
             setImages(photos.map(photo => ({ src: photo.url + "=d" })))
             setIsGalleryOpen(true)
         }
@@ -52,18 +52,18 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
     }
 
     const handleAlbumRefreshed = () => {
-        if (date?.album && onAlbumRefreshed) {
-            showRefreshAlbumToast(() => onAlbumRefreshed(date.album.id))
+        if (date?.album?.id && onAlbumRefreshed) {
+            showRefreshAlbumToast(() => onAlbumRefreshed(date.album!.id))
         }
     }
 
     return (
         <div>
             <PhotoTile
-                src={date?.album?.mainImageUrl}
+                src={date?.album?.mainImageUrl ?? null}
                 firstLineText={place?.name}
-                secondLineText={date && formatTimestamp(date.start, t("general.format.date.year.included"), place?.timezone)}
-                categories={place && [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)]}
+                secondLineText={date ? formatTimestamp(date.start, t("general.format.date.year.included"), place?.timezone) : undefined}
+                categories={place ? [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
                 onClick={openGallery} />
             {onAlbumRefreshed && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">
@@ -74,12 +74,14 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
                         rel="noopener noreferrer">
                         <ExternalLink size={16} />
                     </a>
-                    <AppLink
-                        to={{ place, album: date.album }}
-                        className="btn-large-gray">
-                        <Images size={16} />
-                    </AppLink>
-                    {onAlbumRefreshed && (
+                    {place && (
+                        <AppLink
+                            to={{ place, album: date.album! }}
+                            className="btn-large-gray">
+                            <Images size={16} />
+                        </AppLink>
+                    )}
+                    {onAlbumRefreshed != null && (
                         <button
                             onClick={handleAlbumRefreshed}
                             className="btn-large-gray">

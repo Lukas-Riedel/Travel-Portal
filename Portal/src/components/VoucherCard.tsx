@@ -20,13 +20,13 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
     const { showRemoveVoucherToast, showSubtractVoucherValueToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
-        if (voucher?.id && onVoucherRemoved) {
+        if (voucher && onVoucherRemoved) {
             showRemoveVoucherToast(() => onVoucherRemoved(voucher.id))
         }
     }
 
     const handleValueSubtract = () => {
-        if (voucher?.id && voucher?.value && onVoucherValueUpdated) {
+        if (voucher && onVoucherValueUpdated) {
             showSubtractVoucherValueToast(value => onVoucherValueUpdated(voucher.id, voucher.value - value))
         }
     }

@@ -22,7 +22,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useQueryParamState } from "../hooks/useQueryParamState.ts"
 import { useRegions } from "../hooks/useRegions.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { CategoryCategory, type CompositeRegion, type GeographicalRegion,PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, type CompositeRegion, type GeographicalRegion, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { PlansMenuTabName } from "../types/PlansMenuTabName.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
@@ -159,7 +159,7 @@ export default function PlansPage() {
                     <StaticMapFrame>
                         <PlaceMap
                             places={filteredCandidatePlaces}
-                            placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                            placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
                     </StaticMapFrame>
                     {furthestPlace && (
                         <Slider
@@ -185,7 +185,7 @@ export default function PlansPage() {
                     <StaticMapFrame>
                         <PlaceMap
                             places={filteredVisitedPlaces}
-                            placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                            placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
                     </StaticMapFrame>
                     <Slider
                         name={t("plan.slider.maxQuality")}

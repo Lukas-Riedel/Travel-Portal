@@ -15,7 +15,7 @@ import PropertyCardContent from "./PropertyCardContent.tsx"
 interface RegionCardProps {
     region: Region | null
     onCategorySelected?: (category: CategoryIdentifier) => void
-    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
+    onGeographicalRegionUpdated?: (nname: string, country: string | undefined, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
     onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<CompositeRegion>
     onRegionVisualized?: (region: GeographicalRegion) => void
 }
@@ -30,28 +30,30 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
     const { formatKilometers } = useFormatters()
 
     const handleCopyGeoJsonToClipboard = () => {
-        if (isGeographicalRegion(region)) {
+        if (region && isGeographicalRegion(region)) {
             showCopyRegionGeoJsonToast(() => navigator.clipboard.writeText(JSON.stringify(region.geoJson)))
         }
     }
 
     const handleOverwriteGeographicalRegion = () => {
-        if (isGeographicalRegion(region) && onGeographicalRegionUpdated) {
+        if (region && isGeographicalRegion(region) && onGeographicalRegionUpdated) {
+            const geoFeature = getGeoFeatures(region.geoJson as GeoJSON)[0]
+
             showOverwriteGeographicalRegionToast(region, (radius, geoJson) => {
                 const geoFeatures = getGeoFeatures(geoJson)
                 if (geoFeatures.length !== 1) {
                     return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
                 }
 
-                return onGeographicalRegionUpdated(region.category.name, region.countryCategory?.name, region.category.category, radius, getGeoJson(geoFeatures[0].geometry))
+                return onGeographicalRegionUpdated(region.category.name, region.countryCategory?.name, region.category.category, radius, getGeoJson(geoFeatures[0]?.geometry ?? (geoFeature?.geometry ?? ({} as Point))))
             })
         }
     }
 
     const handleOverwriteCompositeRegion = () => {
-        if (isCompositeRegion(region) && onCompositeRegionUpdated) {
+        if (region && isCompositeRegion(region) && onCompositeRegionUpdated) {
             showOverwriteCompositeRegionToast(region, (includedCategories, excludedCategories) =>
-                onCompositeRegionUpdated(region.category.name, region.category.category, includedCategories, excludedCategories))
+                onCompositeRegionUpdated(region.category.name ?? "", region.category.category, includedCategories, excludedCategories))
         }
     }
 

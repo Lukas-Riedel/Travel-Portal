@@ -10,7 +10,7 @@ interface RegionCardGridProps {
     rowSize: number
     columnSize?: number
     onCategorySelected?: (category: CategoryIdentifier) => void
-    onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
+    onGeographicalRegionUpdated?: (nname: string, country: string | undefined, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
     onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<CompositeRegion>
     onRegionVisualized?: (region: GeographicalRegion) => void
 }

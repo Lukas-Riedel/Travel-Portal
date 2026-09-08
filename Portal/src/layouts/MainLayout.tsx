@@ -102,17 +102,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
         const controller = new AbortController()
 
         const fetchSearch = async () => {
-            if (searchedText?.length > 2) {
+            if ((searchedText?.length ?? 0) > 2) {
                 try {
                     const delay = setTimeout(async () => {
-                        search(searchedText, {
+                        search(searchedText!, {
                             limit: DEFAULT_FOUND_ENTITIES_COUNT,
                             include: [IndexableEntityType.Category, IndexableEntityType.Place, IndexableEntityType.Airport, IndexableEntityType.Airline, IndexableEntityType.Label, IndexableEntityType.Trip, IndexableEntityType.Year]
                         }, {
                             signal: controller.signal
                         }).then(setFoundEntities)
 
-                        search(searchedText, {
+                        search(searchedText!, {
                             limit: DEFAULT_FOUND_HIGHLIGHTS_COUNT,
                             include: [IndexableEntityType.Highlight]
                         }, {
@@ -153,7 +153,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, [])
 
     const renderEntityIcon = (entity: Indexable, type: IndexableEntityType) => {
-        let countryName = undefined;
+        let countryName: string | undefined = undefined;
         if (type === IndexableEntityType.Place) {
             countryName = (entity as PlaceIdentifier).country
         }
@@ -168,7 +168,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             return (
                 <div className="w-5 h-5 flex items-center justify-center overflow-hidden rounded-sm flex-shrink-0">
                     <CategoryFlag
-                        category={countryCategoriesMap.get(countryName)}
+                        category={countryCategoriesMap?.get(countryName) ?? null}
                         className="w-full h-full object-cover shadow-sm" />
                 </div>
             )
@@ -245,12 +245,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         <AppLink
                                             to={to}
                                             className="block w-full px-3 py-2 rounded hover:bg-gray-100"
-                                            onClick={() => {
-                                                if (onClick) {
-                                                    onClick()
-                                                }
-                                                setIsMenuOpen(false)
-                                            }}>
+                                            onClick={() => setIsMenuOpen(false)}>
                                             {label}
                                         </AppLink>
                                     ) : (
@@ -284,7 +279,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 autoFocus
                                 className="w-full outline-none text-lg"
                                 placeholder="Zadej hledaný výraz"
-                                value={searchedText}
+                                value={searchedText ?? ""}
                                 onChange={e => setSearchedText(e.target.value)} />
                             <button
                                 onClick={() => setIsSearchOpen(false)}
@@ -341,8 +336,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     key={i}
                                                     className="w-full aspect-[3/2]"
                                                     firstLineText={searchResult.parent && (SEARCHABLE_ENTITY_NAME_SELECTORS[searchResult.parent.type]?.(searchResult.parent.entity) ?? searchResult.parent.entity.id)}
-                                                    categories={searchResult.parent && "country" in searchResult.parent.entity && [countryCategoriesMap.get(searchResult.parent.entity.country)]}
-                                                    src={(searchResult.entity as Highlight).url.thumbnail}
+                                                    categories={searchResult.parent && "country" in searchResult.parent.entity ? [countryCategoriesMap?.get((searchResult.parent.entity as { country?: string }).country ?? "")].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
+                                                    src={(searchResult.entity as Highlight).url.thumbnail ?? null}
                                                     // TODO: Using searchResult.type to obtain the link is a hack. Change to use AppLink (currently, there's no way to distinguish between AirlineIdentifier and Label, though).
                                                     to={searchResult.parent && `/${searchResult.parent.type}/${searchResult.parent.entity.id}`}
                                                     onClick={() => setIsSearchOpen(false)} />

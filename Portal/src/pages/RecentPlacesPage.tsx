@@ -34,7 +34,10 @@ export default function RecentPlacesPage() {
     useEffect(() => {
         if (places?.length) {
             if (places.length === LIMIT_STEP) {
-                const breakIndex = places.findIndex((place, i) => i === 0 ? false : place.getHaversineDistanceTo(places[i - 1]) > MAX_DISTANCE)
+                const breakIndex = places.findIndex((place, i) => {
+                    const prev = places[i - 1]
+                    return i === 0 || prev == null ? false : place.getHaversineDistanceTo(prev) > MAX_DISTANCE
+                })
 
                 const filteredPlaces = breakIndex === -1 ? places : places.slice(0, breakIndex)
                 setDisplayedPlaces(filteredPlaces)
@@ -70,17 +73,17 @@ export default function RecentPlacesPage() {
         <>
             <StaticMapFrame>
                 <PlaceMap
-                    places={allPlaces}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
+                    places={allPlaces ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null}
                 />
             </StaticMapFrame>
-            {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && upcomingOrCurrentTrip?.end < getMaximumAllowedTimetamp() && (
+            {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (upcomingOrCurrentTrip?.end ?? 0) < getMaximumAllowedTimetamp() && (
                 <TripSummary
-                    trip={upcomingOrCurrentTrip}
+                    trip={upcomingOrCurrentTrip ?? null}
                     displayDeviceData={hasRole(UserRole.PortalFutureRead)}
-                    onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
-                    onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
-                    onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
+                    onNoteAdded={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}
+                    onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined}
+                    onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined} />
             )}
             <PlaceSummaryList places={displayedPlaces} />
             {displayedPlaces && isFetching.current && (

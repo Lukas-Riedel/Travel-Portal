@@ -36,6 +36,10 @@ export default function SunAltitudeIcon({ place, altitude, date }: SunAltitudeIc
             const previous = sampled[i - 1]
             const current = sampled[i]
 
+            if (previous == null || current == null) {
+                continue
+            }
+
             if ((isPositiveRateAltitude && previous.altitude < Math.abs(altitude) && current.altitude >= Math.abs(altitude))
                 || (!isPositiveRateAltitude && previous.altitude > Math.abs(altitude) && current.altitude <= Math.abs(altitude))) {
                 const ratio = (Math.abs(altitude) - previous.altitude) / (current.altitude - previous.altitude)

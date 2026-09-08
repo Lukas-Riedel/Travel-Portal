@@ -7,7 +7,7 @@
         schema: "Statistics",
         type: "object",
         description: "A class representing a statistics record",
-        required: ["name", "value"],
+        required: ["name", "value", "unit"],
         properties: [
             new OA\Property(
                 property: "name",

@@ -24,7 +24,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
     const [isBeingEdited, setIsBeingEdited] = useState(!!onNoteCreated)
 
     const handleDelete = () => {
-        if (note?.id && onNoteRemoved) {
+        if (note && onNoteRemoved) {
             showRemoveNoteToast(() => onNoteRemoved(note.id))
         }
     }
@@ -48,7 +48,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
 
     const handleUpdate = () => {
         const content = textareaRef.current?.value.trim()
-        if (!content || !note?.id) {
+        if (!content || !note) {
             return
         }
 

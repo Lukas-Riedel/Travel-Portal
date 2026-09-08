@@ -32,7 +32,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
     const { formatKilometers } = useFormatters()
 
     const visiblePlaces = useMemo(() => [...(places ?? [])].slice(0, MAXIMUM_PLACES_COUNT), [places])
-    const remainingCount = useMemo(() => places?.length - visiblePlaces?.length, [places?.length, visiblePlaces?.length])
+    const remainingCount = useMemo(() => (places?.length ?? 0) - visiblePlaces.length, [places?.length, visiblePlaces.length])
 
     const handlePlaceRemoved = (placeId: string) => {
         if (onPlaceRemoved) {
@@ -54,7 +54,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
         <Card>
             <div className="flex justify-start items-center space-x-2">
                 <CategoryFlag
-                    category={category.metadata?.unicode ? category : getOnlyElement(places.map((place: Place) => place.getCategory(CategoryCategory.Country)).filter((category, index, self) => category && self.findIndex(other => other.id === category.id) === index))}
+                    category={category.metadata?.unicode ? category : (getOnlyElement(places.map((place: Place) => place.getCategory(CategoryCategory.Country)).filter((category, index, self) => category && self.findIndex(other => other?.id === category.id) === index)) ?? null)}
                     className="w-7 h-auto flex-shrink-0" />
                 <AppLink
                     to={category}
@@ -83,7 +83,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 to={place}
                                 className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
                                 {getEntityPrettyName(place.name)}
-                                {place?.quality > 0 ? ` (${Math.round(place.quality)} %)` : ""}
+                                {(place?.quality ?? 0) > 0 ? ` (${Math.round(place.quality ?? 0)} %)` : ""}
                             </AppLink>
                             {onPlaceRemoved && (
                                 <button
@@ -93,12 +93,12 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 </button>
                             )}
                         </div>
-                        {hasDistance(place) && place.distance > 0 && (
+                        {hasDistance(place) && (place.distance ?? 0) > 0 && (
                             <div className="flex justify-start items-center">
                                 {onMaximumDistanceChanged ? (
                                     <button
                                         className="text-gray-600 hover:text-gray-300 transition-colors duration-200"
-                                        onClick={() => onMaximumDistanceChanged(place.distance)}>
+                                        onClick={() => onMaximumDistanceChanged(place.distance ?? 0)}>
                                         <Move size={16} />
                                     </button>
                                 ) : (
@@ -107,7 +107,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                     </span>
                                 )}
                                 <span className="ml-2 text-gray-600 text-xs">
-                                    {formatKilometers(Math.round(place.distance))}
+                                    {formatKilometers(Math.round(place.distance ?? 0))}
                                 </span>
                             </div>
                         )}

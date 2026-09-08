@@ -24,19 +24,19 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
     const { showRemoveTaskToast, showUpdateTaskPriorityToast, showUpdateTaskDescriptionToast } = usePredefinedUserInput()
 
     const handleDelete = () => {
-        if (onTaskRemoved) {
+        if (onTaskRemoved && task) {
             showRemoveTaskToast(() => onTaskRemoved(task.id))
         }
     }
 
     const handleTaskDescriptionUpdate = () => {
-        if (onTaskDescriptionUpdated) {
+        if (onTaskDescriptionUpdated && task) {
             showUpdateTaskDescriptionToast(task.description, description => onTaskDescriptionUpdated(task.id, description))
         }
     }
 
     const handleTaskPriorityUpdate = () => {
-        if (onTaskPriorityUpdated) {
+        if (onTaskPriorityUpdated && task) {
             showUpdateTaskPriorityToast(priority => onTaskPriorityUpdated(task.id, priority))
         }
     }

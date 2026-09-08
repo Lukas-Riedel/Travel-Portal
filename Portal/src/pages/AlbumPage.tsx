@@ -16,14 +16,14 @@ export default function AlbumPage() {
     const { place, refreshPlaceAlbum } = usePlace(placeId)
     const photos = usePlaceAlbumPhotos(placeId, albumId)
 
-    const date = useMemo(() => place?.getDateByAlbumId(albumId), [place, albumId])
+    const date = useMemo(() => albumId ? place?.getDateByAlbumId(albumId) : undefined, [place, albumId])
 
     return hasRole(UserRole.PlaceAlbumRead) && (
         <AlbumPhotoTileGrid
-            place={place}
-            album={date?.album}
-            photos={photos}
-            onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
-            onMainPhotoUpdated={hasRole(UserRole.PlaceAlbumEdit) && refreshPlaceAlbum} />
+            place={place ?? null}
+            album={date?.album ?? null}
+            photos={photos ?? null}
+            onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotoReplacingTriggeredEvent : undefined}
+            onMainPhotoUpdated={hasRole(UserRole.PlaceAlbumEdit) ? refreshPlaceAlbum : undefined} />
     )
 }

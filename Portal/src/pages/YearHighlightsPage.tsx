@@ -22,20 +22,19 @@ export default function YearHighlightsPage() {
 
     const highlightCandidates = useMemo(() => {
         const tripHighlightCandidates = trips?.map(trip => {
-            const photos = trip.highlights?.filter(highlight => !year?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo)
+            const photos = trip.highlights?.filter(highlight => !year?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
             return {
                 title: trip.getFullName(),
-                photos,
                 getPhotos: () => Promise.resolve(photos)
             }
-        }).filter(group => group.photos?.length)
+        }).filter(group => group.getPhotos !== undefined)
 
         const dayTripHighlightCandidates = places
-            ?.flatMap(place => place.dates
+            ?.flatMap(place => (place.dates ?? [])
                 .filter(date => !date.trip)
                 .reverse()
                 .map(date => date.album)
-                .filter(Boolean)
+                .filter((a): a is NonNullable<typeof a> => a != null)
                 .reverse()
                 .map(album => ({
                     title: album.name,
@@ -56,7 +55,7 @@ export default function YearHighlightsPage() {
     }
 
     const handleHighlightRemoved = async (photoId: string) => {
-        setCurrentPhotos(previous => previous.filter(photo => photo.id !== photoId))
+        setCurrentPhotos(previous => previous?.filter(photo => photo.id !== photoId) ?? null)
     }
 
     return hasRole(UserRole.YearHighlightRead) && (!highlightCandidates || highlightCandidates.length > 0) && (
@@ -64,14 +63,14 @@ export default function YearHighlightsPage() {
             {currentPhotos && (
                 <HighlightCarousel
                     highlights={currentPhotos?.map(currentHighlightCandidate => ({ id: currentHighlightCandidate.id, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url, thumbnail: currentHighlightCandidate.url }, attributes: {} }))}
-                    onHighlightCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCreated}
-                    onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) && handleHighlightRemoved} />
+                    onHighlightCreated={hasRole(UserRole.YearHighlightEdit) ? handleHighlightCreated : undefined}
+                    onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) ? handleHighlightRemoved : undefined} />
             )}
             <HighlightCandidateTileGrid
-                name={yearParameter}
-                highlightCandidatesGroups={highlightCandidates}
-                onHighlightCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCreated}
-                onHighlightCandidateCreated={hasRole(UserRole.YearHighlightEdit) && handleHighlightCandidateCreated} />
+                name={yearParameter ?? null}
+                highlightCandidatesGroups={highlightCandidates ?? []}
+                onHighlightCreated={hasRole(UserRole.YearHighlightEdit) ? handleHighlightCreated : undefined}
+                onHighlightCandidateCreated={hasRole(UserRole.YearHighlightEdit) ? handleHighlightCandidateCreated : undefined} />
         </>
     )
 }

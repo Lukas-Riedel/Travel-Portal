@@ -11,7 +11,7 @@ import CategoryFlag from "./CategoryFlag.tsx"
 const MOBILE_WIDTH_THRESHOLD = 768
 
 interface PageHeaderProps<T> {
-    name: string
+    name: string | null
     categories?: Category[]
     internalAttributes?: Record<string, string | number>
     onNameChanged?: (name: string) => Promise<T>
@@ -33,7 +33,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
     }, [])
 
     const handleNameChanged = () => {
-        if (onNameChanged) {
+        if (onNameChanged && name) {
             showUpdateEntityNameToast(name, onNameChanged)
         }
     }
@@ -51,14 +51,16 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
     }
 
     const handleShared = () => {
-        if (typeof Android !== "undefined" && Android.share) {
-            Android.share(name, location.href)
-        }
-        else if (navigator.share) {
-            navigator.share({
-                title: name,
-                url: location.href
-            })
+        if (name) {
+            if (typeof Android !== "undefined" && Android.share) {
+                Android.share(name, location.href)
+            }
+            else if (navigator.share) {
+                navigator.share({
+                    title: name,
+                    url: location.href
+                })
+            }
         }
     }
 

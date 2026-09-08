@@ -20,9 +20,9 @@ export const useRegions = ({ name, enabled }: UseRegionsProps = {}): UseRegionsR
 
     return {
         regions: response,
-        createGeographicalRegion: (name: string, country: string, category: string, radius: number, geoJson: GeoJSON) => createGeographicalRegion(name, country, category, radius, geoJson, false).then(refetchResponse),
+        createGeographicalRegion: (name: string, country: string | undefined, category: string, radius: number, geoJson: GeoJSON) => createGeographicalRegion(name, country, category, radius, geoJson, false).then(refetchResponse),
         createCompositeRegion: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => createCompositeRegion(name, category, includedRegions, excludedRegions, false).then(refetchResponse),
-        createOrUpdateGeographicalRegion: (name: string, country: string, category: string, radius: number, geoJson: GeoJSON) => createGeographicalRegion(name, country, category, radius, geoJson, true).then(refetchResponse),
+        createOrUpdateGeographicalRegion: (name: string, country: string | undefined, category: string, radius: number, geoJson: GeoJSON) => createGeographicalRegion(name, country, category, radius, geoJson, true).then(refetchResponse),
         createOrUpdateCompositeRegion: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => createCompositeRegion(name, category, includedRegions, excludedRegions, true).then(refetchResponse)
     }
 }

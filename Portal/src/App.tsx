@@ -40,7 +40,7 @@ export default function App() {
 
     const { events: newDataConsistencyIssuesDetectedEvents } = useEvents(EventType.NewDataConsistencyIssuesDetected)
     useEffect(() => {
-        newDataConsistencyIssuesDetectedEvents.forEach(event => {
+        (newDataConsistencyIssuesDetectedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             toast.success(t("notification.newDataConsistencyIssuesDetected", { formattedProblems: formatNewProblems(event.args.count) }))
@@ -49,7 +49,7 @@ export default function App() {
 
     const { events: taskDeadlineReachedEvents } = useEvents(EventType.TaskDeadlineReached)
     useEffect(() => {
-        taskDeadlineReachedEvents.forEach(event => {
+        (taskDeadlineReachedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             toast.success(event.args.task)
@@ -58,7 +58,7 @@ export default function App() {
 
     const { events: flightLoggedEvents } = useEvents(EventType.FlightLogged)
     useEffect(() => {
-        flightLoggedEvents.forEach(event => {
+        (flightLoggedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             toast.success(t("notification.flightLogged", { flight: event.args.flight, airport: event.args.to, formattedLocalTime: formatTimestamp(event.args.actualArrival, t("general.format.time")) }))
@@ -67,7 +67,7 @@ export default function App() {
 
     const { events: flightReminderReceivedEvents } = useEvents(EventType.FlightReminderReceived)
     useEffect(() => {
-        flightReminderReceivedEvents.forEach(event => {
+        (flightReminderReceivedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             toast.success(event.args.text)
@@ -76,7 +76,7 @@ export default function App() {
 
     const { events: processingStartedEvents } = useEvents(EventType.ProcessingStarted)
     useEffect(() => {
-        processingStartedEvents.forEach(event => {
+        (processingStartedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             if (event.name === EventType.PhotosUploadingTriggered && event.args.sendNotification) {
@@ -90,7 +90,7 @@ export default function App() {
 
     const { events: processingEndedEvents } = useEvents(EventType.ProcessingEnded)
     useEffect(() => {
-        processingEndedEvents.forEach(event => {
+        (processingEndedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             if (event.name === EventType.PhotosUploadingTriggered && event.args.sendNotification) {
@@ -104,7 +104,7 @@ export default function App() {
 
     const { events: processingFailedEvents } = useEvents(EventType.ProcessingFailed)
     useEffect(() => {
-        processingFailedEvents.forEach(event => {
+        (processingFailedEvents ?? []).forEach(event => {
             event.markAsRead()
 
             if (event.name === EventType.PhotosUploadingTriggered && event.args.sendNotification) {

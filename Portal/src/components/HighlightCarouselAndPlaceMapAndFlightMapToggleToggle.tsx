@@ -40,7 +40,7 @@ export default function HighlightCarouselAndPlaceMapAndFlightMapToggleToggle({ e
         }
     }, [])
 
-    const filteredHighlights = useMemo(() => entity?.highlights?.filter(highlight => highlight.photo.timestamp < getCurrentOrMaximumAllowedTimestamp()) ?? [], [entity?.highlights])
+    const filteredHighlights = useMemo(() => entity?.highlights?.filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) ?? [], [entity?.highlights])
 
     if (entity && (!Array.isArray(entity.highlights) || filteredHighlights.length === 0)) {
         return (
@@ -61,7 +61,7 @@ export default function HighlightCarouselAndPlaceMapAndFlightMapToggleToggle({ e
                 ref={carouselRef}
                 style={showMap ? { position: "absolute", left: "-9999px", top: 0, width: "100%" } : { width: "100%" }}>
                 <HighlightCarousel
-                    place={null}
+                    place={undefined}
                     highlights={entity && filteredHighlights}
                     onPhotoReplaced={onPhotoReplaced}
                     onPhotoCorrected={onPhotoCorrected}

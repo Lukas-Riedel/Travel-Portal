@@ -69,7 +69,7 @@ export default function CategoryPage() {
     return hasRole(UserRole.CategoryRead) && (
         <>
             <PageHeader
-                name={category?.name}
+                name={category?.name ?? null}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.CategoryEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}

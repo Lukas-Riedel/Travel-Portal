@@ -18,13 +18,12 @@ export default function CategoryHighlightsPage() {
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
     const highlightCandidates = useMemo(() => places?.map(place => {
-        const photos = place.highlights?.filter(highlight => !category?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo)
+        const photos = place.highlights?.filter(highlight => !category?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
         return {
             title: place.name,
-            photos,
             getPhotos: () => Promise.resolve(photos)
         }
-    }).filter(group => group.photos?.length), [category, places])
+    }).filter(group => group.getPhotos !== undefined), [category, places])
 
     const handleHighlightCreated = async (photoId: string) => createCategoryHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))
@@ -34,7 +33,7 @@ export default function CategoryHighlightsPage() {
     }
 
     const handleHighlightRemoved = async (photoId: string) => {
-        setCurrentPhotos(previous => previous.filter(photo => photo.id !== photoId))
+        setCurrentPhotos(previous => previous?.filter(photo => photo.id !== photoId) ?? null)
     }
 
     return hasRole(UserRole.CategoryHighlightRead) && (!highlightCandidates || highlightCandidates.length > 0) && (
@@ -42,15 +41,15 @@ export default function CategoryHighlightsPage() {
             {currentPhotos && (
                 <HighlightCarousel
                     highlights={currentPhotos?.map(currentHighlightCandidate => ({ id: currentHighlightCandidate.id, photo: currentHighlightCandidate, url: { full: currentHighlightCandidate.url, thumbnail: currentHighlightCandidate.url }, attributes: {} }))}
-                    onHighlightCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCreated}
-                    onHighlightRemoved={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightRemoved} />
+                    onHighlightCreated={hasRole(UserRole.CategoryHighlightEdit) ? handleHighlightCreated : undefined}
+                    onHighlightRemoved={hasRole(UserRole.CategoryHighlightEdit) ? handleHighlightRemoved : undefined} />
             )}
             <HighlightCandidateTileGrid
-                name={category?.name}
-                categories={category && [category]}
-                highlightCandidatesGroups={highlightCandidates}
-                onHighlightCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCreated}
-                onHighlightCandidateCreated={hasRole(UserRole.CategoryHighlightEdit) && handleHighlightCandidateCreated} />
+                name={category?.name ?? null}
+                categories={category ? [category] : undefined}
+                highlightCandidatesGroups={highlightCandidates ?? []}
+                onHighlightCreated={hasRole(UserRole.CategoryHighlightEdit) ? handleHighlightCreated : undefined}
+                onHighlightCandidateCreated={hasRole(UserRole.CategoryHighlightEdit) ? handleHighlightCandidateCreated : undefined} />
         </>
     )
 }

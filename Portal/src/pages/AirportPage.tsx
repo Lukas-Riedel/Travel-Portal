@@ -31,18 +31,18 @@ export default function AirportPage() {
     return hasRole(UserRole.AirportRead) && (
         <>
             <PageHeader
-                name={airport && (airport.longName ?? airport.code)}
-                categories={airport?.country ? [countryCategoriesMap.get(airport.country)] : []}
-                onNameChanged={hasRole(UserRole.AirportEdit) && updateAirportLongName} />
+                name={airport ? (airport.longName ?? airport.code ?? null) : null}
+                categories={airport?.country ? [countryCategoriesMap?.get(airport.country)].filter((c): c is NonNullable<typeof c> => c != null) : []}
+                onNameChanged={hasRole(UserRole.AirportEdit) ? updateAirportLongName : undefined} />
             <StaticMapFrame>
                 <FlightMap
-                    flights={flights}
-                    airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
+                    flights={flights ?? null}
+                    airportMainCategorySelector={airport => countryCategoriesMap?.get(airport.country ?? "") ?? null} />
             </StaticMapFrame>
             <FlightCardGrid
                 rowSize={4}
                 columnSize={6}
-                flights={flights} />
+                flights={flights ?? null} />
         </>
     )
 }

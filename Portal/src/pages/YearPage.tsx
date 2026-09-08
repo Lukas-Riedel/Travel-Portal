@@ -20,7 +20,7 @@ import { useEvents } from "../hooks/useEvents"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { useYear } from "../hooks/useYear"
-import { type Airport,CategoryCategory, PlaceIncludedEntity, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { type Airport, CategoryCategory, PlaceIncludedEntity, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getZonedDate } from "../utils/timeUtils.ts"
 import { getCalendarEvents } from "../utils/tripUtils.ts"
 
@@ -62,7 +62,7 @@ export default function YearPage() {
     return hasRole(UserRole.YearRead) && (
         <>
             <PageHeader
-                name={yearParameter}
+                name={yearParameter ?? null}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.YearEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => refreshYearHighlights(highlightsCount))}

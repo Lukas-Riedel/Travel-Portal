@@ -8,9 +8,9 @@ import PlaceMap from "./PlaceMap"
 
 interface PlaceMapAndFlightMapToggleProps {
     places: Place[] | null
-    flights: Flight[] | null
-    placeMainCategorySelector: (place: Place) => Category
-    airportMainCategorySelector: (airport: Airport) => Category | null
+    flights?: Flight[] | null
+    placeMainCategorySelector?: (place: Place) => Category | null
+    airportMainCategorySelector?: (airport: Airport) => Category | null
     onRightClick?: (latitude: number, longitude: number) => Promise<void>
 }
 
@@ -27,7 +27,7 @@ export default function PlaceMapAndFlightMapToggle({ places, flights, placeMainC
         <div className="relative w-full h-full">
             {shouldRenderFlightMap ? (
                 <FlightMap
-                    flights={flights}
+                    flights={flights ?? null}
                     airportMainCategorySelector={airportMainCategorySelector} />
             ) : (
                 <PlaceMap

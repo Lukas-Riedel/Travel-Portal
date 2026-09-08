@@ -26,13 +26,13 @@ export default function FlightsPage() {
         <>
             <StaticMapFrame>
                 <FlightMap
-                    flights={flights}
-                    airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
+                    flights={flights ?? null}
+                    airportMainCategorySelector={airport => countryCategoriesMap?.get(airport.country ?? "") ?? null} />
             </StaticMapFrame>
             <FlightCardGrid
                 rowSize={4}
                 columnSize={6}
-                flights={flights} />
+                flights={flights ?? null} />
         </>
     )
 }

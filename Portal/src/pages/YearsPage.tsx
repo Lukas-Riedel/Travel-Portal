@@ -22,17 +22,17 @@ export default function YearsPage() {
         <>
             <StaticMapFrame>
                 <PlaceMap
-                    places={places}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                    places={places ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
             </StaticMapFrame>
             {hasRole(UserRole.PortalFutureRead) && (
-                <TripTable trips={trips?.filter(trip => trip?.isFuture())} />
+                <TripTable trips={trips?.filter(trip => trip?.isFuture()) ?? null} />
             )}
             {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [getCurrentYear()]).map(year => (
                 <YearTripTileGrid
                     key={year}
                     year={year}
-                    trips={trips} />
+                    trips={trips ?? null} />
             ))}
         </>
     )

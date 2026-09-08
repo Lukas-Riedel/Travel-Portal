@@ -30,18 +30,18 @@ export default function AirlinePage() {
     return hasRole(UserRole.AirlineRead) && (
         <>
             <PageHeader
-                name={airline?.name}
-                onNameChanged={hasRole(UserRole.AirlineEdit) && updateAirlineName}
-                onRemoved={hasRole(UserRole.AirlineEdit) && removeAirline} />
+                name={airline?.name ?? null}
+                onNameChanged={hasRole(UserRole.AirlineEdit) ? updateAirlineName : undefined}
+                onRemoved={hasRole(UserRole.AirlineEdit) ? removeAirline : undefined} />
             <StaticMapFrame>
                 <FlightMap
-                    flights={flights}
-                    airportMainCategorySelector={airport => countryCategoriesMap.get(airport.country)} />
+                    flights={flights ?? null}
+                    airportMainCategorySelector={airport => countryCategoriesMap?.get(airport.country ?? "") ?? null} />
             </StaticMapFrame>
             <FlightCardGrid
                 rowSize={4}
                 columnSize={6}
-                flights={flights} />
+                flights={flights ?? null} />
         </>
     )
 }

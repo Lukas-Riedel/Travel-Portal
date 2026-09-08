@@ -37,7 +37,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
     }
 
     const handleMainPhotoUpdated = () => {
-        if (onMainPhotoUpdated && photoPosition) {
+        if (onMainPhotoUpdated && album && photoPosition) {
             showUpdateAlbumMainPhotoToast(() => onMainPhotoUpdated(album.id, photoPosition))
         }
     }
@@ -47,15 +47,15 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
             {overlayType === 0 && (
                 <PhotoTile
                     // TODO: Create a class with the method to obtain the thumbnail URL.
-                    src={photo.url + "=w350-h233"}
-                    to={photo.permalink} />
+                    src={photo ? (photo.url + "=w350-h233") : null}
+                    to={photo?.permalink} />
             )}
-            {overlayType === 1 && (
+            {overlayType === 1 && place && (
                 <PhotoTile
                     // TODO: Create a class with the method to obtain the thumbnail URL.
-                    src={photo.url + "=w350-h233"}
-                    to={photo.permalink}
-                    categories={[place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)]}
+                    src={photo ? (photo.url + "=w350-h233") : null}
+                    to={photo?.permalink}
+                    categories={place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ? [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)!] : undefined}
                     firstLineText={place.name}
                     secondLineText={formatTimestamp(getCurrentTimestamp(), t("general.format.date.year.included"))} />
             )}
@@ -73,7 +73,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
                         className="btn-large-gray">
                         <SendToBack size={16} />
                     </button>
-                    {onMainPhotoUpdated && photoPosition && album?.mainPhoto?.id !== photo.id && (
+                    {onMainPhotoUpdated && photoPosition && album?.mainPhoto?.id !== photo?.id && photo != null && (
                         <button
                             onClick={handleMainPhotoUpdated}
                             className="btn-large-gray">

@@ -21,22 +21,22 @@ export default function LabelPage() {
     const { places } = useTimeFilteredRegularPlaces({ labelId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter(Boolean)?.map(category => [category.name, category])), [places])
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [places])
 
     return hasRole(UserRole.LabelRead) && (
         <>
             <PageHeader
-                name={label?.name}
-                onNameChanged={hasRole(UserRole.LabelEdit) && updateLabelName}
+                name={label?.name ?? null}
+                onNameChanged={hasRole(UserRole.LabelEdit) ? updateLabelName : undefined}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
             <StaticMapFrame>
                 <PlaceMap
-                    places={places}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)}
+                    places={places ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null}
                 />
             </StaticMapFrame>
             <PlaceTileGrid
-                places={places}
+                places={places ?? null}
                 placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">

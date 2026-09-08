@@ -170,13 +170,14 @@ function CustomTooltip({ active, payload, unit }: TooltipProps) {
     const { configuration } = useConfiguration()
     const { formatStatisticsUnit } = useFormatters()
 
-    return active && payload && (
+    const first = payload?.[0]
+    return active && first && (
         <div className="bg-white/90 bg-white border shadow px-3 py-2 rounded">
             <div className="font-semibold">
-                {payload[0].payload.name}
+                {first.payload.name}
             </div>
             <div>
-                {formatStatisticsUnit(unit, payload[0].payload.value, configuration?.expensify?.mainCurrency)}
+                {formatStatisticsUnit(unit, first.payload.value, configuration?.expensify?.mainCurrency)}
             </div>
         </div>
     )

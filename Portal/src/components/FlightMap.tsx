@@ -20,7 +20,7 @@ const PATH_COLORS = [
 
 interface FlightMapProps {
     flights: Flight[] | null
-    airportMainCategorySelector: (airport: Airport) => Category | null
+    airportMainCategorySelector?: (airport: Airport) => Category | null
 }
 
 export default function FlightMap({ flights, airportMainCategorySelector }: FlightMapProps) {
@@ -64,8 +64,8 @@ export default function FlightMap({ flights, airportMainCategorySelector }: Flig
                     name: airport.longName ?? airport.code ?? airport.shortName,
                     latitude: airport.latitude!,
                     longitude: airport.longitude!,
-                    color: airportMainCategorySelector(airport)?.metadata?.color,
-                    unicode: airportMainCategorySelector(airport)?.metadata?.unicode,
+                    color: airportMainCategorySelector?.(airport)?.metadata?.color,
+                    unicode: airportMainCategorySelector?.(airport)?.metadata?.unicode,
                     onClick: () => Promise.resolve(navigate(airport))
                 }))}
             lines={flightPaths

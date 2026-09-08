@@ -58,7 +58,7 @@ export default function PlacePage() {
                 place={place}
                 onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && hasRole(UserRole.PortalWarningRead) && updatePlaceAlbumsReviewed} />
             <PageHeader
-                name={place?.name}
+                name={place?.name ?? null}
                 categories={mostSpecificCategory && [mostSpecificCategory]}
                 internalAttributes={hasRole(UserRole.PlaceEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) && (highlightsCount => refreshPlaceHighlights(highlightsCount))}

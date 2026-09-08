@@ -19,7 +19,7 @@ import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 import { useEvents } from "../hooks/useEvents"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useTrip } from "../hooks/useTrip"
-import { type Airport,CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { type Airport, CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 
 export default function TripPage() {
@@ -62,7 +62,7 @@ export default function TripPage() {
     return hasRole(UserRole.TripRead) && (
         <>
             <PageHeader
-                name={trip && trip.getFullName()}
+                name={trip ? trip.getFullName() : null}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.TripEdit) && attributes}
                 onHighlightsRefreshed={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) && (highlightsCount => refreshTripHighlights(highlightsCount))}

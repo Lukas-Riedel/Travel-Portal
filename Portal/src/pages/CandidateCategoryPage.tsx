@@ -25,7 +25,7 @@ export default function CandidateCategoryPage() {
     const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: [PlaceIncludedEntity.Categories] })
 
     const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter(Boolean)?.map(category => [category.name, category])), [candidatePlaces])
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [candidatePlaces])
 
     const handleCandidatePlaceCreated = () => {
         showCreatePlaceToast((name, address) => createCandidatePlace(name, address).then(place => (navigate(place), place)))
@@ -34,18 +34,18 @@ export default function CandidateCategoryPage() {
     return hasRole(UserRole.CategoryRead) && (
         <>
             <PageHeader
-                name={category?.name}
+                name={category?.name ?? null}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName} />
+                onNameChanged={hasRole(UserRole.CategoryEdit) ? updateCategoryName : undefined} />
             <StaticMapFrame>
                 <PlaceMap
-                    places={candidatePlaces}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                    places={candidatePlaces ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null} />
             </StaticMapFrame>
             <PlaceCardGrid
-                places={candidatePlaces}
+                places={candidatePlaces ?? null}
                 rowSize={5}
-                onPlaceRemoved={hasRole(UserRole.PlaceEdit) && removeCandidatePlace} />
+                onPlaceRemoved={hasRole(UserRole.PlaceEdit) ? removeCandidatePlace : undefined} />
             {hasRole(UserRole.PlaceEdit) && (
                 <FloatingButton
                     icon={Plus}

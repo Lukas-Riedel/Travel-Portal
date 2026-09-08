@@ -172,7 +172,7 @@ export const updateHighlightQualityAttributes = async (highlightId: string, comp
         }
     ).then(extractData)
 
-export const createGeographicalRegion = async (name: string, country: string, category: string, radius: number, geoJson: GeoJSON, overwrite: boolean = false): Promise<GeographicalRegion> =>
+export const createGeographicalRegion = async (name: string, country: string | undefined, category: string, radius: number, geoJson: GeoJSON, overwrite: boolean = false): Promise<GeographicalRegion> =>
     coreClient.post<GeographicalRegion>(createQueryPath("regions",
         {
             type: RegionType.Geographical,
