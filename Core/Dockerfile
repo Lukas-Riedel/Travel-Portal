@@ -1,4 +1,4 @@
-FROM php:8.2-cli-bullseye AS builder
+FROM php:8.2-cli-bookworm AS builder
 RUN apt-get update \
     && apt-get install -y libpq-dev git unzip tini \
     && docker-php-ext-install sockets pdo_pgsql pgsql pcntl \
@@ -13,7 +13,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && rm composer-setup.php
 RUN composer install --no-dev --prefer-dist --optimize-autoloader && composer dump-autoload --optimize
 COPY Core/. ./
-FROM php:8.2-fpm-bullseye
+FROM php:8.2-fpm-bookworm
 RUN apt-get update \
     && apt-get install -y wget gnupg2 lsb-release \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
