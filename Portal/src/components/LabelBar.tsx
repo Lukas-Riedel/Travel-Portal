@@ -13,8 +13,8 @@ const LOADING_LABELS_COUNT = 3
 
 interface LabelBarProps {
     labels: Label[] | null
-    onLabelAdded: (label: string) => Promise<Label>
-    onLabelRemoved: (labelId: string) => Promise<void>
+    onLabelAdded?: (label: string) => Promise<Label>
+    onLabelRemoved?: (labelId: string) => Promise<void>
 }
 
 type DynamicLabel = { name: string }

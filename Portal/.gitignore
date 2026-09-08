@@ -29,3 +29,4 @@ src/types/CoreSwaggerTypes.ts
 
 # ESLint output files
 .eslint-*.json
+tsc-out.txt

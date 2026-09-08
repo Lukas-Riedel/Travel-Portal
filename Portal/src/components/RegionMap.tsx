@@ -15,13 +15,13 @@ interface RegionMapProps {
 export default function RegionMap({ regions, onClick }: RegionMapProps) {
     const points = useMemo(() => regions?.map(region => {
         const coordinates = tryExtractPointCoordinates(region.geoJson as GeoJSON)
-        return coordinates && {
+        return coordinates ? {
             name: region.category.name,
             latitude: coordinates.latitude,
             longitude: coordinates.longitude,
             color: DEFAULT_POINT_COLOR
-        }
-    })?.filter(Boolean), [regions])
+        } : null
+    })?.filter((p): p is NonNullable<typeof p> => p != null), [regions])
 
     const geoJsons = useMemo(() => regions?.map(region => region.geoJson as GeoJSON)
         ?.filter(geoJson => tryExtractPointCoordinates(geoJson) === null), [regions])
@@ -30,6 +30,6 @@ export default function RegionMap({ regions, onClick }: RegionMapProps) {
         <Map
             points={points}
             geoJsons={geoJsons}
-            onClick={featureId => onClick(regions.find(region => (region.geoJson as Feature).properties.id === featureId))} />
+            onClick={onClick ? featureId => onClick(regions?.find(region => (region.geoJson as Feature).properties?.id === featureId)) : undefined} />
     )
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 
 import { useRegions } from "../hooks/useRegions"
-import type { Category } from "../types/CoreSwaggerTypes"
+import type { Category, GeographicalRegion } from "../types/CoreSwaggerTypes"
 import Editor from "./Editor"
 import RegionCardGrid from "./RegionCardGrid"
 import RegionMap from "./RegionMap"
@@ -13,7 +13,7 @@ interface RegionEditorProps {
 }
 
 export default function RegionEditor({ categories, selectedKey, onKeySelected }: RegionEditorProps) {
-    const keys = useMemo(() => categories?.map(category => ({ name: category.name, label: category.name, target: category })), [categories])
+    const keys = useMemo(() => categories?.map(category => ({ name: category.name, label: category.name, target: category })) ?? null, [categories])
     const selectedCategory = useMemo(() => categories?.find(category => category.name === selectedKey), [categories, selectedKey])
 
     return (
@@ -38,7 +38,7 @@ interface EditedRegionContentProps {
 function EditedRegionContent({ category, onCategorySelected }: EditedRegionContentProps) {
     const { regions, createOrUpdateGeographicalRegion, createOrUpdateCompositeRegion } = useRegions({ name: category.name })
 
-    const [activeRegion, setActiveRegion] = useState(null)
+    const [activeRegion, setActiveRegion] = useState<GeographicalRegion | null>(null)
 
     useEffect(() => setActiveRegion(null), [category])
 
@@ -46,7 +46,7 @@ function EditedRegionContent({ category, onCategorySelected }: EditedRegionConte
         <>
             <RegionCardGrid
                 rowSize={3}
-                regions={regions}
+                regions={regions ?? null}
                 onCategorySelected={onCategorySelected}
                 onGeographicalRegionUpdated={createOrUpdateGeographicalRegion}
                 onCompositeRegionUpdated={createOrUpdateCompositeRegion}

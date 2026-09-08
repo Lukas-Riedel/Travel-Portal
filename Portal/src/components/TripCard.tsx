@@ -40,8 +40,8 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
         return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
     }, [tripPlacesWithoutLayover])
 
-    const days = useMemo<Record<number, (Place & Date)[]>>(() => {
-        const flatPlaces = tripPlaces?.flatMap(place => place.dates.map(date => ({ ...place, ...date }))) ?? []
+    const days = useMemo<Partial<Record<number, (Place & Date)[]>>>(() => {
+        const flatPlaces = tripPlaces?.flatMap(place => (place.dates ?? []).map(date => ({ ...place, ...date }))) ?? []
         return Object.groupBy(flatPlaces, ({ start }) => Math.floor(start / (ONE_DAY_SECONDS)))
     }, [tripPlaces])
 
@@ -50,12 +50,12 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
             return 0
         }
 
-        const maxEnd = Math.max(...tripPlaces.flatMap(place => place.dates).map(date => date.end))
+        const maxEnd = Math.max(...tripPlaces.flatMap(place => place.dates ?? []).map(date => date.end))
         return Math.floor(maxEnd / ONE_DAY_SECONDS) + 1
     }, [tripPlaces])
 
     const handleDelete = () => {
-        if (onTripRemoved) {
+        if (trip?.id && onTripRemoved) {
             showRemoveTripToast(() => onTripRemoved(trip.id))
         }
     }

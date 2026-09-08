@@ -1,4 +1,4 @@
-import { Bold, Check,Edit2, Italic, Link, Plus, Trash2 } from "lucide-react"
+import { Bold, Check, Edit2, Italic, Link, Plus, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
@@ -24,7 +24,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
     const [isBeingEdited, setIsBeingEdited] = useState(!!onNoteCreated)
 
     const handleDelete = () => {
-        if (note?.id) {
+        if (note?.id && onNoteRemoved) {
             showRemoveNoteToast(() => onNoteRemoved(note.id))
         }
     }
@@ -35,13 +35,15 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             return
         }
 
-        showCreateNoteToast(() => onNoteCreated(content).then(note => {
-            if (textareaRef.current) {
-                textareaRef.current.value = ""
-            }
+        if (onNoteCreated) {
+            showCreateNoteToast(() => onNoteCreated(content).then(note => {
+                if (textareaRef.current) {
+                    textareaRef.current.value = ""
+                }
 
-            return note
-        }))
+                return note
+            }))
+        }
     }
 
     const handleUpdate = () => {
@@ -55,14 +57,16 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             return
         }
 
-        showUpdateNoteToast(() => onNoteContentUpdated(note.id, content).then(note => {
-            if (textareaRef.current) {
-                textareaRef.current.value = ""
-            }
+        if (onNoteContentUpdated) {
+            showUpdateNoteToast(() => onNoteContentUpdated(note.id, content).then(note => {
+                if (textareaRef.current) {
+                    textareaRef.current.value = ""
+                }
 
-            setIsBeingEdited(false)
-            return note
-        }))
+                setIsBeingEdited(false)
+                return note
+            }))
+        }
     }
 
     const insertAtCursor = (before: string, after: string) => {
@@ -108,7 +112,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                 <textarea
                     ref={textareaRef}
                     defaultValue={note?.content}
-                    placeholder={!note && t("note.placeholder.new")}
+                    placeholder={!note ? t("note.placeholder.new") : undefined}
                     onInput={adjustHeight}
                     className="w-full resize-none border border-gray-300 rounded-md p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 flex-grow" />
             ) : (

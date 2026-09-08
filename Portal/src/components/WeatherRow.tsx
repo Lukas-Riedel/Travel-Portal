@@ -18,6 +18,7 @@ interface WeatherRowProps {
     onWeatherForecastExpanded?: () => void
 }
 
+// TODO: Export magic constants in this class.
 export default function WeatherRow({ coordinates, weather, start, end, timezone, showTime, onWeatherForecastExpanded }: WeatherRowProps) {
     const { t } = useTranslation()
 
@@ -44,14 +45,14 @@ export default function WeatherRow({ coordinates, weather, start, end, timezone,
             }
         }
 
-        if (weather?.clouds?.total > 70) {
+        if ((weather?.clouds?.total ?? 0) > 70) {
             return {
                 WeatherIcon: Cloud,
                 color: "text-slate-500"
             }
         }
 
-        if (weather?.clouds?.total > 20) {
+        if ((weather?.clouds?.total ?? 0) > 20) {
             return {
                 WeatherIcon: CloudSun,
                 color: "text-amber-600"
@@ -71,11 +72,11 @@ export default function WeatherRow({ coordinates, weather, start, end, timezone,
             return "text-slate-400"
         }
 
-        if (confidence <= 50) {
+        if ((confidence ?? 100) <= 50) {
             return "text-rose-500"
         }
 
-        if (confidence <= 75) {
+        if ((confidence ?? 100) <= 75) {
             return "text-amber-500"
         }
 

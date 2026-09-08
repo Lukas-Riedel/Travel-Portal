@@ -64,7 +64,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
 
     const renderButtons = () => (
         <>
-            {((typeof Android !== "undefined" && Android.share) || navigator.share) && (
+            {((typeof Android !== "undefined" && Android.share != null) || navigator.share != null) && (
                 <button
                     onClick={handleShared}
                     className="btn-chip-gray">
@@ -102,11 +102,11 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
         </>
     )
 
-    const renderInternalAttributes = () => Object.keys(internalAttributes)
-        .filter(key => internalAttributes[key]).map((key, index) => (
+    const renderInternalAttributes = () => Object.keys(internalAttributes ?? {})
+        .filter(key => internalAttributes![key]).map((key, index) => (
             <React.Fragment key={index}>
                 {index > 0 && <span>•</span>}
-                <span>{`${key}: ${internalAttributes[key]}`}</span>
+                <span>{`${key}: ${internalAttributes![key]}`}</span>
             </React.Fragment>
         ))
 

@@ -152,7 +152,10 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
             return
         }
 
-        setZoom(mapRef.current.getZoom())
+        const newZoom = mapRef.current.getZoom()
+        if (newZoom) {
+            setZoom(newZoom)
+        }
     }
 
     const initMap = (map: google.maps.Map) => {
@@ -181,7 +184,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
             })
 
             map.data.forEach(feature => {
-                feature.getGeometry().forEachLatLng(latlng => {
+                feature.getGeometry()?.forEachLatLng(latlng => {
                     bounds.extend(latlng)
                     hasDataForBounds = true
                 })
@@ -256,7 +259,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
                         mapContainerStyle={{ width: "100%", height: "100%" }}
                         onLoad={onMapLoad}
                         onZoomChanged={onMapZoomChanged}
-                        onRightClick={e => onRightClick && onRightClick(e.latLng.lat(), e.latLng.lng())}
+                        onRightClick={e => onRightClick && e.latLng && onRightClick(e.latLng.lat(), e.latLng.lng())}
                         options={{ styles: MAP_STYLES, disableDefaultUI: true, fullscreenControl: true }} />
                     {hoveredMarkerData && (
                         <div style={{

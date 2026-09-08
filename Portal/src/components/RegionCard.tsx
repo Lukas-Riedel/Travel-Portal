@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import type { CategoryIdentifier,CompositeRegion, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
+import type { CategoryIdentifier, CompositeRegion, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
 import type { Region } from "../types/Region.ts"
 import { getGeoFeatures, getGeoJson, tryExtractPointCoordinates } from "../utils/geocodingUtils.ts"
 import Card from "./Card.tsx"
@@ -17,7 +17,7 @@ interface RegionCardProps {
     onCategorySelected?: (category: CategoryIdentifier) => void
     onGeographicalRegionUpdated?: (nname: string, country: string, category: string, radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>
     onCompositeRegionUpdated?: (name: string, category: string, includedRegions: string[], excludedRegions?: string[]) => Promise<CompositeRegion>
-    onRegionVisualized?: (region: Region) => void
+    onRegionVisualized?: (region: GeographicalRegion) => void
 }
 
 const isGeographicalRegion = (region: Region): region is GeographicalRegion => "geoJson" in region

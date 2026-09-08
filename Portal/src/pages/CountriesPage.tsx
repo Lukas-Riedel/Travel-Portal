@@ -26,15 +26,15 @@ export default function CountriesPage() {
         return Object.entries(places.reduce<Record<string, number>>((acc, place) => ({ ...acc, [place.country]: (acc[place.country] ?? 0) + place.score }), {}))
             .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
             .map(([country]) => countryCategoriesMap.get(country))
-            .filter(Boolean)
+            .filter((c): c is NonNullable<typeof c> => c != null)
     }, [places, countryCategoriesMap, countryCategoriesMap])
 
     return hasRole(UserRole.CategoryRead) && (
         <>
             <StaticMapFrame>
                 <PlaceMap
-                    places={places}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                    places={places ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country)!} />
             </StaticMapFrame>
             <CategoryTileGrid categories={countries} />
         </>

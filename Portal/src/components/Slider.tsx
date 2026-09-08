@@ -12,14 +12,16 @@ interface SliderProps {
 }
 
 export default function Slider({ name, valueFormatter, value, defaultValue, minValue, maxValue, step, onValueChanged }: SliderProps) {
-    const [innerValue, setInnerValue] = useState(value ?? maxValue)
+    const [innerValue, setInnerValue] = useState(value ?? maxValue ?? 0)
 
     useEffect(() => {
-        setInnerValue(value)
+        if (value !== undefined) {
+            setInnerValue(value)
+        }
     }, [value])
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = Math.max(minValue, Math.min(maxValue, Number(event.target.value)))
+        const newValue = Math.max(minValue ?? -Infinity, Math.min(maxValue ?? Infinity, Number(event.target.value)))
         setInnerValue(newValue)
         onValueChanged(newValue)
     }
@@ -31,7 +33,7 @@ export default function Slider({ name, valueFormatter, value, defaultValue, minV
         }
     }
 
-    return name && onValueChanged && (
+    return name && (
         <div className="flex flex-col items-center space-y-1 m-2">
             <label className="text-xl font-semibold">
                 {name}

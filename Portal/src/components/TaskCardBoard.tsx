@@ -87,9 +87,9 @@ export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated
                                     key={task.id}
                                     task={task}
                                     trip={trip}
-                                    onTaskDescriptionUpdated={(taskId, newDescription) => onTaskDescriptionUpdated(trip.id, taskId, newDescription)}
-                                    onTaskPriorityUpdated={(taskId, newPriority) => onTaskPriorityUpdated(trip.id, taskId, newPriority)}
-                                    onTaskRemoved={taskId => onTaskRemoved(trip.id, taskId)} />
+                                    onTaskDescriptionUpdated={onTaskDescriptionUpdated ? ((taskId, newDescription) => onTaskDescriptionUpdated(trip.id, taskId, newDescription)) : undefined}
+                                    onTaskPriorityUpdated={onTaskPriorityUpdated ? ((taskId, newPriority) => onTaskPriorityUpdated(trip.id, taskId, newPriority)) : undefined}
+                                    onTaskRemoved={onTaskRemoved ? ((taskId) => onTaskRemoved(trip.id, taskId)) : undefined} />
                             ))}
                         </CardGrid>
                     </div>
