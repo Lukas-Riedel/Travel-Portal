@@ -291,6 +291,10 @@ jobs:
       run: |
         cd Portal
         node swagger.config.js
+    - name: Check Types
+      run: |
+        cd Portal
+        npx tsc --noEmit
     - name: Build Portal Image
       run: |
         docker build \
