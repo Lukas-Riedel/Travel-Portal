@@ -54,7 +54,7 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
         return Math.floor(maxEnd / ONE_DAY_SECONDS) + 1
     }, [tripPlaces])
 
-    const handleDelete = () => {
+    const handleTripRemoved = () => {
         if (trip?.id && onTripRemoved) {
             showRemoveTripToast(() => onTripRemoved(trip.id))
         }
@@ -86,7 +86,7 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
                 </AppLink>
                 {onTripRemoved && (
                     <button
-                        onClick={handleDelete}
+                        onClick={handleTripRemoved}
                         className="btn-ghost-danger ml-auto">
                         <Trash2 size={16} />
                     </button>

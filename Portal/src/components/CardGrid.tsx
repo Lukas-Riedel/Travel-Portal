@@ -30,9 +30,9 @@ export default function CardGrid({ children, rowSize, columnSize, className = "m
     const [currentPage, setCurrentPage] = useState(1)
 
     useEffect(() => {
-        const handleResize = () => setGridTemplateColumns(getRealRowSize(window.innerWidth))
-        window.addEventListener("resize", handleResize)
-        return () => window.removeEventListener("resize", handleResize)
+        const handleGridResized = () => setGridTemplateColumns(getRealRowSize(window.innerWidth))
+        window.addEventListener("resize", handleGridResized)
+        return () => window.removeEventListener("resize", handleGridResized)
     }, [getRealRowSize, window.innerWidth])
 
     const childrenArray = Children.toArray(children)

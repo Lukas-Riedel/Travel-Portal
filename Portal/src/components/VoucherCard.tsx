@@ -19,13 +19,13 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
     const { t } = useTranslation()
     const { showRemoveVoucherToast, showSubtractVoucherValueToast } = usePredefinedUserInput()
 
-    const handleDelete = () => {
+    const handleVoucherRemoved = () => {
         if (voucher && onVoucherRemoved) {
             showRemoveVoucherToast(() => onVoucherRemoved(voucher.id))
         }
     }
 
-    const handleValueSubtract = () => {
+    const handleVoucherValueSubtracted = () => {
         if (voucher && onVoucherValueUpdated) {
             showSubtractVoucherValueToast(value => onVoucherValueUpdated(voucher.id, voucher.value - value))
         }
@@ -54,7 +54,7 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
                         {onVoucherValueUpdated && (
                             <li>
                                 <button
-                                    onClick={handleValueSubtract}
+                                    onClick={handleVoucherValueSubtracted}
                                     className="btn-ghost-warning">
                                     <Diff size={16} />
                                 </button>
@@ -63,7 +63,7 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
                         {onVoucherRemoved && (
                             <li>
                                 <button
-                                    onClick={handleDelete}
+                                    onClick={handleVoucherRemoved}
                                     className="btn-ghost-danger">
                                     <Trash2 size={16} />
                                 </button>

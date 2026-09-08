@@ -25,7 +25,7 @@ export default function PlaceReviewAlertBar({ place, onPlaceReviewed }: PlaceRev
         }
     }, [progress])
 
-    const handleChecked = (item: PlaceReviewItem) => {
+    const handleItemChecked = (item: PlaceReviewItem) => {
         setChecked(previous => ({ ...previous, [item]: !previous[item] }))
     }
 
@@ -59,7 +59,7 @@ export default function PlaceReviewAlertBar({ place, onPlaceReviewed }: PlaceRev
                         <input
                             type="checkbox"
                             checked={!!checked[item]}
-                            onChange={() => handleChecked(item)}
+                            onChange={() => handleItemChecked(item)}
                             className="accent-blue-600 w-4 h-4" />
                         <span className="text-sm text-gray-700">
                             {t(`place.review.item.${item}`)}

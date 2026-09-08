@@ -53,7 +53,7 @@ export const useUserInput = (): UseUserInputResult => {
                     function Form() {
                         const inputRefs = useRef<(HTMLInputElement | HTMLSelectElement | null)[]>([])
 
-                        const handleSubmit = async () => {
+                        const handleToastSubmitted = async () => {
                             if (fields.filter((f): f is FormField<unknown> => f != null).some((field, index) => field.required && !inputRefs.current[index]?.value)) {
                                 return
                             }
@@ -106,7 +106,7 @@ export const useUserInput = (): UseUserInputResult => {
                             }
                         }
 
-                        const handleCancel = () => {
+                        const handleToastCancelled = () => {
                             toast.dismiss(id)
                             resolve(false)
                         }
@@ -253,12 +253,12 @@ export const useUserInput = (): UseUserInputResult => {
                                     <div className="flex justify-end gap-2">
                                         <button
                                             className="px-3 py-1 rounded bg-gray-200"
-                                            onClick={handleCancel}>
+                                            onClick={handleToastCancelled}>
                                             {t("general.prompt.reject")}
                                         </button>
                                         <button
                                             className="px-3 py-1 rounded bg-black text-white"
-                                            onClick={handleSubmit}>
+                                            onClick={handleToastSubmitted}>
                                             {t("general.prompt.confirm")}
                                         </button>
                                     </div>

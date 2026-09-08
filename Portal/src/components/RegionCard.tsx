@@ -29,13 +29,13 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
     const { showCopyRegionGeoJsonToast, showOverwriteGeographicalRegionToast, showOverwriteCompositeRegionToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
 
-    const handleCopyGeoJsonToClipboard = () => {
+    const handleGeoJsonCopied = () => {
         if (region && isGeographicalRegion(region)) {
             showCopyRegionGeoJsonToast(() => navigator.clipboard.writeText(JSON.stringify(region.geoJson)))
         }
     }
 
-    const handleOverwriteGeographicalRegion = () => {
+    const handleGeographicalRegionOverwritten = () => {
         if (region && isGeographicalRegion(region) && onGeographicalRegionUpdated) {
             const geoFeature = getGeoFeatures(region.geoJson as GeoJSON)[0]
 
@@ -50,7 +50,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
         }
     }
 
-    const handleOverwriteCompositeRegion = () => {
+    const handleCompositeRegionOverwritten = () => {
         if (region && isCompositeRegion(region) && onCompositeRegionUpdated) {
             showOverwriteCompositeRegionToast(region, (includedCategories, excludedCategories) =>
                 onCompositeRegionUpdated(region.category.name ?? "", region.category.category, includedCategories, excludedCategories))
@@ -120,7 +120,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                             <>
                                 <li>
                                     <button
-                                        onClick={handleCopyGeoJsonToClipboard}
+                                        onClick={handleGeoJsonCopied}
                                         className="btn-ghost-success">
                                         <Copy size={16} />
                                     </button>
@@ -128,7 +128,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                                 {onGeographicalRegionUpdated && (
                                     <li>
                                         <button
-                                            onClick={handleOverwriteGeographicalRegion}
+                                            onClick={handleGeographicalRegionOverwritten}
                                             className="btn-ghost-success">
                                             <Wrench size={16} />
                                         </button>
@@ -142,7 +142,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                         {onCompositeRegionUpdated && (
                             <li>
                                 <button
-                                    onClick={handleOverwriteCompositeRegion}
+                                    onClick={handleCompositeRegionOverwritten}
                                     className="btn-ghost-success">
                                     <Wrench size={16} />
                                 </button>

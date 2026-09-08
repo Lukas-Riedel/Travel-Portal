@@ -23,13 +23,13 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
     const [isBeingEdited, setIsBeingEdited] = useState(!!onNoteCreated)
 
-    const handleDelete = () => {
+    const handleNoteRemoved = () => {
         if (note && onNoteRemoved) {
             showRemoveNoteToast(() => onNoteRemoved(note.id))
         }
     }
 
-    const handleCreate = () => {
+    const handleNoteCreated = () => {
         const content = textareaRef.current?.value.trim()
         if (!content) {
             return
@@ -46,7 +46,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
         }
     }
 
-    const handleUpdate = () => {
+    const handleNoteUpdated = () => {
         const content = textareaRef.current?.value.trim()
         if (!content || !note) {
             return
@@ -158,7 +158,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                                 <>
                                     {isBeingEdited && (
                                         <button
-                                            onClick={handleUpdate}
+                                            onClick={handleNoteUpdated}
                                             className="btn-ghost">
                                             <Check size={16} />
                                         </button>
@@ -172,7 +172,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                                     )}
                                     {onNoteRemoved && (
                                         <button
-                                            onClick={handleDelete}
+                                            onClick={handleNoteRemoved}
                                             className="btn-ghost">
                                             <Trash2 size={16} />
                                         </button>
@@ -183,7 +183,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                                     {onNoteCreated && (
                                         <button
                                             className="p-1 rounded hover:bg-gray-100 ml-auto"
-                                            onClick={handleCreate}>
+                                            onClick={handleNoteCreated}>
                                             <Plus size={16} />
                                         </button>
                                     )}

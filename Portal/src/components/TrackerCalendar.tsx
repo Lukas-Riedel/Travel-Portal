@@ -134,50 +134,50 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
         }
     }
 
-    const handleCreatePositiveOvertimeEvent = (day: Date, expectedWorkingHours: number) => {
+    const handlePositiveOvertimeEventCreated = (day: Date, expectedWorkingHours: number) => {
         if (onEventCreated) {
             showCreateOvertimeToast(+Math.max(0, expectedWorkingHours - standardWorkingHoursPerWorkingDay).toFixed(1),
                 async (description, hours) => onEventCreated(TimeTrackingEventType.Overtime, description, hours, getNoonTimestamp(day)))
         }
     }
 
-    const handleBalanceUsageEvent = (day: Date, type: TimeTrackingEventType) => {
+    const handleNegativeEventCreated = (day: Date, type: TimeTrackingEventType) => {
         if (onEventCreated) {
             showCreateNegativeTimeTrackingEventToast(type, +standardWorkingHoursPerWorkingDay.toFixed(1),
                 async (hours) => onEventCreated(type, BALANCE_USAGE_EVENT_DESCRIPTION, (-1) * hours, getNoonTimestamp(day)))
         }
     }
 
-    const handleCreateNegativeOvertimeEvent = (day: Date) => {
-        handleBalanceUsageEvent(day, TimeTrackingEventType.Overtime)
+    const handleNegativeOvertimeEventCreated = (day: Date) => {
+        handleNegativeEventCreated(day, TimeTrackingEventType.Overtime)
     }
 
-    const handleCreateVacationEvent = (day: Date) => {
-        handleBalanceUsageEvent(day, TimeTrackingEventType.Vacation)
+    const handleNegativeVacationEventCreated = (day: Date) => {
+        handleNegativeEventCreated(day, TimeTrackingEventType.Vacation)
     }
 
-    const handleCreateSelfcareEvent = (day: Date) => {
-        handleBalanceUsageEvent(day, TimeTrackingEventType.Selfcare)
+    const handleNegativeSelfcareEventCreated = (day: Date) => {
+        handleNegativeEventCreated(day, TimeTrackingEventType.Selfcare)
     }
 
-    const handleCreateTenureEvent = (day: Date) => {
-        handleBalanceUsageEvent(day, TimeTrackingEventType.Tenure)
+    const handleNegativeTenureEventCreated = (day: Date) => {
+        handleNegativeEventCreated(day, TimeTrackingEventType.Tenure)
     }
 
-    const handleCreatePlannedWorkEvent = (day: Date) => {
+    const handlePlannedWorkEventCreated = (day: Date) => {
         if (onEventCreated) {
             showCreatePlannedWorkToast(+standardWorkingHoursPerWorkingDay.toFixed(1),
                 async (hours) => onEventCreated(TimeTrackingEventType.PlannedWork, PLANNED_WORK_EVENT_DESCRIPTION, hours, getNoonTimestamp(day)))
         }
     }
 
-    const handleRemoveEvent = (event: TimeTrackingEvent) => {
+    const handleEventRemoved = (event: TimeTrackingEvent) => {
         if (onEventRemoved) {
             showRemoveTimeTrackingEventToast(() => onEventRemoved(event.id))
         }
     }
 
-    const handleCopyToClipboard = (event: TimeTrackingEvent) => {
+    const handleDescriptionCopied = (event: TimeTrackingEvent) => {
         showCopyTimeTrackingEventDescriptionToast(() => navigator.clipboard.writeText(event.description))
     }
 
@@ -286,42 +286,42 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                             <li key="positiveOvertime">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleCreatePositiveOvertimeEvent(dayDate, daySummary.expectedWorkingHours)}>
+                                                                    onClick={() => handlePositiveOvertimeEventCreated(dayDate, daySummary.expectedWorkingHours)}>
                                                                     <Plus className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="negativeOvertime">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleCreateNegativeOvertimeEvent(dayDate)}>
+                                                                    onClick={() => handleNegativeOvertimeEventCreated(dayDate)}>
                                                                     <ClockPlus className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="vacation">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleCreateVacationEvent(dayDate)}>
+                                                                    onClick={() => handleNegativeVacationEventCreated(dayDate)}>
                                                                     <Palmtree className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="selfcare">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleCreateSelfcareEvent(dayDate)}>
+                                                                    onClick={() => handleNegativeSelfcareEventCreated(dayDate)}>
                                                                     <Pill className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="tenure">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleCreateTenureEvent(dayDate)}>
+                                                                    onClick={() => handleNegativeTenureEventCreated(dayDate)}>
                                                                     <Shield className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="plannedWork">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleCreatePlannedWorkEvent(dayDate)}>
+                                                                    onClick={() => handlePlannedWorkEventCreated(dayDate)}>
                                                                     <CalendarPlus className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
@@ -348,13 +348,13 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                                     <div className="flex items-center space-x-1">
                                                                         <span
                                                                             className="text-2xs text-ellipsis truncate"
-                                                                            onClick={() => handleCopyToClipboard(event)}>
+                                                                            onClick={() => handleDescriptionCopied(event)}>
                                                                             {event.description}
                                                                         </span>
                                                                         {onEventRemoved && (
                                                                             <button
                                                                                 className="p-0.5 btn-icon"
-                                                                                onClick={() => handleRemoveEvent(event)}>
+                                                                                onClick={() => handleEventRemoved(event)}>
                                                                                 <Trash2 size={13} />
                                                                             </button>
                                                                         )}
@@ -469,7 +469,7 @@ function AbsenceInfo({ timeTrackingEventType, timeTrackingEvents, onEventRemoved
     const { showRemoveTimeTrackingEventToast } = usePredefinedUserInput()
     const { formatDuration } = useFormatters()
 
-    const handleRemoveEvent = (event: TimeTrackingEvent) => {
+    const handleEventRemoved = (event: TimeTrackingEvent) => {
         if (onEventRemoved) {
             showRemoveTimeTrackingEventToast(() => onEventRemoved(event.id))
         }
@@ -489,7 +489,7 @@ function AbsenceInfo({ timeTrackingEventType, timeTrackingEvents, onEventRemoved
                 {onEventRemoved && (
                     <button
                         className="p-0.5 btn-icon"
-                        onClick={() => handleRemoveEvent(event)}>
+                        onClick={() => handleEventRemoved(event)}>
                         <Trash2 size={16} />
                     </button>
                 )}

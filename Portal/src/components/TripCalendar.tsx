@@ -33,13 +33,13 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
 
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
 
-    const handleMoved = () => {
+    const handleTripMoved = () => {
         if (onTripMoved) {
             showMoveTripToast(start => onTripMoved(Math.round(fromZonedTime(start.toISOString().slice(0, -1), configuration?.homeLocation?.timezone ?? "").getTime() / 1000)))
         }
     }
 
-    const handleLoaded = () => {
+    const handleTripLoaded = () => {
         if (onTripLoaded) {
             showLoadTripToast(tripCandidates ?? [], onTripLoaded)
         }
@@ -90,14 +90,14 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
                 </button>
                 {onTripMoved && (
                     <button
-                        onClick={handleMoved}
+                        onClick={handleTripMoved}
                         className="btn-chip">
                         <ArrowRightLeft size={16} />
                     </button>
                 )}
                 {onTripLoaded && (
                     <button
-                        onClick={handleLoaded}
+                        onClick={handleTripLoaded}
                         className="btn-chip">
                         <Upload size={16} />
                     </button>

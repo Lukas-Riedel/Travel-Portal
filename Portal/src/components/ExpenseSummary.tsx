@@ -251,19 +251,19 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
     const { configuration } = useConfiguration()
     const { showRemoveExpenseToast, showUpdateExpenseDescriptionToast, showUpdateExpenseValueToast } = usePredefinedUserInput()
 
-    const handleRemove = () => {
+    const handleExpenseRemoved = () => {
         if (onExpenseRemoved) {
             showRemoveExpenseToast(onExpenseRemoved)
         }
     }
 
-    const handleEditDescription = () => {
+    const handleExpenseDescriptionUpdated = () => {
         if (onExpenseDescriptionUpdated) {
             showUpdateExpenseDescriptionToast(expense, onExpenseDescriptionUpdated)
         }
     }
 
-    const handleEditValue = () => {
+    const handleExpenseValueUpdated = () => {
         if (onExpenseValueUpdated) {
             showUpdateExpenseValueToast(expense, onExpenseValueUpdated)
         }
@@ -292,7 +292,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     {onExpenseDescriptionUpdated && (
                         <button
                             className="p-1 btn-icon"
-                            onClick={handleEditDescription}>
+                            onClick={handleExpenseDescriptionUpdated}>
                             <Edit2 size={16} />
                         </button>
                     )}
@@ -306,7 +306,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     {onExpenseValueUpdated && (
                         <button
                             className="p-1 btn-icon"
-                            onClick={handleEditValue}>
+                            onClick={handleExpenseValueUpdated}>
                             <Edit2 size={16} />
                         </button>
                     )}
@@ -319,7 +319,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                 <td className={`p-3 text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color}`}>
                     <button
                         className="p-1 btn-icon"
-                        onClick={handleRemove}>
+                        onClick={handleExpenseRemoved}>
                         <Trash2 size={16} />
                     </button>
                 </td>

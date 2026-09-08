@@ -23,19 +23,19 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
     const { t } = useTranslation()
     const { showRemoveTaskToast, showUpdateTaskPriorityToast, showUpdateTaskDescriptionToast } = usePredefinedUserInput()
 
-    const handleDelete = () => {
+    const handleTaskRemoved = () => {
         if (onTaskRemoved && task) {
             showRemoveTaskToast(() => onTaskRemoved(task.id))
         }
     }
 
-    const handleTaskDescriptionUpdate = () => {
+    const handleTaskDescriptionUpdated = () => {
         if (onTaskDescriptionUpdated && task) {
             showUpdateTaskDescriptionToast(task.description, description => onTaskDescriptionUpdated(task.id, description))
         }
     }
 
-    const handleTaskPriorityUpdate = () => {
+    const handleTaskPriorityUpdated = () => {
         if (onTaskPriorityUpdated && task) {
             showUpdateTaskPriorityToast(priority => onTaskPriorityUpdated(task.id, priority))
         }
@@ -65,7 +65,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                         {onTaskPriorityUpdated && (
                             <li>
                                 <button
-                                    onClick={handleTaskPriorityUpdate}
+                                    onClick={handleTaskPriorityUpdated}
                                     className="btn-ghost-warning">
                                     <CircleArrowUp size={16} />
                                 </button>
@@ -74,7 +74,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                         {onTaskDescriptionUpdated && (
                             <li>
                                 <button
-                                    onClick={handleTaskDescriptionUpdate}
+                                    onClick={handleTaskDescriptionUpdated}
                                     className="btn-ghost-warning">
                                     <SquarePen size={16} />
                                 </button>
@@ -83,7 +83,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                         {onTaskRemoved && (
                             <li>
                                 <button
-                                    onClick={handleDelete}
+                                    onClick={handleTaskRemoved}
                                     className="btn-ghost-danger">
                                     <Trash2 size={16} />
                                 </button>

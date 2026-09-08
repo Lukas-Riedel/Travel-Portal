@@ -44,13 +44,13 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
         }
     }
 
-    const handleRemoved = () => {
+    const handleEntityRemoved = () => {
         if (onRemoved) {
             showRemoveEntityToast(onRemoved)
         }
     }
 
-    const handleShared = () => {
+    const handleEntityShared = () => {
         if (name) {
             if (typeof Android !== "undefined" && Android.share) {
                 Android.share(name, location.href)
@@ -68,7 +68,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
         <>
             {((typeof Android !== "undefined" && Android.share != null) || navigator.share != null) && (
                 <button
-                    onClick={handleShared}
+                    onClick={handleEntityShared}
                     className="btn-chip">
                     <Share2 size={16} />
                 </button>
@@ -96,7 +96,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
             )}
             {onRemoved && (
                 <button
-                    onClick={handleRemoved}
+                    onClick={handleEntityRemoved}
                     className="btn-chip">
                     <Trash2 size={16} />
                 </button>

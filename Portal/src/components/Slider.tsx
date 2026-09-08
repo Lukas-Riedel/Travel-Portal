@@ -20,13 +20,13 @@ export default function Slider({ name, valueFormatter, value, defaultValue, minV
         }
     }, [value])
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleValueChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = Math.max(minValue ?? -Infinity, Math.min(maxValue ?? Infinity, Number(event.target.value)))
         setInnerValue(newValue)
         onValueChanged(newValue)
     }
 
-    const handleDoubleClick = () => {
+    const handleSliderDoubleClicked = () => {
         if (defaultValue !== undefined) {
             setInnerValue(defaultValue)
             onValueChanged(defaultValue)
@@ -49,7 +49,7 @@ export default function Slider({ name, valueFormatter, value, defaultValue, minV
                     min={minValue}
                     max={maxValue}
                     value={innerValue}
-                    onChange={handleChange}
+                    onChange={handleValueChanged}
                     className="w-full text-center text-sm font-semibold bg-transparent text-l text-gray-600 rounded border border-white/20 py-0.5 focus:outline-none focus:ring-1 focus:ring-white/50 focus:border-white/50 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
             )}
             <div className="my-2 w-full">
@@ -59,8 +59,8 @@ export default function Slider({ name, valueFormatter, value, defaultValue, minV
                     min={minValue}
                     max={maxValue}
                     value={innerValue}
-                    onChange={handleChange}
-                    onDoubleClick={handleDoubleClick}
+                    onChange={handleValueChanged}
+                    onDoubleClick={handleSliderDoubleClicked}
                     className="my-2 w-full h-1 accent-blue-700" />
             </div>
         </div>

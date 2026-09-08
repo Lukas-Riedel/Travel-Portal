@@ -18,7 +18,7 @@ export default function DocumentCard({ document, onDocumentRemoved }: DocumentCa
     const { t } = useTranslation()
     const { showRemoveDocumentToast } = usePredefinedUserInput()
 
-    const handleDelete = () => {
+    const handleDocumentRemoved = () => {
         if (onDocumentRemoved) {
             showRemoveDocumentToast(() => onDocumentRemoved(document!.id))
         }
@@ -44,7 +44,7 @@ export default function DocumentCard({ document, onDocumentRemoved }: DocumentCa
                 </span>
                 {onDocumentRemoved && (
                     <button
-                        onClick={handleDelete}
+                        onClick={handleDocumentRemoved}
                         className="btn-ghost-danger ml-auto">
                         <Trash2 size={16} />
                     </button>

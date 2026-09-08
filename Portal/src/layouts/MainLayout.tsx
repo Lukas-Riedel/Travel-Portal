@@ -85,12 +85,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
         { label: t("menu.label.admin"), to: StaticNavigationTarget.Admin, requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
     ].filter(({ to, requiredRole }) => !requiredRole || hasRole(requiredRole) || (to && location.pathname.startsWith(getPath(to))))
 
-    const handleLogin = () => {
+    const handleUserLoggedIn = () => {
         requestPermissions()
         showLoginToast((username, password) => login({ username, password }))
     }
 
-    const handleLogout = () => {
+    const handleUserLoggedOut = () => {
         requestPermissions()
         showLogoutToast(logout)
     }
@@ -138,7 +138,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, [searchedText])
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const handleKeyPressed = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
                 setIsSearchOpen(false)
             }
@@ -148,8 +148,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
             }
         }
 
-        window.addEventListener("keydown", handleKeyDown)
-        return () => window.removeEventListener("keydown", handleKeyDown)
+        window.addEventListener("keydown", handleKeyPressed)
+        return () => window.removeEventListener("keydown", handleKeyPressed)
     }, [])
 
     const renderEntityIcon = (entity: Indexable, type: IndexableEntityType) => {
@@ -361,7 +361,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <div className="flex justify-center mt-5">
                     <button
                         className="btn-pill"
-                        onClick={isLoggedIn ? handleLogout : handleLogin}>
+                        onClick={isLoggedIn ? handleUserLoggedOut : handleUserLoggedIn}>
                         {isLoggedIn ? <LogOut size={16} /> : <LogIn size={16} />}
                     </button>
                 </div>

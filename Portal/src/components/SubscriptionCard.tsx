@@ -18,7 +18,7 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
     const { t } = useTranslation()
     const { showRemoveSubscriptionToast } = usePredefinedUserInput()
 
-    const handleDelete = () => {
+    const handleSubscriptionRemoved = () => {
         if (onSubscriptionRemoved) {
             showRemoveSubscriptionToast(() => onSubscriptionRemoved(subscription!.id))
         }
@@ -44,7 +44,7 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
                 </span>
                 {onSubscriptionRemoved && (
                     <button
-                        onClick={handleDelete}
+                        onClick={handleSubscriptionRemoved}
                         className="btn-ghost-danger ml-auto">
                         <Trash2 size={16} />
                     </button>
