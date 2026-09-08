@@ -81,14 +81,14 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                             )}
                             <AppLink
                                 to={place}
-                                className="ml-2 text-indigo-600 hover:underline hover:text-indigo-300 transition-colors duration-200">
+                                className="ml-2 text-indigo-600 link-hover hover:text-indigo-300">
                                 {getEntityPrettyName(place.name)}
                                 {(place?.quality ?? 0) > 0 ? ` (${Math.round(place.quality ?? 0)} %)` : ""}
                             </AppLink>
                             {onPlaceRemoved && (
                                 <button
                                     onClick={() => handlePlaceRemoved(place.id)}
-                                    className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
+                                    className="btn-ghost-danger ml-auto">
                                     <Trash2 size={16} />
                                 </button>
                             )}

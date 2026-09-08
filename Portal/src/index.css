@@ -25,6 +25,26 @@ body {
     .btn-icon {
         @apply inline-flex items-center justify-center rounded-full p-[2px] transition-colors hover:bg-gray-200;
     }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center p-1 rounded transition-colors hover:bg-gray-100;
+    }
+
+    .btn-ghost-danger {
+        @apply inline-flex items-center justify-center p-1 rounded text-red-800 transition-colors hover:bg-gray-100;
+    }
+
+    .btn-ghost-warning {
+        @apply inline-flex items-center justify-center p-1 rounded text-orange-600 transition-colors hover:bg-gray-100;
+    }
+
+    .btn-ghost-success {
+        @apply inline-flex items-center justify-center p-1 rounded text-green-600 transition-colors hover:bg-gray-100;
+    }
+
+    .link-hover {
+        @apply hover:underline transition-colors duration-200;
+    }
 }
 
 .prose a {

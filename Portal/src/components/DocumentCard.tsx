@@ -45,7 +45,7 @@ export default function DocumentCard({ document, onDocumentRemoved }: DocumentCa
                 {onDocumentRemoved && (
                     <button
                         onClick={handleDelete}
-                        className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
+                        className="btn-ghost-danger ml-auto">
                         <Trash2 size={16} />
                     </button>
                 )}

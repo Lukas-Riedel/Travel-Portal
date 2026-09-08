@@ -55,7 +55,7 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
                             <li>
                                 <button
                                     onClick={handleValueSubtract}
-                                    className="p-1 rounded text-orange-600 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-warning">
                                     <Diff size={16} />
                                 </button>
                             </li>
@@ -64,7 +64,7 @@ export default function VoucherCard({ voucher, onVoucherValueUpdated, onVoucherR
                             <li>
                                 <button
                                     onClick={handleDelete}
-                                    className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-danger">
                                     <Trash2 size={16} />
                                 </button>
                             </li>

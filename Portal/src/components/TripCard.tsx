@@ -87,7 +87,7 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
                 {onTripRemoved && (
                     <button
                         onClick={handleDelete}
-                        className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
+                        className="btn-ghost-danger ml-auto">
                         <Trash2 size={16} />
                     </button>
                 )}
@@ -112,7 +112,7 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
                                     <AppLink
                                         key={index}
                                         to={place}
-                                        className="hover:underline hover:text-indigo-300 transition-colors duration-200">
+                                        className="link-hover hover:text-indigo-300">
                                         {getEntityPrettyName(place.name)}
                                     </AppLink>
                                 ])}

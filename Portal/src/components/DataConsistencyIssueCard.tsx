@@ -442,7 +442,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
             {dataConsistencyIssueHandler?.isResolvable && (
                 <button
                     onClick={() => dataConsistencyIssueHandler.resolve(dataConsistencyIssue.context)}
-                    className="absolute bottom-2 right-2 p-1 rounded text-orange-600 hover:bg-gray-100 transition-colors">
+                    className="absolute bottom-2 right-2 btn-ghost-warning">
                     <Wrench size={16} />
                 </button>
             )}

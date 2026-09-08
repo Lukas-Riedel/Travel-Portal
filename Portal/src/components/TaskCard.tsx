@@ -66,7 +66,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                             <li>
                                 <button
                                     onClick={handleTaskPriorityUpdate}
-                                    className="p-1 rounded text-orange-600 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-warning">
                                     <CircleArrowUp size={16} />
                                 </button>
                             </li>
@@ -75,7 +75,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                             <li>
                                 <button
                                     onClick={handleTaskDescriptionUpdate}
-                                    className="p-1 rounded text-orange-600 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-warning">
                                     <SquarePen size={16} />
                                 </button>
                             </li>
@@ -84,7 +84,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                             <li>
                                 <button
                                     onClick={handleDelete}
-                                    className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-danger">
                                     <Trash2 size={16} />
                                 </button>
                             </li>

@@ -443,7 +443,7 @@ function FlightInfo({ flight, from, to, time, timezone, outbound }: FlightInfoPr
                 <span className="whitespace-nowrap text-ellipsis truncate">
                     <a
                         href={getFlightLink(flight)}
-                        className="hover:underline hover:text-gray-300 transition-colors duration-200"
+                        className="link-hover hover:text-gray-300"
                         target="_blank"
                         rel="noopener noreferrer">
                         {flight}

@@ -53,7 +53,7 @@ export default function PlaceCard({ place, onPlaceRemoved }: PlaceCardProps) {
                 {onPlaceRemoved && (
                     <button
                         onClick={handlePlaceRemoved}
-                        className="p-1 rounded text-red-800 hover:bg-gray-100 transition-colors ml-auto">
+                        className="btn-ghost-danger ml-auto">
                         <Trash2 size={16} />
                     </button>
                 )}
@@ -74,7 +74,7 @@ export default function PlaceCard({ place, onPlaceRemoved }: PlaceCardProps) {
                             </span>
                             <AppLink
                                 to={category}
-                                className="text-gray-600 hover:underline hover:text-gray-300 transition-colors duration-200">
+                                className="text-gray-600 link-hover hover:text-gray-300">
                                 {getEntityPrettyName(category.name)}
                             </AppLink>
                         </li>

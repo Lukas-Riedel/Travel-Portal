@@ -111,7 +111,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                             <li>
                                 <button
                                     onClick={() => onRegionVisualized(region)}
-                                    className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-success">
                                     <Map size={16} />
                                 </button>
                             </li>
@@ -121,7 +121,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                                 <li>
                                     <button
                                         onClick={handleCopyGeoJsonToClipboard}
-                                        className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                        className="btn-ghost-success">
                                         <Copy size={16} />
                                     </button>
                                 </li>
@@ -129,7 +129,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                                     <li>
                                         <button
                                             onClick={handleOverwriteGeographicalRegion}
-                                            className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                            className="btn-ghost-success">
                                             <Wrench size={16} />
                                         </button>
                                     </li>
@@ -143,7 +143,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                             <li>
                                 <button
                                     onClick={handleOverwriteCompositeRegion}
-                                    className="p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                                    className="btn-ghost-success">
                                     <Wrench size={16} />
                                 </button>
                             </li>

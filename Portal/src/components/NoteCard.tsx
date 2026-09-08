@@ -159,21 +159,21 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                                     {isBeingEdited && (
                                         <button
                                             onClick={handleUpdate}
-                                            className="p-1 rounded hover:bg-gray-100 transition-colors">
+                                            className="btn-ghost">
                                             <Check size={16} />
                                         </button>
                                     )}
                                     {!isBeingEdited && onNoteContentUpdated && (
                                         <button
                                             onClick={() => setIsBeingEdited(previous => !previous)}
-                                            className="p-1 rounded hover:bg-gray-100 transition-colors">
+                                            className="btn-ghost">
                                             <Edit2 size={16} />
                                         </button>
                                     )}
                                     {onNoteRemoved && (
                                         <button
                                             onClick={handleDelete}
-                                            className="p-1 rounded hover:bg-gray-100 transition-colors">
+                                            className="btn-ghost">
                                             <Trash2 size={16} />
                                         </button>
                                     )}

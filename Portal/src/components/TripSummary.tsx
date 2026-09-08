@@ -142,7 +142,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                 {lastSeenBridgeXDevice && (displayDeviceData || trip.isCurrent()) && (
                     <>
                         {lastSeenBridgeXDevice.lastSeen + LOCATION_UNAVAILABLE_THRESHOLD_SECONDS > getCurrentTimestamp() ? (
-                            <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-4 hover:underline hover:text-green-400 transition-colors duration-200">
+                            <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-4 link-hover hover:text-green-400">
                                 <LocateFixedIcon size={16} />
                                 {lastSeenBridgeXDevice.data.address?.address ? (
                                     <a
@@ -159,7 +159,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                 )}
                             </div>
                         ) : (
-                            <div className="flex items-center justify-center w-full text-red-600 space-x-1 mt-6 hover:underline hover:text-red-400 transition-colors duration-200">
+                            <div className="flex items-center justify-center w-full text-red-600 space-x-1 mt-6 link-hover hover:text-red-400">
                                 <LocateOffIcon size={16} />
                                 <a
                                     className="text-xs truncate"

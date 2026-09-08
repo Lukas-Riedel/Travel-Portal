@@ -64,7 +64,7 @@ export default function DeviceCard({ device, onFolderSynchronizationRequested }:
             {onFolderSynchronizationRequested && isOnline && (
                 <button
                     onClick={handleFolderSynchronizedRequested}
-                    className="absolute bottom-2 right-2 p-1 rounded text-green-600 hover:bg-gray-100 transition-colors">
+                    className="absolute bottom-2 right-2 btn-ghost-success">
                     <FolderSync size={16} />
                 </button>
             )}
