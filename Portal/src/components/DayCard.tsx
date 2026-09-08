@@ -200,13 +200,13 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                 {onNoteAdded && (
                                     <button
                                         onClick={handleNoteCreated}
-                                        className="p-1 btn-icon-hover" >
+                                        className="p-1 btn-icon" >
                                         <NotebookPen size={15} />
                                     </button>
                                 )}
                                 <button
                                     onClick={handleDayItineraryCopied}
-                                    className="p-1 btn-icon-hover" >
+                                    className="p-1 btn-icon" >
                                     <Copy size={15} />
                                 </button>
                             </div>
@@ -323,7 +323,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     )}
                                     {onPhotosAdded && (
                                         <button
-                                            className={`btn-icon-hover ${getColor(event, "text-indigo-600")}`}
+                                            className={`btn-icon ${getColor(event, "text-indigo-600")}`}
                                             onClick={() => handlePhotosAdded(event.id, event.name, event.album?.id, event.start, event.trip !== undefined, event.trip)}>
                                             <ImagePlus size={16} />
                                         </button>
@@ -429,7 +429,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                             </div>
                             {onNoteRemoved && (
                                 <button
-                                    className="btn-icon-hover"
+                                    className="btn-icon"
                                     onClick={() => handleNoteRemoved(note)}>
                                     <Trash2 size={16} />
                                 </button>

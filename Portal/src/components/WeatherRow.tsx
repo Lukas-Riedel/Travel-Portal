@@ -97,7 +97,7 @@ export default function WeatherRow({ coordinates, weather, start, end, timezone,
                     <div className={`mr-1 leading-none ${color} ${hoverColor && "hover:" + hoverColor}`}>
                         {onWeatherForecastExpanded ? (
                             <button
-                                className="btn-icon-hover"
+                                className="btn-icon"
                                 onClick={onWeatherForecastExpanded}>
                                 <WeatherIcon size={14} />
                             </button>

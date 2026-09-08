@@ -61,7 +61,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
                             </AppLink>
                             <button
                                 onClick={() => handleLabelRemoved(label)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon">
                                 <Trash2 size={16} />
                             </button>
                         </BarItem>
@@ -83,7 +83,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
                             </AppLink>
                             <button
                                 onClick={() => handleKnownLabelAdded(label)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon-hover">
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center btn-icon">
                                 <Plus size={16} />
                             </button>
                         </BarItem>
@@ -92,7 +92,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
                         <BarItem>
                             <button
                                 onClick={handleUnknownLabelAdded}
-                                className="btn-icon-hover">
+                                className="btn-icon">
                                 <Plus size={16} />
                             </button>
                         </BarItem>

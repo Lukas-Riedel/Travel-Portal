@@ -81,28 +81,28 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
                         {onAddressChanged && (
                             <button
                                 onClick={handleAddressChanged}
-                                className="btn-chip-gray">
+                                className="btn-chip">
                                 <LocationEdit size={16} />
                             </button>
                         )}
                         {onExcerptRefreshed && (
                             <button
                                 onClick={handleExcerptRefreshed}
-                                className="btn-chip-gray-inline">
+                                className="btn-chip">
                                 <RefreshCcw size={16} />
                             </button>
                         )}
                         {onExcerptChanged && (
                             <button
                                 onClick={handleExcerptChanged}
-                                className="btn-chip-gray-inline">
+                                className="btn-chip">
                                 <SquarePen size={16} />
                             </button>
                         )}
                         {onPhotosAdded && (
                             <button
                                 onClick={handlePhotosAdded}
-                                className="btn-chip-gray-inline">
+                                className="btn-chip">
                                 <ImagePlus size={16} />
                             </button>
                         )}

@@ -85,33 +85,33 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
             <div className="absolute bottom-3 right-3 flex items-center gap-2 z-50">
                 <button
                     onClick={handleTripItineraryCopied}
-                    className="btn-chip-gray">
+                    className="btn-chip">
                     <Copy size={16} />
                 </button>
                 {onTripMoved && (
                     <button
                         onClick={handleMoved}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <ArrowRightLeft size={16} />
                     </button>
                 )}
                 {onTripLoaded && (
                     <button
                         onClick={handleLoaded}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Upload size={16} />
                     </button>
                 )}
                 {onTripMoved && (
                     <button
                         onClick={() => window.open(getGoogleCalendarLink(fromUnixTime(trip?.start ?? 0)), "_blank")}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Calendar size={16} />
                     </button>
                 )}
                 <button
                     onClick={() => setTimezone(previous => previous ? undefined : configuration?.homeLocation?.timezone)}
-                    className="btn-chip-gray">
+                    className="btn-chip">
                     {timezone ? (
                         <House size={16} />
                     ) : (

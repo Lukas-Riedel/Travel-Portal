@@ -55,21 +55,21 @@ export default function HighlightCandidateTile({ name, description, categories, 
                     {onHighlightCreated && (
                         <button
                             onClick={handleHighlightCreated}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <Plus size={16} />
                         </button>
                     )}
                     {onHighlightCandidateCreated && (
                         <button
                             onClick={onHighlightCandidateCreated}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <ImageUp size={16} />
                         </button>
                     )}
                     {name && categories && (
                         <button
                             onClick={() => setOverlayType(prev => (prev + 1) % (description ? 3 : 2))}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <SendToBack size={16} />
                         </button>
                     )}

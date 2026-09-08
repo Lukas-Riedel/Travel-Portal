@@ -149,7 +149,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                             <div className="flex justify-center items-center">
                                 <button
                                     onClick={() => setDetailedView(prev => !prev)}
-                                    className="btn-chip-gray">
+                                    className="btn-chip">
                                     {detailedView ? <PieChart size={16} /> : <List size={16} />}
                                 </button>
                             </div>
@@ -291,7 +291,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     </span>
                     {onExpenseDescriptionUpdated && (
                         <button
-                            className="p-1 btn-icon-hover"
+                            className="p-1 btn-icon"
                             onClick={handleEditDescription}>
                             <Edit2 size={16} />
                         </button>
@@ -305,7 +305,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
                     </span>
                     {onExpenseValueUpdated && (
                         <button
-                            className="p-1 btn-icon-hover"
+                            className="p-1 btn-icon"
                             onClick={handleEditValue}>
                             <Edit2 size={16} />
                         </button>
@@ -318,7 +318,7 @@ function DetailedExpenseRow({ expense, onExpenseDescriptionUpdated, onExpenseVal
             {onExpenseRemoved && (
                 <td className={`p-3 text-center ${EXPENSE_TYPES[expense.type]?.color || EXPENSE_TYPES.other.color}`}>
                     <button
-                        className="p-1 btn-icon-hover"
+                        className="p-1 btn-icon"
                         onClick={handleRemove}>
                         <Trash2 size={16} />
                     </button>

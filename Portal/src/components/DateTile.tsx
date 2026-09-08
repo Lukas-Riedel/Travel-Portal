@@ -69,7 +69,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
                 <div className="flex justify-center gap-2 mt-2">
                     <a
                         href={date.album.permalink}
-                        className="btn-large-gray"
+                        className="btn-pill"
                         target="_blank"
                         rel="noopener noreferrer">
                         <ExternalLink size={16} />
@@ -77,14 +77,14 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
                     {place && (
                         <AppLink
                             to={{ place, album: date.album! }}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <Images size={16} />
                         </AppLink>
                     )}
                     {onAlbumRefreshed != null && (
                         <button
                             onClick={handleAlbumRefreshed}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <RefreshCcw size={16} />
                         </button>
                     )}

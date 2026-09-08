@@ -64,19 +64,19 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
                     {onPhotoReplaced && (
                         <button
                             onClick={handlePhotoReplaced}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <Edit2 size={16} />
                         </button>
                     )}
                     <button
                         onClick={() => setOverlayType(prev => (prev + 1) % 2)}
-                        className="btn-large-gray">
+                        className="btn-pill">
                         <SendToBack size={16} />
                     </button>
                     {onMainPhotoUpdated && photoPosition && album?.mainPhoto?.id !== photo?.id && photo != null && (
                         <button
                             onClick={handleMainPhotoUpdated}
-                            className="btn-large-gray">
+                            className="btn-pill">
                             <Star size={16} />
                         </button>
                     )}

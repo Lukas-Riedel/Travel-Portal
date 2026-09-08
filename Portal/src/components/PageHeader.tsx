@@ -69,7 +69,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
             {((typeof Android !== "undefined" && Android.share != null) || navigator.share != null) && (
                 <button
                     onClick={handleShared}
-                    className="btn-chip-gray">
+                    className="btn-chip">
                     <Share2 size={16} />
                 </button>
             )}
@@ -77,12 +77,12 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
                 <>
                     <AppLink
                         to={StaticNavigationTarget.Highlights}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Images size={16} />
                     </AppLink>
                     <button
                         onClick={handleHighlightsRefreshed}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <RefreshCcw size={16} />
                     </button>
                 </>
@@ -90,14 +90,14 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
             {onNameChanged && (
                 <button
                     onClick={handleNameChanged}
-                    className="btn-chip-gray">
+                    className="btn-chip">
                     <SquarePen size={16} />
                 </button>
             )}
             {onRemoved && (
                 <button
                     onClick={handleRemoved}
-                    className="btn-chip-gray">
+                    className="btn-chip">
                     <Trash2 size={16} />
                 </button>
             )}

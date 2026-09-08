@@ -97,14 +97,14 @@ export default function CategoryPage() {
                         <AppLink
                             target={AppLinkTarget.Plans}
                             to={category}
-                            className="btn-chip-gray">
+                            className="btn-chip">
                             <Folder size={16} />
                         </AppLink>
                     )}
                     {hasRole(UserRole.CategoryEdit) && (
                         <button
                             onClick={handleMetadataChanged}
-                            className="btn-chip-gray">
+                            className="btn-chip">
                             <Edit2 size={16} />
                         </button>
                     )}

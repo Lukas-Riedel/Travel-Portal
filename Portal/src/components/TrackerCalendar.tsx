@@ -287,42 +287,42 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
                                                                     onClick={() => handleCreatePositiveOvertimeEvent(dayDate, daySummary.expectedWorkingHours)}>
-                                                                    <Plus className="w-4 h-4 shrink-0 btn-icon-hover" />
+                                                                    <Plus className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="negativeOvertime">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
                                                                     onClick={() => handleCreateNegativeOvertimeEvent(dayDate)}>
-                                                                    <ClockPlus className="w-4 h-4 shrink-0 btn-icon-hover" />
+                                                                    <ClockPlus className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="vacation">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
                                                                     onClick={() => handleCreateVacationEvent(dayDate)}>
-                                                                    <Palmtree className="w-4 h-4 shrink-0 btn-icon-hover" />
+                                                                    <Palmtree className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="selfcare">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
                                                                     onClick={() => handleCreateSelfcareEvent(dayDate)}>
-                                                                    <Pill className="w-4 h-4 shrink-0 btn-icon-hover" />
+                                                                    <Pill className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="tenure">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
                                                                     onClick={() => handleCreateTenureEvent(dayDate)}>
-                                                                    <Shield className="w-4 h-4 shrink-0 btn-icon-hover" />
+                                                                    <Shield className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                             <li key="plannedWork">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
                                                                     onClick={() => handleCreatePlannedWorkEvent(dayDate)}>
-                                                                    <CalendarPlus className="w-4 h-4 shrink-0 btn-icon-hover" />
+                                                                    <CalendarPlus className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
                                                         </ul>
@@ -353,7 +353,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                                         </span>
                                                                         {onEventRemoved && (
                                                                             <button
-                                                                                className="p-0.5 btn-icon-hover"
+                                                                                className="p-0.5 btn-icon"
                                                                                 onClick={() => handleRemoveEvent(event)}>
                                                                                 <Trash2 size={13} />
                                                                             </button>
@@ -488,7 +488,7 @@ function AbsenceInfo({ timeTrackingEventType, timeTrackingEvents, onEventRemoved
                 </span>
                 {onEventRemoved && (
                     <button
-                        className="p-0.5 btn-icon-hover"
+                        className="p-0.5 btn-icon"
                         onClick={() => handleRemoveEvent(event)}>
                         <Trash2 size={16} />
                     </button>

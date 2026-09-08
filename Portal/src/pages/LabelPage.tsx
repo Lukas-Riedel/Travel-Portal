@@ -44,7 +44,7 @@ export default function LabelPage() {
                         <AppLink
                             target={AppLinkTarget.Plans}
                             to={label}
-                            className="btn-chip-gray">
+                            className="btn-chip">
                             <Folder size={16} />
                         </AppLink>
                     )}

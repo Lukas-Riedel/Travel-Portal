@@ -64,7 +64,7 @@ function HighlightCandidateTileGridGroup({ name, description, categories, highli
                 {photos === null && !isLoading && (
                     <button
                         onClick={handlePhotosLoaded}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Expand size={16} />
                     </button>
                 )}

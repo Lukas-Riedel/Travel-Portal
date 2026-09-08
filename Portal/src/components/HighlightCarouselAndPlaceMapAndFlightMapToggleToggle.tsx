@@ -82,7 +82,7 @@ export default function HighlightCarouselAndPlaceMapAndFlightMapToggleToggle({ e
             {entity && places && (
                 <button
                     onClick={() => setShowMap(previous => !previous)}
-                    className="absolute bottom-3 right-3 btn-chip-gray">
+                    className="absolute bottom-3 right-3 btn-chip">
                     {showMap ? (
                         <Images size={16} />
                     ) : (

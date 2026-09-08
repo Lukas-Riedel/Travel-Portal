@@ -360,7 +360,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 {children}
                 <div className="flex justify-center mt-5">
                     <button
-                        className="btn-large-gray"
+                        className="btn-pill"
                         onClick={isLoggedIn ? handleLogout : handleLogin}>
                         {isLoggedIn ? <LogOut size={16} /> : <LogIn size={16} />}
                     </button>

@@ -261,7 +261,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
             ))?.filter(Boolean)?.slice(0, dayCardsCount)}
             <button
                 onClick={() => setTimezone(previous => previous ? undefined : configuration?.homeLocation?.timezone)}
-                className="absolute bottom-5 right-5 btn-chip-gray">
+                className="absolute bottom-5 right-5 btn-chip">
                 {timezone ? (
                     <Earth size={16} />
                 ) : (

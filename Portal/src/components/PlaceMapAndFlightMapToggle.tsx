@@ -38,7 +38,7 @@ export default function PlaceMapAndFlightMapToggle({ places, flights, placeMainC
             {canToggle && (
                 <button
                     onClick={() => setShowFlightMap(prev => !prev)}
-                    className="absolute bottom-3 left-3 btn-chip-gray">
+                    className="absolute bottom-3 left-3 btn-chip">
                     {showFlightMap ? <MapPin size={16} /> : <Plane size={16} />}
                 </button>
             )}

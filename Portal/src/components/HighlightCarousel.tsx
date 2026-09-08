@@ -272,35 +272,35 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
                 {onHighlightCreated && (
                     <button
                         onClick={handleHighlightCreated}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Plus size={16} />
                     </button>
                 )}
                 {onPhotoCorrected && showEditor && (rotation !== DEFAULT_ROTATION || zoom !== DEFAULT_ZOOM || crop.x !== DEFAULT_X_POSITION || crop.y !== DEFAULT_Y_POSITION) && (
                     <button
                         onClick={handlePhotoCorrected}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Check size={16} />
                     </button>
                 )}
                 {onPhotoCorrected && currentHighlightReferencePhotoUrl && (
                     <button
                         onClick={() => setShowEditor(previous => !previous)}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Edit2 size={16} />
                     </button>
                 )}
                 {onHighlightQualityAttributesUpdated && (
                     <button
                         onClick={handleHighlightQualityAttributesUpdated}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <SlidersVertical size={16} />
                     </button>
                 )}
                 {onPhotoReplaced && place && currentHighlightAlbumId && (
                     <button
                         onClick={handlePhotoReplaced}
-                        className="btn-chip-gray">
+                        className="btn-chip">
                         <Upload size={16} />
                     </button>
                 )}
@@ -308,7 +308,7 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
                     <>
                         <button
                             onClick={() => setIsPaused(previous => !previous)}
-                            className="btn-chip-gray">
+                            className="btn-chip">
                             {isPaused ? (
                                 <Play size={16} />
                             ) : (
@@ -318,14 +318,14 @@ export default function HighlightCarousel({ highlights, place, onPhotoReplaced, 
                         {onMainHighlightUpdated && (
                             <button
                                 onClick={handleMainHighlightUpdated}
-                                className="btn-chip-gray">
+                                className="btn-chip">
                                 <Star size={16} />
                             </button>
                         )}
                         {onHighlightRemoved && (
                             <button
                                 onClick={handleHighlightRemoved}
-                                className="btn-chip-gray">
+                                className="btn-chip">
                                 <Trash2 size={16} />
                             </button>
                         )}

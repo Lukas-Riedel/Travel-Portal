@@ -134,7 +134,7 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
             </div>
             <div className="flex justify-center">
                 <button
-                    className="btn-chip-gray flex justify-center w-full"
+                    className="btn-chip flex justify-center w-full"
                     onClick={() => setIsExpanded(false)}>
                     <ChevronUp size={14} />
                 </button>
