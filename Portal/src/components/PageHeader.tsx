@@ -13,7 +13,7 @@ const MOBILE_WIDTH_THRESHOLD = 768
 interface PageHeaderProps<T> {
     name: string | null
     categories?: Category[]
-    internalAttributes?: Record<string, string | number>
+    internalAttributes?: Record<string, string | number | undefined>
     onNameChanged?: (name: string) => Promise<T>
     onRemoved?: () => Promise<void>
     onHighlightsRefreshed?: (count: number) => Promise<Highlight[]>
@@ -105,7 +105,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
     )
 
     const renderInternalAttributes = () => Object.keys(internalAttributes ?? {})
-        .filter(key => internalAttributes![key]).map((key, index) => (
+        .filter(key => internalAttributes![key] !== undefined).map((key, index) => (
             <React.Fragment key={index}>
                 {index > 0 && <span>•</span>}
                 <span>{`${key}: ${internalAttributes![key]}`}</span>

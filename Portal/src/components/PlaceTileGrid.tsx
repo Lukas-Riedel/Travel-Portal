@@ -5,7 +5,7 @@ import TileGrid from "./TileGrid"
 
 interface PlaceTileGridProps {
     places: Place[] | null
-    placeMainCategorySelector: (place: Place) => Category | undefined
+    placeMainCategorySelector?: (place: Place) => Category | null
 }
 
 export default function PlaceTileGrid({ places, placeMainCategorySelector }: PlaceTileGridProps) {
@@ -15,7 +15,7 @@ export default function PlaceTileGrid({ places, placeMainCategorySelector }: Pla
                 <PlaceTile
                     key={place.id}
                     place={place}
-                    mainCategory={placeMainCategorySelector(place)} />
+                    mainCategory={placeMainCategorySelector?.(place) ?? undefined} />
             ))}
         </TileGrid>
     )

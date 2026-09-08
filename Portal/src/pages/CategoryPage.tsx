@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
+import type { Place } from "../classes/Place.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient.ts"
 import AppLink from "../components/AppLink.tsx"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
@@ -31,17 +32,17 @@ export default function CategoryPage() {
     const { places } = useTimeFilteredRegularPlaces({ categoryId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
     const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter(Boolean)?.map(category => [category.name, category])), [places])
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [places])
 
-    const totalScore = useMemo(() => places?.map(place => place.score)?.filter(Boolean)
+    const totalScore = useMemo(() => places?.map(place => place.score)?.filter((s): s is NonNullable<typeof s> => s != null)
         ?.reduce((acc, score) => acc + score, 0), [places])
-    const totalQuality = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)
+    const totalQuality = useMemo(() => places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)
         ?.reduce((acc, quality) => acc + quality, 0), [places])
-    const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter(Boolean)?.length, [places])
+    const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)?.length, [places])
 
-    const attributes = {
+    const attributes: Record<string, string | number | undefined> = {
         [t("category.attribute.category")]: category?.category && t(`category.category.${category?.category}`),
-        [t("category.attribute.averageQuality")]: totalQuality && `${Math.round(totalQuality / placesWithQualityCount)}%`,
+        [t("category.attribute.averageQuality")]: totalQuality && placesWithQualityCount && `${Math.round(totalQuality / placesWithQualityCount)}%`,
         [t("category.attribute.tier")]: category && getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
         [t("category.attribute.totalScore")]: totalScore,
         [t("category.attribute.highlightsCount")]: category?.highlights?.length
@@ -50,20 +51,22 @@ export default function CategoryPage() {
     const handlePhotoCorrected = async (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => createPlaceAlbumPhoto(placeId, albumId, fileName, base64Data, photoId)
         .then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
         .then(_ => listPlaceAlbumPhotos(placeId, albumId))
-        .then(photos => photos.find(photo => photo.id === photoId))
+        .then(photos => photos.find(photo => photo.id === photoId)!)
 
-    const getPlaceCategory = place => {
+    const getPlaceCategory = (place: Place): ReturnType<typeof place.getCategory> => {
         if (countryCategoriesMap.size > 1) {
-            return countryCategoriesMap.get(place?.country)
+            return countryCategoriesMap.get(place?.country ?? "") ?? null
         }
         if (place?.country === category?.name) {
-            return category
+            return category ?? null
         }
-        return place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
+        return place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ?? null
     }
 
     const handleMetadataChanged = () => {
-        showUpdateCategoryToast(category, updateCategoryMetadata, updateCategoryCategory)
+        if (category) {
+            showUpdateCategoryToast(category, updateCategoryMetadata, updateCategoryCategory)
+        }
     }
 
     return hasRole(UserRole.CategoryRead) && (
@@ -71,22 +74,22 @@ export default function CategoryPage() {
             <PageHeader
                 name={category?.name ?? null}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={hasRole(UserRole.CategoryEdit) && attributes}
-                onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && totalScore > 0 && (highlightsCount => refreshCategoryHighlights(highlightsCount))}
-                onNameChanged={hasRole(UserRole.CategoryEdit) && updateCategoryName}
-                onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== CategoryCategory.Country && removeCategory} />
+                internalAttributes={hasRole(UserRole.CategoryEdit) ? attributes : undefined}
+                onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && (totalScore ?? 0) > 0 ? (highlightsCount => refreshCategoryHighlights(highlightsCount)) : undefined}
+                onNameChanged={hasRole(UserRole.CategoryEdit) ? updateCategoryName : undefined}
+                onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== CategoryCategory.Country ? removeCategory : undefined} />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
-                entity={category}
-                places={places}
+                entity={category ?? null}
+                places={places ?? null}
                 placeMainCategorySelector={getPlaceCategory}
-                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
-                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
-                onHighlightRemoved={hasRole(UserRole.CategoryHighlightEdit) && removeCategoryHighlight}
-                onMainHighlightUpdated={hasRole(UserRole.CategoryEdit) && updateCategoryMainHighlight}
-                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updateCategoryHighlightQualityAttributes} />
-            <StatisticsPanel statistics={category && (category.statistics ?? [])} />
+                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotoReplacingTriggeredEvent : undefined}
+                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) ? handlePhotoCorrected : undefined}
+                onHighlightRemoved={hasRole(UserRole.CategoryHighlightEdit) ? removeCategoryHighlight : undefined}
+                onMainHighlightUpdated={hasRole(UserRole.CategoryEdit) ? updateCategoryMainHighlight : undefined}
+                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updateCategoryHighlightQualityAttributes : undefined} />
+            <StatisticsPanel statistics={category ? (category.statistics ?? []) : null} />
             <PlaceTileGrid
-                places={places}
+                places={places ?? null}
                 placeMainCategorySelector={getPlaceCategory} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">

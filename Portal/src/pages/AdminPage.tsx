@@ -111,7 +111,7 @@ export default function AdminPage() {
         {
             name: AdminMenuTabName.Devices,
             label: t("menu.tab.label.devices"),
-            enabled: devices && devices.length > 0 && hasRole(UserRole.DeviceRead)
+            enabled: !!(devices && devices.length > 0 && hasRole(UserRole.DeviceRead))
         },
         {
             name: AdminMenuTabName.PermanentPlaces,
@@ -196,7 +196,7 @@ export default function AdminPage() {
 
     const handleVoucherCreated = () => {
         showCreateVoucherToast((code, issuer, value, currency, expiration) => {
-            if (!isTodayOrFutureDay(expiration)) {
+            if (!expiration || !isTodayOrFutureDay(expiration)) {
                 return Promise.reject("Expiration must be in the future.")
             }
 
@@ -205,12 +205,12 @@ export default function AdminPage() {
     }
 
     const handleTaskCreated = () => {
-        showCreateTripTaskToast((trips ?? []).filter(trip => trip.end > getCurrentTimestamp()), (tripId, description, priority, deadline) => {
-            if (!isTodayOrFutureDay(deadline)) {
+        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, description, priority, deadline) => {
+            if (!deadline || !isTodayOrFutureDay(deadline)) {
                 return Promise.reject("Deadline must be in the future.")
             }
 
-            createTripTask(tripId, description, priority, getNoonTimestamp(deadline))
+            return createTripTask(tripId, description, priority, getNoonTimestamp(deadline))
         })
     }
 
@@ -219,19 +219,19 @@ export default function AdminPage() {
     }
 
     const handleRegionCreated = () => {
-        showCreateSelectedRegionToast(countryCategories, getGeoJson, getGeoFeatures,
+        showCreateSelectedRegionToast(countryCategories ?? [], getGeoJson, getGeoFeatures,
             (name, category, geoJson, country, radius) => {
                 const geoFeatures = getGeoFeatures(geoJson)
                 if (geoFeatures.length !== 1) {
                     return Promise.reject("There must be exactly one feature in the GeoJSON, but there are " + geoFeatures.length + " features.")
                 }
 
-                return createGeographicalRegion(name, country, category, radius, geoJson)
+                return createGeographicalRegion(name, country, category, radius ?? 0, geoJson)
             },
             (name, category, includedCategories, excludedCategories) => createCompositeRegion(name, category, includedCategories, excludedCategories))
     }
 
-    const handleFolderSynchronizationRequested = agentId => {
+    const handleFolderSynchronizationRequested = (agentId: string) => {
         showSynchronizePhotosToast((path, expiration) => {
             if (!isTodayOrFutureDay(expiration)) {
                 return Promise.reject("Expiration must be in the future.")
@@ -245,32 +245,32 @@ export default function AdminPage() {
         <>
             <TabMenu
                 tabs={tabs}
-                selectedTab={selectedTab}
+                selectedTab={selectedTab ?? undefined}
                 onTabSelected={setSelectedTab} />
             {activeTab === AdminMenuTabName.Trip && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && (
                 <>
                     <TripSummary
-                        trip={upcomingOrCurrentTrip}
+                        trip={upcomingOrCurrentTrip ?? null}
                         displayWarnings={hasRole(UserRole.PortalWarningRead)}
                         displayDeviceData={hasRole(UserRole.PortalFutureRead)}
-                        onNoteAdded={hasRole(UserRole.TripNoteEdit) && createTripNote}
-                        onNoteRemoved={hasRole(UserRole.TripNoteEdit) && removeTripNote}
-                        onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
+                        onNoteAdded={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}
+                        onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined}
+                        onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined} />
                     {hasRole(UserRole.TripNoteRead) && (
                         <NoteCardGrid
                             rowSize={3}
-                            notes={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.notes ?? [])}
+                            notes={upcomingOrCurrentTrip ? (upcomingOrCurrentTrip.notes ?? []) : null}
                             onNoteCreated={createTripNote}
                             onNoteContentUpdated={updateTripNoteContent}
                             onNoteRemoved={removeTripNote} />
                     )}
                     {hasRole(UserRole.TripExpenseRead) && (
                         <ExpenseSummary
-                            expenses={upcomingOrCurrentTrip && (upcomingOrCurrentTrip.expenses ?? [])}
-                            onExpenseCreated={hasRole(UserRole.TripExpenseEdit) && createTripExpense}
-                            onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseDescription}
-                            onExpenseValueUpdated={hasRole(UserRole.TripExpenseEdit) && updateTripExpenseValue}
-                            onExpenseRemoved={hasRole(UserRole.TripExpenseEdit) && removeTripExpense} />
+                            expenses={upcomingOrCurrentTrip ? (upcomingOrCurrentTrip.expenses ?? []) : null}
+                            onExpenseCreated={hasRole(UserRole.TripExpenseEdit) ? createTripExpense : undefined}
+                            onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) ? updateTripExpenseDescription : undefined}
+                            onExpenseValueUpdated={hasRole(UserRole.TripExpenseEdit) ? updateTripExpenseValue : undefined}
+                            onExpenseRemoved={hasRole(UserRole.TripExpenseEdit) ? removeTripExpense : undefined} />
                     )}
                 </>
             )}
@@ -278,7 +278,7 @@ export default function AdminPage() {
                 <>
                     <FlightCardGrid
                         rowSize={4}
-                        flights={watchedFlights} />
+                        flights={watchedFlights ?? null} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleFlightCreated} />
@@ -289,7 +289,7 @@ export default function AdminPage() {
                     <AirlineCardGrid
                         rowSize={6}
                         columnSize={4}
-                        airlines={airlines}
+                        airlines={airlines ?? null}
                         onAirlineRemoved={removeAirline}
                         onAirlineNameUpdated={updateAirlineName}
                         onAirlineLogoUpdated={updateAirlineLogo}
@@ -301,8 +301,8 @@ export default function AdminPage() {
             )}
             {activeTab === AdminMenuTabName.DataConsistencyIssues && hasRole(UserRole.MonitoringRead) && (
                 <DataConsistencyIssueCardGrid
-                    dataConsistencyIssues={dataConsistencyIssues}
-                    airlines={airlines}
+                    dataConsistencyIssues={dataConsistencyIssues ?? null}
+                    airlines={airlines ?? null}
                     rowSize={4}
                     columnSize={8}
                     onAirlineCodeAssigned={createAirlineCode}
@@ -311,7 +311,7 @@ export default function AdminPage() {
                     onAirportNameChanged={updateAirportLongName}
                     onAllAlbumsInvalidated={publishAllAlbumsInvalidatedEvent}
                     onPhotoInvalidated={photoId => listRegularPlaces({ photoId: photoId, include: [PlaceIncludedEntity.Dates] })
-                        .then(places => (Promise.all(places.flatMap(place => place.dates.map(date => refreshPlaceAlbum(place.id, date.album.id)))), undefined))}
+                        .then(places => (Promise.all(places.flatMap(place => (place.dates ?? []).flatMap(date => date.album ? [refreshPlaceAlbum(place.id, date.album.id)] : []))), undefined))}
                     // TODO: Replace by hook methods? Using methods not defined in hook leads to queries in those hooks not being updated, and UI displaying obsolete data.
                     onGeographicalExtensionCategoryAdded={createGeographicalExtensionRegion}
                     onPlaceRemoved={removeCandidatePlace}
@@ -323,9 +323,9 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Configuration && hasRole(UserRole.ConfigurationEdit) && (
                 <>
                     <ConfigurationEditor
-                        configuration={configuration}
+                        configuration={configuration ?? null}
                         onConfigurationUpdated={updateConfigurationEntry}
-                        selectedKey={selectedKey}
+                        selectedKey={selectedKey ?? undefined}
                         onKeySelected={setSelectedKey} />
                     <form
                         action={getGoogleCloudAuthenticationLink()}
@@ -345,14 +345,14 @@ export default function AdminPage() {
             )}
             {activeTab === AdminMenuTabName.Devices && hasRole(UserRole.DeviceRead) && (
                 <DeviceCardGrid
-                    devices={devices}
+                    devices={devices ?? null}
                     rowSize={4}
-                    onFolderSynchronizationRequested={hasRole(UserRole.PlaceAlbumEdit) && handleFolderSynchronizationRequested} />
+                    onFolderSynchronizationRequested={hasRole(UserRole.PlaceAlbumEdit) ? handleFolderSynchronizationRequested : undefined} />
             )}
             {activeTab === AdminMenuTabName.PermanentPlaces && hasRole(UserRole.PlaceEdit) && (
                 <>
                     <PlaceCardGrid
-                        places={permanentPlaces}
+                        places={permanentPlaces ?? null}
                         rowSize={5}
                         onPlaceRemoved={removePermanentPlace} />
                     <FloatingButton
@@ -364,7 +364,7 @@ export default function AdminPage() {
                 <>
                     <SubscriptionCardGrid
                         rowSize={5}
-                        subscriptions={subscriptions}
+                        subscriptions={subscriptions ?? null}
                         onSubscriptionRemoved={removeSubscription} />
                     <FloatingButton
                         icon={Plus}
@@ -374,8 +374,8 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Regions && hasRole(UserRole.RegionEdit) && (
                 <>
                     <RegionEditor
-                        categories={categoriesWithRegions}
-                        selectedKey={selectedKey}
+                        categories={categoriesWithRegions ?? null}
+                        selectedKey={selectedKey ?? undefined}
                         onKeySelected={setSelectedKey} />
                     <FloatingButton
                         icon={Plus}
@@ -386,8 +386,8 @@ export default function AdminPage() {
                 <>
                     <DocumentCardGrid
                         rowSize={4}
-                        documents={documents}
-                        onDocumentRemoved={hasRole(UserRole.DocumentEdit) && removeDocument} />
+                        documents={documents ?? null}
+                        onDocumentRemoved={hasRole(UserRole.DocumentEdit) ? removeDocument : undefined} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleDocumentCreated} />
@@ -397,7 +397,7 @@ export default function AdminPage() {
                 <>
                     <VoucherCardGrid
                         rowSize={4}
-                        vouchers={vouchers}
+                        vouchers={vouchers ?? null}
                         onVoucherValueUpdated={updateVoucherValue}
                         onVoucherRemoved={removeVoucher} />
                     <FloatingButton
@@ -408,7 +408,7 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Tasks && hasRole(UserRole.TripTaskEdit) && (
                 <>
                     <TaskCardBoard
-                        tasksWithTrips={tasksWithTrips}
+                        tasksWithTrips={tasksWithTrips ?? null}
                         onTaskDescriptionUpdated={updateTripTaskDescription}
                         onTaskPriorityUpdated={updateTripTaskPriority}
                         onTaskRemoved={removeTripTask} />

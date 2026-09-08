@@ -21,7 +21,7 @@ import { useRegularTrips } from "../hooks/useRegularTrips"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { useYear } from "../hooks/useYear"
 import { type Airport, CategoryCategory, PlaceIncludedEntity, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
-import { getZonedDate } from "../utils/timeUtils.ts"
+import { getDayOfYear, getZonedDate } from "../utils/timeUtils.ts"
 import { getCalendarEvents } from "../utils/tripUtils.ts"
 
 export default function YearPage() {
@@ -36,27 +36,26 @@ export default function YearPage() {
     const { trips: yearTrips } = useRegularTrips({ year: Number(yearParameter), include: [TripIncludedEntity.Expenses, TripIncludedEntity.Flights] })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const flights = useMemo(() => (yearTrips ?? []).flatMap(trip => trip.flights).filter(Boolean).filter(flight => flight.registration), [yearTrips])
+    const flights = useMemo(() => (yearTrips ?? []).flatMap(trip => trip.flights ?? []).filter((f): f is NonNullable<typeof f> => f != null).filter(flight => flight.registration), [yearTrips])
     const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
-    const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => place.dates?.length > 0), [places])
-    const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(getZonedDate(d.start, timezone)).getTime()) ?? [])))
+    const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => (place.dates?.length ?? 0) > 0), [places])
+    const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(getZonedDate(d.start, timezone ?? "")).getTime()) ?? [])))
         .sort((a, b) => a - b).map(timestamp => new Date(timestamp)), [placesWithoutTrip, timezone])
 
     const visitedCountriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter(Boolean)?.map(category => [category.name, category])), [places])
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [places])
 
-    const attributes = {
+    const attributes: Record<string, string | number | undefined> = {
         [t("year.attribute.highlightsCount")]: year?.highlights?.length
     }
 
-    const getPlaceCategory = (place: Place) => countryCategoriesMap.get(place?.country)
-    const getAirportCategory = (airport: Airport) => countryCategoriesMap.get(airport.country)
-    const getDayOfYear = date => Math.round((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 1)) / 86400000)
+    const getPlaceCategory = (place: Place): ReturnType<typeof place.getCategory> => countryCategoriesMap?.get(place?.country ?? "") ?? null
+    const getAirportCategory = (airport: Airport) => countryCategoriesMap?.get(airport.country ?? "") ?? null
 
     const handlePhotoCorrected = async (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => createPlaceAlbumPhoto(placeId, albumId, fileName, base64Data, photoId)
         .then(({ batchId }) => refreshPlaceAlbum(placeId, albumId, { batchId }))
         .then(_ => listPlaceAlbumPhotos(placeId, albumId))
-        .then(photos => photos.find(photo => photo.id === photoId))
+        .then(photos => photos.find(photo => photo.id === photoId)!)
 
     // TODO: Introduce Calendar instead of CardGrid, use TripCalendar as base. Also make sure that loading tail spins are displayed correctly.
     return hasRole(UserRole.YearRead) && (
@@ -64,39 +63,39 @@ export default function YearPage() {
             <PageHeader
                 name={yearParameter ?? null}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
-                internalAttributes={hasRole(UserRole.YearEdit) && attributes}
-                onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) && (highlightsCount => refreshYearHighlights(highlightsCount))}
+                internalAttributes={hasRole(UserRole.YearEdit) ? attributes : undefined}
+                onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) ? (highlightsCount => refreshYearHighlights(highlightsCount)) : undefined}
             />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
-                entity={year}
-                places={places}
+                entity={year ?? null}
+                places={places ?? null}
                 flights={flights}
                 placeMainCategorySelector={getPlaceCategory}
                 airportMainCategorySelector={getAirportCategory}
-                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) && publishPhotoReplacingTriggeredEvent}
-                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) && handlePhotoCorrected}
-                onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) && removeYearHighlight}
-                onMainHighlightUpdated={hasRole(UserRole.YearEdit) && updateYearMainHighlight}
-                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) && updateYearHighlightQualityAttributes} />
-            <StatisticsPanel statistics={year && (year.statistics ?? [])} />
+                onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotoReplacingTriggeredEvent : undefined}
+                onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) ? handlePhotoCorrected : undefined}
+                onHighlightRemoved={hasRole(UserRole.YearHighlightEdit) ? removeYearHighlight : undefined}
+                onMainHighlightUpdated={hasRole(UserRole.YearEdit) ? updateYearMainHighlight : undefined}
+                onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updateYearHighlightQualityAttributes : undefined} />
+            <StatisticsPanel statistics={year ? (year.statistics ?? []) : null} />
             {hasRole(UserRole.PortalFutureRead) && (
-                <TripTable trips={yearTrips?.filter(trip => trip.isFuture())} />
+                <TripTable trips={yearTrips?.filter(trip => trip.isFuture()) ?? null} />
             )}
-            <TripTileGrid trips={yearTrips?.filter(trip => trip.isPast())?.slice()?.reverse()} />
+            <TripTileGrid trips={yearTrips?.filter(trip => trip.isPast())?.slice()?.reverse() ?? null} />
             <CardGrid rowSize={4}>
                 {days?.map((day, index) => (
                     <DayCard
                         key={index}
                         day={day}
-                        events={placesWithoutTrip && getCalendarEvents(day, [], [], placesWithoutTrip, timezone)}
-                        fitness={year?.fitness && year.fitness[getDayOfYear(day)]}
+                        events={placesWithoutTrip ? getCalendarEvents(day, [], [], placesWithoutTrip, timezone) as Parameters<typeof DayCard>[0]["events"] : null}
+                        fitness={year?.fitness ? year.fitness[getDayOfYear(day)] : undefined}
                         timezone={timezone}
                         displayWarnings={hasRole(UserRole.PortalWarningRead)}
-                        onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && publishPhotosUploadingTriggeredEvent} />
+                        onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined} />
                 ))}
             </CardGrid>
             {hasRole(UserRole.TripExpenseRead) && (
-                <ExpenseSummary expenses={yearTrips?.filter(trip => trip.isPast() || trip.isCurrent())?.flatMap(trip => trip.expenses ?? [])} />
+                <ExpenseSummary expenses={yearTrips?.filter(trip => trip.isPast() || trip.isCurrent())?.flatMap(trip => trip.expenses ?? []) ?? null} />
             )}
         </>
     )

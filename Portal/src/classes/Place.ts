@@ -1,7 +1,7 @@
 import { fromUnixTime, isSameDay } from "date-fns"
 
 import type { Coordinates } from "../types/Coordinates.ts"
-import type { Album, Category, Date, Highlight, Label, Note, Place as IPlace, PlaceIdentifier,TripIdentifier } from "../types/CoreSwaggerTypes.ts"
+import type { Album, Category, Date, Highlight, Label, Note, Place as IPlace, PlaceIdentifier, TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getEuclideanDistance, getHaversineDistance } from "../utils/geocodingUtils.ts"
@@ -39,12 +39,12 @@ export class Place implements IPlace {
         return !this.dates || this.dates.every(date => !date.trip)
     }
 
-    public getCategory(categoryCategory: ExtendedCategoryCategory): Category | undefined {
+    public getCategory(categoryCategory: ExtendedCategoryCategory): Category | null {
         if (categoryCategory === InternalCategoryCategory.MostSpecificWithMetadata) {
             return this.categories?.findLast(category => category.metadata != null
-                && category.metadata.color != null && category.metadata.unicode != null)
+                && category.metadata.color != null && category.metadata.unicode != null) ?? null
         }
-        return this.categories?.findLast(category => category.category === categoryCategory);
+        return this.categories?.findLast(category => category.category === categoryCategory) ?? null
     }
 
     public getEuclideanDistanceTo(place: Coordinates): number {

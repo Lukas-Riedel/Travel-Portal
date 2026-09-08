@@ -12,7 +12,7 @@ interface HighlightCarouselAndPlaceMapAndFlightMapToggleToggleProps {
     entity: Highlightable | null
     places: Place[] | null
     flights?: Flight[] | null
-    placeMainCategorySelector: (place: Place) => Category
+    placeMainCategorySelector?: (place: Place) => Category | null
     airportMainCategorySelector?: (airport: Airport) => Category | null
     onPhotoReplaced?: (agentId: string, placeId: string, albumId: string, placeName: string, photoId: string, path: string, sendNotification: boolean) => Promise<void>
     onPhotoCorrected?: (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => Promise<Photo>

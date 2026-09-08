@@ -137,3 +137,8 @@ export function getNoonTimestamp(date: Date): number {
     newDate.setHours(12, 0, 0, 0)
     return Math.floor(newDate.getTime() / 1000)
 }
+
+// TODO: There's a date-fns implementation of this method. Should we use it?
+export function getDayOfYear(date: Date): number {
+    return Math.round((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 1)) / (ONE_DAY_SECONDS * 1000))
+}

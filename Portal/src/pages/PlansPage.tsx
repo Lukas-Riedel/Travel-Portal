@@ -61,9 +61,9 @@ export default function PlansPage() {
         const candidatePlacesInRegion = candidatePlaces?.filter(containsRegion) || []
         const visitedPlacesInRegion = visitedPlaces?.filter(containsRegion) || []
 
-        const qualities = visitedPlacesInRegion.filter(place => place.quality).map(place => place.quality)
+        const qualities = visitedPlacesInRegion.filter(place => place.quality).map(place => place.quality as number)
         const minimumQuality = Math.min(...qualities)
-        const averageQuality = qualities.reduce((a, b) => a + b, 0) / qualities.length
+        const averageQuality = qualities.reduce((a: number, b: number) => a + b, 0) / qualities.length
 
         if (averageQuality > 0 && averageQuality < INSUFFICIENT_QUALITY_THRESHOLD) {
             return "#FF0000"
@@ -112,8 +112,8 @@ export default function PlansPage() {
     const filteredCandidatePlaces = useMemo(() => candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance), [candidatePlaces, maxDistance])
     const filteredVisitedPlaces = useMemo(() => visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality), [visitedPlaces, maxQuality])
 
-    const furthestPlace = useMemo(() => candidatePlaces?.filter(place => place.distance)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined), [candidatePlaces])
-    const lowestQualityPlace = useMemo(() => visitedPlaces?.filter(place => place?.quality ?? 0)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined), [visitedPlaces])
+    const furthestPlace = useMemo(() => candidatePlaces?.filter((place): place is Place & { distance: number } => place.distance != null)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined as (Place & { distance: number }) | undefined), [candidatePlaces])
+    const lowestQualityPlace = useMemo(() => visitedPlaces?.filter((place): place is Place & { quality: number } => place.quality != null)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined as (Place & { quality: number }) | undefined), [visitedPlaces])
 
     const countriesCandidatePlaces = useMemo(() => groupPlacesByKey(filteredCandidatePlaces, place => place.country), [filteredCandidatePlaces])
     const countriesVisitedPlaces = useMemo(() => groupPlacesByKey(filteredVisitedPlaces, place => place.country), [filteredVisitedPlaces])
@@ -152,14 +152,14 @@ export default function PlansPage() {
         <>
             <TabMenu
                 tabs={tabs}
-                selectedTab={selectedTab}
+                selectedTab={selectedTab ?? undefined}
                 onTabSelected={setSelectedTab} />
             {hasRole(UserRole.PlaceRead) && activeTab === PlansMenuTabName.ConsideredPlaces && (
                 <>
                     <StaticMapFrame>
                         <PlaceMap
-                            places={filteredCandidatePlaces}
-                            placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
+                            places={filteredCandidatePlaces ?? null}
+                            placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null} />
                     </StaticMapFrame>
                     {furthestPlace && (
                         <Slider
@@ -168,24 +168,24 @@ export default function PlansPage() {
                             value={maxDistance}
                             defaultValue={DEFAULT_MAX_DISTANCE}
                             minValue={1}
-                            maxValue={furthestPlace?.distance}
+                            maxValue={furthestPlace.distance}
                             onValueChanged={setMaxDistance} />
                     )}
                     <CategoryCardGrid
                         rowSize={5}
-                        categories={[...countryCategoriesMap.values()]}
+                        categories={[...(countryCategoriesMap ?? new Map()).values()]}
                         categoriesPlaces={countriesCandidatePlaces}
                         onCurrentLocationChanged={changeCurrentLocation}
                         onMaximumDistanceChanged={setMaxDistance}
-                        onPlaceRemoved={hasRole(UserRole.PlaceEdit) && removeCandidatePlace} />
+                        onPlaceRemoved={hasRole(UserRole.PlaceEdit) ? removeCandidatePlace : undefined} />
                 </>
             )}
             {hasRole(UserRole.PlaceRead) && hasRole(UserRole.PortalFutureRead) && activeTab === PlansMenuTabName.VisitedPlaces && (
                 <>
                     <StaticMapFrame>
                         <PlaceMap
-                            places={filteredVisitedPlaces}
-                            placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
+                            places={filteredVisitedPlaces ?? null}
+                            placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null} />
                     </StaticMapFrame>
                     <Slider
                         name={t("plan.slider.maxQuality")}
@@ -197,7 +197,7 @@ export default function PlansPage() {
                         onValueChanged={setMaxQuality} />
                     <CategoryCardGrid
                         rowSize={5}
-                        categories={[...countryCategoriesMap.values()]}
+                        categories={[...(countryCategoriesMap ?? new Map()).values()]}
                         categoriesPlaces={countriesVisitedPlaces} />
                 </>
             )}
@@ -205,20 +205,20 @@ export default function PlansPage() {
                 <>
                     <StaticMapFrame>
                         <RegionMap
-                            regions={regionGeojsonsWithMetadata}
-                            onClick={geographicalRegion => Promise.resolve(navigate(geographicalRegion.category))} />
+                            regions={regionGeojsonsWithMetadata ?? null}
+                            onClick={geographicalRegion => geographicalRegion != null ? Promise.resolve(navigate(geographicalRegion.category)) : Promise.resolve()} />
                     </StaticMapFrame>
                     <CategoryCardGrid
                         rowSize={5}
-                        categories={regionGeojsonsWithMetadata?.map(region => region.category)}
+                        categories={regionGeojsonsWithMetadata?.map(region => region.category) ?? null}
                         categoriesPlaces={regionsVisitedPlaces} />
                 </>
             )}
             {hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && activeTab === PlansMenuTabName.ConsideredTrips && (
                 <TripCardGrid
                     rowSize={3}
-                    trips={trips}
-                    onTripRemoved={hasRole(UserRole.TripEdit) && removeTrip} />
+                    trips={trips ?? null}
+                    onTripRemoved={hasRole(UserRole.TripEdit) ? removeTrip : undefined} />
             )}
             {hasRole(UserRole.PlaceEdit) && (
                 <FloatingButton
