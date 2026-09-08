@@ -438,14 +438,14 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                     ))}
                 </ul>
             )}
-            {fitness && (
+            {fitness && (fitness?.steps ?? 0) > 0 && (
                 <>
                     <div className="mt-3 flex items-center text-green-600 space-x-1">
                         <Footprints
                             className="mr-1"
                             size={16} />
                         <span>
-                            {formatSteps(fitness.steps ?? 0)}
+                            {formatSteps(fitness.steps)}
                         </span>
                     </div>
                     {renderDescriptionRow("text-green-600", [
