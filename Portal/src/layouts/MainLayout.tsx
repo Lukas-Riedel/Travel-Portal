@@ -17,14 +17,14 @@ import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
 import { getEntityPrettyName, getTripFullName } from "../utils/formattingUtils.ts"
 import { getPath } from "../utils/navigationUtils.ts"
 
-const SEARCHABLE_ENTITY_ICON_SELECTORS = {
+const SEARCHABLE_ENTITY_ICON_SELECTORS: Partial<Record<IndexableEntityType, (entity: Indexable) => typeof MapPin>> = {
     [IndexableEntityType.Category]: (entity: Indexable) => CATEGORY_CATEGORY_ICONS[(entity as CategoryIdentifier).category] ?? LocateFixed,
-    [IndexableEntityType.Place]: _ => MapPin,
-    [IndexableEntityType.Airport]: _ => TowerControl,
-    [IndexableEntityType.Airline]: _ => PlaneIcon,
-    [IndexableEntityType.Label]: _ => Tag,
-    [IndexableEntityType.Trip]: _ => Backpack,
-    [IndexableEntityType.Year]: _ => Calendar
+    [IndexableEntityType.Place]: (_: Indexable) => MapPin,
+    [IndexableEntityType.Airport]: (_: Indexable) => TowerControl,
+    [IndexableEntityType.Airline]: (_: Indexable) => PlaneIcon,
+    [IndexableEntityType.Label]: (_: Indexable) => Tag,
+    [IndexableEntityType.Trip]: (_: Indexable) => Backpack,
+    [IndexableEntityType.Year]: (_: Indexable) => Calendar
 }
 
 const CATEGORY_CATEGORY_ICONS = {
@@ -39,7 +39,7 @@ const CATEGORY_CATEGORY_ICONS = {
 }
 
 // TODO: Introduce getEntityPrettyName for Indexable - similary to the getPath function for Navigable.
-const SEARCHABLE_ENTITY_NAME_SELECTORS = {
+const SEARCHABLE_ENTITY_NAME_SELECTORS: Partial<Record<IndexableEntityType, (entity: Indexable) => string | number | undefined>> = {
     [IndexableEntityType.Category]: (entity: Indexable) => getEntityPrettyName((entity as CategoryIdentifier).name),
     [IndexableEntityType.Place]: (entity: Indexable) => getEntityPrettyName((entity as PlaceIdentifier).name),
     [IndexableEntityType.Airport]: (entity: Indexable) => (entity as AirportIdentifier).longName,
@@ -335,7 +335,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 <PhotoTile
                                                     key={i}
                                                     className="w-full aspect-[3/2]"
-                                                    firstLineText={searchResult.parent && (SEARCHABLE_ENTITY_NAME_SELECTORS[searchResult.parent.type]?.(searchResult.parent.entity) ?? searchResult.parent.entity.id)}
+                                                    firstLineText={searchResult.parent ? SEARCHABLE_ENTITY_NAME_SELECTORS[searchResult.parent.type]?.(searchResult.parent.entity)?.toString() : undefined}
                                                     categories={searchResult.parent && "country" in searchResult.parent.entity ? [countryCategoriesMap?.get((searchResult.parent.entity as { country?: string }).country ?? "")].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
                                                     src={(searchResult.entity as Highlight).url.thumbnail ?? null}
                                                     // TODO: Using searchResult.type to obtain the link is a hack. Change to use AppLink (currently, there's no way to distinguish between AirlineIdentifier and Label, though).

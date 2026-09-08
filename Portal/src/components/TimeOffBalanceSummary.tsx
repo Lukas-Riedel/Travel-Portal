@@ -24,7 +24,7 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
             <div className="flex flex-col sm:flex-row gap-4 px-2 items-stretch">
                 {availableEventTypes.map(type => {
                     const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[type as TimeTrackingEventType]
-                    const balance = timeTrackingEvents?.[type] && getBalance(timeTrackingEvents[type as TimeTrackingEventType]!)
+                    const balance = timeTrackingEvents?.[type as TimeTrackingEventType] != null ? getBalance(timeTrackingEvents[type as TimeTrackingEventType]!) : undefined
 
                     return Icon && (
                         <div
@@ -34,7 +34,7 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
                                 <Icon size={24} />
                             </div>
                             <div className="flex-grow flex items-center justify-center">
-                                {balance !== null ? (
+                                {balance !== undefined ? (
                                     <div>
                                         <div className="text-lg">
                                             {formatDuration(balance * 3600)}

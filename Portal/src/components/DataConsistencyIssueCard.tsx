@@ -401,7 +401,8 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataConsistencyIssueHandler = useMemo<DataConsistencyIssueHandler<any> | undefined>(() =>
-        dataConsistencyIssue && dataConsistencyIssueHandlers[dataConsistencyIssue.name], [dataConsistencyIssue, dataConsistencyIssueHandlers])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dataConsistencyIssue ? (dataConsistencyIssueHandlers as Record<string, DataConsistencyIssueHandler<any>>)[dataConsistencyIssue.name] : undefined, [dataConsistencyIssue, dataConsistencyIssueHandlers])
 
     if (!dataConsistencyIssue) {
         return (

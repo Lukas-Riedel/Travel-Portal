@@ -37,7 +37,7 @@ export default function LabelPage() {
             </StaticMapFrame>
             <PlaceTileGrid
                 places={places ?? null}
-                placeMainCategorySelector={place => countryCategoriesMap.get(place.country)} />
+                placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">
                     {label && (

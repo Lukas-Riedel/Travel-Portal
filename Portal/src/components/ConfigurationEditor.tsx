@@ -26,19 +26,20 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
     }
 
     const keys = useMemo(() => configuration && Object.keys(configuration).map(key => ({ name: key, label: formatConfigurationKeyName(key) })), [configuration])
+    const internalConfiguration = configuration as Record<string, unknown>
 
     return (
         <Editor
             keys={keys}
             selectedKey={selectedKey}
             onKeySelected={onKeySelected}>
-            {selectedKey && configuration?.[selectedKey] && (
+            {selectedKey && internalConfiguration?.[selectedKey] != null && (
                 <ReactJson
                     name={false}
-                    src={{ [selectedKey]: configuration[selectedKey] }}
+                    src={{ [selectedKey]: internalConfiguration[selectedKey] }}
                     onEdit={edit => {
-                        const newConfig = { ...configuration }
-                        const rawValue = edit.updated_src[selectedKey]
+                        const newConfig = { ...internalConfiguration }
+                        const rawValue = (edit.updated_src as Record<string, unknown>)[selectedKey]
 
                         if (typeof rawValue === "string" && rawValue.trim() !== "") {
                             const parsedNumber = Number(rawValue)

@@ -191,7 +191,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
             })
 
             if (onClick) {
-                map.data.addListener("click", event => {
+                map.data.addListener("click", (event: google.maps.Data.MouseEvent) => {
                     onClick(event.feature.getProperty("id") as string)
                 })
             }

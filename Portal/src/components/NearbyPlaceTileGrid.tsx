@@ -16,7 +16,7 @@ export default function NearbyPlaceTileGrid({ place }: NearbyPlaceTileGridProps)
                 <PlaceTile
                     key={nearbyPlace.id}
                     place={nearbyPlace}
-                    mainCategory={nearbyPlace.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)}
+                    mainCategory={nearbyPlace.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ?? undefined}
                     secondLineText={formatKilometers(Math.round(nearbyPlace.getHaversineDistanceTo(place)))} />
             ))}
         </TileGrid>

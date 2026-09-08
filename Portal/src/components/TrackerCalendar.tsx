@@ -475,7 +475,7 @@ function AbsenceInfo({ timeTrackingEventType, timeTrackingEvents, onEventRemoved
         }
     }
 
-    const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[timeTrackingEventType]
+    const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[timeTrackingEventType] ?? ClockPlus
 
     return timeTrackingEvents.map(event => (
         <li
