@@ -5,9 +5,8 @@
     "target": "esnext",
     "types": [],
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
     "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
     "allowJs": false,
     "strict": true,
     "lib": [
@@ -20,7 +19,6 @@
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,
-    "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": false,
