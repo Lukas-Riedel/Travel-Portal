@@ -239,42 +239,28 @@
                 });
         }
 
-        private function selectIncludedCategoryIdentifiers(string $compositeRegionCategoryId) : array {        
-            $sql = <<<'SQL'
-                SELECT ci.*
-                FROM region_composite re
-                INNER JOIN category_identifier ci
-                    ON re.subject_category_id = ci.id
-                WHERE re.category_id = ?
-                    AND re.included
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($compositeRegionCategoryId)
-                ->getMappedResultSet(function($categoryIdentifierRow) {                    
-                    $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
-                        ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
-                    return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
-                        $metadata, $this->highlightService->getHighlight($categoryIdentifierRow["main_highlight_id"]));
-                });
+        private function selectIncludedCategoryIdentifiers(string $compositeRegionCategoryId) : array {
+            return $this->selectCompositeRegionCategoryIdentifiers($compositeRegionCategoryId, true);
         }
 
-        // TODO: This is a copy-paste of selectIncludedCategoryIdentifiers, just with a different value in the WHERE clause.
-        private function selectExcludedCategoryIdentifiers(string $compositeRegionCategoryId) : array {        
+        private function selectExcludedCategoryIdentifiers(string $compositeRegionCategoryId) : array {
+            return $this->selectCompositeRegionCategoryIdentifiers($compositeRegionCategoryId, false);
+        }
+
+        private function selectCompositeRegionCategoryIdentifiers(string $compositeRegionCategoryId, bool $included) : array {
             $sql = <<<'SQL'
                 SELECT ci.*
                 FROM region_composite re
                 INNER JOIN category_identifier ci
                     ON re.subject_category_id = ci.id
                 WHERE re.category_id = ?
-                    AND NOT re.included
+                    AND re.included = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($compositeRegionCategoryId)
-                ->getMappedResultSet(function($categoryIdentifierRow) {                    
+                ->withParameters($compositeRegionCategoryId, $included)
+                ->getMappedResultSet(function($categoryIdentifierRow) {
                     $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
                         ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);
                     return new CategoryIdentifier($categoryIdentifierRow["id"], $categoryIdentifierRow["name"], CategoryCategory::from($categoryIdentifierRow["category"]),
