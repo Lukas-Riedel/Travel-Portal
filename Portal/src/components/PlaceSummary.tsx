@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
@@ -16,7 +15,7 @@ interface PlaceSummaryProps {
 export default function PlaceSummary({ place }: PlaceSummaryProps) {
     const { t } = useTranslation()
 
-    const category = useMemo(() => place && place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata), [place])
+    const category = place && place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
 
     return (
         <div className="w-full max-w-5xl mx-auto bg-white shadow-md overflow-hidden my-10 rounded-xl">

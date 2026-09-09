@@ -1,5 +1,4 @@
 import { Plus } from "lucide-react"
-import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import { createCandidatePlace } from "../clients/coreClient.ts"
@@ -24,8 +23,8 @@ export default function CandidateCategoryPage() {
     const { category, updateCategoryName } = useCategory(categoryId)
     const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: [PlaceIncludedEntity.Categories] })
 
-    const countryCategoriesMap = useMemo(() => new Map(candidatePlaces?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [candidatePlaces])
+    const countryCategoriesMap = new Map(candidatePlaces?.map(place => place.getCategory(CategoryCategory.Country))
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const handleCandidatePlaceCreated = () => {
         showCreatePlaceToast((name, address) => createCandidatePlace(name, address).then(place => (navigate(place), place)))

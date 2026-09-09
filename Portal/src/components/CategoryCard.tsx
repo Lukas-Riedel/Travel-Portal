@@ -1,5 +1,4 @@
 import { MapPin, Move, Trash2 } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
@@ -31,8 +30,8 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
     const { showRemovePlaceToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
 
-    const visiblePlaces = useMemo(() => [...(places ?? [])].slice(0, MAXIMUM_PLACES_COUNT), [places])
-    const remainingCount = useMemo(() => (places?.length ?? 0) - visiblePlaces.length, [places?.length, visiblePlaces.length])
+    const visiblePlaces = [...(places ?? [])].slice(0, MAXIMUM_PLACES_COUNT)
+    const remainingCount = (places?.length ?? 0) - visiblePlaces.length
 
     const handlePlaceRemoved = (placeId: string) => {
         if (onPlaceRemoved) {

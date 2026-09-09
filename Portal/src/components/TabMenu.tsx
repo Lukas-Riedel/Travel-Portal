@@ -1,5 +1,3 @@
-import { useCallback } from "react"
-
 import type { TabMenuTab } from "../types/TabMenuTab"
 
 interface TabMenuProps {
@@ -9,11 +7,11 @@ interface TabMenuProps {
 }
 
 export default function TabMenu({ tabs, selectedTab, onTabSelected }: TabMenuProps) {
-    const setSelectedKey = useCallback((name: string) => {
+    const setSelectedKey = (name: string) => {
         if (onTabSelected) {
             onTabSelected(name)
         }
-    }, [onTabSelected])
+    }
 
     return tabs.filter(tab => tab.enabled).length > 1 && (
         <nav className="flex flex-wrap border-b border-gray-200">

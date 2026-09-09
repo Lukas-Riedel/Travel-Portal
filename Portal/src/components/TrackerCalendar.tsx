@@ -1,7 +1,7 @@
 import { addDays, addMonths, endOfYear, format, getDaysInMonth, isSameDay,startOfDay, startOfMonth, startOfWeek } from "date-fns"
 import { fromUnixTime } from "date-fns"
 import { CalendarPlus, ChevronLeft, ChevronRight, Clock, ClockPlus, Home,Palmtree, Pill, Plane, PlaneLanding, PlaneTakeoff, Plus, Shield, Trash2 } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Trip } from "../classes/Trip.ts"
@@ -37,9 +37,9 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
     const { showCreateNegativeTimeTrackingEventToast, showRemoveTimeTrackingEventToast, showCopyTimeTrackingEventDescriptionToast, showCreateOvertimeToast, showCreatePlannedWorkToast } = usePredefinedUserInput()
 
     const now = new Date()
-    const timezone = useMemo(() => getTimezoneOrDefault(configuration?.homeLocation?.timezone), [configuration])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * (configuration?.timeTracking?.currentFte ?? 1), [configuration])
-    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay as number || 0, [configuration])
+    const timezone = getTimezoneOrDefault(configuration?.homeLocation?.timezone)
+    const standardWorkingHoursPerWorkingDay = HOURS_PER_MAN_DAY * (configuration?.timeTracking?.currentFte ?? 1)
+    const expectedOvertimeHoursPerDay = configuration?.timeTracking?.expectedOvertimePerDay as number || 0
 
     const [date, setDate] = useState(() => startOfMonth(now))
 
@@ -47,15 +47,12 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
     const setToday = () => setDate(startOfMonth(now))
 
     const earliestAllowedDate = startOfMonth(addMonths(now, -1))
-    const latestAllowedDate = useMemo(() => {
-        const lastTripEnd = trips?.at(-1)?.end
-        return endOfYear(lastTripEnd ? fromUnixTime(lastTripEnd) : now)
-    }, [trips, now])
+    const lastTripEnd = trips?.at(-1)?.end
+    const latestAllowedDate = endOfYear(lastTripEnd ? fromUnixTime(lastTripEnd) : now)
 
-    const filteredTrips = useMemo(() => trips?.filter(trip => trip.isBetweenDates(earliestAllowedDate, latestAllowedDate, timezone)) ?? [],
-        [trips, earliestAllowedDate, latestAllowedDate, timezone])
+    const filteredTrips = trips?.filter(trip => trip.isBetweenDates(earliestAllowedDate, latestAllowedDate, timezone)) ?? []
 
-    const isPreviousMonthDisabled = useMemo(() => addMonths(date, -1) < earliestAllowedDate, [date, earliestAllowedDate])
+    const isPreviousMonthDisabled = addMonths(date, -1) < earliestAllowedDate
 
     const daysOfWeek = Array.from({ length: 7 }, (_, i) => format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), i), DAY_OF_WEEK_FORMAT, { locale }))
 

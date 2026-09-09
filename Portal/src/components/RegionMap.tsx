@@ -1,5 +1,4 @@
 import type { Feature, GeoJSON } from "geojson"
-import { useMemo } from "react"
 
 import type { GeographicalRegion } from "../types/CoreSwaggerTypes"
 import { tryExtractPointCoordinates } from "../utils/geocodingUtils"
@@ -13,7 +12,7 @@ interface RegionMapProps {
 }
 
 export default function RegionMap({ regions, onClick }: RegionMapProps) {
-    const points = useMemo(() => regions?.map(region => {
+    const points = regions?.map(region => {
         const coordinates = tryExtractPointCoordinates(region.geoJson as GeoJSON)
         return coordinates ? {
             name: region.category.name,
@@ -21,10 +20,10 @@ export default function RegionMap({ regions, onClick }: RegionMapProps) {
             longitude: coordinates.longitude,
             color: DEFAULT_POINT_COLOR
         } : null
-    })?.filter((p): p is NonNullable<typeof p> => p != null), [regions])
+    })?.filter((p): p is NonNullable<typeof p> => p != null)
 
-    const geoJsons = useMemo(() => regions?.map(region => region.geoJson as GeoJSON)
-        ?.filter(geoJson => tryExtractPointCoordinates(geoJson) === null), [regions])
+    const geoJsons = regions?.map(region => region.geoJson as GeoJSON)
+        ?.filter(geoJson => tryExtractPointCoordinates(geoJson) === null)
 
     return (
         <Map

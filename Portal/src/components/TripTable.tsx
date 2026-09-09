@@ -1,5 +1,5 @@
 import { ClockPlus } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import {useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
@@ -34,10 +34,10 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
         return () => window.removeEventListener("resize", onResize)
     }, [])
 
-    const timezone = useMemo(() => getTimezoneOrDefault(configuration?.homeLocation?.timezone), [configuration])
-    const standardWorkingHoursPerWorkingDay = useMemo(() => HOURS_PER_MAN_DAY * (configuration?.timeTracking?.currentFte ?? 1) || HOURS_PER_MAN_DAY, [configuration])
-    const expectedOvertimeHoursPerDay = useMemo(() => configuration?.timeTracking?.expectedOvertimePerDay as number || 0, [configuration])
-    const openingTimeOffHours = useMemo(() => (Object.values(configuration?.timeTracking?.openingBalance ?? {}) as number[]).reduce((sum, value) => sum + (value ?? 0), 0), [configuration])
+    const timezone = getTimezoneOrDefault(configuration?.homeLocation?.timezone)
+    const standardWorkingHoursPerWorkingDay = HOURS_PER_MAN_DAY * (configuration?.timeTracking?.currentFte ?? 1) || HOURS_PER_MAN_DAY
+    const expectedOvertimeHoursPerDay = configuration?.timeTracking?.expectedOvertimePerDay as number || 0
+    const openingTimeOffHours = (Object.values(configuration?.timeTracking?.openingBalance ?? {}) as number[]).reduce((sum, value) => sum + (value ?? 0), 0)
 
     const daysOffset = timeTrackingEvents?.[TimeTrackingEventType.Overtime]?.some(event => isToday(event.timestamp)) ? 1 : 0
     const days = getDaysFromTodayThrough(trips?.at(-1)?.end ?? 0, daysOffset)
@@ -112,7 +112,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
         }
 
         return tripBalances
-    }, [timeTrackingEvents, trips, days, standardWorkingHoursPerWorkingDay, expectedOvertimeHoursPerDay])
+    }, [timeTrackingEvents, trips, days, standardWorkingHoursPerWorkingDay, expectedOvertimeHoursPerDay, isFreeDay])
 
     return (!trips || trips.length > 0) && (
         <div className="w-full rounded-xl my-4">

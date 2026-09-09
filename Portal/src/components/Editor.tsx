@@ -1,5 +1,4 @@
 import { ExternalLink } from "lucide-react";
-import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { TailSpin } from "react-loader-spinner";
 
@@ -16,11 +15,11 @@ interface EditorProps {
 export default function Editor({ keys, children, selectedKey, onKeySelected }: EditorProps) {
     const { t } = useTranslation()
 
-    const setSelectedKey = useCallback((name: string) => {
+    const setSelectedKey = (name: string) => {
         if (onKeySelected) {
             onKeySelected(name)
         }
-    }, [onKeySelected])
+    }
 
     if (!keys) {
         return (

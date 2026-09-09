@@ -1,5 +1,5 @@
 import { Images,Map as MapIcon } from "lucide-react"
-import { useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 
 import type { Place } from "../classes/Place.ts"
 import type { Airport, Category, Flight, Highlight, Photo } from "../types/CoreSwaggerTypes.ts"
@@ -40,7 +40,7 @@ export default function HighlightCarouselAndPlaceMapAndFlightMapToggleToggle({ e
         }
     }, [])
 
-    const filteredHighlights = useMemo(() => entity?.highlights?.filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) ?? [], [entity?.highlights])
+    const filteredHighlights = entity?.highlights?.filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) ?? []
 
     if (entity && (!Array.isArray(entity.highlights) || filteredHighlights.length === 0)) {
         return (

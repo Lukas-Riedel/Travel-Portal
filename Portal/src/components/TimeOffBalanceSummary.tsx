@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
@@ -14,8 +13,8 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
     const { configuration } = useConfiguration()
     const { formatDuration, formatDays } = useFormatters()
 
-    const standardWorkingHoursPerWorkingDay = useMemo(() => 8 * (configuration?.timeTracking?.currentFte ?? 1), [configuration])
-    const availableEventTypes = useMemo(() => timeTrackingEvents ? Object.keys(timeTrackingEvents) : Object.keys(TIME_TRACKING_EVENT_TYPE_ICONS), [timeTrackingEvents])
+    const standardWorkingHoursPerWorkingDay = 8 * (configuration?.timeTracking?.currentFte ?? 1)
+    const availableEventTypes = timeTrackingEvents ? Object.keys(timeTrackingEvents) : Object.keys(TIME_TRACKING_EVENT_TYPE_ICONS)
 
     const getBalance = (events: TimeTrackingEvent[]) => events[0]?.balance ?? 0
 

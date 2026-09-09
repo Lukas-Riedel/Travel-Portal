@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -20,7 +20,7 @@ export default function PlaceHighlightsPage() {
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
-    const highlightCandidates = useMemo(() => (place?.dates ?? [])
+    const highlightCandidates = (place?.dates ?? [])
         .map(date => date.album)
         .filter((a): a is NonNullable<typeof a> => a != null)
         .reverse()
@@ -30,7 +30,7 @@ export default function PlaceHighlightsPage() {
                 .then(photos => photos
                     .filter(photo => !place?.highlights
                         ?.some(highlight => highlight.photo.id === photo.id)))
-        })), [place, placeId])
+        }))
 
     const handleHighlightCreated = async (photoId: string) => createPlaceHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))

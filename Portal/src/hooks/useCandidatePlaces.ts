@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import { createCandidatePlace, listCandidatePlaces, removeCandidatePlace } from "../clients/coreClient.ts"
@@ -36,7 +36,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, nearbyPlaces, 
     })
 
     return {
-        candidatePlaces: useMemo(() => response?.map(place => new DistanceAwarePlace(place, currentLocation ? getHaversineDistance(place, currentLocation) : undefined)), [response, currentLocation]),
+        candidatePlaces: response?.map(place => new DistanceAwarePlace(place, currentLocation ? getHaversineDistance(place, currentLocation) : undefined)),
         changeCurrentLocation: setCurrentLocation,
         createCandidatePlace: (name: string, address: string) => createCandidatePlace(name, address).then(refetchResponse),
         removeCandidatePlace: (placeId: string) => removeCandidatePlace(placeId).then(refetchResponse)

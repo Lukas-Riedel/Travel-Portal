@@ -1,5 +1,4 @@
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Minus } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Trip } from "../classes/Trip.ts"
@@ -33,26 +32,17 @@ const PRIORITY_ORDER: TaskPriority[] = [
 export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated, onTaskPriorityUpdated, onTaskRemoved }: TaskCardBoardProps) {
     const { t } = useTranslation()
 
-    const sortedTasks = useMemo(() => {
-        if (!tasksWithTrips) {
-            return []
+    const sortedTasks = tasksWithTrips ? [...tasksWithTrips].sort((a, b) => {
+        if (!a.task.deadline) {
+            return 1
         }
+        if (!b.task.deadline) {
+            return -1
+        }
+        return new Date(a.task.deadline).getTime() - new Date(b.task.deadline).getTime()
+    }) : []
 
-        return [...tasksWithTrips].sort((a, b) => {
-            if (!a.task.deadline) {
-                return 1
-            }
-            if (!b.task.deadline) {
-                return -1
-            }
-            return new Date(a.task.deadline).getTime() - new Date(b.task.deadline).getTime()
-        })
-    }, [tasksWithTrips])
-
-    const groups = useMemo(() => {
-        return Object.groupBy(sortedTasks, item => item.task.priority)
-    }, [sortedTasks])
-
+    const groups = Object.groupBy(sortedTasks, item => item.task.priority)
 
     return (
         <div

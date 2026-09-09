@@ -1,5 +1,4 @@
 import { Trash2 } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
@@ -24,11 +23,11 @@ export default function DocumentCard({ document, onDocumentRemoved }: DocumentCa
         }
     }
 
-    const properties = useMemo(() => document && ({
+    const properties = document && ({
         [t("document.label.code")]: document.code,
         [t("document.label.issuer")]: document.issuer,
         [t("document.label.expiration")]: document.expiration && formatTimestamp(document.expiration, t("general.format.date.year.included"))
-    }), [document, t])
+    })
 
     if (!document) {
         return (

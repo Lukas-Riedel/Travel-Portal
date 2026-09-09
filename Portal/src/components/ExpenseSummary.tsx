@@ -1,6 +1,6 @@
 import { format, fromUnixTime } from "date-fns"
 import { Bed,CarFront, DollarSign, Edit2, FerrisWheel, Landmark, List, PieChart, Plane, Plus, TrainFront, Trash2, Users } from "lucide-react"
-import { useEffect,useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
@@ -65,9 +65,9 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
     const [detailedView, setDetailedView] = useState(!!onExpenseCreated)
     const [duplicatedExpense, setDuplicatedExpense] = useState<ExpenseCandidate>({})
 
-    const totalCost = useMemo(() => (expenses ?? []).reduce((sum, expense) => sum + (expense.mainCurrencyValue || 0), 0), [expenses])
+    const totalCost = (expenses ?? []).reduce((sum, expense) => sum + (expense.mainCurrencyValue || 0), 0)
 
-    const detailedRows = useMemo(() => (expenses ?? [])
+    const detailedRows = (expenses ?? [])
         .map(expense => (
             <DetailedExpenseRow
                 key={expense.id}
@@ -76,9 +76,9 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 onExpenseValueUpdated={onExpenseValueUpdated && ((value, currency) => onExpenseValueUpdated(expense.id, value, currency))}
                 onExpenseDuplicated={onExpenseCreated && (() => setDuplicatedExpense(expense))}
                 onExpenseRemoved={onExpenseRemoved && (() => onExpenseRemoved(expense.id))} />
-        )), [expenses, onExpenseDescriptionUpdated, onExpenseValueUpdated, onExpenseRemoved, onExpenseCreated, setDuplicatedExpense])
+        ))
 
-    const aggregatedRows = useMemo(() => Object.entries((expenses ?? [])
+    const aggregatedRows = Object.entries((expenses ?? [])
         .reduce((acc: Record<string, number>, expense) => ((acc[expense.type] = (acc[expense.type] || 0) + (expense.mainCurrencyValue || 0)), acc), {}))
         .filter(([, cost]) => cost > 0)
         .sort((a, b) => b[1] - a[1])
@@ -88,29 +88,28 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
                 type={type as ExpenseType}
                 cost={cost}
                 totalCost={totalCost} />
-        )), [expenses, totalCost])
+        ))
 
-    const loadingRows = useMemo(() => Array.from({ length: LOADING_ROWS_COUNT })
+    const loadingRows = Array.from({ length: LOADING_ROWS_COUNT })
         .map((_, index) => (
             <LoadingExpenseRow
                 key={index}
                 detailedView={detailedView}
                 hasRemoveButton={!!onExpenseRemoved} />
-        )), [detailedView])
+        ))
 
-    const filteredExpenseCandidates = useMemo(() => [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
-        expense.description.startsWith(candidate.description ?? "") && expense.type === candidate.type)) ?? []), duplicatedExpense],
-        [expenseCandidates, expenses, duplicatedExpense])
+    const filteredExpenseCandidates = [...(expenseCandidates?.filter(candidate => !expenses?.some(expense =>
+        expense.description.startsWith(candidate.description ?? "") && expense.type === candidate.type)) ?? []), duplicatedExpense]
 
-    const expenseCandidateRows = useMemo(() => filteredExpenseCandidates.map((expenseCandidate, index) => (
+    const expenseCandidateRows = filteredExpenseCandidates.map((expenseCandidate, index) => (
         <ExpenseCandidateRow
             key={index}
             lastAddedExpense={expenses?.at(-1)}
             expenseCandidate={expenseCandidate}
             onExpenseCreated={onExpenseCreated} />
-    )), [filteredExpenseCandidates, expenses, duplicatedExpense, onExpenseCreated])
+    ))
 
-    const actualRows = useMemo(() => {
+    const actualRows = (() => {
         if (!expenses) {
             return loadingRows
         }
@@ -118,7 +117,7 @@ export default function ExpenseSummary({ expenses, expenseCandidates, onExpenseC
             return [...detailedRows, ...(onExpenseCreated ? expenseCandidateRows : [])]
         }
         return aggregatedRows
-    }, [loadingRows, detailedRows, expenseCandidateRows, detailedView, expenses, onExpenseCreated])
+    })()
 
     return (
         <div className="w-full rounded-xl my-4">

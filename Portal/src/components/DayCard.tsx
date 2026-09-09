@@ -50,14 +50,14 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     const { formatDuration, formatSteps, formatKilometers } = useFormatters()
     const { showCreateNoteToast, showRemoveNoteToast, showUploadPhotosToast, showCopyDayItineraryToast } = usePredefinedUserInput()
 
-    const notePrefix = useMemo(() => day ? `${format(day, t("general.format.date.year.excluded"), { locale: locale })} ` : "", [day])
-    const notes = useMemo(() => noteSelector && notePrefix ? noteSelector(notePrefix) : [], [noteSelector, notePrefix])
+    const notePrefix = day ? `${format(day, t("general.format.date.year.excluded"), { locale: locale })} ` : ""
+    const notes = noteSelector && notePrefix ? noteSelector(notePrefix) : []
 
-    const isExactDate = useMemo(() => day && day.getFullYear() > 1970, [day])
+    const isExactDate = day ? day.getFullYear() > 1970 : false
 
     const doFormatTimestamp = (timestamp: number, timestampTimezone: string) => formatTimestamp(timestamp, t("general.format.time"), timezone || timestampTimezone)
 
-    const sunriseTime = useMemo(() => {
+    const getSunriseTime = () => {
         if (!events) {
             return null
         }
@@ -72,9 +72,9 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         }).filter(Boolean)[0]
 
         return sunrise
-    }, [events, doFormatTimestamp])
+    }
 
-    const sunsetTime = useMemo(() => {
+    const getSunsetTime = () => {
         if (!events) {
             return null
         }
@@ -89,9 +89,9 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         }).filter(Boolean).at(-1)
 
         return sunset
-    }, [events, doFormatTimestamp])
+    }
 
-    const dayLabel = useMemo(() => {
+    const getDayLabel = () => {
         if (!day) {
             return null
         }
@@ -99,7 +99,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
         return isExactDate
             ? format(day, t("general.format.day.year.excluded"), { locale: locale })
             : `${t("general.label.day")} ${getDayIndex(day)}`
-    }, [day, t, locale, isExactDate])
+    }
+
+    const sunriseTime = getSunriseTime()
+    const sunsetTime = getSunsetTime()
+    const dayLabel = getDayLabel()
 
     const handleNoteRemoved = (note: Note) => {
         if (onNoteRemoved) {

@@ -1,5 +1,4 @@
 import { Plus, Trash2 } from "lucide-react"
-import { useMemo } from "react"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useLabels } from "../hooks/useLabels.ts"
@@ -24,9 +23,8 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
     const { configuration } = useConfiguration()
 
     const allKnownLabels = useLabels()
-    const unassignedLabels = useMemo(() => allKnownLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id)
-        && !configuration?.dynamicLabels?.some((dynamicLabel: DynamicLabel) => dynamicLabel.name == label.name)),
-        [allKnownLabels, configuration, labels])
+    const unassignedLabels = allKnownLabels?.filter(label => !labels?.some(existingLabel => existingLabel.id === label.id)
+        && !configuration?.dynamicLabels?.some((dynamicLabel: DynamicLabel) => dynamicLabel.name == label.name))
 
     const handleKnownLabelAdded = (label: Label) => {
         if (onLabelAdded) {

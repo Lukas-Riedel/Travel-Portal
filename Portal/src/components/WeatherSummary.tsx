@@ -1,5 +1,5 @@
 import { ChevronUp } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Coordinates } from "../types/Coordinates.ts"
@@ -32,7 +32,7 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
 
     const [isExpanded, setIsExpanded] = useState(false)
 
-    const weatherAggregate = useMemo(() => weather.reduce<WeatherAggregate>((acc, record) => ({
+    const weatherAggregate = weather.reduce<WeatherAggregate>((acc, record) => ({
         temperature: acc.temperature + record.temperature,
         precipitation: {
             probability: record.precipitation.probability !== undefined
@@ -86,9 +86,9 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
             wind: 0,
             humidity: 0
         }
-    }), [weather])
+    })
 
-    const weatherSummary = useMemo(() => ({
+    const weatherSummary = {
         temperature: weatherAggregate.counts.temperature > 0
             ? weatherAggregate.temperature / weatherAggregate.counts.temperature
             : 0,
@@ -113,7 +113,7 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
             : undefined,
         lastUpdate: weatherAggregate.lastUpdate === Number.MAX_VALUE ? 0 : weatherAggregate.lastUpdate,
         validity: weatherAggregate.validity === Number.MAX_VALUE ? 0 : weatherAggregate.validity
-    } satisfies Weather), [weatherAggregate])
+    } satisfies Weather
 
     return isExpanded ? (
         <div className="pb-2">

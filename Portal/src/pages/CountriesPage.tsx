@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 
 import CategoryTileGrid from "../components/CategoryTileGrid"
 import PlaceMap from "../components/PlaceMap"
@@ -14,7 +13,7 @@ export default function CountriesPage() {
     const { places } = useTimeFilteredRegularPlaces({ sort: PlaceSortingStrategy.ValueScore })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const countries = useMemo(() => {
+    const countries = (() => {
         if (!places || !countryCategoriesMap) {
             return null
         }
@@ -27,7 +26,7 @@ export default function CountriesPage() {
             .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
             .map(([country]) => countryCategoriesMap.get(country))
             .filter((c): c is NonNullable<typeof c> => c != null)
-    }, [places, countryCategoriesMap, countryCategoriesMap])
+    })()
 
     return hasRole(UserRole.CategoryRead) && (
         <>

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react"
+import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -10,7 +10,7 @@ import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
 export const useUserInput = (): UseUserInputResult => {
     const { t } = useTranslation()
 
-    const showConfirmToast = useCallback(<R,>(message: string, onConfirmed?: () => Promise<R>, success?: string, error?: string): Promise<boolean> =>
+    const showConfirmToast = <R,>(message: string, onConfirmed?: () => Promise<R>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             const id = toast(message, {
                 action: {
@@ -43,9 +43,9 @@ export const useUserInput = (): UseUserInputResult => {
                     }
                 }
             })
-        }), [t])
+        })
 
-    const showFormToast = useCallback(<F extends readonly (FormField<unknown> | undefined)[],>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<unknown>, success?: string, error?: string): Promise<boolean> =>
+    const showFormToast = <F extends readonly (FormField<unknown> | undefined)[],>(message: string, fields: F, onSubmitted?: (...values: { [K in keyof F]: F[K] extends FormField<infer T> ? T : never }) => Promise<unknown>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
             toast.custom(
                 id => {
@@ -272,12 +272,12 @@ export const useUserInput = (): UseUserInputResult => {
                     duration: Infinity
                 }
             )
-        }), [t])
+        })
 
     const showInputToast = <T, R,>(message: string, onSubmitted?: (value: T) => Promise<R>, success?: string, error?: string, defaultValue?: T): Promise<boolean> =>
         showFormToast(message, [{ type: "text", required: true, defaultValue }], onSubmitted, success, error)
 
-    const showBranchingToast = useCallback((title: string, branches: Record<string, BranchingToastBranch>) => {
+    const showBranchingToast = (title: string, branches: Record<string, BranchingToastBranch>) => {
         const options = Object.entries(branches).map(([id, branch]) => ({ id, name: branch.name }));
 
         // TODO: Do not show success or error messages when moving to the next branch.
@@ -295,7 +295,7 @@ export const useUserInput = (): UseUserInputResult => {
                 return true
             }
         })
-    }, [showFormToast])
+    }
 
     return {
         showConfirmToast,

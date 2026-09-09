@@ -1,6 +1,5 @@
 import type { GeoJSON, Point } from "geojson"
 import { Copy, Map, Wrench } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useFormatters } from "../hooks/useFormatters.ts"
@@ -63,7 +62,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
         }
     }
 
-    const properties = useMemo(() => region && ({
+    const properties = region && ({
         [t("region.label.type")]: isGeographicalRegion(region) ? t("region.type.geographical") : t("region.type.composite"),
         [t("region.label.radius")]: isGeographicalRegion(region) && region.radius > 0 && formatKilometers(region.radius),
         [t("region.label.country")]: isGeographicalRegion(region) && region.countryCategory?.name,
@@ -93,7 +92,7 @@ export default function RegionCard({ region, onCategorySelected, onGeographicalR
                 ))}
             </ul>
         )
-    }), [region, t, formatKilometers, onCategorySelected])
+    })
 
     if (!region) {
         return (

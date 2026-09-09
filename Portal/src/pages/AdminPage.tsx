@@ -1,5 +1,4 @@
 import { FingerprintPattern, Plus } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -73,14 +72,12 @@ export default function AdminPage() {
     const { createGeographicalRegion, createCompositeRegion } = useRegions({ enabled: false })
     const countryCategories = useCategories({ categories: [CategoryCategory.Country] })
 
-    const categoriesWithRegions = useMemo(() => categories?.filter(category => category.category !== CategoryCategory.Country), [categories])
+    const categoriesWithRegions = categories?.filter(category => category.category !== CategoryCategory.Country)
 
-    const watchedFlights = useMemo(() => {
-        const filteredFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
-        return filteredFlights && [...filteredFlights].sort((a, b) => a.start - b.start)
-    }, [trips])
+    const filteredWatchedFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
+    const watchedFlights = filteredWatchedFlights && [...filteredWatchedFlights].sort((a, b) => a.start - b.start)
 
-    const tasksWithTrips = useMemo(() => trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip }))), [trips])
+    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip })))
 
     const tabs = [
         {
@@ -145,7 +142,7 @@ export default function AdminPage() {
         }
     ]
 
-    const activeTab = useMemo(() => tabs.find(tab => tab.name === selectedTab)?.name, [tabs, selectedTab])
+    const activeTab = tabs.find(tab => tab.name === selectedTab)?.name
 
     // TODO: This is temporary to stop fetching data consistency issues every time since there are too many of them right now. The assumption is that there will always be a very little of them otherwise.
     const dataConsistencyIssues = useDataConsistencyIssues(activeTab === AdminMenuTabName.DataConsistencyIssues)

@@ -1,6 +1,5 @@
 import { fromUnixTime } from "date-fns"
 import { Wrench } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
@@ -142,7 +141,6 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         }
     }
 
-    // TODO: Is it worth it to wrap this by useMemo?
     const dataConsistencyIssueHandlers: DataConsistencyIssueHandlerMap = {
         [DataConsistencyIssueName.ConflictingFitnessRecords]: {
             name: t("issue.fitness.conflict.name"),
@@ -400,9 +398,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dataConsistencyIssueHandler = useMemo<DataConsistencyIssueHandler<any> | undefined>(() =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dataConsistencyIssue ? (dataConsistencyIssueHandlers as Record<string, DataConsistencyIssueHandler<any>>)[dataConsistencyIssue.name] : undefined, [dataConsistencyIssue, dataConsistencyIssueHandlers])
+    const dataConsistencyIssueHandler = dataConsistencyIssue ? (dataConsistencyIssueHandlers as Record<string, DataConsistencyIssueHandler<any>>)[dataConsistencyIssue.name] : undefined
 
     if (!dataConsistencyIssue) {
         return (

@@ -1,5 +1,4 @@
 import { Calendar, Trash2 } from "lucide-react"
-import { useMemo } from "react"
 
 import { useCandidatePlaces } from "../hooks/useCandidatePlaces.js"
 import { useFormatters } from "../hooks/useFormatters.ts"
@@ -25,10 +24,10 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
     const { places } = useRegularPlaces({ tripId: trip?.id, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates] })
     const { candidatePlaces } = useCandidatePlaces({ tripId: trip?.id, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates] })
 
-    const tripPlaces = useMemo(() => trip && (places?.length ? places : candidatePlaces), [trip, places, candidatePlaces])
-    const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some((date => date?.layover))), [trip, tripPlaces])
+    const tripPlaces = trip && (places?.length ? places : candidatePlaces)
+    const tripPlacesWithoutLayover = trip && tripPlaces?.filter(place => !place.dates?.some((date => date?.layover)))
 
-    const countryCategories = useMemo(() => {
+    const countryCategories = (() => {
         const categoryMap = new Map()
         tripPlacesWithoutLayover?.forEach(place => {
             const category = place.getCategory(CategoryCategory.Country)
@@ -38,21 +37,12 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
         })
 
         return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
-    }, [tripPlacesWithoutLayover])
+    })()
 
-    const days = useMemo<Partial<Record<number, (Place & Date)[]>>>(() => {
-        const flatPlaces = tripPlaces?.flatMap(place => (place.dates ?? []).map(date => ({ ...place, ...date }))) ?? []
-        return Object.groupBy(flatPlaces, ({ start }) => Math.floor(start / (ONE_DAY_SECONDS)))
-    }, [tripPlaces])
+    const flatPlaces = tripPlaces?.flatMap(place => (place.dates ?? []).map(date => ({ ...place, ...date }))) ?? []
+    const days: Partial<Record<number, (Place & Date)[]>> = Object.groupBy(flatPlaces, ({ start }) => Math.floor(start / (ONE_DAY_SECONDS)))
 
-    const totalDays = useMemo(() => {
-        if (!tripPlaces || tripPlaces.length === 0) {
-            return 0
-        }
-
-        const maxEnd = Math.max(...tripPlaces.flatMap(place => place.dates ?? []).map(date => date.end))
-        return Math.floor(maxEnd / ONE_DAY_SECONDS) + 1
-    }, [tripPlaces])
+    const totalDays = tripPlaces?.length ? (Math.floor(Math.max(...tripPlaces.flatMap(place => place.dates ?? []).map(date => date.end)) / ONE_DAY_SECONDS) + 1) : 0
 
     const handleTripRemoved = () => {
         if (trip?.id && onTripRemoved) {

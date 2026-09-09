@@ -1,5 +1,4 @@
 import {MoveLeft, MoveRight } from "lucide-react"
-import { useMemo } from "react"
 import { TailSpin } from "react-loader-spinner"
 
 import type { Trip } from "../classes/Trip.ts"
@@ -15,8 +14,8 @@ interface TripNavigationProps {
 export default function TripNavigation({ trip, canDisplayFutureTrips }: TripNavigationProps) {
     const { trips } = useRegularTrips()
 
-    const previousTrip = useMemo(() => trip?.isCandidate() ? null : trips?.findLast(t => (t?.start ?? 0) < (trip?.start ?? 0)) ?? null, [trip, trips])
-    const nextTrip = useMemo(() => trip?.isCandidate() ? null : trips?.find(t => (t?.start ?? Infinity) > (trip?.start ?? Infinity)) ?? null, [trip, trips])
+    const previousTrip = trip?.isCandidate() ? null : trips?.findLast(t => (t?.start ?? 0) < (trip?.start ?? 0)) ?? null
+    const nextTrip = trip?.isCandidate() ? null : trips?.find(t => (t?.start ?? Infinity) > (trip?.start ?? Infinity)) ?? null
 
     return (
         <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">

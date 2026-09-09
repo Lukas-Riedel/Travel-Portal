@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 
 import FlightCardGrid from "../components/FlightCardGrid"
 import FlightMap from "../components/FlightMap"
@@ -14,11 +13,9 @@ export default function FlightsPage() {
 
     const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
 
-    const flights = useMemo(() => {
-        const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)
-            ?.filter(flight => flight.end < getCurrentOrMaximumAllowedTimestamp())
-        return filteredFlights && [...filteredFlights].reverse()
-    }, [trips])
+    const filteredFlights = trips?.flatMap(trip => trip.flights ?? [])?.filter(flight => flight.registration)
+        ?.filter(flight => flight.end < getCurrentOrMaximumAllowedTimestamp())
+    const flights = filteredFlights && [...filteredFlights].reverse()
 
     const countryCategoriesMap = useCountryCategoriesMap()
 

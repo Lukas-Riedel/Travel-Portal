@@ -1,5 +1,4 @@
 import { Edit2, Folder } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -31,14 +30,14 @@ export default function CategoryPage() {
         removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const { places } = useTimeFilteredRegularPlaces({ categoryId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
-    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [places])
+    const countryCategoriesMap = new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
-    const totalScore = useMemo(() => places?.map(place => place.score)?.filter((s): s is NonNullable<typeof s> => s != null)
-        ?.reduce((acc, score) => acc + score, 0), [places])
-    const totalQuality = useMemo(() => places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)
-        ?.reduce((acc, quality) => acc + quality, 0), [places])
-    const placesWithQualityCount = useMemo(() => places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)?.length, [places])
+    const totalScore = places?.map(place => place.score)?.filter((s): s is NonNullable<typeof s> => s != null)
+        ?.reduce((acc, score) => acc + score, 0)
+    const totalQuality = places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)
+        ?.reduce((acc, quality) => acc + quality, 0)
+    const placesWithQualityCount = places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)?.length
 
     const attributes: Record<string, string | number | undefined> = {
         [t("category.attribute.category")]: category?.category && t(`category.category.${category?.category}`),

@@ -1,5 +1,4 @@
 import { startOfDay } from "date-fns"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -36,14 +35,14 @@ export default function YearPage() {
     const { trips: yearTrips } = useRegularTrips({ year: Number(yearParameter), include: [TripIncludedEntity.Expenses, TripIncludedEntity.Flights] })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const flights = useMemo(() => (yearTrips ?? []).flatMap(trip => trip.flights ?? []).filter((f): f is NonNullable<typeof f> => f != null).filter(flight => flight.registration), [yearTrips])
-    const timezone = useMemo(() => configuration?.homeLocation?.timezone, [configuration])
-    const placesWithoutTrip = useMemo(() => places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => (place.dates?.length ?? 0) > 0), [places])
-    const days = useMemo(() => Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(getZonedDate(d.start, timezone ?? "")).getTime()) ?? [])))
-        .sort((a, b) => a - b).map(timestamp => new Date(timestamp)), [placesWithoutTrip, timezone])
+    const flights = (yearTrips ?? []).flatMap(trip => trip.flights ?? []).filter((f): f is NonNullable<typeof f> => f != null).filter(flight => flight.registration)
+    const timezone = configuration?.homeLocation?.timezone
+    const placesWithoutTrip = places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => (place.dates?.length ?? 0) > 0)
+    const days = Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(getZonedDate(d.start, timezone ?? "")).getTime()) ?? [])))
+        .sort((a, b) => a - b).map(timestamp => new Date(timestamp))
 
-    const visitedCountriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [places])
+    const visitedCountriesMap = new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const attributes: Record<string, string | number | undefined> = {
         [t("year.attribute.highlightsCount")]: year?.highlights?.length

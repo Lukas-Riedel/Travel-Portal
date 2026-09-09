@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -37,7 +36,7 @@ export default function PlacePage() {
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
-    const mostSpecificCategory = useMemo(() => place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata), [place])
+    const mostSpecificCategory = place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
 
     const attributes: Record<string, string | number | undefined> = {
         [t("place.attribute.quality")]: place?.quality && `${Math.round(place.quality)}%`,

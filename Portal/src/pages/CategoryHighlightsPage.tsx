@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useParams } from "react-router-dom"
 
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid.tsx"
@@ -17,13 +17,13 @@ export default function CategoryHighlightsPage() {
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
-    const highlightCandidates = useMemo(() => places?.map(place => {
+    const highlightCandidates = places?.map(place => {
         const photos = place.highlights?.filter(highlight => !category?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
         return {
             title: place.name,
             getPhotos: () => Promise.resolve(photos)
         }
-    }).filter(group => group.getPhotos !== undefined), [category, places])
+    }).filter(group => group.getPhotos !== undefined)
 
     const handleHighlightCreated = async (photoId: string) => createCategoryHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))

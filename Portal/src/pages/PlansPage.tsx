@@ -86,38 +86,35 @@ export default function PlansPage() {
             return key ? { ...acc, [key]: [...(acc[key] ?? []), place] } : acc
         }, {})
 
-
-    const regionGeojsonsWithMetadata = useMemo(() => {
-        // TODO: Add the filter to the API endpoint.
-        return regions?.filter(isGeographicalRegion)
-            ?.filter(region => {
-                const geoJson = region.geoJson as GeoJSON
-                return isGeographicalFeature(geoJson) && geoJson.geometry?.type !== "Point"
-            })
-            ?.filter(region => region.category.category === CategoryCategory.Administrative)
-            ?.filter(region => (visitedPlaces ?? []).some(place => place.categories?.some(c => c.id === region.category.id)))
-            ?.map(region => ({
-                ...region,
-                geoJson: {
-                    ...region.geoJson,
-                    properties: {
-                        ...(region.geoJson as Feature).properties,
-                        id: region.category.id,
-                        color: getRegionColor(region)
-                    }
+    // TODO: Add the filter to the API endpoint.
+    const regionGeojsonsWithMetadata = useMemo(() => regions?.filter(isGeographicalRegion)
+        ?.filter(region => {
+            const geoJson = region.geoJson as GeoJSON
+            return isGeographicalFeature(geoJson) && geoJson.geometry?.type !== "Point"
+        })
+        ?.filter(region => region.category.category === CategoryCategory.Administrative)
+        ?.filter(region => (visitedPlaces ?? []).some(place => place.categories?.some(c => c.id === region.category.id)))
+        ?.map(region => ({
+            ...region,
+            geoJson: {
+                ...region.geoJson,
+                properties: {
+                    ...(region.geoJson as Feature).properties,
+                    id: region.category.id,
+                    color: getRegionColor(region)
                 }
-            }))
-    }, [regions, getRegionColor])
+            }
+        })), [regions, getRegionColor, visitedPlaces])
 
-    const filteredCandidatePlaces = useMemo(() => candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance), [candidatePlaces, maxDistance])
-    const filteredVisitedPlaces = useMemo(() => visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality), [visitedPlaces, maxQuality])
+    const filteredCandidatePlaces = candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance)
+    const filteredVisitedPlaces = visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality)
 
-    const furthestPlace = useMemo(() => candidatePlaces?.filter((place): place is Place & { distance: number } => place.distance != null)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined as (Place & { distance: number }) | undefined), [candidatePlaces])
-    const lowestQualityPlace = useMemo(() => visitedPlaces?.filter((place): place is Place & { quality: number } => place.quality != null)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined as (Place & { quality: number }) | undefined), [visitedPlaces])
+    const furthestPlace = candidatePlaces?.filter((place): place is Place & { distance: number } => place.distance != null)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined as (Place & { distance: number }) | undefined)
+    const lowestQualityPlace = visitedPlaces?.filter((place): place is Place & { quality: number } => place.quality != null)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined as (Place & { quality: number }) | undefined)
 
-    const countriesCandidatePlaces = useMemo(() => groupPlacesByKey(filteredCandidatePlaces, place => place.country), [filteredCandidatePlaces])
-    const countriesVisitedPlaces = useMemo(() => groupPlacesByKey(filteredVisitedPlaces, place => place.country), [filteredVisitedPlaces])
-    const regionsVisitedPlaces = useMemo(() => groupPlacesByKey(filteredVisitedPlaces, place => place.getCategory(CategoryCategory.Administrative)?.name), [filteredVisitedPlaces])
+    const countriesCandidatePlaces = groupPlacesByKey(filteredCandidatePlaces, place => place.country)
+    const countriesVisitedPlaces = groupPlacesByKey(filteredVisitedPlaces, place => place.country)
+    const regionsVisitedPlaces = groupPlacesByKey(filteredVisitedPlaces, place => place.getCategory(CategoryCategory.Administrative)?.name)
 
     const tabs = [
         {
@@ -142,7 +139,7 @@ export default function PlansPage() {
         }
     ]
 
-    const activeTab = useMemo(() => tabs.find(tab => tab.name === selectedTab)?.name, [tabs, selectedTab])
+    const activeTab = tabs.find(tab => tab.name === selectedTab)?.name
 
     const handleCandidatePlaceCreated = () => {
         showCreatePlaceToast((name, address) => createCandidatePlace(name, address).then(place => (navigate(place), place)))

@@ -1,5 +1,4 @@
 import { ArrowUpLeftFromCircle, ChevronDown, Clock, Cloud, CloudRain, CloudSun, Droplets, HelpCircle, type LucideIcon,Sun, Wind } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Coordinates } from "../types/Coordinates.ts"
@@ -22,7 +21,7 @@ interface WeatherRowProps {
 export default function WeatherRow({ coordinates, weather, start, end, timezone, showTime, onWeatherForecastExpanded }: WeatherRowProps) {
     const { t } = useTranslation()
 
-    const { WeatherIcon, color, hoverColor } = useMemo<{ WeatherIcon: LucideIcon, color: string, hoverColor?: string }>(() => {
+    const getWeatherIconProps = (): { WeatherIcon: LucideIcon, color: string, hoverColor?: string } => {
         if (onWeatherForecastExpanded) {
             return {
                 WeatherIcon: ChevronDown,
@@ -63,9 +62,11 @@ export default function WeatherRow({ coordinates, weather, start, end, timezone,
             WeatherIcon: Sun,
             color: "text-amber-500"
         }
-    }, [weather, onWeatherForecastExpanded])
+    }
 
-    const confidenceColor = useMemo(() => {
+    const { WeatherIcon, color, hoverColor } = getWeatherIconProps()
+
+    const getConfidenceColor = () => {
         const confidence = weather?.clouds?.confidence;
 
         if (confidence === null) {
@@ -81,7 +82,9 @@ export default function WeatherRow({ coordinates, weather, start, end, timezone,
         }
 
         return "text-emerald-500"
-    }, [weather?.clouds?.confidence])
+    }
+
+    const confidenceColor = getConfidenceColor()
 
     return (
         <div className={`flex flex-col w-full ${weather.clouds ? "gap-1" : "gap-0"}`}>

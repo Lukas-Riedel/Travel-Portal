@@ -1,5 +1,4 @@
 import { Folder } from "lucide-react"
-import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import AppLink from "../components/AppLink.tsx"
@@ -20,8 +19,8 @@ export default function LabelPage() {
     const { label, updateLabelName } = useLabel(labelId)
     const { places } = useTimeFilteredRegularPlaces({ labelId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
-    const countryCategoriesMap = useMemo(() => new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [places])
+    const countryCategoriesMap = new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     return hasRole(UserRole.LabelRead) && (
         <>

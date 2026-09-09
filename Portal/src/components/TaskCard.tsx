@@ -1,5 +1,4 @@
 import { CircleArrowUp, SquarePen, Trash2 } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Trip } from "../classes/Trip.ts"
@@ -41,10 +40,10 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
         }
     }
 
-    const properties = useMemo(() => trip && task && ({
+    const properties = trip && task && ({
         [t("task.label.description")]: task.description,
         [t("task.label.deadline")]: task.deadline && formatTimestamp(task.deadline, t("general.format.date.year.included"))
-    }), [trip, task, t])
+    })
 
     if (!task || !trip) {
         return (

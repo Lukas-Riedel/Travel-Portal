@@ -1,5 +1,4 @@
 import { FolderSync } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Device } from "../types/CoreSwaggerTypes.ts"
@@ -23,7 +22,7 @@ interface DeviceCardProps {
 export default function DeviceCard({ device, onFolderSynchronizationRequested }: DeviceCardProps) {
     const { t } = useTranslation()
 
-    const isOnline = useMemo(() => device && isDeviceOnline(device), [device])
+    const isOnline = device ? isDeviceOnline(device) : false
 
     const handleFolderSynchronizedRequested = () => {
         if (onFolderSynchronizationRequested) {
@@ -31,7 +30,7 @@ export default function DeviceCard({ device, onFolderSynchronizationRequested }:
         }
     }
 
-    const properties = useMemo(() => device && ({
+    const properties = device && ({
         [t("device.label.type")]: formatDeviceType(device.type),
         [t("device.label.status")]: (
             <span className={isOnline ? "text-green-600" : "text-red-600"}>
@@ -47,7 +46,7 @@ export default function DeviceCard({ device, onFolderSynchronizationRequested }:
                     </li>))}
             </ul>
         )
-    }), [device, t])
+    })
 
     if (!device) {
         return (

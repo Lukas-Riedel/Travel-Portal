@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -36,11 +35,11 @@ export default function TripPage() {
     const { candidatePlaces } = useCandidatePlaces({ tripId, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], sort: PlaceSortingStrategy.ValueScore })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const tripPlaces = useMemo(() => trip?.isCandidate() ? candidatePlaces : places, [trip, places, candidatePlaces])
-    const tripPlacesWithoutLayover = useMemo(() => trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)), [tripPlaces])
+    const tripPlaces = trip?.isCandidate() ? candidatePlaces : places
+    const tripPlacesWithoutLayover = trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover))
 
-    const visitedCountriesMap = useMemo(() => new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])), [tripPlacesWithoutLayover])
+    const visitedCountriesMap = new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const attributes: Record<string, string | number | undefined> = {
         [t("trip.attribute.highlightsCount")]: trip?.highlights?.length

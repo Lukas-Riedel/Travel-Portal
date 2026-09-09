@@ -1,6 +1,5 @@
 import { addMinutes, startOfDay } from "date-fns"
 import { Sun, Sunrise, Sunset } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Place } from "../types/CoreSwaggerTypes.ts"
@@ -16,11 +15,11 @@ interface SunAltitudeIconProps {
 export default function SunAltitudeIcon({ place, altitude, date }: SunAltitudeIconProps) {
     const { t } = useTranslation()
 
-    const isSunrise = useMemo(() => Object.is(altitude, +0), [altitude])
-    const isSunset = useMemo(() => Object.is(altitude, -0), [altitude])
-    const isPositiveRateAltitude = useMemo(() => altitude > 0 || isSunrise, [altitude, isSunrise])
+    const isSunrise = Object.is(altitude, +0)
+    const isSunset = Object.is(altitude, -0)
+    const isPositiveRateAltitude = altitude > 0 || isSunrise
 
-    const time = useMemo(() => {
+    const time = (() => {
         if (!place) {
             return null
         }
@@ -48,9 +47,9 @@ export default function SunAltitudeIcon({ place, altitude, date }: SunAltitudeIc
         }
 
         return null
-    }, [date, place])
+    })()
 
-    const SunIcon = useMemo(() => isSunrise ? Sunrise : isSunset ? Sunset : Sun, [isSunrise, isSunset])
+    const SunIcon = isSunrise ? Sunrise : isSunset ? Sunset : Sun
 
     return (
         <div className="flex flex-col items-center">

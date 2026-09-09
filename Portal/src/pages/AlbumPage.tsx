@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import AlbumPhotoTileGrid from "../components/AlbumPhotoTileGrid.tsx"
@@ -16,7 +15,7 @@ export default function AlbumPage() {
     const { place, refreshPlaceAlbum } = usePlace(placeId)
     const photos = usePlaceAlbumPhotos(placeId, albumId)
 
-    const date = useMemo(() => albumId ? place?.getDateByAlbumId(albumId) : undefined, [place, albumId])
+    const date = albumId ? place?.getDateByAlbumId(albumId) : undefined
 
     return hasRole(UserRole.PlaceAlbumRead) && (
         <AlbumPhotoTileGrid

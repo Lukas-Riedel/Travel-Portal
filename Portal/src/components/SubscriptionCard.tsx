@@ -1,5 +1,4 @@
 import { Trash2 } from "lucide-react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
@@ -24,11 +23,11 @@ export default function SubscriptionCard({ subscription, onSubscriptionRemoved }
         }
     }
 
-    const properties = useMemo(() => subscription && ({
+    const properties = subscription && ({
         [t("subscription.label.value")]: `${subscription.value} ${subscription.currency}`,
         [t("subscription.label.expiration")]: formatTimestamp(subscription.expiration, t("general.format.date.year.included")),
         [t("subscription.label.occurrences")]: subscription.occurrences
-    }), [subscription, t])
+    })
 
     if (!subscription) {
         return (

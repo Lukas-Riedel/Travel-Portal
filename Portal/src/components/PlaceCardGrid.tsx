@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import type { Place } from "../classes/Place.ts"
@@ -15,7 +14,7 @@ interface PlaceCardProps {
 const haveDistance = (places: DistanceAwarePlace[] | Place[]): places is DistanceAwarePlace[] => places.length > 0 && (places[0] as DistanceAwarePlace).distance !== undefined
 
 export default function PlaceCardGrid({ places, rowSize, columnSize, onPlaceRemoved }: PlaceCardProps) {
-    const sortedPlaces = useMemo(() => places && (haveDistance(places) ? [...places].sort((a, b) => a.distance! - b.distance!) : places), [places])
+    const sortedPlaces = places && (haveDistance(places) ? [...places].sort((a, b) => a.distance! - b.distance!) : places)
 
     return (
         <CardGrid

@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Bar, BarChart, Cell,Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
@@ -49,7 +48,7 @@ export default function StatisticsCard({ statistics, years }: StatisticsCardProp
     const { configuration } = useConfiguration()
     const { formatStatisticsUnit } = useFormatters()
 
-    const StandingStatisticsChart = useMemo(() => statistics ? (CHART_TYPES[statistics.name] || StandingStatisticsBarChart) : StandingStatisticsBarChart, [statistics?.name])
+    const StandingStatisticsChart = statistics ? (CHART_TYPES[statistics.name] || StandingStatisticsBarChart) : StandingStatisticsBarChart
 
     if (!statistics) {
         return (

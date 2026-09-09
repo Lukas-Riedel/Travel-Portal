@@ -1,5 +1,5 @@
 import { fromUnixTime, startOfDay } from "date-fns"
-import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon, type LucideIcon, Moon, Sun, SunMoon } from "lucide-react"
+import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon, Moon, Sun, SunMoon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
@@ -49,8 +49,8 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.to.shortName }), address: t("airport.format", { name: flight.to.shortName }), type: KnownAddressType.Airport })) ?? [])
     ])
 
-    const currentSunAltitude = useMemo(() => lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude ? Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)) : undefined, [lastSeenBridgeXDevice?.data])
-    const SunAltitudeIcon = useMemo<LucideIcon>(() => currentSunAltitude != null && currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude != null && currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon, [currentSunAltitude])
+    const currentSunAltitude = lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude ? Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)) : undefined
+    const SunAltitudeIcon = currentSunAltitude && currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude && currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon
 
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
 
@@ -73,11 +73,11 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         return () => window.removeEventListener("resize", onResize)
     }, [])
 
-    const days = useMemo(() => trip && getTripDays(trip, places, timezone)?.filter(date => isTodayOrFutureDay(date, timezone)), [trip, places, timezone])
+    const days = trip && getTripDays(trip, places, timezone)?.filter(date => isTodayOrFutureDay(date, timezone))
 
-    const tripPlacesWithoutLayover = useMemo(() => trip && places?.filter(place => !place.dates?.some(date => date?.layover)), [trip, places])
-    const countryCategories = useMemo(() => [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
-        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name)), [tripPlacesWithoutLayover])
+    const tripPlacesWithoutLayover = trip && places?.filter(place => !place.dates?.some(date => date?.layover))
+    const countryCategories = [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
+        ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name))
 
     const [targetLocation, setTargetLocation] = useState<Coordinates | null>(null)
 

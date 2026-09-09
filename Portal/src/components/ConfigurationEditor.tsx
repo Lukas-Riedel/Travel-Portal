@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import ReactJson from "react-json-view"
 
@@ -25,7 +24,7 @@ export default function ConfigurationEditor({ configuration, onConfigurationUpda
         }
     }
 
-    const keys = useMemo(() => configuration && Object.keys(configuration).map(key => ({ name: key, label: formatConfigurationKeyName(key) })), [configuration])
+    const keys = configuration && Object.keys(configuration).map(key => ({ name: key, label: formatConfigurationKeyName(key) }))
     const internalConfiguration = configuration as Record<string, unknown>
 
     return (

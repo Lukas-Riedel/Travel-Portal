@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 
 import { useAppNavigate } from "../hooks/useAppNavigate"
 import type { Airport, Category, Flight } from "../types/CoreSwaggerTypes"
@@ -33,10 +32,10 @@ export default function FlightMap({ flights, airportMainCategorySelector }: Flig
         return PATH_COLORS[index]
     }
 
-    const airports = useMemo(() => [...(flights?.map(f => f.from) ?? []), ...(flights?.map(f => f.to) ?? [])]
-        .filter((airport, index, self) => self.findIndex(a => a.id === airport.id) === index), [flights])
+    const airports = [...(flights?.map(f => f.from) ?? []), ...(flights?.map(f => f.to) ?? [])]
+        .filter((airport, index, self) => self.findIndex(a => a.id === airport.id) === index)
 
-    const flightPaths = useMemo<FlightPath[]>(() => flights?.reduce((flightPaths: FlightPath[], flight) => {
+    const flightPaths: FlightPath[] = flights?.reduce((flightPaths: FlightPath[], flight) => {
         const flightPath = flightPaths.find(flightPath => (flightPath.from.id === flight.from.id && flightPath.to.id === flight.to.id)
             || (flightPath.to.id === flight.from.id && flightPath.from.id === flight.to.id))
 
@@ -52,9 +51,9 @@ export default function FlightMap({ flights, airportMainCategorySelector }: Flig
         }
 
         return flightPaths
-    }, []) ?? [], [flights])
+    }, []) ?? []
 
-    const maxFlightsPerFlightPathCount = useMemo(() => Math.max(...(flightPaths ?? []).map(flightPath => flightPath.count)), [flightPaths])
+    const maxFlightsPerFlightPathCount = Math.max(...(flightPaths ?? []).map(flightPath => flightPath.count))
 
     return (
         <Map

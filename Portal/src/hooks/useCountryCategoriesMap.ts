@@ -1,5 +1,3 @@
-import { useMemo } from "react"
-
 import { CategoryCategory, type CategoryIncludedEntity } from "../types/CoreSwaggerTypes"
 import type { UseCountryCategoriesMapResult } from "../types/UseCountryCategoriesMapResult"
 import { useCategories } from "./useCategories"
@@ -11,7 +9,5 @@ interface UseCountryCategoriesMapProps {
 export const useCountryCategoriesMap = ({ include }: UseCountryCategoriesMapProps = {}): UseCountryCategoriesMapResult => {
     const countryCategories = useCategories({ categories: [CategoryCategory.Country], include })
 
-    return useMemo(() => {
-        return new Map(countryCategories?.map(category => [category.name, category]))
-    }, [countryCategories])
+    return countryCategories ? new Map(countryCategories?.map(category => [category.name, category])) : undefined
 }

@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 
 import PlaceMapAndFlightMapToggle from "../components/PlaceMapAndFlightMapToggle"
 import StaticMapFrame from "../components/StaticMapFrame.tsx"
@@ -20,7 +19,7 @@ export default function StatisticsPage() {
     const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const flights = useMemo(() => (trips ?? []).flatMap(trip => trip.flights ?? []).filter(flight => flight.registration), [trips])
+    const flights = (trips ?? []).flatMap(trip => trip.flights ?? []).filter(flight => flight.registration)
 
     return hasRole(UserRole.StatisticsRead) && (
         <>

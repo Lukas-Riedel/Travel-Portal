@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { useRegions } from "../hooks/useRegions"
 import type { Category, GeographicalRegion } from "../types/CoreSwaggerTypes"
@@ -13,8 +13,8 @@ interface RegionEditorProps {
 }
 
 export default function RegionEditor({ categories, selectedKey, onKeySelected }: RegionEditorProps) {
-    const keys = useMemo(() => categories?.map(category => ({ name: category.name, label: category.name, target: category })) ?? null, [categories])
-    const selectedCategory = useMemo(() => categories?.find(category => category.name === selectedKey), [categories, selectedKey])
+    const keys = categories?.map(category => ({ name: category.name, label: category.name, target: category })) ?? null
+    const selectedCategory = categories?.find(category => category.name === selectedKey)
 
     return (
         <Editor

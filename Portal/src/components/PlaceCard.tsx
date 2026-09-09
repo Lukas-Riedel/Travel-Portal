@@ -1,5 +1,4 @@
 import { Earth, Trash2 } from "lucide-react"
-import { useMemo } from "react"
 
 import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import type { Place } from "../classes/Place.ts"
@@ -23,7 +22,7 @@ export default function PlaceCard({ place, onPlaceRemoved }: PlaceCardProps) {
     const { showRemovePlaceToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
 
-    const mostSpecificCategory = useMemo(() => place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata), [place])
+    const mostSpecificCategory = place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
 
     const handlePlaceRemoved = () => {
         if (onPlaceRemoved) {
