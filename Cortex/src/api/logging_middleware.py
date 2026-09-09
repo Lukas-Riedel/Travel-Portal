@@ -5,7 +5,7 @@ from typing import Final
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.core.logger import logger, transaction_id, request_origin
+from src.core.logger import logger, request_origin, transaction_id
 
 TRANSACTION_ID_HEADER: Final[str] = "Transaction-Id"
 REQUEST_ORIGIN_HEADER: Final[str] = "Request-Origin"

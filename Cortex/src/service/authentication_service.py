@@ -1,6 +1,6 @@
 import requests
 from fastapi import HTTPException, status
-from jose import jwt, jwk
+from jose import jwk, jwt
 from jose.utils import base64url_decode
 
 

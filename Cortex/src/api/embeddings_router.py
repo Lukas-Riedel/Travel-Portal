@@ -1,7 +1,6 @@
-from typing import List, Final
+from typing import Final, List
 
-from fastapi import APIRouter, Request, Depends
-from fastapi.params import Query
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
 from src.api.dependencies import require_backend_service_account

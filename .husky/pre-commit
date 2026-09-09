@@ -1,2 +1,10 @@
 cd Portal
 npx lint-staged
+cd ..
+
+cd Cortex
+STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$" | sed "s|^Cortex/||")
+if [ -n "$STAGED_PY" ]; then
+  echo "$STAGED_PY" | xargs python -m ruff check --fix
+fi
+cd ..
