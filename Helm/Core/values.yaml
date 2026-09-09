@@ -140,6 +140,9 @@ core:
     update:
       threshold:
         days: "7"
+    step:
+      minute:
+        threshold: "30"
   timezone: Europe/Prague
   backup:
     location: /var/tmp/db.sql.gz

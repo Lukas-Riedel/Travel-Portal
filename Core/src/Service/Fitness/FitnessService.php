@@ -10,21 +10,24 @@
 
     class FitnessService {
 
-        // TODO: Extract to an environment variable.
-        private const STEPS_PER_MINUTE_THRESHOLD = 30;
+        private const MIN_DISTANCE_PER_STEP_COEFFICIENT = 0.85;
+        private const MAX_DISTANCE_PER_STEP_COEFFICIENT = 1.15;
+        private const MIN_DISTANCE_PER_STEP_FLOOR = 0.5;
+        private const MAX_DISTANCE_PER_STEP_CEILING = 1.5;
 
         private readonly FitnessMapper $fitnessMapper;
-        private readonly EventPublisher $eventPublisher;        
+        private readonly EventPublisher $eventPublisher;
         private readonly TransactionManager $transactionManager;
         private readonly Logger $logger;
-        
+
         private readonly float $allowOverwriteThresholdCoefficient;
         private readonly int $allowOverwriteStepsThreshold;
         private readonly float $allowOverwriteDistanceThreshold;
         private readonly int $allowOverwriteDurationThreshold;
+        private readonly int $stepsPerMinuteThreshold;
 
         public function __construct(DatabaseClient $databaseClient, EventPublisher $eventPublisher, Logger $logger, float $allowOverwriteThresholdCoefficient,
-            int $allowOverwriteStepsThreshold, float $allowOverwriteDistanceThreshold, int $allowOverwriteDurationThreshold, int $updateThresholdDays) {
+            int $allowOverwriteStepsThreshold, float $allowOverwriteDistanceThreshold, int $allowOverwriteDurationThreshold, int $updateThresholdDays, int $stepsPerMinuteThreshold) {
             $this->fitnessMapper = new FitnessMapper($databaseClient, $updateThresholdDays);
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
@@ -33,6 +36,7 @@
             $this->allowOverwriteStepsThreshold = $allowOverwriteStepsThreshold < 0 ? PHP_INT_MAX : $allowOverwriteStepsThreshold;
             $this->allowOverwriteDistanceThreshold = $allowOverwriteDistanceThreshold < 0 ? PHP_INT_MAX : $allowOverwriteDistanceThreshold;
             $this->allowOverwriteDurationThreshold = $allowOverwriteDurationThreshold < 0 ? PHP_INT_MAX : $allowOverwriteDurationThreshold;
+            $this->stepsPerMinuteThreshold = $stepsPerMinuteThreshold;
         }
         
         public function getConflictingFitnessRecords() : array {
@@ -128,16 +132,15 @@
         }
 
         private function getCorrectedDistance(float $distance, int $steps) : float {
-            // TODO: Create constants for the magic numbers.
-            if ($steps > 0 && (($distance / $steps < max(0.5, $this->fitnessMapper->selectMinimumDistancePerStep() * 0.85))
-                || ($distance / $steps > min($this->fitnessMapper->selectMaximumDistancePerStep() * 1.15, 1.5)))) {
+            if ($steps > 0 && (($distance / $steps < max(self::MIN_DISTANCE_PER_STEP_FLOOR, $this->fitnessMapper->selectMinimumDistancePerStep() * self::MIN_DISTANCE_PER_STEP_COEFFICIENT))
+                || ($distance / $steps > min($this->fitnessMapper->selectMaximumDistancePerStep() * self::MAX_DISTANCE_PER_STEP_COEFFICIENT, self::MAX_DISTANCE_PER_STEP_CEILING)))) {
                 return $steps * $this->fitnessMapper->selectAverageDistancePerStep();
             }
             return $distance;
         }
 
         private function getCorrectedDuration(int $seconds, int $steps) : int {
-            if ($seconds > 0 && $steps > 0 && ($steps / ($seconds / 60.0)) < self::STEPS_PER_MINUTE_THRESHOLD) {
+            if ($seconds > 0 && $steps > 0 && ($steps / ($seconds / 60.0)) < $this->stepsPerMinuteThreshold) {
                 return min($seconds, round($steps * $this->fitnessMapper->selectAverageSecondsPerStep()));
             }
 
