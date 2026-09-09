@@ -174,7 +174,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = new WhereClauseBuilder()
+            $whereClauseBuilder = (new WhereClauseBuilder())
                 ->withClause("NOT EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id)");
 
             $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 

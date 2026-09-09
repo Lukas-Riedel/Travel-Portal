@@ -402,7 +402,7 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = new WhereClauseBuilder()
+            $whereClauseBuilder = (new WhereClauseBuilder())
                 ->withClause("NOT EXISTS (SELECT 1 FROM place_event pe WHERE pe.place_id = pi.id AND pe.\"end\" < ROUND(EXTRACT(EPOCH FROM NOW())))")
                 ->withClause("NOT EXISTS (SELECT 1 FROM place_permanent pp WHERE pp.place_id = pi.id)");
             if ($placeId !== null) {
@@ -487,7 +487,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = new WhereClauseBuilder()->withClause("trip_id = ?", $tripId);
+            $whereClauseBuilder = (new WhereClauseBuilder())->withClause("trip_id = ?", $tripId);
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {

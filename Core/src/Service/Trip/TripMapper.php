@@ -134,7 +134,7 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = new WhereClauseBuilder()->withClause("year IS NULL");
+            $whereClauseBuilder = (new WhereClauseBuilder())->withClause("year IS NULL");
             if ($tripId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $tripId);
             }

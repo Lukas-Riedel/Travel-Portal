@@ -46,7 +46,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = new WhereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
+            $whereClauseBuilder = (new WhereClauseBuilder())->withClause("timestamp <= ?", $timestamp);
             if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type->value);
             }
