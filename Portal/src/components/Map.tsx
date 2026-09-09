@@ -152,10 +152,7 @@ export default function Map({ points, lines, geoJsons, onClick, onRightClick }: 
             return
         }
 
-        const newZoom = mapRef.current.getZoom()
-        if (newZoom) {
-            setZoom(newZoom)
-        }
+        setZoom(mapRef.current.getZoom() ?? 0)
     }
 
     const initMap = (map: google.maps.Map) => {
