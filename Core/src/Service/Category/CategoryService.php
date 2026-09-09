@@ -244,8 +244,7 @@
             return $this->categoryMapper->updateCategoryPublicHolidaysCalendar($categoryId, $publicHolidaysCalendar);
         }
 
-        // TODO: Replace string $category by CategoryCategory $category.
-        public function createCompositeRegion(string $name, string $category, array $includedCategories, array $excludedCategories, bool $overwrite) : CompositeRegion {
+        public function createCompositeRegion(string $name, CategoryCategory $category, array $includedCategories, array $excludedCategories, bool $overwrite) : CompositeRegion {
             // Verify that all referenced regions exist.
             $referencableRegionNames = $this->categoryMapper->selectAllCategoryNames();
 
@@ -293,8 +292,7 @@
             return new CompositeRegion($categoryIdentifier, $includedCategoryIdentifiers, $excludedCategoryIdentifiers);
         }
 
-        // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson, bool $overwrite) : GeographicalRegion {  
+        public function createGeographicalRegion(string $name, ?string $country, CategoryCategory $category, int $radius, mixed $geoJson, bool $overwrite) : GeographicalRegion {
             $countryCategoryIdentifier = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country);                                  
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category); 
 
@@ -325,8 +323,7 @@
             return $geographicalRegion;
         }
 
-        // TODO: Replace string $category by CategoryCategory $category.
-        public function createGeographicalRegionExtensionRegion(string $name, ?string $country, string $category, int $radius, mixed $geoJson) : GeographicalRegion {            
+        public function createGeographicalRegionExtensionRegion(string $name, ?string $country, CategoryCategory $category, int $radius, mixed $geoJson) : GeographicalRegion {
             $countryCategoryIdentifier = $country === null ? null : $this->getOrCreateCountryCategoryIdentifier($country);
             $categoryIdentifier = $this->getOrCreateCategoryIdentifier($name, $category);
 
@@ -402,7 +399,7 @@
         }
 
         public function getOrCreateCountryCategoryIdentifier(string $country) : CategoryIdentifier {
-            return $this->getOrCreateCategoryIdentifier($country, CategoryCategory::Country->value);
+            return $this->getOrCreateCategoryIdentifier($country, CategoryCategory::Country);
         }
 
         public function removeCategory(string $categoryId) : bool {
@@ -425,14 +422,13 @@
             return $points;
         }
         
-        // TODO: Replace string $category by CategoryCategory $category.
-        private function getOrCreateCategoryIdentifier(string $name, string $category) : CategoryIdentifier {
+        private function getOrCreateCategoryIdentifier(string $name, CategoryCategory $category) : CategoryIdentifier {
             $categoryIdentifier = $this->getCategoryIdentifier($name);
             if ($categoryIdentifier !== null) {
                 return $categoryIdentifier;
             }
 
-            $categoryIdentifier = new CategoryIdentifier(null, $name, CategoryCategory::from($category), null, null);
+            $categoryIdentifier = new CategoryIdentifier(null, $name, $category, null, null);
             $this->categoryMapper->insertCategoryIdentifier($categoryIdentifier);
 
             return $categoryIdentifier;

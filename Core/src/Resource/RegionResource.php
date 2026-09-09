@@ -287,7 +287,7 @@
             $radius = $this->getJsonBodyField($request, "radius") ?? 0;
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
-            return $this->categoryService->createGeographicalRegion($name, $country, $category->value, $radius, $geoJson, $overwrite);
+            return $this->categoryService->createGeographicalRegion($name, $country, $category, $radius, $geoJson, $overwrite);
         }
 
         private function handleCreateGeographicalExtensionRegion(Request $request, string $name, CategoryCategory $category) : GeographicalRegion {
@@ -297,7 +297,7 @@
             $radius = $this->getJsonBodyField($request, "radius") ?? 0;
             $geoJson = $this->requireJsonBodyField($request, "geoJson");
             
-            return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category->value, $radius, $geoJson);
+            return $this->categoryService->createGeographicalRegionExtensionRegion($name, $country, $category, $radius, $geoJson);
         }
 
         private function handleCreateCompositeRegion(Request $request, string $name, CategoryCategory $category, bool $overwrite) : CompositeRegion {
@@ -315,7 +315,7 @@
                 return $category["name"];
             }, $this->getJsonBodyField($request, "excludedCategories") ?? array());
             
-            return $this->categoryService->createCompositeRegion($name, $category->value, $includedCategories, $excludedCategories, $overwrite);
+            return $this->categoryService->createCompositeRegion($name, $category, $includedCategories, $excludedCategories, $overwrite);
         }
     }
 ?>
