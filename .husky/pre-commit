@@ -6,6 +6,7 @@ cd Cortex
 STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$" | sed "s|^Cortex/||")
 if [ -n "$STAGED_PY" ]; then
   echo "$STAGED_PY" | xargs python -m ruff check --fix
+  echo "$STAGED_PY" | sed "s|^|Cortex/|" | xargs git add
 fi
 cd ..
 
@@ -13,5 +14,6 @@ for PROJECT in Core Iam Common; do
   STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^${PROJECT}/.*\.php$" | sed "s|^${PROJECT}/||")
   if [ -n "$STAGED_PHP" ]; then
     php .tools/php-cs-fixer.phar fix --config="${PROJECT}/.php-cs-fixer.php" $( echo "$STAGED_PHP" | sed "s|^|${PROJECT}/|" )
+    echo "$STAGED_PHP" | sed "s|^|${PROJECT}/|" | xargs git add
   fi
 done
