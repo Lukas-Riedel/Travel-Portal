@@ -2,32 +2,23 @@
     namespace Common\Client\Cache;
 
     use Common\Client\HealthCheckable;
-    // TODO: This is wrong, no types from Core can be referenced in Common.
-    use Core\OpenLineage\OpenLineageEventManager;
     use Predis\Client;
     use Ramsey\Uuid\Uuid;
 
     class RedisCacheClient implements CacheClient, HealthCheckable {
 
-        private const REDIS_SCHEME = "redis";        
-        private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = self::REDIS_SCHEME . "://%s:%s";
+        private const REDIS_SCHEME = "redis";
 
-        private readonly string $host;
-        private readonly int $port;
+        protected readonly string $host;
+        protected readonly int $port;
         private readonly string $password;
 
-        private ?Client $redisClient = null;    
-        private ?OpenLineageEventManager $openLineageEventManager;
+        private ?Client $redisClient = null;
 
         public function __construct(string $host, int $port, string $password) {
             $this->host = $host;
             $this->port = $port;
             $this->password = $password;
-            $this->openLineageEventManager = null;
-        }
-
-        public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {
-            $this->openLineageEventManager = $openLineageEventManager;
         }
 
         public function getServiceName() : string {
@@ -51,12 +42,10 @@
             $value = $this->redisClient->get($key);
             if ($value !== null) {
                 if ($newTtl !== null) {
-                    $this->redisClient->expire($key, $newTtl);                    
+                    $this->redisClient->expire($key, $newTtl);
                 }
 
-                $convertedValue = json_decode($value, true);
-                $this->addOpenLineageInputDataset($key, $value);
-                return $convertedValue;
+                return json_decode($value, true);
             }
 
             return null;
@@ -66,19 +55,12 @@
             $this->init();
 
             $this->redisClient->set($key, json_encode($value), "EX", $ttl);
-
-            $this->addOpenLineageOutputDataset($key, $value);
         }
 
         public function trySet(string $key, mixed $value, int $ttl) : bool {
             $this->init();
 
-            $wasSet = $this->redisClient->set($key, json_encode($value), "NX", "EX", $ttl) !== null;
-            if ($wasSet) {
-                $this->addOpenLineageOutputDataset($key, $value);
-            }
-
-            return $wasSet;
+            return $this->redisClient->set($key, json_encode($value), "NX", "EX", $ttl) !== null;
         }
 
         public function tryLock(string $key, int $ttl) : ?Lock {
@@ -121,9 +103,8 @@
 
         public function delete(string $key) : void {
             $this->init();
-            
+
             $this->redisClient->del($key);
-            $this->addOpenLineageOutputDataset($key, null); 
         }
 
         public function getSortedSet(string $key) : SortedSet {
@@ -133,10 +114,7 @@
         public function addToSortedSet(string $key, mixed $value, int $score) : void {
             $this->init();
 
-            $wasAdded = $this->redisClient->zadd($key, "GT", $score, json_encode($value));
-            if ($wasAdded) {
-                $this->addOpenLineageOutputDataset($key, $value);
-            }
+            $this->redisClient->zadd($key, "GT", $score, json_encode($value));
         }
 
         public function removeFromSortedSet(string $key, int $minScore, int $maxScore) : array {
@@ -153,7 +131,6 @@
             LUA;
 
             $result = $this->redisClient->eval($lua, 1, $key, $minScore, $maxScore);
-            $this->addOpenLineageOutputDataset($key, null); 
             return is_array($result) ? array_map(fn($value) => json_decode($value, true), $result) : array();
         }
 
@@ -169,30 +146,5 @@
             }
         }
 
-        private function addOpenLineageInputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $hierarchy, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addInput($namespace, $name, $hierarchy, $columns), $key, $value);
-        }
-
-        private function addOpenLineageOutputDataset(string $key, mixed $value) : void {
-            $this->addOpenLineageDataset(fn($namespace, $name, $hierarchy, $columns) => $this->openLineageEventManager->getCurrentEvent()?->addOutput($namespace, $name, $hierarchy, $columns), $key, $value);
-        }
-
-        private function addOpenLineageDataset(callable $callable, string $key, mixed $value) : void {
-            if ($this->openLineageEventManager !== null) {
-                $namespace = sprintf(self::OPENLINEAGE_DATASET_NAMESPACE_FORMAT, $this->host, $this->port);
-                $callable($namespace, $key, $this->getHierarchy($key), $value);
-            }
-        }
-
-        private function getHierarchy(string $key) : array {
-            $hierarchy = array();
-            foreach (explode(":", $key) as &$keyToken) {
-                $hierarchy[] = array("type" => "Namespace", "name" => $keyToken);
-            }
-            if ($hierarchy) {
-                $hierarchy[array_key_last($hierarchy)]["type"] = "Key";
-            }
-            return $hierarchy;
-        }
     }
 ?>
