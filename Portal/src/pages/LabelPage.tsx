@@ -30,12 +30,12 @@ export default function LabelPage() {
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))} />
             <StaticMapFrame>
                 <PlaceMap
-                    places={places ?? null}
+                    places={places}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null}
                 />
             </StaticMapFrame>
             <PlaceTileGrid
-                places={places ?? null}
+                places={places}
                 placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">

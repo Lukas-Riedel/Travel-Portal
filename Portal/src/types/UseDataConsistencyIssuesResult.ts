@@ -1,3 +1,3 @@
 import type { DataConsistencyIssue } from "./CoreSwaggerTypes.ts";
 
-export type UseDataConsistencyIssuesResult = DataConsistencyIssue[] | undefined
+export type UseDataConsistencyIssuesResult = DataConsistencyIssue[] | null

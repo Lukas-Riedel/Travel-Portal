@@ -22,7 +22,7 @@ export default function YearsPage() {
         <>
             <StaticMapFrame>
                 <PlaceMap
-                    places={places ?? null}
+                    places={places}
                     placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
             </StaticMapFrame>
             {hasRole(UserRole.PortalFutureRead) && (
@@ -32,7 +32,7 @@ export default function YearsPage() {
                 <YearTripTileGrid
                     key={year}
                     year={year}
-                    trips={trips ?? null} />
+                    trips={trips} />
             ))}
         </>
     )

@@ -1,7 +1,7 @@
 import type { Highlight, Year } from "./CoreSwaggerTypes.ts"
 
 export interface UseYearResult {
-    year?: Year
+    year: Year | null
     createYearHighlight: (photoId: string) => Promise<Highlight>
     removeYearHighlight: (highlightId: string) => Promise<void>
     updateYearMainHighlight: (highlightId: string) => Promise<Year>

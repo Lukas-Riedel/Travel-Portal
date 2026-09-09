@@ -15,7 +15,7 @@ export default function TrackerPage() {
     return hasRole(UserRole.TrackerRead) && (
         <>
             <TrackerCalendar
-                trips={trips ?? null}
+                trips={trips}
                 timeTrackingEvents={timeTrackingEvents}
                 onEventCreated={hasRole(UserRole.TrackerEdit) ? createTimeTrackingEvent : undefined}
                 onEventRemoved={hasRole(UserRole.TrackerEdit) ? removeTimeTrackingEvent : undefined} />

@@ -40,7 +40,7 @@ export default function PlacePage() {
 
     const attributes: Record<string, string | number | undefined> = {
         [t("place.attribute.quality")]: place?.quality && `${Math.round(place.quality)}%`,
-        [t("place.attribute.tier")]: place && getHighlightsTier(place?.highlights ?? [], place?.mainHighlight),
+        [t("place.attribute.tier")]: place ? getHighlightsTier(place.highlights ?? [], place.mainHighlight) : undefined,
         [t("place.attribute.score")]: place?.score,
         [t("place.attribute.highlightsCount")]: place?.highlights?.length,
         [t("place.attribute.elevation")]: place?.elevation && formatMeters(place.elevation)
@@ -54,7 +54,7 @@ export default function PlacePage() {
     return hasRole(UserRole.PlaceRead) && (
         <>
             <PlaceReviewAlertBar
-                place={place ?? null}
+                place={place}
                 onPlaceReviewed={hasRole(UserRole.PlaceAlbumEdit) && hasRole(UserRole.PortalWarningRead) ? updatePlaceAlbumsReviewed : undefined} />
             <PageHeader
                 name={place?.name ?? null}
@@ -63,7 +63,7 @@ export default function PlacePage() {
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) ? (highlightsCount => refreshPlaceHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined} />
             <HighlightCarousel
-                place={place}
+                place={place ?? undefined}
                 highlights={place ? (place.highlights ?? []).filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) : null}
                 onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotoReplacingTriggeredEvent : undefined}
                 onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) ? handlePhotoCorrected : undefined}
@@ -76,20 +76,20 @@ export default function PlacePage() {
                 onLabelAdded={hasRole(UserRole.PlaceLabelEdit) ? createPlaceLabel : undefined}
                 onLabelRemoved={hasRole(UserRole.PlaceLabelEdit) ? removePlaceLabel : undefined} />
             <PlaceContent
-                place={place ?? null}
+                place={place}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined}
                 onExcerptChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceExcerpt : undefined}
                 onExcerptRefreshed={hasRole(UserRole.PlaceEdit) ? refreshPlaceExcerpt : undefined}
                 onAddressChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceAddress : undefined}
                 onLocationChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceLocation : undefined} />
             <DateTileGrid
-                place={place ?? null}
+                place={place}
                 onAlbumRefreshed={hasRole(UserRole.PlaceAlbumEdit) ? refreshPlaceAlbum : undefined} />
             <TripBar trips={hasRole(UserRole.PortalFutureRead) ? (place?.getAllTrips() ?? null) : (place?.getPastTrips() ?? null)} />
             {place != null && place.getAlbums().length > 0 && place.getPastTrips().length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
-            <NearbyPlaceTileGrid place={place ?? null} />
-            <SunAltitudeBar place={place ?? null} />
+            <NearbyPlaceTileGrid place={place} />
+            <SunAltitudeBar place={place} />
             {hasRole(UserRole.PlaceNoteRead) && (
                 <NoteCardGrid
                     rowSize={3}

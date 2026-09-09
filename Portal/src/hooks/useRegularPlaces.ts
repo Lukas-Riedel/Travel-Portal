@@ -45,7 +45,7 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
     }, [startedUploadingsCount])
 
     return {
-        places: response?.map(place => new Place(place)),
+        places: response === null ? null : response.map(place => new Place(place)),
         createPermanentPlace: (name: string, address: string) => createPermanentPlace(name, address).then(refetchResponse),
         removePermanentPlace: (placeId: string) => removePermanentPlace(placeId).then(refetchResponse)
     }

@@ -11,13 +11,15 @@ export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => 
 
     const countryCode = configuration?.homeLocation?.countryCode
 
-    const { response: publicHolidays = [], isLoading } = useQuery({
+    const { response, isLoading } = useQuery({
         queryKey: ["publicHolidays", `${getCurrentYear()}`, `${maxYear}`],
         queryFn: () => fetchAllPublicHolidays(countryCode!, maxYear),
         staleTime: ONE_MONTH_SECONDS * 1000,
         enabled: !!countryCode,
         refetchOnWindowFocus: false
     })
+
+    const publicHolidays = response ?? []
 
     const isPublicHoliday = useCallback((date: Date) => {
         if (isLoading) {

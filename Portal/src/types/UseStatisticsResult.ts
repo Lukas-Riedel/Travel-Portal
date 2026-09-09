@@ -1,3 +1,3 @@
 import type { Statistics } from "./CoreSwaggerTypes.ts"
 
-export type UseStatisticsResult = Statistics[] | undefined
+export type UseStatisticsResult = Statistics[] | null

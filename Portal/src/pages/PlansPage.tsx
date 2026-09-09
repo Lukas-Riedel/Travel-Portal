@@ -80,7 +80,7 @@ export default function PlansPage() {
         return "#008000"
     }, [candidatePlaces, visitedPlaces])
 
-    const groupPlacesByKey = (places: Place[] | undefined, getKey: (place: Place) => string | undefined): Record<string, Place[]> =>
+    const groupPlacesByKey = (places: Place[] | null | undefined, getKey: (place: Place) => string | undefined): Record<string, Place[]> =>
         (places ?? []).reduce<Record<string, Place[]>>((acc, place) => {
             const key = getKey(place)
             return key ? { ...acc, [key]: [...(acc[key] ?? []), place] } : acc
@@ -106,8 +106,8 @@ export default function PlansPage() {
             }
         })), [regions, getRegionColor, visitedPlaces])
 
-    const filteredCandidatePlaces = candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance)
-    const filteredVisitedPlaces = visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality)
+    const filteredCandidatePlaces = candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance) ?? null
+    const filteredVisitedPlaces = visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality) ?? null
 
     const furthestPlace = candidatePlaces?.filter((place): place is Place & { distance: number } => place.distance != null)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined as (Place & { distance: number }) | undefined)
     const lowestQualityPlace = visitedPlaces?.filter((place): place is Place & { quality: number } => place.quality != null)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined as (Place & { quality: number }) | undefined)
@@ -155,7 +155,7 @@ export default function PlansPage() {
                 <>
                     <StaticMapFrame>
                         <PlaceMap
-                            places={filteredCandidatePlaces ?? null}
+                            places={filteredCandidatePlaces}
                             placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null} />
                     </StaticMapFrame>
                     {furthestPlace && (
@@ -181,7 +181,7 @@ export default function PlansPage() {
                 <>
                     <StaticMapFrame>
                         <PlaceMap
-                            places={filteredVisitedPlaces ?? null}
+                            places={filteredVisitedPlaces}
                             placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null} />
                     </StaticMapFrame>
                     <Slider
@@ -214,7 +214,7 @@ export default function PlansPage() {
             {hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && activeTab === PlansMenuTabName.ConsideredTrips && (
                 <TripCardGrid
                     rowSize={3}
-                    trips={trips ?? null}
+                    trips={trips}
                     onTripRemoved={hasRole(UserRole.TripEdit) ? removeTrip : undefined} />
             )}
             {hasRole(UserRole.PlaceEdit) && (

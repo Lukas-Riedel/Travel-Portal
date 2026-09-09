@@ -36,7 +36,7 @@ export default function TripPage() {
     const countryCategoriesMap = useCountryCategoriesMap()
 
     const tripPlaces = trip?.isCandidate() ? candidatePlaces : places
-    const tripPlacesWithoutLayover = trip && tripPlaces?.filter(place => !place.dates?.some(date => date?.layover))
+    const tripPlacesWithoutLayover = trip && (tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)) ?? null)
 
     const visitedCountriesMap = new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
@@ -68,8 +68,8 @@ export default function TripPage() {
                 onNameChanged={hasRole(UserRole.TripEdit) ? updateTripName : undefined}
                 onRemoved={hasRole(UserRole.TripEdit) ? removeTrip : undefined} />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
-                entity={trip ?? null}
-                places={tripPlacesWithoutLayover ?? null}
+                entity={trip}
+                places={tripPlacesWithoutLayover}
                 flights={trip ? (trip.flights ?? []).filter(flight => flight.registration) : null}
                 placeMainCategorySelector={getPlaceCategory}
                 airportMainCategorySelector={getAirportCategory}
@@ -80,8 +80,8 @@ export default function TripPage() {
                 onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updateTripHighlightQualityAttributes : undefined} />
             <StatisticsPanel statistics={trip ? (trip.statistics ?? []) : null} />
             <TripCalendar
-                trip={trip ?? null}
-                places={tripPlaces ?? null}
+                trip={trip}
+                places={tripPlaces}
                 tripCandidates={candidateTrips}
                 displayWarnings={hasRole(UserRole.PortalWarningRead)}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !trip?.isCandidate() ? publishPhotosUploadingTriggeredEvent : undefined}
@@ -113,7 +113,7 @@ export default function TripPage() {
                     onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined} />
             )}
             <TripNavigation
-                trip={trip ?? null}
+                trip={trip}
                 canDisplayFutureTrips={hasRole(UserRole.PortalFutureRead)} />
         </>
     )

@@ -7,7 +7,7 @@ type ChannelEvent<T extends EventType> =
         : Extract<Event, { name: T }>
 
 export interface UseEventsResult<T extends EventType = EventType> {
-    events?: ChannelEvent<T>[]
+    events: ChannelEvent<T>[] | null
     publishPhotosUploadingTriggeredEvent: (agentId: string, placeId: string, placeName: string, path: string, sendNotification: boolean, albumId?: string, timestamp?: number, mainPhotoPosition?: number) => Promise<void>
     publishPhotoReplacingTriggeredEvent: (agentId: string, placeId: string, albumId: string, placeName: string, replacedPhotoId: string, path: string, sendNotification?: boolean) => Promise<void>
     publishFolderSynchronizationRequestedEvent: (agentId: string, path: string, expiration: number) => Promise<void>

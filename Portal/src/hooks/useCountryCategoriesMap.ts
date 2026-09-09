@@ -9,5 +9,5 @@ interface UseCountryCategoriesMapProps {
 export const useCountryCategoriesMap = ({ include }: UseCountryCategoriesMapProps = {}): UseCountryCategoriesMapResult => {
     const countryCategories = useCategories({ categories: [CategoryCategory.Country], include })
 
-    return countryCategories ? new Map(countryCategories?.map(category => [category.name, category])) : undefined
+    return countryCategories ? new Map(countryCategories.map(category => [category.name, category])) : null
 }

@@ -73,13 +73,13 @@ export default function RecentPlacesPage() {
         <>
             <StaticMapFrame>
                 <PlaceMap
-                    places={allPlaces ?? null}
+                    places={allPlaces}
                     placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null}
                 />
             </StaticMapFrame>
             {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (upcomingOrCurrentTrip?.end ?? 0) < getMaximumAllowedTimetamp() && (
                 <TripSummary
-                    trip={upcomingOrCurrentTrip ?? null}
+                    trip={upcomingOrCurrentTrip}
                     displayDeviceData={hasRole(UserRole.PortalFutureRead)}
                     onNoteAdded={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}
                     onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined}

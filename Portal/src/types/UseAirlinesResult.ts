@@ -1,7 +1,7 @@
 import type { Airline } from "./CoreSwaggerTypes.ts"
 
 export interface UseAirlinesResult {
-    airlines?: Airline[]
+    airlines: Airline[] | null
     createAirline: (name: string) => Promise<Airline>
     createAirlineCode: (airlineId: string, code: string) => Promise<Airline>
     updateAirlineName: (airlineId: string, name: string) => Promise<Airline>

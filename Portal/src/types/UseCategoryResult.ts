@@ -1,7 +1,7 @@
 import type { Category, CategoryCategory, CategoryMetadata, Highlight } from "./CoreSwaggerTypes.ts"
 
 export interface UseCategoryResult {
-    category?: Category
+    category: Category | null
     updateCategoryName: (name: string) => Promise<Category>
     updateCategoryCategory: (category: CategoryCategory) => Promise<Category>
     updateCategoryMetadata: (metadata: CategoryMetadata) => Promise<Category>

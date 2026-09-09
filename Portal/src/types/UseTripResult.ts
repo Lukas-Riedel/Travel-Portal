@@ -2,7 +2,7 @@ import type { Trip } from "../classes/Trip.ts"
 import type { Expense, ExpenseCurrency,ExpenseType, Highlight, Note, Task, TaskPriority } from "./CoreSwaggerTypes.ts"
 
 export interface UseTripResult {
-    trip?: Trip,
+    trip: Trip | null,
     removeTrip: () => Promise<void>
     loadTrip: (candidateTripId: string) => Promise<Trip>
     moveTrip: (start: number) => Promise<Trip>

@@ -2,7 +2,7 @@ import type { Place } from "../classes/Place.ts";
 import type { Album, Highlight, Label, Note } from "./CoreSwaggerTypes.ts";
 
 export interface UsePlaceResult {
-    place?: Place
+    place: Place | null
     updatePlaceName: (name: string) => Promise<Place>
     updatePlaceAddress: (address: string) => Promise<Place>
     createPlaceHighlight: (photoId: string) => Promise<Highlight>

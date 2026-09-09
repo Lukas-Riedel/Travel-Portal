@@ -1,3 +1,3 @@
 import type { Category } from "./CoreSwaggerTypes"
 
-export type UseCountryCategoriesMapResult = Map<string, Category> | undefined
+export type UseCountryCategoriesMapResult = Map<string, Category> | null

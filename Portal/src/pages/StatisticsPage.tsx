@@ -25,14 +25,14 @@ export default function StatisticsPage() {
         <>
             <StaticMapFrame>
                 <PlaceMapAndFlightMapToggle
-                    places={places ?? null}
+                    places={places}
                     flights={flights ?? null}
                     placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null}
                     airportMainCategorySelector={airport => countryCategoriesMap?.get(airport.country ?? "") ?? null} />
             </StaticMapFrame>
             <StatisticsCardGrid
                 rowSize={2}
-                statistics={statistics ?? null}
+                statistics={statistics}
                 years={years} />
         </>
     )

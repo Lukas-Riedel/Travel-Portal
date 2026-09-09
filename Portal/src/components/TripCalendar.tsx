@@ -17,7 +17,7 @@ import DayCard from "./DayCard.tsx"
 interface TripCalendarProps {
     trip: Trip | null
     places: Place[] | null
-    tripCandidates?: Trip[]
+    tripCandidates?: Trip[] | null
     displayWarnings?: boolean
     onTripMoved?: (start: number) => Promise<Trip>
     onTripLoaded?: (tripId: string) => Promise<Trip>

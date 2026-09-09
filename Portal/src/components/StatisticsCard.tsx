@@ -10,7 +10,7 @@ import LoadingCard from "./LoadingCard.tsx"
 
 interface StatisticsCardProps {
     statistics: Statistics | null
-    years?: Year[]
+    years?: Year[] | null
 }
 
 interface ChartValue {

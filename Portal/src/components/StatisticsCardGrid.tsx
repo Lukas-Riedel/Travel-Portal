@@ -6,7 +6,7 @@ interface StatisticsCardGridProps {
     statistics: Statistics[] | null
     rowSize: number
     columnSize?: number
-    years?: Year[]
+    years?: Year[] | null
 }
 
 export default function StatisticsCardGrid({ statistics, rowSize, columnSize, years }: StatisticsCardGridProps) {

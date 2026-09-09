@@ -73,7 +73,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         return () => window.removeEventListener("resize", onResize)
     }, [])
 
-    const days = trip && getTripDays(trip, places, timezone)?.filter(date => isTodayOrFutureDay(date, timezone))
+    const days = trip && getTripDays(trip, places ?? undefined, timezone)?.filter(date => isTodayOrFutureDay(date, timezone))
 
     const tripPlacesWithoutLayover = trip && places?.filter(place => !place.dates?.some(date => date?.layover))
     const countryCategories = [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))

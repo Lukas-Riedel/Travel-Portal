@@ -38,11 +38,11 @@ export default function CandidateCategoryPage() {
                 onNameChanged={hasRole(UserRole.CategoryEdit) ? updateCategoryName : undefined} />
             <StaticMapFrame>
                 <PlaceMap
-                    places={candidatePlaces ?? null}
+                    places={candidatePlaces}
                     placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null} />
             </StaticMapFrame>
             <PlaceCardGrid
-                places={candidatePlaces ?? null}
+                places={candidatePlaces}
                 rowSize={5}
                 onPlaceRemoved={hasRole(UserRole.PlaceEdit) ? removeCandidatePlace : undefined} />
             {hasRole(UserRole.PlaceEdit) && (

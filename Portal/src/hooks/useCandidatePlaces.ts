@@ -36,7 +36,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, nearbyPlaces, 
     })
 
     return {
-        candidatePlaces: response?.map(place => new DistanceAwarePlace(place, currentLocation ? getHaversineDistance(place, currentLocation) : undefined)),
+        candidatePlaces: response === null ? null : response.map(place => new DistanceAwarePlace(place, currentLocation ? getHaversineDistance(place, currentLocation) : undefined)),
         changeCurrentLocation: setCurrentLocation,
         createCandidatePlace: (name: string, address: string) => createCandidatePlace(name, address).then(refetchResponse),
         removeCandidatePlace: (placeId: string) => removeCandidatePlace(placeId).then(refetchResponse)

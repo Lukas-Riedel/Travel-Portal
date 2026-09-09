@@ -42,8 +42,8 @@ export default function CategoryPage() {
     const attributes: Record<string, string | number | undefined> = {
         [t("category.attribute.category")]: category?.category && t(`category.category.${category?.category}`),
         [t("category.attribute.averageQuality")]: totalQuality && placesWithQualityCount && `${Math.round(totalQuality / placesWithQualityCount)}%`,
-        [t("category.attribute.tier")]: category && getHighlightsTier(category?.highlights ?? [], category?.mainHighlight),
-        [t("category.attribute.totalScore")]: totalScore,
+        [t("category.attribute.tier")]: category ? getHighlightsTier(category.highlights ?? [], category.mainHighlight) : undefined,
+        [t("category.attribute.totalScore")]: totalScore ?? undefined,
         [t("category.attribute.highlightsCount")]: category?.highlights?.length
     }
 
@@ -78,8 +78,8 @@ export default function CategoryPage() {
                 onNameChanged={hasRole(UserRole.CategoryEdit) ? updateCategoryName : undefined}
                 onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== CategoryCategory.Country ? removeCategory : undefined} />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
-                entity={category ?? null}
-                places={places ?? null}
+                entity={category}
+                places={places}
                 placeMainCategorySelector={getPlaceCategory}
                 onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotoReplacingTriggeredEvent : undefined}
                 onPhotoCorrected={hasRole(UserRole.PlaceAlbumEdit) ? handlePhotoCorrected : undefined}
@@ -88,7 +88,7 @@ export default function CategoryPage() {
                 onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updateCategoryHighlightQualityAttributes : undefined} />
             <StatisticsPanel statistics={category ? (category.statistics ?? []) : null} />
             <PlaceTileGrid
-                places={places ?? null}
+                places={places}
                 placeMainCategorySelector={getPlaceCategory} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">

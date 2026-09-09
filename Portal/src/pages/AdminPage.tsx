@@ -72,12 +72,12 @@ export default function AdminPage() {
     const { createGeographicalRegion, createCompositeRegion } = useRegions({ enabled: false })
     const countryCategories = useCategories({ categories: [CategoryCategory.Country] })
 
-    const categoriesWithRegions = categories?.filter(category => category.category !== CategoryCategory.Country)
+    const categoriesWithRegions = categories?.filter(category => category.category !== CategoryCategory.Country) ?? null
 
     const filteredWatchedFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
-    const watchedFlights = filteredWatchedFlights && [...filteredWatchedFlights].sort((a, b) => a.start - b.start)
+    const watchedFlights = filteredWatchedFlights ? [...filteredWatchedFlights].sort((a, b) => a.start - b.start) : null
 
-    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip })))
+    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip }))) ?? null
 
     const tabs = [
         {
@@ -247,7 +247,7 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Trip && hasRole(UserRole.TripRead) && hasRole(UserRole.PortalFutureRead) && (
                 <>
                     <TripSummary
-                        trip={upcomingOrCurrentTrip ?? null}
+                        trip={upcomingOrCurrentTrip}
                         displayWarnings={hasRole(UserRole.PortalWarningRead)}
                         displayDeviceData={hasRole(UserRole.PortalFutureRead)}
                         onNoteAdded={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}
@@ -275,7 +275,7 @@ export default function AdminPage() {
                 <>
                     <FlightCardGrid
                         rowSize={4}
-                        flights={watchedFlights ?? null} />
+                        flights={watchedFlights} />
                     <FloatingButton
                         icon={Plus}
                         onClick={handleFlightCreated} />
@@ -286,7 +286,7 @@ export default function AdminPage() {
                     <AirlineCardGrid
                         rowSize={6}
                         columnSize={4}
-                        airlines={airlines ?? null}
+                        airlines={airlines}
                         onAirlineRemoved={removeAirline}
                         onAirlineNameUpdated={updateAirlineName}
                         onAirlineLogoUpdated={updateAirlineLogo}
@@ -298,8 +298,8 @@ export default function AdminPage() {
             )}
             {activeTab === AdminMenuTabName.DataConsistencyIssues && hasRole(UserRole.MonitoringRead) && (
                 <DataConsistencyIssueCardGrid
-                    dataConsistencyIssues={dataConsistencyIssues ?? null}
-                    airlines={airlines ?? null}
+                    dataConsistencyIssues={dataConsistencyIssues}
+                    airlines={airlines}
                     rowSize={4}
                     columnSize={8}
                     onAirlineCodeAssigned={createAirlineCode}
@@ -320,7 +320,7 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Configuration && hasRole(UserRole.ConfigurationEdit) && (
                 <>
                     <ConfigurationEditor
-                        configuration={configuration ?? null}
+                        configuration={configuration}
                         onConfigurationUpdated={updateConfigurationEntry}
                         selectedKey={selectedKey ?? undefined}
                         onKeySelected={setSelectedKey} />
@@ -342,14 +342,14 @@ export default function AdminPage() {
             )}
             {activeTab === AdminMenuTabName.Devices && hasRole(UserRole.DeviceRead) && (
                 <DeviceCardGrid
-                    devices={devices ?? null}
+                    devices={devices}
                     rowSize={4}
                     onFolderSynchronizationRequested={hasRole(UserRole.PlaceAlbumEdit) ? handleFolderSynchronizationRequested : undefined} />
             )}
             {activeTab === AdminMenuTabName.PermanentPlaces && hasRole(UserRole.PlaceEdit) && (
                 <>
                     <PlaceCardGrid
-                        places={permanentPlaces ?? null}
+                        places={permanentPlaces}
                         rowSize={5}
                         onPlaceRemoved={removePermanentPlace} />
                     <FloatingButton
@@ -361,7 +361,7 @@ export default function AdminPage() {
                 <>
                     <SubscriptionCardGrid
                         rowSize={5}
-                        subscriptions={subscriptions ?? null}
+                        subscriptions={subscriptions}
                         onSubscriptionRemoved={removeSubscription} />
                     <FloatingButton
                         icon={Plus}
@@ -371,7 +371,7 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Regions && hasRole(UserRole.RegionEdit) && (
                 <>
                     <RegionEditor
-                        categories={categoriesWithRegions ?? null}
+                        categories={categoriesWithRegions}
                         selectedKey={selectedKey ?? undefined}
                         onKeySelected={setSelectedKey} />
                     <FloatingButton
@@ -383,7 +383,7 @@ export default function AdminPage() {
                 <>
                     <DocumentCardGrid
                         rowSize={4}
-                        documents={documents ?? null}
+                        documents={documents}
                         onDocumentRemoved={hasRole(UserRole.DocumentEdit) ? removeDocument : undefined} />
                     <FloatingButton
                         icon={Plus}
@@ -394,7 +394,7 @@ export default function AdminPage() {
                 <>
                     <VoucherCardGrid
                         rowSize={4}
-                        vouchers={vouchers ?? null}
+                        vouchers={vouchers}
                         onVoucherValueUpdated={updateVoucherValue}
                         onVoucherRemoved={removeVoucher} />
                     <FloatingButton
@@ -405,7 +405,7 @@ export default function AdminPage() {
             {activeTab === AdminMenuTabName.Tasks && hasRole(UserRole.TripTaskEdit) && (
                 <>
                     <TaskCardBoard
-                        tasksWithTrips={tasksWithTrips ?? null}
+                        tasksWithTrips={tasksWithTrips}
                         onTaskDescriptionUpdated={updateTripTaskDescription}
                         onTaskPriorityUpdated={updateTripTaskPriority}
                         onTaskRemoved={removeTripTask} />

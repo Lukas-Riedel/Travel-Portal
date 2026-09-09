@@ -18,7 +18,7 @@ export const useQuery = <T>(options: UndefinedInitialDataOptions<T, Error, T, (s
     }, queryClient)
 
     return {
-        response: query.data,
+        response: query.data ?? null,
         isLoading: query.isLoading,
         setResponse: <V>(response: V) => {
             queryClient.setQueryData(options.queryKey, response)

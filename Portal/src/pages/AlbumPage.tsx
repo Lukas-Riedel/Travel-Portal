@@ -19,9 +19,9 @@ export default function AlbumPage() {
 
     return hasRole(UserRole.PlaceAlbumRead) && (
         <AlbumPhotoTileGrid
-            place={place ?? null}
+            place={place}
             album={date?.album ?? null}
-            photos={photos ?? null}
+            photos={photos}
             onPhotoReplaced={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotoReplacingTriggeredEvent : undefined}
             onMainPhotoUpdated={hasRole(UserRole.PlaceAlbumEdit) ? refreshPlaceAlbum : undefined} />
     )

@@ -66,8 +66,8 @@ export default function YearPage() {
                 onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) ? (highlightsCount => refreshYearHighlights(highlightsCount)) : undefined}
             />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
-                entity={year ?? null}
-                places={places ?? null}
+                entity={year}
+                places={places}
                 flights={flights}
                 placeMainCategorySelector={getPlaceCategory}
                 airportMainCategorySelector={getAirportCategory}

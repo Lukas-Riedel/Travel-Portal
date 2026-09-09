@@ -17,7 +17,7 @@ export const useCandidateTrips = ({ include }: UseCandidateTripsProps = {}): Use
     })
 
     return {
-        trips: response?.map(trip => new Trip(trip)),
+        trips: response === null ? null : response.map(trip => new Trip(trip)),
         removeTrip: (tripId: string) => removeTrip(tripId).then(refetchResponse)
     }
 }
