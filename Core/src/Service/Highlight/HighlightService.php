@@ -6,11 +6,11 @@
     use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Embedding\EmbeddingClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Client\Embedding\EmbeddingClient;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;

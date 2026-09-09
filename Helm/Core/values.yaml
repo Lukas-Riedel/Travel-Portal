@@ -123,6 +123,7 @@ core:
     indoor:
       threshold:
         iso: "640"
+      ratio: "0.6"
   forecast:
     actual:
       days: "10"

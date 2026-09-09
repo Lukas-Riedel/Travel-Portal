@@ -24,9 +24,10 @@
         private readonly int $highlightScoreMultiplier;
         private readonly int $photoScoreMultiplier;
         private readonly int $mainHighlightQualityMultiplier;
+        private readonly float $indoorImagesRatio;
 
         public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService, PhotoService $photoService,
-            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier) {
+            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier, float $indoorImagesRatio) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->categoryService = $categoryService;
@@ -36,6 +37,7 @@
             $this->highlightScoreMultiplier = $highlightScoreMultiplier;
             $this->photoScoreMultiplier = $photoScoreMultiplier;
             $this->mainHighlightQualityMultiplier = $mainHighlightQualityMultiplier;
+            $this->indoorImagesRatio = $indoorImagesRatio;
         }
 
         public function onCategoryRenamed(mixed $message) : void {
@@ -191,8 +193,7 @@
                             : $date->getTrip()->getId();
             
                         $buckets[$tripId] ??= 0;
-                        // TODO: Extract the constant to the deployment configuration.
-                        $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > 0.6
+                        $buckets[$tripId] += $album->getImagesCount() == 0 || ($album->getIndoorImagesCount() / $album->getImagesCount()) > $this->indoorImagesRatio
                             ? $album->getImagesCount() // This is an indoor-only location.
                             : $album->getImagesCount() - $album->getIndoorImagesCount(); // Exclude indoor photos from the score.
                     }                    

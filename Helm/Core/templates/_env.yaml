@@ -153,6 +153,8 @@
   value: "{{ .Values.core.place.score.multiplier.highlight }}"
 - name: PHOTO_SCORE_MULTIPLIER
   value: "{{ .Values.core.place.score.multiplier.photo }}"
+- name: INDOOR_PHOTO_RATIO
+  value: "{{ .Values.core.photo.indoor.ratio }}"
 - name: MAIN_HIGHLIGHT_QUALITY_MULTIPLIER
   value: "{{ .Values.core.place.quality.multiplier.highlight.main }}"
 - name: STATISTICS_VALUES_COUNT_LIMIT

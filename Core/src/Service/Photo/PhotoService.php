@@ -7,11 +7,11 @@
     use Core\Client\CloudStorage\CloudStorageClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Client\Embedding\EmbeddingClient;
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
-    use Core\Client\Embedding\EmbeddingClient;
     use Core\Service\Place\PlaceIdentifier;
 
     class PhotoService {

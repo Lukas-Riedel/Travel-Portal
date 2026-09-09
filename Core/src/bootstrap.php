@@ -10,7 +10,9 @@
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Core\Client\CloudStorage\S3CloudStorageClient;
+    use Core\Client\Clustering\CortexClusteringClient;
     use Core\Client\Database\PostgreSQLDatabaseClient;
+    use Core\Client\Embedding\CortexEmbeddingClient;
     use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
     use Core\Client\Flight\FlightRadar24FlightClient;
     use Core\Client\Forecast\OpenMeteoActualForecastClient;
@@ -36,12 +38,10 @@
     use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CategoryServiceListener;
-    use Core\Client\Clustering\CortexClusteringClient;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
-    use Core\Client\Embedding\CortexEmbeddingClient;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseStatisticsProvider;
     use Core\Service\Fitness\FitnessDataConsistencyMonitor;
@@ -245,7 +245,7 @@
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $distributedCacheClient, $eventPublisher, $scheduler),
-        new PlaceServiceListener($placeService, $tripService, $categoryService, $photoService, $calendarClient, $eventPublisher, getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER")),
+        new PlaceServiceListener($placeService, $tripService, $categoryService, $photoService, $calendarClient, $eventPublisher, getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER"), getenv("INDOOR_PHOTO_RATIO")),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),

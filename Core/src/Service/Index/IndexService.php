@@ -2,11 +2,11 @@
     namespace Core\Service\Index;
 
     use Common\Client\Cache\CacheClient;
+    use Core\Client\Clustering\ClusteringClient;
+    use Core\Client\Embedding\EmbeddingClient;
     use Core\Client\Search\SearchClient;
     use Core\Common\CommonConstants;
-    use Core\Client\Clustering\ClusteringClient;
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Client\Embedding\EmbeddingClient;
     use Monolog\Logger;
     use Ramsey\Uuid\Uuid;
 
