@@ -21,7 +21,6 @@
     use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
-    use Core\Common\CommonConstants;
     use Core\Service\Geocoding\Location;
     use Core\Service\Index\IndexService;
 
@@ -36,7 +35,6 @@
         private readonly GenerativeContentClient $cachingGenerativeContentClient;        
         private readonly CalendarClient $calendarClient;
         private readonly GoogleClient $googleClient;
-        private readonly CacheClient $distributedCacheClient;
         private readonly ConfigurationService $configurationService;
         private readonly CategoryService $categoryService;
         private readonly HighlightService $highlightService;
@@ -47,7 +45,7 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, GenerativeContentClient $generativeContentClient, GenerativeContentClient $cachingGenerativeContentClient, CalendarClient $calendarClient,
-            GoogleClient $googleClient, CacheClient $distributedCacheClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService,
+            GoogleClient $googleClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService,
             CategoryService $categoryService, LabelService $labelService, ForecastService $forecastService, PhotoService $photoService,
             HighlightService $highlightService, NoteService $noteService, GeocodingService $geocodingService, IndexService $indexService,
             EventPublisher $eventPublisher) {
@@ -57,7 +55,6 @@
             $this->cachingGenerativeContentClient = $cachingGenerativeContentClient;
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
-            $this->distributedCacheClient = $distributedCacheClient;
             $this->configurationService = $configurationService;
             $this->highlightService = $highlightService;
             $this->categoryService = $categoryService;
@@ -116,6 +113,10 @@
 
         public function getRegularPlaces(?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             return $this->doGetRegularPlaces(null, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $includedEntities, $placeSortingStrategy);
+        }
+
+        public function getAllPermanentPlaceIds() : array {
+            return $this->placeMapper->selectAllPermanentPlaceIds();
         }
 
         public function getRegularPlaceForAlbum(string $albumId) : ?Place {

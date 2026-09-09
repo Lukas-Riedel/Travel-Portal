@@ -14,6 +14,8 @@
     use Core\Service\Statistics\StatisticsUnit;
 
     class PlaceStatisticsProvider implements StatisticsProvider {
+        
+        private const YEAR_FORMAT = "Y";
 
         private readonly PlaceService $placeService;
         private readonly ConfigurationService $configurationService;
@@ -70,7 +72,8 @@
             }
             
             if ($statisticsKind === StatisticsKind::Standings) {                      
-                $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");              
+                $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");
+                $permanentPlaceIds = $this->placeService->getAllPermanentPlaceIds(); 
                 $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null,
                     null, $start, $end, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
@@ -153,7 +156,7 @@
                 }
                 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Category) {
-                    $leastRecentlyVisitedPlaces = array_filter($relevantPlaces, fn($place) => !empty($place->getDates()));
+                    $leastRecentlyVisitedPlaces = array_filter($relevantPlaces, fn($place) => !in_array($place->getId(), $permanentPlaceIds) && !empty($place->getDates()));
                     usort($leastRecentlyVisitedPlaces, fn($a, $b) => $a->getDates()[count($a->getDates()) - 1]->getStart() <=> $b->getDates()[count($b->getDates()) - 1]->getStart());
                     $leastRecentlyVisitedPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getDates()[count($place->getDates()) - 1]->getStart()), $leastRecentlyVisitedPlaces);
 
@@ -164,9 +167,9 @@
                 
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year
                     || $statisticsType === StatisticsType::Category) {
-                    $mostVisitedPlaces = array_filter($relevantPlaces, fn($place) => count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $place->getDates()))) > 1);
-                    usort($mostVisitedPlaces, fn($a, $b) => count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $b->getDates()))) <=> count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $a->getDates()))));
-                    $mostVisitedPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), count(array_unique(array_map(fn($date) => $date->getTrip()?->getId(), $place->getDates())))), $mostVisitedPlaces);
+                    $mostVisitedPlaces = array_filter($relevantPlaces, fn($place) => !in_array($place->getId(), $permanentPlaceIds) && count(array_unique(array_map(fn($date) => $date->getTrip()?->getId() ?? date(self::YEAR_FORMAT, $date->getStart()), $place->getDates()))) > 1);
+                    usort($mostVisitedPlaces, fn($a, $b) => count(array_unique(array_map(fn($date) => $date->getTrip()?->getId() ?? date(self::YEAR_FORMAT, $date->getStart()), $b->getDates()))) <=> count(array_unique(array_map(fn($date) => $date->getTrip()?->getId() ?? date(self::YEAR_FORMAT, $date->getStart()), $a->getDates()))));
+                    $mostVisitedPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), count(array_unique(array_map(fn($date) => $date->getTrip()?->getId() ?? date(self::YEAR_FORMAT, $date->getStart()), $place->getDates())))), $mostVisitedPlaces);
 
                     if (count($mostVisitedPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::MostVisitedPlaces, $mostVisitedPlaces, StatisticsUnit::Visits);

@@ -176,7 +176,7 @@
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService);
-    $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $distributedCacheClient, $memoryCacheClient, $configurationService, $categoryService,
+    $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
     $taskService = new TaskService($databaseClient);

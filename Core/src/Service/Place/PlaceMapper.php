@@ -43,6 +43,17 @@
             $this->memoryCacheClient = $memoryCacheClient;
         }
 
+        public function selectAllPermanentPlaceIds() : array {
+            $sql = <<<'SQL'
+                SELECT place_id
+                FROM place_permanent
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->getResultSetForColumn("place_id");
+        }
+
         public function selectDatesForTripAndCountry(string $tripId, string $countryCategoryId) : array {
             $sql = <<<'SQL'
                 SELECT DISTINCT TO_CHAR(TO_TIMESTAMP(pe."start"), 'FMDD.FMMM.YYYY') AS date
