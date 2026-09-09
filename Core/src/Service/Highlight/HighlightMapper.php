@@ -33,7 +33,6 @@
             return $this->getHighlight($highlightRow);
         }
 
-        // TODO: Extract the common functionality shared between selectHighlightsByPhotoIds and selectHighlightsByIds.
         public function selectHighlightsByPhotoIds(array $photoIds) : array {
             $sql = <<<SQL
                 SELECT *
@@ -44,35 +43,11 @@
             $highlightRows = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(...$photoIds)
-                ->getResultSet();            
-            
-            $photoIds = array_filter(array_map(fn($placeRow) => $placeRow["photo_id"], $highlightRows), fn($photoId) => $photoId !== null);
+                ->getResultSet();
 
-            $photos = array();
-            foreach ($this->photoService->getPhotosByIds($photoIds) as &$photo) {
-                $photos[$photo->getId()] = $photo;
-            }
-
-            $highlights = array();
-            foreach ($highlightRows as &$highlightRow) {                
-                if (!isset($photos[$highlightRow["photo_id"]])) {
-                    $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                        null, null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
-                        $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], $highlightRow["impression"], null);
-                }
-                else {
-                    $photo = $photos[$highlightRow["photo_id"]];
-                    $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                        $photo->getPermalink(), $photo->getCamera(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
-                        $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
-                        $highlightRow["atmosphere"], $highlightRow["impression"], $photo->getTimestamp());
-                }
-            }
-            
-            return $highlights;
+            return $this->getHighlights($highlightRows);
         }
 
-        // TODO: Extract the common functionality shared between selectHighlightsByPhotoIds and selectHighlightsByIds.
         public function selectHighlightsByIds(array $highlightIds) : array {
             $sql = <<<SQL
                 SELECT *
@@ -83,32 +58,9 @@
             $highlightRows = $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters(...$highlightIds)
-                ->getResultSet();            
-            
-            $photoIds = array_filter(array_map(fn($placeRow) => $placeRow["photo_id"], $highlightRows), fn($photoId) => $photoId !== null);
+                ->getResultSet();
 
-            $photos = array();
-            foreach ($this->photoService->getPhotosByIds($photoIds) as &$photo) {
-                $photos[$photo->getId()] = $photo;
-            }
-
-            $highlights = array();
-            foreach ($highlightRows as &$highlightRow) {                
-                if (!isset($photos[$highlightRow["photo_id"]])) {
-                    $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                        null, null, null, null, null, null, $highlightRow["composition"], $highlightRow["sky"],
-                        $highlightRow["shadows"], $highlightRow["circumstances"], $highlightRow["atmosphere"], $highlightRow["impression"], null);
-                }
-                else {
-                    $photo = $photos[$highlightRow["photo_id"]];
-                    $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
-                        $photo->getPermalink(), $photo->getCamera(), $photo->getFocalLength(), $photo->getAperture(), $photo->getShutterSpeed(), $photo->getIso(),
-                        $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
-                        $highlightRow["atmosphere"], $highlightRow["impression"], $photo->getTimestamp());
-                }
-            }
-            
-            return $highlights;
+            return $this->getHighlights($highlightRows);
         }
 
         public function selectHighlightsForEntity(HighlightType $highlightType, string $entityId) : array {
@@ -449,6 +401,26 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->execute();
+        }
+
+        private function getHighlights(array $highlightRows) : array {
+            $photoIds = array_filter(array_map(fn($highlightRow) => $highlightRow["photo_id"], $highlightRows), fn($photoId) => $photoId !== null);
+
+            $photos = array();
+            foreach ($this->photoService->getPhotosByIds($photoIds) as &$photo) {
+                $photos[$photo->getId()] = $photo;
+            }
+
+            $highlights = array();
+            foreach ($highlightRows as &$highlightRow) {
+                $photo = $photos[$highlightRow["photo_id"]] ?? null;
+                $highlights[] = new Highlight($highlightRow["id"], $highlightRow["thumbnail_url"], $highlightRow["full_url"], $highlightRow["photo_id"],
+                    $photo?->getPermalink(), $photo?->getCamera(), $photo?->getFocalLength(), $photo?->getAperture(), $photo?->getShutterSpeed(), $photo?->getIso(),
+                    $highlightRow["composition"], $highlightRow["sky"], $highlightRow["shadows"], $highlightRow["circumstances"],
+                    $highlightRow["atmosphere"], $highlightRow["impression"], $photo?->getTimestamp());
+            }
+
+            return $highlights;
         }
 
         private function getHighlight(mixed $highlightRow) : Highlight {
