@@ -36,12 +36,12 @@
     use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CategoryServiceListener;
-    use Core\Service\Clustering\ClusteringService;
+    use Core\Client\Clustering\CortexClusteringClient;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
-    use Core\Service\Embedding\EmbeddingService;
+    use Core\Client\Embedding\CortexEmbeddingClient;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseStatisticsProvider;
     use Core\Service\Fitness\FitnessDataConsistencyMonitor;
@@ -156,9 +156,9 @@
     $googleClient->setAuthenticationService($authenticationService);
 
     // Services.
-    $embeddingService = new EmbeddingService($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $clusteringService = new ClusteringService($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $indexService = new IndexService($clusteringService, $embeddingService, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
+    $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $clusteringClient = new CortexClusteringClient($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $indexService = new IndexService($clusteringClient, $embeddingClient, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
         getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"), getenv("STYLE_EMBEDDING_COEFFICIENT"), getenv("NEGATIVE_EMBEDDING_COEFFICIENT"));
     $geocodingService = new GeocodingService($configurationService, $distributedCacheClient, $googleClient, $generativeContentClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
@@ -166,9 +166,9 @@
     $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
-    $photoService = new PhotoService($databaseClient, $embeddingService, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $extendedHttpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
+    $photoService = new PhotoService($databaseClient, $embeddingClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $extendedHttpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
-    $highlightService = new HighlightService($databaseClient, $photoService, $embeddingService, $configurationService, $eventPublisher, $cloudStorageClient, $extendedHttpClient, $logger);
+    $highlightService = new HighlightService($databaseClient, $photoService, $embeddingClient, $configurationService, $eventPublisher, $cloudStorageClient, $extendedHttpClient, $logger);
     $categoryService = new CategoryService($databaseClient, $configurationService, $highlightService, $indexService, $statisticsService, $memoryCacheClient, $cachingGenerativeContentClient, $eventPublisher, $logger);
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),

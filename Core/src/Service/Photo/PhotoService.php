@@ -11,7 +11,7 @@
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
-    use Core\Service\Embedding\EmbeddingService;
+    use Core\Client\Embedding\EmbeddingClient;
     use Core\Service\Place\PlaceIdentifier;
 
     class PhotoService {
@@ -32,7 +32,7 @@
         private const CREATE_PENDING_PHOTOS_BATCH_SIZE = 50;
 
         private readonly PhotoMapper $photoMapper;
-        private readonly EmbeddingService $embeddingService;
+        private readonly EmbeddingClient $embeddingClient;
         private readonly GoogleClient $googleClient;        
         private readonly EventPublisher $eventPublisher;
         private readonly CloudStorageClient $cloudStorageClient;        
@@ -47,12 +47,12 @@
         private readonly int $embeddingWidth;
         private readonly int $embeddingHeight;
 
-        public function __construct(DatabaseClient $databaseClient, EmbeddingService $embeddingService, GoogleClient $googleClient,
+        public function __construct(DatabaseClient $databaseClient, EmbeddingClient $embeddingClient, GoogleClient $googleClient,
             EventPublisher $eventPublisher, CloudStorageClient $cloudStorageClient, CacheClient $distributedCacheClient,
             HttpClient $httpClient, string $coreBaseUrl, string $albumThumbnailBucket, int $thumbnailWidth, int $thumbnailHeight,
             int $embeddingWidth, int $embeddingHeight, int $indoorPhotoIsoThreshold) {
             $this->photoMapper = new PhotoMapper($databaseClient, $googleClient, $indoorPhotoIsoThreshold);
-            $this->embeddingService = $embeddingService;
+            $this->embeddingClient = $embeddingClient;
             $this->googleClient = $googleClient;
             $this->eventPublisher = $eventPublisher;
             $this->cloudStorageClient = $cloudStorageClient;
@@ -457,7 +457,7 @@
 
         private function fetchPhotoEmbeddingFromData(string $data) : array {
             for ($i = 0; $i < self::GET_PHOTO_EMBEDDING_RETRY_COUNT; $i++) {
-                $embedding = $this->embeddingService->getPhotoEmbedding($data);
+                $embedding = $this->embeddingClient->getPhotoEmbedding($data);
 
                 if ($embedding !== null) {
                     return $embedding;

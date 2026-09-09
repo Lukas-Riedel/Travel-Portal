@@ -4,6 +4,7 @@
     use Common\Client\Cache\RedisCacheClient;
     use Core\OpenLineage\OpenLineageEventManager;
 
+    // TODO: Rename to ExtendedRedisCacheClient (similar pattern to ExtendedHttpClient).
     class OpenLineageRedisCacheClient extends RedisCacheClient {
 
         private const REDIS_SCHEME = "redis";

@@ -10,7 +10,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Embedding\EmbeddingService;
+    use Core\Client\Embedding\EmbeddingClient;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;
@@ -22,7 +22,7 @@
 
         private readonly HighlightMapper $highlightMapper;
         private readonly PhotoService $photoService;
-        private readonly EmbeddingService $embeddingService;
+        private readonly EmbeddingClient $embeddingClient;
         private readonly ConfigurationService $configurationService;
         private readonly EventPublisher $eventPublisher;
         private readonly CloudStorageClient $cloudStorageClient;
@@ -31,11 +31,11 @@
         private readonly Logger $logger;
 
         public function __construct(DatabaseClient $databaseClient, PhotoService $photoService,
-            EmbeddingService $embeddingService, ConfigurationService $configurationService, EventPublisher $eventPublisher,
+            EmbeddingClient $embeddingClient, ConfigurationService $configurationService, EventPublisher $eventPublisher,
             CloudStorageClient $cloudStorageClient, HttpClient $httpClient, Logger $logger) {
             $this->highlightMapper = new HighlightMapper($databaseClient, $photoService);
             $this->photoService = $photoService;
-            $this->embeddingService = $embeddingService;
+            $this->embeddingClient = $embeddingClient;
             $this->configurationService = $configurationService;
             $this->cloudStorageClient = $cloudStorageClient;
             $this->eventPublisher = $eventPublisher;
@@ -469,8 +469,8 @@
                         continue;
                     }
 
-                    $optionEmbedding = $this->embeddingService->getTextEmbedding($option["text"]);
-                    $optionSimilarity = $this->embeddingService->getEmbeddingSimilarity($photoEmbedding->getEmbedding(), $optionEmbedding);
+                    $optionEmbedding = $this->embeddingClient->getTextEmbedding($option["text"]);
+                    $optionSimilarity = $this->embeddingClient->getEmbeddingSimilarity($photoEmbedding->getEmbedding(), $optionEmbedding);
 
                     if ($bestOption === null || $optionSimilarity > $maxSimilarity) {
                         $bestOption = $option;

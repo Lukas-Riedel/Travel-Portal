@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Service\Embedding;
+    namespace Core\Client\Embedding;
 
     use Common\Client\Cache\CacheClient;
     use Common\Client\Http\HttpClient;
@@ -8,13 +8,12 @@
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
 
-    // TODO: Transform to EmbeddingClient.
-    class EmbeddingService {
+    class CortexEmbeddingClient implements EmbeddingClient {
 
         private const PHOTO_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/photo";
         private const TEXT_EMBEDDING_API_ENDPOINT_PATH = "/embeddings/text";
 
-        private const TEXT_EMBEDDING_CACHE_KEY_FORMAT = "EmbeddingService:TextEmbedding:%s";
+        private const TEXT_EMBEDDING_CACHE_KEY_FORMAT = "CortexEmbeddingClient:TextEmbedding:%s";
         private const TEXT_EMBEDDING_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
         // TODO: Do not hardcode the source language here.
@@ -45,7 +44,7 @@
                 array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"), json_encode($payload));
             return isset($response["embedding"]) && is_array($response["embedding"]) ? $response["embedding"] : null;
         }
-        
+
         public function getTextEmbedding(string $text) : ?array {
             $cacheKey = sprintf(self::TEXT_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", mb_strtolower($text)));
             $cachedEmbedding = $this->distributedCacheClient->get($cacheKey, self::TEXT_EMBEDDING_CACHE_TTL);
@@ -55,7 +54,7 @@
 
             $translatedText = $this->translationClient->translate($text, self::TEXT_EMBEDDING_SOURCE_LANGUAGE, self::TEXT_EMBEDDING_TARGET_LANGUAGE);
             $payload = array("data" => $translatedText);
-            
+
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getCortexBaseUrl() . self::TEXT_EMBEDDING_API_ENDPOINT_PATH,
                 array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"), json_encode($payload));
             if (!isset($response["embedding"]) || !is_array($response["embedding"])) {

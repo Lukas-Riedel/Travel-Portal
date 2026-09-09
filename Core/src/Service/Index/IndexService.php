@@ -4,9 +4,9 @@
     use Common\Client\Cache\CacheClient;
     use Core\Client\Search\SearchClient;
     use Core\Common\CommonConstants;
-    use Core\Service\Clustering\ClusteringService;
+    use Core\Client\Clustering\ClusteringClient;
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Embedding\EmbeddingService;
+    use Core\Client\Embedding\EmbeddingClient;
     use Monolog\Logger;
     use Ramsey\Uuid\Uuid;
 
@@ -19,8 +19,8 @@
         private const BATCH_SIZE = 1000;
 
         private readonly IndexQueryDefinitionFactory $indexQueryDefinitionFactory;
-        private readonly ClusteringService $clusteringService;
-        private readonly EmbeddingService $embeddingService;
+        private readonly ClusteringClient $clusteringClient;
+        private readonly EmbeddingClient $embeddingClient;
         private readonly ConfigurationService $configurationService;    
         private readonly SearchClient $searchClient;
         private readonly CacheClient $distributedCacheClient;
@@ -35,12 +35,12 @@
 
         private array $entityIndexers = array();
 
-        public function __construct(ClusteringService $clusteringService, EmbeddingService $embeddingService, ConfigurationService $configurationService,
+        public function __construct(ClusteringClient $clusteringClient, EmbeddingClient $embeddingClient, ConfigurationService $configurationService,
             SearchClient $searchClient, CacheClient $distributedCacheClient, Logger $logger, string $compositeIndexName, string $photoIndexName,
             string $selectedPhotoCandidatesLimitCoefficient, string $clustersCountCoefficient, string $styleEmbeddingCoefficient, string $negativeEmbeddingCoefficient) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
-            $this->clusteringService = $clusteringService;
-            $this->embeddingService = $embeddingService;
+            $this->clusteringClient = $clusteringClient;
+            $this->embeddingClient = $embeddingClient;
             $this->configurationService = $configurationService;
             $this->searchClient = $searchClient;
             $this->distributedCacheClient = $distributedCacheClient;
@@ -63,12 +63,12 @@
 
             if (in_array(IndexableEntityType::Photo, $allowedEntityTypes)) {
                 $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Photo, new SearchResult(IndexableEntityType::Place, null, $nn->getParentEntityId()), $nn->getEntityId()),
-                    $this->getNearestNeighbourPhotoIds($this->embeddingService->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
+                    $this->getNearestNeighbourPhotoIds($this->embeddingClient->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
             }
 
             if (in_array(IndexableEntityType::Highlight, $allowedEntityTypes)) {
                 $searchResults = array_merge($searchResults, array_map(fn($nn) => new SearchResult(IndexableEntityType::Highlight, new SearchResult(IndexableEntityType::Place, null, $nn->getParentEntityId()), $nn->getEntityId()),
-                    $this->getNearestNeighbourHighlightIds($this->embeddingService->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
+                    $this->getNearestNeighbourHighlightIds($this->embeddingClient->getTextEmbedding($query), $limit, $limit * $this->selectedPhotoCandidatesLimitCoefficient, true, false, true)));
             }
 
             // This only works because the composite index is currently not supposed to contain neither photos nor highlights.
@@ -200,7 +200,7 @@
             }         
             
             $embeddings = array_map(fn($searchEntry) => $searchEntry->getData()["embedding"], $searchEntries);
-            $clusters = $this->clusteringService->getEmbeddingsClusters($embeddings, round($count * $this->clustersCountCoefficient));
+            $clusters = $this->clusteringClient->getEmbeddingsClusters($embeddings, round($count * $this->clustersCountCoefficient));
 
             $clustersMetadata = array();
             foreach ($clusters as $label => $indices) {
@@ -260,7 +260,7 @@
         }
 
         private function computeEmbeddingForPhotoSelection(string $query) : array {
-            $contentEmbedding = $this->embeddingService->getTextEmbedding($query);
+            $contentEmbedding = $this->embeddingClient->getTextEmbedding($query);
             $styleEmbedding = $this->getStyleEmbedding();
             $negativeEmbedding = $this->getNegativeEmbedding();
 
@@ -304,7 +304,7 @@
 
         private function getNegativeEmbedding() : array {
             $negativeTerms = $this->configurationService->getConfigurationEntry("highlight")["negativeTerms"];
-            return $this->embeddingService->getTextEmbedding(implode(", ", $negativeTerms));
+            return $this->embeddingClient->getTextEmbedding(implode(", ", $negativeTerms));
         }
         
         private function getNearestNeighbours(string $propertyName, array $embedding, int $limit, int $neighboursCount, bool $highlightsOnly, bool $placeMainHighlightsOnly, bool $distinctPlacesOnly) : array {

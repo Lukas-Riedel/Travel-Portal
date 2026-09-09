@@ -1,12 +1,11 @@
 <?php
-    namespace Core\Service\Clustering;
+    namespace Core\Client\Clustering;
 
     use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
     use Core\Service\Authentication\AuthenticationService;
 
-    // TODO: Transform to ClusteringClient.
-    class ClusteringService {
+    class CortexClusteringClient implements ClusteringClient {
 
         private const EMBEDDINGS_CLUSTERING_API_ENDPOINT_PATH = "/clustering/embeddings";
 
