@@ -20,8 +20,7 @@
             else {
                 $response->getBody()->write(json_encode($this->filter($result) ?? array(), JSON_UNESCAPED_UNICODE));
                 $response = $response
-                    // TODO: Remove this workaround for future use cases of POST endpoints returning other codes than 201.
-                    ->withStatus($request->getMethod() === "POST" ? 201 : 200)
+                    ->withStatus($this->isCreateRequest($request, $callable) ? 201 : 200)
                     ->withHeader("Content-Type", "application/json");
             }
 
@@ -31,6 +30,15 @@
                 ->withHeader("Expires", "0");
         }
         
+        private function isCreateRequest(ServerRequestInterface $request, callable $callable) : bool {
+            if ($request->getMethod() !== "POST") {
+                return false;
+            }
+            
+            $methodName = is_array($callable) ? ($callable[1] ?? "") : "";
+            return str_starts_with($methodName, "create");
+        }
+
         private function filter(mixed $value) : mixed {
             $decoded = json_decode(json_encode($value, JSON_UNESCAPED_UNICODE), true);
             if (!is_array($decoded)) {
