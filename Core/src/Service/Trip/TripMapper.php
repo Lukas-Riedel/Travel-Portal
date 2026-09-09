@@ -3,6 +3,7 @@
 
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Common\CommonConstants;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
@@ -133,7 +134,7 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("year IS NULL");
+            $whereClauseBuilder = new WhereClauseBuilder()->withClause("year IS NULL");
             if ($tripId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $tripId);
             }
@@ -215,7 +216,7 @@
                 {$tripSortingStrategy->getOrderByClause()}
             SQL;
             
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($year !== null) {
                 $whereClauseBuilder->withClause("ti.year = ?", $year);
             }

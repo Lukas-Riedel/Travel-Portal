@@ -2,6 +2,7 @@
     namespace Core\Service\Photo;
     
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Client\Google\GoogleClient;
 
     class PhotoMapper {
@@ -551,7 +552,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($albumId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $albumId);
             }

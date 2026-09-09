@@ -2,6 +2,7 @@
     namespace Core\Service\Label;
 
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Service\Configuration\ConfigurationService;
 
     class LabelMapper {
@@ -173,7 +174,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
+            $whereClauseBuilder = new WhereClauseBuilder()
                 ->withClause("NOT EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id)");
 
             $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 

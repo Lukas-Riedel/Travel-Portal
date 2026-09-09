@@ -3,6 +3,7 @@
 
     use Common\Service\Authentication\UserRole;
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Service\Authentication\AuthenticationService;
 
     class DeviceMapper {
@@ -23,7 +24,7 @@
                 ORDER BY last_seen DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($requiredRole !== null) {
                 $whereClauseBuilder->withClause("user_id = ANY(STRING_TO_ARRAY(?, ','))", implode(",", $this->authenticationService->getUserIdsWithRole($requiredRole)));
             }

@@ -2,6 +2,7 @@
     namespace Core\Service\Year;
 
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Common\CommonConstants;
     use Core\Service\Fitness\FitnessService;
     use Core\Service\Highlight\HighlightService;
@@ -48,7 +49,7 @@
                 ORDER BY id DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($year !== null) {
                 $whereClauseBuilder->withClause("id = ?", $year);
             }

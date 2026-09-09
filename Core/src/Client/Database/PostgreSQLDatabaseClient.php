@@ -106,10 +106,6 @@
             return $builder;
         }
         
-        public function whereClauseBuilder() : WhereClauseBuilder {
-            return new WhereClauseBuilder();
-        }
-        
         public function getIsNullOrEqualTo(?string $var) : string {
             return $var === null ? "IS NULL" : ("= '" . \pg_escape_string($this->connection, $var) . "'");
         }

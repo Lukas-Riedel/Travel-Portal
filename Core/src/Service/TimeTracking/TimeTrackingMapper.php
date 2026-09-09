@@ -2,6 +2,7 @@
     namespace Core\Service\TimeTracking;
 
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Common\CommonConstants;
 
     class TimeTrackingMapper {
@@ -23,7 +24,7 @@
                     id DESC
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type->value);
             }
@@ -45,7 +46,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
+            $whereClauseBuilder = new WhereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
             if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type->value);
             }

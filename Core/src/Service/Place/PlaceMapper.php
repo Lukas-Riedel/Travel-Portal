@@ -3,6 +3,7 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
@@ -225,7 +226,7 @@
             SQL;
 
             $homeTimezone = $this->configurationService->getConfigurationEntry("homeLocation")["timezone"];
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($placeId !== null) {
                 $whereClauseBuilder->withClause("pi.id = ?", $placeId);
             }
@@ -401,7 +402,7 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()
+            $whereClauseBuilder = new WhereClauseBuilder()
                 ->withClause("NOT EXISTS (SELECT 1 FROM place_event pe WHERE pe.place_id = pi.id AND pe.\"end\" < ROUND(EXTRACT(EPOCH FROM NOW())))")
                 ->withClause("NOT EXISTS (SELECT 1 FROM place_permanent pp WHERE pp.place_id = pi.id)");
             if ($placeId !== null) {
@@ -486,7 +487,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("trip_id = ?", $tripId);
+            $whereClauseBuilder = new WhereClauseBuilder()->withClause("trip_id = ?", $tripId);
             if ($categoryId !== null) {
                 $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
                 if (count($placeIds) > 0) {

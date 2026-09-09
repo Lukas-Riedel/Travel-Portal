@@ -3,6 +3,7 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Statistics\StatisticsService;
 
@@ -126,7 +127,7 @@
                 ORDER BY name
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if (count($categoryCategories) > 0) {
                 $whereClauseBuilder->withClause("ci.category = ANY(STRING_TO_ARRAY(?, ','))", implode(",", $categoryCategories));
             }
@@ -180,7 +181,7 @@
                 ORDER BY ci.name ASC
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($name !== null) {
                 $whereClauseBuilder->withClause("ci.name = ?", $name);
             }
@@ -224,7 +225,7 @@
                 ORDER BY ci.name ASC
             SQL;
             
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($name !== null) {
                 $whereClauseBuilder->withClause("ci.name = ?", $name);
             }
@@ -288,7 +289,7 @@
                 WHERE :CONDITIONS
             SQL;
 
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($category !== null) {
                 $whereClauseBuilder->withClause("category = ?", $category->value);
             }

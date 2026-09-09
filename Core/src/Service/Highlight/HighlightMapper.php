@@ -2,6 +2,7 @@
     namespace Core\Service\Highlight;
     
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
     use Core\Service\Photo\PhotoService;
 
     class HighlightMapper {
@@ -103,7 +104,7 @@
                 WHERE :CONDITIONS
             SQL;
             
-            $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
+            $whereClauseBuilder = new WhereClauseBuilder();
             if ($highlightId !== null) {
                 $whereClauseBuilder->withClause("id = ?", $highlightId);
             }
