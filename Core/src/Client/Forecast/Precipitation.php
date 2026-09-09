@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Service\Forecast;
+    namespace Core\Client\Forecast;
 
     use OpenApi\Attributes as OA;
 
@@ -25,7 +25,6 @@
             ),
         ]
     )]
-    // TODO: Move to Core\Client\Forecast.
     class Precipitation implements \JsonSerializable {
 
         private readonly float $total;
@@ -39,6 +38,7 @@
         public function getTotal() : float {
             return $this->total;
         }
+
         public function getProbability() : ?float {
             return $this->probability;
         }

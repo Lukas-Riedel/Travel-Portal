@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Service\Forecast;
+    namespace Core\Client\Forecast;
 
     use OpenApi\Attributes as OA;
 
@@ -56,9 +56,8 @@
             )
         ]
     )]
-    // TODO: Move to Core\Client\Forecast.
     class Weather implements \JsonSerializable {
-                
+
         private readonly float $temperature;
         private readonly ?Clouds $clouds;
         private readonly float $wind;

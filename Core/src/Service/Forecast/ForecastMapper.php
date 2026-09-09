@@ -2,6 +2,9 @@
     namespace Core\Service\Forecast;
     
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Forecast\Clouds;
+    use Core\Client\Forecast\Precipitation;
+    use Core\Client\Forecast\Weather;
     use Core\Common\CommonConstants;
 
     class ForecastMapper {

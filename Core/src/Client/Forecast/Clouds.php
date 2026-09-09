@@ -1,5 +1,5 @@
 <?php
-    namespace Core\Service\Forecast;
+    namespace Core\Client\Forecast;
 
     use OpenApi\Attributes as OA;
 
@@ -46,7 +46,6 @@
              )
         ]
     )]
-    // TODO: Move to Core\Client\Forecast.
     class Clouds implements \JsonSerializable {
 
         private readonly float $total;
