@@ -63,7 +63,7 @@
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["categoryHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $query, $count,
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $query ?? $category->getName(), $count,
                 $category->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
 
             foreach ($category->getHighlights() as &$highlight) {

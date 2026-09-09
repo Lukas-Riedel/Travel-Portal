@@ -48,7 +48,7 @@
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["yearHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear($yearId, $query, $count,
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear($yearId, $query ?? $yearId, $count,
                 $year->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($trip) => $trip->getMainHighlight()?->getPhoto()?->getId(), $trips)));
 
             foreach ($year->getHighlights() as &$highlight) {

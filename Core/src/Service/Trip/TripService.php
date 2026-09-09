@@ -76,7 +76,7 @@
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
 
             $tripPlaceHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places)));
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query, $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query ?? $trip->getName(), $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
 
             foreach ($trip->getHighlights() as &$highlight) {
                 if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {

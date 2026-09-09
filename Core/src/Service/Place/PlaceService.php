@@ -74,7 +74,7 @@
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""));
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $query, $count, $place->getMainHighlight()?->getPhoto()?->getId());
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $query ?? $place->getName(), $count, $place->getMainHighlight()?->getPhoto()?->getId());
 
             foreach ($place->getHighlights() as &$highlight) {
                 if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
