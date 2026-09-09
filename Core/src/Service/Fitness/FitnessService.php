@@ -66,7 +66,7 @@
             $seconds = $this->getCorrectedDuration($seconds, $steps);
             
             $existingFitnessRecord = $this->fitnessMapper->selectFitnessRecord($timestamp);
-            $fitnessRecord = new Fitness($steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
+            $fitnessRecord = new TimeBasedFitness($timestamp, $steps, min($seconds, CommonConstants::FITNESS_RECORD_DURATION_SECONDS), $distance);
 
             if ($existingFitnessRecord !== null && ($existingFitnessRecord->getSteps() === 0 || $existingFitnessRecord->getSeconds() === 0 || round($existingFitnessRecord->getDistance(), 3) === 0.0)) {
                 $forceUpdate = true;
@@ -94,9 +94,9 @@
                 $this->logger->warning("The provided fitness record for timestamp '{$timestamp}' would override already existing higher values and will therefore not be updated.", $context);
 
                 $this->transactionManager->executeAtomically(function() use(&$fitnessRecord, &$timestamp) {
-                    $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);  
-                    $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);              
-                    $this->fitnessMapper->insertConflictingFitnessRecord($fitnessRecord, $timestamp);                    
+                    $this->fitnessMapper->updateFitnessRecordLastUpdate($timestamp);
+                    $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
+                    $this->fitnessMapper->insertConflictingFitnessRecord($fitnessRecord);
                 });
                 
                 return false;
@@ -105,7 +105,7 @@
             $this->transactionManager->executeAtomically(function() use(&$fitnessRecord, &$timestamp, &$end) {
                 $this->fitnessMapper->deleteConflictingFitnessRecord($timestamp);
                 $this->fitnessMapper->deleteFitnessRecord($timestamp);
-                $this->fitnessMapper->insertFitnessRecord($fitnessRecord, $timestamp);
+                $this->fitnessMapper->insertFitnessRecord($fitnessRecord);
 
                 $this->eventPublisher->publish(Event::FitnessDataUpdated($timestamp, $end));
             });

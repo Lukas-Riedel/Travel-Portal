@@ -184,51 +184,49 @@
                 ->getResultSetForColumn("timestamp");
         }
 
-        // TODO: Switch to TimeBasedFitness.
-        public function insertFitnessRecord(Fitness $fitness, int $timestamp) : bool {
+        public function insertFitnessRecord(TimeBasedFitness $fitness) : bool {
             $sql = <<<'SQL'
                 INSERT INTO fitness (
-                    timestamp, 
-                    last_update, 
-                    steps, 
-                    seconds, 
+                    timestamp,
+                    last_update,
+                    steps,
+                    seconds,
                     distance
                 )
                 VALUES (
-                    ?, 
+                    ?,
                     ROUND(EXTRACT(EPOCH FROM NOW())),
                     ?,
-                    ?, 
+                    ?,
                     ?
                 )
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getDistance())
+                ->withParameters($fitness->getTimestamp(), $fitness->getFitness()->getSteps(), $fitness->getFitness()->getSeconds(), $fitness->getFitness()->getDistance())
                 ->execute() === 1;
         }
 
-        // TODO: Switch to TimeBasedFitness.
-        public function insertConflictingFitnessRecord(Fitness $fitness, int $timestamp) : bool {
+        public function insertConflictingFitnessRecord(TimeBasedFitness $fitness) : bool {
             $sql = <<<'SQL'
                 INSERT INTO fitness_conflict (
-                    timestamp, 
-                    steps, 
-                    seconds, 
+                    timestamp,
+                    steps,
+                    seconds,
                     distance
                 )
                 VALUES (
-                    ?, 
                     ?,
-                    ?, 
+                    ?,
+                    ?,
                     ?
                 )
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($timestamp, $fitness->getSteps(), $fitness->getSeconds(), $fitness->getDistance())
+                ->withParameters($fitness->getTimestamp(), $fitness->getFitness()->getSteps(), $fitness->getFitness()->getSeconds(), $fitness->getFitness()->getDistance())
                 ->execute() === 1;
         }
 
