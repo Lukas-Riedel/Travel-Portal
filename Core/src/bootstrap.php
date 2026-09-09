@@ -6,7 +6,7 @@
     use Common\Client\Http\StandardHttpClient;
     use Common\LoggingContext;
     use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
-    use Core\Client\Cache\OpenLineageRedisCacheClient;
+    use Core\Client\Cache\ExtendedRedisCacheClient;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Core\Client\CloudStorage\S3CloudStorageClient;
@@ -111,7 +111,7 @@
     $logger->pushHandler($handler);
 
     // Clients.
-    $distributedCacheClient = new OpenLineageRedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
+    $distributedCacheClient = new ExtendedRedisCacheClient(getenv("REDIS_HOST"), getenv("REDIS_PORT"), getenv("REDIS_PASSWORD"));
     $memoryCacheClient = new MemoryCacheClient();
     $databaseClient = new PostgreSQLDatabaseClient(getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_USER"), getenv("DB_PASSWORD"), getenv("DB_NAME"), $distributedCacheClient, $logger); 
     $httpClient = new StandardHttpClient(getenv("APP_NAME"), $loggingContext, $logger);
