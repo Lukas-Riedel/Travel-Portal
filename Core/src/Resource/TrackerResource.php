@@ -4,6 +4,7 @@
     use Common\Resource\AbstractResource;
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\TimeTracking\TimeTrackingEventType;
     use Core\Service\TimeTracking\TimeTrackingService;
     use OpenApi\Attributes as OA;
     use Slim\App;
@@ -122,8 +123,10 @@
             $hours = $this->requireJsonBodyField($request, "hours");
             $description = $this->requireJsonBodyField($request, "description");
             $timestamp = $this->requireJsonBodyField($request, "timestamp");
+            
+            $mappedType = TimeTrackingEventType::from($type);
 
-            return $this->timeTrackingService->createTimeTrackingEvent($type, $hours, $description, $timestamp);
+            return $this->timeTrackingService->createTimeTrackingEvent($mappedType, $hours, $description, $timestamp);
         }
 
         #[OA\Get(
@@ -194,8 +197,9 @@
             $this->requireRole($request, UserRole::TrackerRead);
 
             $type = $this->getQueryParameter($request, "type");
+            $mappedType = $type !== null ? TimeTrackingEventType::from($type) : null;
 
-            return $this->timeTrackingService->getTimeTrackingEvents($type);
+            return $this->timeTrackingService->getTimeTrackingEvents($mappedType);
         }
 
         #[OA\Delete(

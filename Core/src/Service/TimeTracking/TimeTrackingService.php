@@ -20,16 +20,14 @@
             $this->transactionManager = $databaseClient;
         }
 
-        // TODO: Replace string $type by TimeTrackingEventType $type.
-        public function createTimeTrackingEvent(string $type, float $hours, string $description, int $timestamp) : TimeTrackingEvent {
-            $timeTrackingEvent = new TimeTrackingEvent(null, $description, $hours, $timestamp, TimeTrackingEventType::from($type),
+        public function createTimeTrackingEvent(TimeTrackingEventType $type, float $hours, string $description, int $timestamp) : TimeTrackingEvent {
+            $timeTrackingEvent = new TimeTrackingEvent(null, $description, $hours, $timestamp, $type,
                 $hours + $this->timeTrackingMapper->selectBalance($type, $timestamp));
             $this->timeTrackingMapper->insertTimeTrackingEvent($timeTrackingEvent);
             return $timeTrackingEvent;
         }
 
-        // TODO: Replace string $type by TimeTrackingEventType $type.
-        public function getTimeTrackingEvents(?string $type = null) : array {  
+        public function getTimeTrackingEvents(?TimeTrackingEventType $type = null) : array {
             return $this->timeTrackingMapper->selectTimeTrackingEvents($type);
         }
 
@@ -44,17 +42,17 @@
 
         public function resetOpeningBalances(int $beginningOfYearTimestamp) : void {
             foreach ($this->configurationService->getConfigurationEntry("timeTracking")["openingBalance"] as $eventType => $openingBalance) {
-                $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);                
+                $carryOverBalance = $this->timeTrackingMapper->selectCarryOverBalanceFromPreviousYears($eventType);
                 $this->transactionManager->executeAtomically(function() use(&$eventType, &$carryOverBalance, &$openingBalance, &$beginningOfYearTimestamp) {
                     $wasReset = $this->timeTrackingMapper->deleteTimeTrackingEventsFromPreviousYears($eventType) > 0;
 
-                    if ($wasReset) {    
+                    if ($wasReset) {
                         if ($carryOverBalance !== null && $carryOverBalance > 0) {
-                            $this->createTimeTrackingEvent($eventType, $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearTimestamp);
+                            $this->createTimeTrackingEvent(TimeTrackingEventType::from($eventType), $carryOverBalance, self::CARRIED_OVER_DESCRIPTION, $beginningOfYearTimestamp);
                         }
-                        
+
                         if ($openingBalance > 0) {
-                            $this->createTimeTrackingEvent($eventType, $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearTimestamp);
+                            $this->createTimeTrackingEvent(TimeTrackingEventType::from($eventType), $openingBalance, self::OPENING_BALANCE_DESCRIPTION, $beginningOfYearTimestamp);
                         }
                     }
                 });

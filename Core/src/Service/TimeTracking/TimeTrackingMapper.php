@@ -14,7 +14,7 @@
             $this->databaseClient = $databaseClient;
         }
 
-        public function selectTimeTrackingEvents(?string $type) : array {
+        public function selectTimeTrackingEvents(?TimeTrackingEventType $type) : array {
             $sql = <<<'SQL'
                 SELECT *
                 FROM tracking
@@ -25,7 +25,7 @@
 
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder();
             if ($type !== null) {
-                $whereClauseBuilder->withClause("type = ?", $type);
+                $whereClauseBuilder->withClause("type = ?", $type->value);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
@@ -38,16 +38,16 @@
                 });
         }
 
-        public function selectBalance(?string $type, int $timestamp) : float {
+        public function selectBalance(?TimeTrackingEventType $type, int $timestamp) : float {
             $sql = <<<'SQL'
-                SELECT COALESCE(SUM(hours), 0) AS balance 
-                FROM tracking 
+                SELECT COALESCE(SUM(hours), 0) AS balance
+                FROM tracking
                 WHERE :CONDITIONS
             SQL;
-            
+
             $whereClauseBuilder = $this->databaseClient->whereClauseBuilder()->withClause("timestamp <= ?", $timestamp);
             if ($type !== null) {
-                $whereClauseBuilder->withClause("type = ?", $type);
+                $whereClauseBuilder->withClause("type = ?", $type->value);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
