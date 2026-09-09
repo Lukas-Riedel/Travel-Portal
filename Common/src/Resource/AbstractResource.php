@@ -1,9 +1,9 @@
 <?php
     namespace Common\Resource;
 
-    use Common\Service\Authentication\UserInfo;
     use Common\CommonConstants;
     use Common\Routing\AuthorizationException;
+    use Common\Service\Authentication\UserInfo;
     use Common\Service\Authentication\UserRole;
     use Slim\Psr7\Request;
     

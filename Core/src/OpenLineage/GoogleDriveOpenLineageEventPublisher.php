@@ -1,8 +1,8 @@
 <?php
     namespace Core\OpenLineage;
 
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Client\Google\GoogleClient;
+    use Core\Service\Configuration\ConfigurationService;
 
     class GoogleDriveOpenLineageEventPublisher implements OpenLineageEventPublisher {
 

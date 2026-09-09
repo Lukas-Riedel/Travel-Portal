@@ -2,10 +2,10 @@
     namespace Core\Service\Year;
 
     use Core\Common\CommonConstants;
-    use Core\Service\Highlight\HighlightType;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Highlight\HighlightType;
     use Monolog\Logger;
 
     class YearServiceListener {

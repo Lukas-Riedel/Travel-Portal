@@ -2,14 +2,14 @@
     namespace Core\Service\Stay;
 
     use Core\Client\Calendar\Calendar;
-    use Core\Service\Trip\TripService;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
+    use Core\Client\Calendar\CalendarClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
-    use Core\Client\Calendar\CalendarClient;
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Service\Trip\TripService;
 
     class StayService {
 

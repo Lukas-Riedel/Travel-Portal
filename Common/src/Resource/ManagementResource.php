@@ -2,7 +2,6 @@
     namespace Common\Resource;
 
     use Common\CommonConstants;
-    use Common\Resource\AbstractResource;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;

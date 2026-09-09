@@ -2,10 +2,6 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
-    use Slim\App;
-    use Slim\Psr7\Request;
-    use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
     use Core\Service\Category\Category;
@@ -14,6 +10,10 @@
     use Core\Service\Category\CategoryService;
     use Core\Service\Highlight\HighlightService;
     use Monolog\Logger;
+    use OpenApi\Attributes as OA;
+    use Slim\App;
+    use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
 
     #[OA\Tag(name: "Categories")]
     class CategoryResource extends AbstractResource {

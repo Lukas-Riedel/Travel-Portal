@@ -2,9 +2,9 @@
     namespace Core\Service\Photo;
 
     use Core\Common\CommonConstants;
-    use Core\Service\Place\PlaceIncludedEntity;
-    use Core\Service\Place\Place;
     use Core\Service\Place\Date;
+    use Core\Service\Place\Place;
+    use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Statistics\KeyValuePair;

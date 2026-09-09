@@ -2,14 +2,14 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
-    use Core\Service\Configuration\ConfigurationService;
-    use Slim\App;
-    use Slim\Psr7\Request;
-    use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
     use Common\Routing\NotFoundException;
     use Common\Routing\NotUpdatedException;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\Configuration\ConfigurationService;
+    use OpenApi\Attributes as OA;
+    use Slim\App;
+    use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
 
     #[OA\Tag(name: "Configuration")]
     class ConfigurationResource extends AbstractResource {

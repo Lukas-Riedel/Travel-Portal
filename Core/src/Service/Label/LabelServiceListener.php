@@ -2,12 +2,12 @@
     namespace Core\Service\Label;
 
     use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Place\PlaceService;
-    use Core\Service\Place\PlaceSortingStrategy;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
 
     class LabelServiceListener {
         

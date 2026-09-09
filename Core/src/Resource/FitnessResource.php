@@ -2,13 +2,13 @@
     namespace Core\Resource;
 
     use Common\Resource\AbstractResource;
-    use Slim\App;
-    use Slim\Psr7\Request;
-    use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
     use Common\Routing\NotUpdatedException;
     use Common\Service\Authentication\UserRole;
     use Core\Service\Fitness\FitnessService;
+    use OpenApi\Attributes as OA;
+    use Slim\App;
+    use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
 
     #[OA\Tag(name: "Fitness")]
     class FitnessResource extends AbstractResource {

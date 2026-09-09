@@ -2,8 +2,8 @@
     namespace Core\Service\Stay;
 
     use Core\Client\Calendar\Calendar;
-    use Core\Service\Trip\TripService;
     use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Trip\TripService;
 
     class StayServiceListener {
 

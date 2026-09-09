@@ -3,16 +3,16 @@
 
     use Common\Client\Cache\CacheClient;
     use Common\Service\Authentication\UserRole;
+    use Core\Client\Calendar\CalendarClient;
     use Core\Common\CommonConstants;
-    use Monolog\Logger;
-    use Core\Service\Trip\TripService;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-    use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceType;
+    use Core\Service\Trip\TripService;
+    use Monolog\Logger;
 
     class FlightServiceListener {
         

@@ -1,9 +1,9 @@
 <?php
     namespace Iam\Resource;
 
+    use Common\Client\Encryption\EncryptionClient;
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\AuthenticationService;
-    use Common\Client\Encryption\EncryptionClient;
     use Iam\Service\Google\GoogleService;
     use Slim\App;
     use Slim\Psr7\Request;

@@ -2,15 +2,15 @@
     namespace Core\Service\Statistics;
 
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Event\Scheduler;
     use Core\Service\Category\CategoryService;
     use Core\Service\Flight\Airport;
     use Core\Service\Flight\Flight;
     use Core\Service\Flight\FlightService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripService;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
-    use Core\Event\Scheduler;
 
     class StatisticsServiceListener {
         

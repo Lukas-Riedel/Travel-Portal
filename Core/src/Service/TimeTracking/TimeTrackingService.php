@@ -1,9 +1,9 @@
 <?php
     namespace Core\Service\TimeTracking;
 
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
+    use Core\Service\Configuration\ConfigurationService;
 
     class TimeTrackingService {
 

@@ -1,8 +1,8 @@
 <?php
     namespace Core\Client\Forecast;
 
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Common\CommonConstants;
     use Core\Service\Forecast\Precipitation;
     use Core\Service\Forecast\Weather;

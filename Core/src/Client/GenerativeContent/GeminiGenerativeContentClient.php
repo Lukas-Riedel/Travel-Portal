@@ -1,11 +1,11 @@
 <?php
     namespace Core\Client\GenerativeContent;
 
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Cache\CacheClient;
-    use Monolog\Logger;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Common\CommonConstants;
+    use Monolog\Logger;
 
     class GeminiGenerativeContentClient implements GenerativeContentClient {
         

@@ -1,6 +1,8 @@
 <?php
     namespace Core\Service\Trip;
 
+    use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
@@ -10,8 +12,6 @@
     use Core\Service\Place\PlaceService;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Stay\StayService;
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Calendar\CalendarClient;
     use Core\Service\Task\TaskService;
 
     class TripMapper {

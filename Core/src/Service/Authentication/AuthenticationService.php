@@ -1,11 +1,11 @@
 <?php
     namespace Core\Service\Authentication;
 
-    use Common\Service\Authentication\AuthenticationException;
     use Common\Client\Cache\CacheClient;
-    use Common\Client\Http\HttpMethod;
-    use Common\Service\Authentication\UserRole;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
+    use Common\Service\Authentication\AuthenticationException;
+    use Common\Service\Authentication\UserRole;
 
     class AuthenticationService {
         

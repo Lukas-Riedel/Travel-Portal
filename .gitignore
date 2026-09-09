@@ -7,3 +7,7 @@
 *.ipr
 **/application.properties
 private.key
+# PHP CS Fixer
+.php-cs-fixer.cache
+*/.php-cs-fixer.cache
+.tools/

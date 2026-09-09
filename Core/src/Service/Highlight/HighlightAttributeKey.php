@@ -2,7 +2,6 @@
     namespace Core\Service\Highlight;
 
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Highlight\HighlightAttributes;
 
     enum HighlightAttributeKey {
         case Composition;

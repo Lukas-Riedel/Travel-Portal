@@ -2,8 +2,8 @@
     namespace Core\Client\Translation;
 
     use Common\Client\Cache\CacheClient;
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Common\CommonConstants;
 
     class LibreTranslateTranslationClient implements TranslationClient {

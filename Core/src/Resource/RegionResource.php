@@ -3,15 +3,15 @@
 
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
-    use Slim\App;
-    use Slim\Psr7\Request;
-    use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
     use Core\Service\Category\CompositeRegion;
     use Core\Service\Category\GeographicalRegion;
     use Core\Service\Category\RegionType;
+    use OpenApi\Attributes as OA;
+    use Slim\App;
+    use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
 
     #[OA\Tag(name: "Regions")]
     class RegionResource extends AbstractResource {

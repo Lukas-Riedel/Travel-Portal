@@ -1,26 +1,25 @@
 <?php
     require_once(__DIR__ . "/../vendor/autoload.php");
 
-    use Common\Client\Encryption\EncryptionClient;
-    use Common\LoggingContext;
-    use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Common\Client\Cache\MemoryCacheClient;
     use Common\Client\Cache\RedisCacheClient;
+    use Common\Client\Encryption\EncryptionClient;
     use Common\Client\Http\StandardHttpClient;
+    use Common\LoggingContext;
+    use Common\Service\Authentication\AuthenticationService as CommonAuthenticationService;
     use Core\Client\Calendar\CalendarClient;
     use Core\Client\CloudMessaging\FirebaseCloudMessagingClient;
     use Core\Client\CloudStorage\S3CloudStorageClient;
-    use Monolog\Logger;
     use Core\Client\Database\PostgreSQLDatabaseClient;
     use Core\Client\ExchangeRate\ExchangeRateApiExchangeRateClient;
     use Core\Client\Flight\FlightRadar24FlightClient;
     use Core\Client\Forecast\OpenMeteoActualForecastClient;
-    use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
-    use Core\Client\Google\GoogleClient;
     use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
     use Core\Client\GenerativeContent\CachingGenerativeContentClient;
-    use Core\Client\Http\FlareSolverrHttpClient;
+    use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
+    use Core\Client\Google\GoogleClient;
     use Core\Client\Http\ExtendedHttpClient;
+    use Core\Client\Http\FlareSolverrHttpClient;
     use Core\Client\Messaging\RabbitMQMessagingClient;
     use Core\Client\Search\OpenSearchClient;
     use Core\Client\Translation\LibreTranslateTranslationClient;
@@ -67,16 +66,16 @@
     use Core\Service\Monitoring\MonitoringService;
     use Core\Service\Monitoring\MonitoringServiceListener;
     use Core\Service\Note\NoteService;
+    use Core\Service\Photo\PhotoDataConsistencyMonitor;
+    use Core\Service\Photo\PhotoIndexer;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Photo\PhotoServiceListener;
     use Core\Service\Photo\PhotoStatisticsProvider;
     use Core\Service\Place\PlaceDataConsistencyMonitor;
+    use Core\Service\Place\PlaceIndexer;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceServiceListener;
     use Core\Service\Place\PlaceStatisticsProvider;
-    use Core\Service\Photo\PhotoDataConsistencyMonitor;
-    use Core\Service\Photo\PhotoIndexer;
-    use Core\Service\Place\PlaceIndexer;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Statistics\StatisticsServiceListener;
     use Core\Service\Stay\StayService;
@@ -97,6 +96,7 @@
     use Monolog\Formatter\JsonFormatter;
     use Monolog\Handler\StreamHandler;
     use Monolog\Level;
+    use Monolog\Logger;
 
     $onError = function($level, $message, $file, $line) {
         throw new \ErrorException($message, 0, $level, $file, $line);

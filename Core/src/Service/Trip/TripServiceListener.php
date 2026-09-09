@@ -2,20 +2,20 @@
     namespace Core\Service\Trip;
 
     use Core\Client\Calendar\Calendar;
+    use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
     use Core\Common\CommonConstants;
-    use Core\Service\Flight\FlightService;
-    use Core\Service\Flight\FlightType;
-    use Core\Service\Highlight\HighlightType;
-    use Core\Service\Place\PlaceService;
-    use Core\Service\Stay\StayService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Database\TransactionManager;
-    use Core\Client\Calendar\CalendarClient;
+    use Core\Service\Flight\FlightService;
+    use Core\Service\Flight\FlightType;
     use Core\Service\Highlight\HighlightService;
+    use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Stay\StayService;
 
     class TripServiceListener {
         

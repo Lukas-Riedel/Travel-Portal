@@ -2,6 +2,7 @@
     namespace Core\Service\Place;
 
     use Common\Client\Cache\CacheClient;
+    use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
@@ -11,7 +12,6 @@
     use Core\Service\Label\LabelService;
     use Core\Service\Note\NoteService;
     use Core\Service\Photo\PhotoService;
-    use Core\Client\Database\DatabaseClient;
 
     class PlaceMapper {
 

@@ -5,14 +5,14 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\GenerativeContent\GenerativeContentClient;
-    use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Highlight\HighlightService;
-    use Core\Service\Place\PlaceIdentifier;
-    use Core\Service\Statistics\StatisticsService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Highlight\HighlightService;
     use Core\Service\Index\IndexService;
+    use Core\Service\Place\PlaceIdentifier;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Service\Statistics\StatisticsService;
     use Monolog\Logger;
 
     class CategoryService {

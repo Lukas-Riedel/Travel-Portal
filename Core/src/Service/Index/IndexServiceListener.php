@@ -6,7 +6,6 @@
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
     use Core\Service\Highlight\HighlightService;
-    use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;

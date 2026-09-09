@@ -3,8 +3,8 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Client\GenerativeContent\GenerativeContentClient;
-    use Core\Common\CommonConstants;
     use Core\Client\Google\GoogleClient;
+    use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
 
     class GeocodingService {

@@ -1,10 +1,10 @@
 <?php
     namespace Core\Client\Http;
 
-    use Core\OpenLineage\OpenLineageEventManager;
     use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
     use Core\Client\Messaging\ProgressReporter;
+    use Core\OpenLineage\OpenLineageEventManager;
 
     class ExtendedHttpClient implements HttpClient {
         

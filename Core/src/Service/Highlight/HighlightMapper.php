@@ -1,8 +1,8 @@
 <?php
     namespace Core\Service\Highlight;
     
-    use Core\Service\Photo\PhotoService;
     use Core\Client\Database\DatabaseClient;
+    use Core\Service\Photo\PhotoService;
 
     class HighlightMapper {
 

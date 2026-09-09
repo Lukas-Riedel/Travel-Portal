@@ -1,11 +1,11 @@
 <?php
     namespace Core\OpenLineage;
 
+    use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;
     use Monolog\Logger;
-    use Common\Client\Http\HttpMethod;
-    use Common\Client\Http\HttpClient;
 
     class IbmCloudOpenLineageEventPublisher implements OpenLineageEventPublisher {
 

@@ -2,19 +2,19 @@
     namespace Core\Service\Flight;
 
     use Common\Client\Cache\CacheClient;
+    use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
+    use Core\Client\Flight\FlightClient;
+    use Core\Client\Google\GoogleClient;
+    use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryService;
     use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Trip\TripService;
-    use enshrined\svgSanitize\Sanitizer;
     use enshrined\svgSanitize\data\AllowedTags;
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Database\TransactionManager;
-    use Core\Client\Calendar\CalendarClient;
-    use Core\Client\Google\GoogleClient;
-    use Core\Client\Flight\FlightClient;
-    use Core\Common\CommonConstants;
+    use enshrined\svgSanitize\Sanitizer;
 
     // TODO: Missing AirlineUpdated and AirportUpdated events (listeners should be in IndexServiceListener and StatisticsServiceListener).
     class FlightService {

@@ -1,21 +1,21 @@
 <?php
     namespace Core\Service\Highlight;
 
+    use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
     use Core\Client\CloudStorage\CloudStorageClient;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
     use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Embedding\EmbeddingService;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Trip\TripIncludedEntity;
     use Core\Service\Trip\TripSortingStrategy;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Database\TransactionManager;
-    use Common\Client\Http\HttpClient;
-    use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Embedding\EmbeddingService;
     use Monolog\Logger;
 
     class HighlightService {

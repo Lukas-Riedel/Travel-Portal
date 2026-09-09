@@ -2,12 +2,12 @@
     namespace Iam\Service\Google;
 
     use Common\Client\Cache\CacheClient;
-    use Google\Auth\Credentials\ServiceAccountCredentials;
-    use Common\Client\Http\HttpMethod;
-    use Common\Client\Http\HttpClient;
-    use Common\Service\Authentication\IamResponse;
     use Common\Client\Encryption\EncryptionClient;
+    use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
+    use Common\Service\Authentication\IamResponse;
     use Common\Service\Authentication\UserRole;
+    use Google\Auth\Credentials\ServiceAccountCredentials;
     use Iam\Service\User\UserService;
 
     class GoogleService {

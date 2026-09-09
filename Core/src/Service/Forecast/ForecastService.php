@@ -1,12 +1,11 @@
 <?php
     namespace Core\Service\Forecast;
     
-    use AurorasLive\SunCalc;
-    use Core\Common\CommonConstants;
-    use Core\Service\Place\PlaceIdentifier;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Forecast\ForecastClient;
+    use Core\Common\CommonConstants;
+    use Core\Service\Place\PlaceIdentifier;
 
     class ForecastService {
 

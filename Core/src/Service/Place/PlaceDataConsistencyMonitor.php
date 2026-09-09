@@ -5,9 +5,6 @@
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Monitoring\DataConsistencyIssue;
     use Core\Service\Monitoring\DataConsistencyMonitor;
-    use Core\Service\Place\PlaceIncludedEntity;
-    use Core\Service\Place\PlaceService;
-    use Core\Service\Place\PlaceSortingStrategy;
 
     class PlaceDataConsistencyMonitor implements DataConsistencyMonitor {
 

@@ -1,15 +1,15 @@
 <?php
     namespace Core\Service\Year;
     
-    use Core\Service\Highlight\HighlightService;
-    use Core\Service\Statistics\StatisticsService;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\GenerativeContent\GenerativeContentClient;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Fitness\FitnessService;
+    use Core\Service\Highlight\HighlightService;
     use Core\Service\Index\IndexService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Core\Service\Statistics\StatisticsService;
     use Core\Service\Trip\TripIncludedEntity;
     use Core\Service\Trip\TripSortingStrategy;
 

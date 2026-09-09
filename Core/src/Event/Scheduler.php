@@ -4,8 +4,6 @@
     use Common\Client\Cache\CacheClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
 
     class Scheduler {
 

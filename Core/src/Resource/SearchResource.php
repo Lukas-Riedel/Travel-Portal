@@ -7,10 +7,6 @@
     use Core\Service\Flight\FlightService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Index\IndexableEntityType;
-    use Slim\App;
-    use Slim\Psr7\Request;
-    use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
     use Core\Service\Index\IndexService;
     use Core\Service\Index\SearchResult;
     use Core\Service\Label\LabelService;
@@ -18,6 +14,10 @@
     use Core\Service\Place\PlaceService;
     use Core\Service\Trip\TripService;
     use Core\Service\Year\YearService;
+    use OpenApi\Attributes as OA;
+    use Slim\App;
+    use Slim\Psr7\Request;
+    use Slim\Psr7\Response;
 
     #[OA\Tag(name: "Search")]
     class SearchResource extends AbstractResource {

@@ -5,10 +5,10 @@
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
     use Core\Service\Document\DocumentService;
+    use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
 
     #[OA\Tag(name: "Documents")]
     class DocumentResource extends AbstractResource {

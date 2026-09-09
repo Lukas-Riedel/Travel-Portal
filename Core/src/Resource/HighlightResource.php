@@ -6,10 +6,10 @@
     use Common\Service\Authentication\UserRole;
     use Core\Service\Highlight\HighlightService;
     use Monolog\Logger;
+    use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
 
     #[OA\Tag(name: "Highlights")]
     class HighlightResource extends AbstractResource {

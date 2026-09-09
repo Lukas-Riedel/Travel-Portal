@@ -4,7 +4,6 @@
     use Common\CommonConstants;
     use Common\LoggingContext;
     use Core\Client\Messaging\RabbitMQMessagingClient;
-    use Core\Event\EventPriority;
     use Core\OpenLineage\OpenLineageEventManager;
     use Monolog\Logger;
     use PhpAmqpLib\Exception\AMQPTimeoutException;

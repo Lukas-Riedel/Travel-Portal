@@ -2,12 +2,12 @@
     namespace Core\Client\Google;
 
     use Common\Client\Cache\CacheClient;
-    use Core\Client\Calendar\Calendar;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
+    use Core\Client\Calendar\Calendar;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;
-    use Common\Client\Http\HttpMethod;
     use Monolog\Logger;
 
     // TODO: Switch to Google SDK.

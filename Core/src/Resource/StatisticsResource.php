@@ -4,10 +4,10 @@
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
     use Core\Service\Statistics\StatisticsService;
+    use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
 
     #[OA\Tag(name: "Statistics")]
     class StatisticsResource extends AbstractResource {

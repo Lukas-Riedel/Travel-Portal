@@ -3,9 +3,9 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
-    use Monolog\Logger;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Monolog\Logger;
 
     class MonitoringService {
         

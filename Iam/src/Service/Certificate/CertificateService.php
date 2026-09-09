@@ -1,8 +1,8 @@
 <?php
     namespace Iam\Service\Certificate;
 
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
 
     class CertificateService {
 

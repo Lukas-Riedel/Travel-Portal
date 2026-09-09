@@ -3,11 +3,11 @@
 
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\Monitoring\MonitoringService;
+    use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
-    use Core\Service\Monitoring\MonitoringService;
 
     #[OA\Tag(name: "Monitoring")]
     class MonitoringResource extends AbstractResource {

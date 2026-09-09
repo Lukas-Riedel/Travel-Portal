@@ -4,10 +4,10 @@
     use Common\CommonConstants;
     use Common\LoggingContext;
     use Monolog\Logger;
-    use Psr\Http\Message\ServerRequestInterface;
-    use Psr\Http\Server\RequestHandlerInterface;
-    use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Message\ResponseInterface;
+    use Psr\Http\Message\ServerRequestInterface;
+    use Psr\Http\Server\MiddlewareInterface;
+    use Psr\Http\Server\RequestHandlerInterface;
 
     class LoggingMiddleware implements MiddlewareInterface {
 

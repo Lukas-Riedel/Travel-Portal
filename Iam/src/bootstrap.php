@@ -2,10 +2,10 @@
     require_once(__DIR__ . "/../vendor/autoload.php");
 
     use Common\Client\Cache\RedisCacheClient;
-    use Common\Service\Authentication\AuthenticationService;
     use Common\Client\Encryption\EncryptionClient;
     use Common\Client\Http\StandardHttpClient;
     use Common\LoggingContext;
+    use Common\Service\Authentication\AuthenticationService;
     use Iam\Service\Certificate\CertificateService;
     use Iam\Service\Google\GoogleService;
     use Iam\Service\IbmCloud\IbmCloudService;

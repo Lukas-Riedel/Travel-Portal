@@ -2,8 +2,8 @@
     namespace Core\Service\Embedding;
 
     use Common\Client\Cache\CacheClient;
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Client\Translation\TranslationClient;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;

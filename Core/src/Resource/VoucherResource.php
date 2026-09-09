@@ -6,10 +6,10 @@
     use Common\Service\Authentication\UserRole;
     use Core\Service\Expense\ExpenseCurrency;
     use Core\Service\Expense\ExpenseService;
+    use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
 
     #[OA\Tag(name: "Vouchers")]
     class VoucherResource extends AbstractResource {

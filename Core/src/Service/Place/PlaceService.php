@@ -3,26 +3,26 @@
 
     use Common\Client\Cache\CacheClient;
     use Core\Client\Calendar\Calendar;
+    use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
+    use Core\Client\GenerativeContent\GenerativeContentClient;
+    use Core\Client\Google\GoogleClient;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
     use Core\Service\Configuration\ConfigurationService;
-    use Core\Service\Label\LabelService;
-    use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Forecast\ForecastService;
+    use Core\Service\Geocoding\GeocodingService;
+    use Core\Service\Geocoding\Location;
     use Core\Service\Highlight\HighlightService;
+    use Core\Service\Index\IndexService;
+    use Core\Service\Label\LabelService;
     use Core\Service\Note\NoteService;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Trip\TripIdentifier;
     use Core\Service\Trip\TripService;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Database\TransactionManager;
-    use Core\Client\GenerativeContent\GenerativeContentClient;
-    use Core\Client\Calendar\CalendarClient;
-    use Core\Client\Google\GoogleClient;
-    use Core\Service\Geocoding\Location;
-    use Core\Service\Index\IndexService;
 
     class PlaceService {
         

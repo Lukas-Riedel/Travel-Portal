@@ -1,8 +1,8 @@
 <?php
     namespace Core\Service\Label;
 
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Client\Database\DatabaseClient;
+    use Core\Service\Configuration\ConfigurationService;
     
     // TODO: Missing LabelUpdated event (the listener should be in IndexServiceListener).
     class LabelService {

@@ -1,16 +1,16 @@
 <?php
     namespace Core\Client\CloudMessaging;
 
+    use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
+    use Common\CommonConstants;
+    use Common\LoggingContext;
     use Core\Event\CloudMessagingEvent;
     use Core\Event\Event;
     use Core\OpenLineage\OpenLineageEventManager;
     use Core\Service\Authentication\AuthenticationService;
-    use Monolog\Logger;
-    use Common\Client\Http\HttpClient;
-    use Common\CommonConstants;
-    use Common\LoggingContext;
     use Core\Service\Device\DeviceType;
+    use Monolog\Logger;
 
     class FirebaseCloudMessagingClient implements CloudMessagingClient {
 

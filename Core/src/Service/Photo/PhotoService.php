@@ -1,19 +1,18 @@
 <?php
     namespace Core\Service\Photo;
 
-    use AurorasLive\SunCalc;
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Cache\CacheClient;
+    use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Core\Client\CloudStorage\CloudStorageClient;
-    use Core\Common\CommonConstants;
-    use Core\Service\Place\PlaceIdentifier;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\Google\GoogleClient;
-    use Common\Client\Http\HttpClient;
+    use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
     use Core\Service\Embedding\EmbeddingService;
+    use Core\Service\Place\PlaceIdentifier;
 
     class PhotoService {
 

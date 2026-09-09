@@ -3,12 +3,12 @@
 
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
+    use Core\Service\Device\DeviceService;
+    use Core\Service\Device\DeviceType;
+    use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
-    use OpenApi\Attributes as OA;
-    use Core\Service\Device\DeviceService;
-    use Core\Service\Device\DeviceType;
 
     #[OA\Tag(name: "Devices")]
     class DeviceResource extends AbstractResource {

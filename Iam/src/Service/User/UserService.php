@@ -1,8 +1,8 @@
 <?php
     namespace Iam\Service\User;
 
-    use Common\Client\Http\HttpMethod;
     use Common\Client\Http\HttpClient;
+    use Common\Client\Http\HttpMethod;
     use Common\Service\Authentication\UserRole;
     use Iam\Service\Token\TokenService;
 

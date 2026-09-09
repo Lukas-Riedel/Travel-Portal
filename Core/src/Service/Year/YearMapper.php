@@ -1,11 +1,11 @@
 <?php
     namespace Core\Service\Year;
 
-    use Core\Service\Highlight\HighlightService;
-    use Core\Service\Statistics\StatisticsService;
     use Core\Client\Database\DatabaseClient;
     use Core\Common\CommonConstants;
     use Core\Service\Fitness\FitnessService;
+    use Core\Service\Highlight\HighlightService;
+    use Core\Service\Statistics\StatisticsService;
 
     class YearMapper {
 

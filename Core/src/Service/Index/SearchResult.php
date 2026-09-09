@@ -1,7 +1,6 @@
 <?php
     namespace Core\Service\Index;
 
-    use Core\Service\Index\IndexableEntityType;
     use OpenApi\Attributes as OA;
 
     #[OA\Schema(

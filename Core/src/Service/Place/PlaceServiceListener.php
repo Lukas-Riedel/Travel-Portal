@@ -2,15 +2,15 @@
     namespace Core\Service\Place;
 
     use Core\Client\Calendar\Calendar;
+    use Core\Client\Calendar\CalendarClient;
     use Core\Common\CommonConstants;
-    use Core\Service\Highlight\HighlightType;
-    use Core\Service\Trip\TripService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
-    use Core\Client\Calendar\CalendarClient;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
+    use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
+    use Core\Service\Trip\TripService;
 
     class PlaceServiceListener {
 

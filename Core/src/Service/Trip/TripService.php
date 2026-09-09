@@ -2,27 +2,27 @@
     namespace Core\Service\Trip;
 
     use Core\Client\Calendar\Calendar;
+    use Core\Client\Calendar\CalendarClient;
+    use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\TransactionManager;
+    use Core\Client\GenerativeContent\GenerativeContentClient;
+    use Core\Client\Google\GoogleClient;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
     use Core\Service\Flight\FlightService;
     use Core\Service\Highlight\HighlightService;
+    use Core\Service\Index\IndexService;
     use Core\Service\Note\NoteService;
+    use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Statistics\StatisticsService;
     use Core\Service\Stay\StayService;
-    use Core\Service\Year\YearService;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
-    use Core\Client\Database\DatabaseClient;
-    use Core\Client\Database\TransactionManager;
-    use Core\Client\Calendar\CalendarClient;
-    use Core\Client\GenerativeContent\GenerativeContentClient;
-    use Core\Client\Google\GoogleClient;
-    use Core\Service\Index\IndexService;
-    use Core\Service\Place\PlaceIncludedEntity;
-    use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Task\TaskService;
+    use Core\Service\Year\YearService;
 
     class TripService {
 

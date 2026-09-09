@@ -2,11 +2,11 @@
     namespace Core\Service\Category;
 
     use Core\Common\CommonConstants;
-    use Core\Service\Highlight\HighlightType;
-    use Core\Service\Place\PlaceService;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Highlight\HighlightType;
+    use Core\Service\Place\PlaceService;
     use Monolog\Logger;
 
     class CategoryServiceListener {

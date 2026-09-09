@@ -1,13 +1,13 @@
 <?php
     namespace Core\Service\Statistics;
 
-    use Monolog\Logger;
     use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
-    use Core\Service\Category\CategoryIdentifier;
-    use Core\Service\Trip\Trip;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Service\Category\CategoryIdentifier;
+    use Core\Service\Trip\Trip;
+    use Monolog\Logger;
 
     class StatisticsService {
 

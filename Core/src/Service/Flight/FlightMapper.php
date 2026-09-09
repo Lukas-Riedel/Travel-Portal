@@ -1,9 +1,9 @@
 <?php
     namespace Core\Service\Flight;
 
+    use Core\Client\Database\DatabaseClient;
     use Core\Service\Category\CategoryService;
     use Core\Service\Geocoding\GeocodingService;
-    use Core\Client\Database\DatabaseClient;
 
     class FlightMapper {
 

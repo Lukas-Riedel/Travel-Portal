@@ -1,15 +1,15 @@
 <?php
     namespace Core\Service\Expense;
 
-    use Common\Client\Encryption\EncryptionClient;
     use Common\Client\Cache\CacheClient;
-    use Core\Common\CommonConstants;
-    use Core\Service\Configuration\ConfigurationService;
-    use Core\Event\Event;
-    use Core\Event\EventPublisher;
+    use Common\Client\Encryption\EncryptionClient;
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\ExchangeRate\ExchangeRateClient;
+    use Core\Common\CommonConstants;
+    use Core\Event\Event;
+    use Core\Event\EventPublisher;
+    use Core\Service\Configuration\ConfigurationService;
 
     class ExpenseService {
         

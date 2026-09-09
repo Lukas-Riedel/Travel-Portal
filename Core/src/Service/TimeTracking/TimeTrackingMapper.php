@@ -1,8 +1,8 @@
 <?php
     namespace Core\Service\TimeTracking;
 
-    use Core\Common\CommonConstants;
     use Core\Client\Database\DatabaseClient;
+    use Core\Common\CommonConstants;
 
     class TimeTrackingMapper {
 
