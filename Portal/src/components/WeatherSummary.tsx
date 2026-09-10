@@ -94,7 +94,7 @@ export default function WeatherSummary({ weather, coordinates, start, end, timez
             : 0,
         precipitation: {
             probability: weatherAggregate.precipitation.probability,
-            total: weatherAggregate.counts.precipitationTotal
+            total: weatherAggregate.precipitation.total
         },
         clouds: weatherAggregate.clouds && weatherAggregate.counts.clouds > 0 ? {
             total: Math.round(weatherAggregate.clouds.total / weatherAggregate.counts.clouds),
