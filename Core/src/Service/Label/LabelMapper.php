@@ -17,7 +17,7 @@
 
         public function selectLabelsForPlace(string $placeId) : array {
             $sql = <<<'SQL'
-                SELECT li.id, li.name
+                SELECT li.*
                 FROM label l
                 INNER JOIN label_identifier li
                     ON l.label_id = li.id

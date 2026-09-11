@@ -2,7 +2,7 @@ import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 import type { AdminNavigationTarget } from "../types/AdminNavigationTarget.ts"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
-import type { Airline, Airport, Category, Flight, Label, PlaceIdentifier, Trip, TripIdentifier } from "../types/CoreSwaggerTypes.ts"
+import type { Airline, Airport, AirportIdentifier, Category, CategoryIdentifier, Flight, Label, Place, PlaceIdentifier, Trip, TripIdentifier, Year, YearIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { Navigable } from "../types/Navigable.ts"
 import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
 import type { PlansNavigationTarget } from "../types/PlansNavigationTarget.ts"
@@ -26,12 +26,15 @@ const FLIGHT_PAGE_PREFIX = "/flight"
 const STATISTICS_PAGE_PREFIX = "/statistics"
 const FEED_PAGE_PREFIX = "/feed"
 
-const isYear = (to: Navigable): to is number => typeof to === "number" && (to as number) >= 1900
+const isYearNumber = (to: Navigable): to is number => typeof to === "number" && (to as number) >= 1900
+const isYearObject = (to: Navigable): to is Year | YearIdentifier => typeof to === "object" && typeof (to as Year).id === "number"
 const isAirline = (to: Navigable): to is Airline => (to as Airline).codes !== undefined
-const isAirport = (to: Navigable): to is Airport => (to as Airport).shortName !== undefined
-const isCategory = (to: Navigable): to is Category => (to as Category).category !== undefined
-const isPlace = (to: Navigable): to is PlaceIdentifier => (to as PlaceIdentifier).score !== undefined
-const isTrip = (to: Navigable): to is TripIdentifier => (to as Trip).countries !== undefined || (to as TripIdentifier).year !== undefined
+const isAirport = (to: Navigable): to is Airport | AirportIdentifier => (to as Airport).shortName !== undefined || ((to as AirportIdentifier).code !== undefined && (to as AirportIdentifier).latitude !== undefined)
+const isCategory = (to: Navigable): to is Category | CategoryIdentifier => (to as Category).category !== undefined
+const isPlace = (to: Navigable): to is Place | PlaceIdentifier => (to as PlaceIdentifier).score !== undefined
+// TODO: TripIdentifier without year is structurally identical to Label ({ id, name }) and cannot be distinguished at runtime. A TripIdentifier without year will fall through to isLabel.
+const isTrip = (to: Navigable): to is Trip | TripIdentifier => (to as Trip).countries !== undefined || (to as TripIdentifier).year !== undefined
+// TODO: AirlineIdentifier and Label are structurally identical ({ id, name }) and cannot be distinguished at runtime. AirlineIdentifier will fall through to isLabel and incorrectly route to /label/:id.
 const isLabel = (to: Navigable): to is Label => (to as Label).name !== undefined && !isAirline(to) && !isCategory(to) && !isPlace(to) && !isTrip(to)
 const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).place !== undefined && (to as PlaceAlbum).album !== undefined
 const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => Object.values(AdminMenuTabName).includes((to as AdminNavigationTarget).tab as AdminMenuTabName)
@@ -44,8 +47,11 @@ export function getPath(to: Navigable, target: AppLinkTarget = AppLinkTarget.Def
         path += PLAN_PAGE_PREFIX
     }
 
-    if (isYear(to)) {
+    if (isYearNumber(to)) {
         path += YEAR_PAGE_PREFIX + "/" + to
+    }
+    else if (isYearObject(to)) {
+        path += YEAR_PAGE_PREFIX + "/" + to.id
     }
     else if (isAirline(to)) {
         path += AIRLINE_PAGE_PREFIX + "/" + to.id
