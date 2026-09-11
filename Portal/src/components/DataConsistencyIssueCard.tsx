@@ -2,7 +2,7 @@ import { fromUnixTime } from "date-fns"
 import { Wrench } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
+import { getAdminNavigationTarget } from "../utils/navigationUtils.ts"
 import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { listCategories } from "../clients/coreClient.ts"
@@ -256,7 +256,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     [t("issue.category.country.nondivided.label.name")]: category.name
                 }
             ),
-            resolve: (category: Category) => navigate(new AdminNavigationTarget(AdminMenuTabName.Regions, category.name))
+            resolve: (category: Category) => navigate(getAdminNavigationTarget(AdminMenuTabName.Regions, category.name))
         },
         [DataConsistencyIssueName.DateWithoutTime]: {
             name: t("issue.place.date.time.nonset.name"),
@@ -393,7 +393,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                     [t("issue.region.duplicated.label.name")]: category.name
                 }
             ),
-            resolve: (category: CategoryIdentifier) => navigate(new AdminNavigationTarget(AdminMenuTabName.Regions, category.name))
+            resolve: (category: CategoryIdentifier) => navigate(getAdminNavigationTarget(AdminMenuTabName.Regions, category.name))
         }
     }
 

@@ -1,9 +1,12 @@
-import type { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
 import { AppLinkTarget } from "../types/AppLinkTarget.ts"
+import type { AdminNavigationTarget } from "../types/AdminNavigationTarget.ts"
+import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import type { Airline, Airport, Category, Flight, Label, PlaceIdentifier, Trip, TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { Navigable } from "../types/Navigable.ts"
 import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
+import type { PlansNavigationTarget } from "../types/PlansNavigationTarget.ts"
+import { PlansMenuTabName } from "../types/PlansMenuTabName.ts"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
 import { formatTimestamp } from "./timeUtils.ts"
 
@@ -31,7 +34,8 @@ const isPlace = (to: Navigable): to is PlaceIdentifier => (to as PlaceIdentifier
 const isTrip = (to: Navigable): to is TripIdentifier => (to as Trip).countries !== undefined || (to as TripIdentifier).year !== undefined
 const isLabel = (to: Navigable): to is Label => (to as Label).name !== undefined && !isAirline(to) && !isCategory(to) && !isPlace(to) && !isTrip(to)
 const isPlaceAlbum = (to: Navigable): to is PlaceAlbum => (to as PlaceAlbum).place !== undefined && (to as PlaceAlbum).album !== undefined
-const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => (to as AdminNavigationTarget).tab !== undefined
+const isAdminNavigationTarget = (to: Navigable): to is AdminNavigationTarget => Object.values(AdminMenuTabName).includes((to as AdminNavigationTarget).tab as AdminMenuTabName)
+const isPlansNavigationTarget = (to: Navigable): to is PlansNavigationTarget => Object.values(PlansMenuTabName).includes((to as PlansNavigationTarget).tab as PlansMenuTabName)
 const isStaticNavigationTarget = (to: Navigable): to is StaticNavigationTarget => StaticNavigationTarget[to as number] !== undefined
 
 export function getPath(to: Navigable, target: AppLinkTarget = AppLinkTarget.Default, currentPath?: string): string {
@@ -65,7 +69,10 @@ export function getPath(to: Navigable, target: AppLinkTarget = AppLinkTarget.Def
         path += PLACE_PAGE_PREFIX + "/" + to.place.id + ALBUM_PAGE_PREFIX + "/" + to.album.id
     }
     else if (isAdminNavigationTarget(to)) {
-        path += ADMIN_PAGE_PREFIX + "?" + to.getURLSearchParams()
+        path += ADMIN_PAGE_PREFIX + "?" + getAdminURLSearchParams(to)
+    }
+    else if (isPlansNavigationTarget(to)) {
+        path += PLAN_PAGE_PREFIX + "?" + getPlansURLSearchParams(to)
     }
     else if (isStaticNavigationTarget(to)) {
         if (to === StaticNavigationTarget.Highlights) {
@@ -129,4 +136,22 @@ export function getGoogleCalendarLink(date: Date): string {
 
 export function getGoogleCloudAuthenticationLink(): string {
     return (window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL) + "/google/auth"
+}
+
+export function getAdminNavigationTarget(tab: AdminMenuTabName, key?: string): AdminNavigationTarget {
+    return { tab, key }
+}
+
+export function getAdminURLSearchParams(target: AdminNavigationTarget): URLSearchParams {
+    const params: Record<string, string> = { tab: target.tab }
+    if (target.key) params.key = target.key
+    return new URLSearchParams(params)
+}
+
+export function getPlansNavigationTarget(tab: PlansMenuTabName): PlansNavigationTarget {
+    return { tab }
+}
+
+export function getPlansURLSearchParams(target: PlansNavigationTarget): URLSearchParams {
+    return new URLSearchParams({ tab: target.tab })
 }
