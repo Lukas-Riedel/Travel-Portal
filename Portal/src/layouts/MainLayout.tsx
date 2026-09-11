@@ -14,7 +14,8 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { type AirlineIdentifier, type AirportIdentifier, CategoryCategory, type CategoryIdentifier, type Highlight, IndexableEntityType, type Label, type PlaceIdentifier, type SearchResult, type TripIdentifier, UserRole, type YearIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { Indexable } from "../types/Indexable.ts"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
-import { getEntityPrettyName, getTripFullName } from "../utils/formattingUtils.ts"
+import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 import { getPath } from "../utils/navigationUtils.ts"
 
 const SEARCHABLE_ENTITY_ICON_SELECTORS: Partial<Record<IndexableEntityType, (entity: Indexable) => typeof MapPin>> = {

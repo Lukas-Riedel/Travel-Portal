@@ -3,16 +3,14 @@ import axios, { AxiosHeaders } from "axios"
 import * as authRefresh from "axios-auth-refresh"
 import type { GeoJSON } from "geojson"
 
-import { Place } from "../classes/Place.ts"
-import { Trip } from "../classes/Trip.ts"
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import type { AppConfiguration } from "../types/AppConfiguration.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
     Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, Location, Note, PendingPhoto, Photo,
-    Place as IPlace, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
-    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip as ITrip, TripIncludedEntity, Voucher, Year, YearIncludedEntity,
+    Place, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity,
 } from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
@@ -347,7 +345,7 @@ export const createEvent = async (name: string, args?: Record<string, unknown>):
     )
 
 export const createCandidatePlace = async (name: string, address: string): Promise<Place> =>
-    coreClient.post<IPlace>(createQueryPath("places",
+    coreClient.post<Place>(createQueryPath("places",
         {
             type: SpecialPlaceType.Candidate,
             address
@@ -357,10 +355,9 @@ export const createCandidatePlace = async (name: string, address: string): Promi
             name
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const createPermanentPlace = async (name: string, address: string): Promise<Place> =>
-    coreClient.post<IPlace>(createQueryPath("places",
+    coreClient.post<Place>(createQueryPath("places",
         {
             type: SpecialPlaceType.Permanent,
             address
@@ -370,11 +367,10 @@ export const createPermanentPlace = async (name: string, address: string): Promi
             name: name
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, nearbyPlaces, limit, include, sort }:
     { tripId?: string, categoryId?: string, labelId?: string, year?: number, albumId?: string, photoId?: string, minStart?: number, maxEnd?: number, nearbyPlaces?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
-    coreClient.get<IPlace[]>(createQueryPath("places",
+    coreClient.get<Place[]>(createQueryPath("places",
         {
             type: PlaceType.Regular,
             tripId,
@@ -391,11 +387,10 @@ export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, alb
             sort
         }
     )).then(extractData)
-        .then(places => places.map(place => new Place(place)))
 
 export const listCandidatePlaces = async ({ tripId, categoryId, labelId, nearbyPlaces, limit, include, sort }:
     { tripId?: string, categoryId?: string, labelId?: string, nearbyPlaces?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
-    coreClient.get<IPlace[]>(createQueryPath("places",
+    coreClient.get<Place[]>(createQueryPath("places",
         {
             type: PlaceType.Candidate,
             tripId,
@@ -407,31 +402,27 @@ export const listCandidatePlaces = async ({ tripId, categoryId, labelId, nearbyP
             sort
         }
     )).then(extractData)
-        .then(places => places.map(place => new Place(place)))
 
 export const getPlace = async (placeId: string, nearbyPlaces?: number): Promise<Place> =>
-    coreClient.get<IPlace>(createQueryPath(`places/${placeId}`,
+    coreClient.get<Place>(createQueryPath(`places/${placeId}`,
         {
             nearbyPlaces
         }
     )).then(extractData)
-        .then(place => new Place(place))
 
 export const updatePlaceName = async (placeId: string, name: string): Promise<Place> =>
-    coreClient.patch<IPlace>(`places/${placeId}`,
+    coreClient.patch<Place>(`places/${placeId}`,
         {
             name
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const updatePlaceCountry = async (placeId: string, country: string): Promise<Place> =>
-    coreClient.patch<IPlace>(`places/${placeId}`,
+    coreClient.patch<Place>(`places/${placeId}`,
         {
             country
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const updatePlaceLocation = async (placeId: string, latitude: number, longitude: number): Promise<Place> =>
     coreClient.patch<Place>(`places/${placeId}`,
@@ -440,25 +431,22 @@ export const updatePlaceLocation = async (placeId: string, latitude: number, lon
             longitude
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const updatePlaceMainHighlight = async (placeId: string, mainHighlightId: string): Promise<Place> =>
-    coreClient.patch<IPlace>(`places/${placeId}`,
+    coreClient.patch<Place>(`places/${placeId}`,
         {
             mainHighlight: {
                 id: mainHighlightId
             }
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const updatePlaceExcerpt = async (placeId: string, excerpt: string | null): Promise<Place> =>
-    coreClient.patch<IPlace>(`places/${placeId}`,
+    coreClient.patch<Place>(`places/${placeId}`,
         {
             excerpt
         }
     ).then(extractData)
-        .then(place => new Place(place))
 
 export const removeCandidatePlace = async (placeId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}?type=${SpecialPlaceType.Candidate}`)
@@ -560,23 +548,21 @@ export const removeTimeTrackingEvent = async (eventId: string): Promise<void> =>
     coreClient.delete(`tracker/${eventId}`)
 
 export const listRegularTrips = async ({ year, include }: { year?: number, include?: TripIncludedEntity[] } = {}): Promise<Trip[]> =>
-    coreClient.get<ITrip[]>(createQueryPath("trips",
+    coreClient.get<Trip[]>(createQueryPath("trips",
         {
             type: TripType.Regular,
             year,
             include: include?.join(",")
         }
     )).then(extractData)
-        .then(trips => trips.map(trip => new Trip(trip)))
 
 export const listCandidateTrips = async ({ include }: { include?: TripIncludedEntity[] } = {}): Promise<Trip[]> =>
-    coreClient.get<ITrip[]>(createQueryPath("trips",
+    coreClient.get<Trip[]>(createQueryPath("trips",
         {
             type: TripType.Candidate,
             include: include?.join(",")
         }
     )).then(extractData)
-        .then(trips => trips.map(trip => new Trip(trip)))
 
 
 export const getTrip = async (tripId: string): Promise<Trip> =>
@@ -584,38 +570,34 @@ export const getTrip = async (tripId: string): Promise<Trip> =>
         .then(extractData)
 
 export const updateTripName = async (tripId: string, name: string): Promise<Trip> =>
-    coreClient.patch<ITrip>(`trips/${tripId}`,
+    coreClient.patch<Trip>(`trips/${tripId}`,
         {
             name
         }
     ).then(extractData)
-        .then(trip => new Trip(trip))
 
 export const updateTripStart = async (tripId: string, start: number): Promise<Trip> =>
-    coreClient.patch<ITrip>(`trips/${tripId}`,
+    coreClient.patch<Trip>(`trips/${tripId}`,
         {
             start
         }
     ).then(extractData)
-        .then(trip => new Trip(trip))
 
 export const updateTripMainHighlight = async (tripId: string, mainHighlightId: string): Promise<Trip> =>
-    coreClient.patch<ITrip>(`trips/${tripId}`,
+    coreClient.patch<Trip>(`trips/${tripId}`,
         {
             mainHighlight: {
                 id: mainHighlightId
             }
         }
     ).then(extractData)
-        .then(trip => new Trip(trip))
 
 export const replaceTrip = async (tripId: string, candidateTripId: string): Promise<Trip> =>
-    coreClient.put<ITrip>(`trips/${tripId}`,
+    coreClient.put<Trip>(`trips/${tripId}`,
         {
             id: candidateTripId
         }
     ).then(extractData)
-        .then(trip => new Trip(trip))
 
 export const removeTrip = async (tripId: string): Promise<void> =>
     coreClient.delete(`trips/${tripId}`)

@@ -2,13 +2,13 @@ import { format, fromUnixTime } from "date-fns"
 import type { Feature, GeoJSON, Geometry } from "geojson"
 import { useTranslation } from "react-i18next"
 
-import type { Trip } from "../classes/Trip.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { AppConfiguration } from "../types/AppConfiguration.ts"
-import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Voucher } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 import { useFormatters } from "./useFormatters.ts"
 import { useUserInput } from "./useUserInput.tsx"
 
@@ -1353,7 +1353,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: true,
                     options: trips.map(trip => ({
                         id: trip.id,
-                        name: trip.getFullName()
+                        name: getTripFullName(trip)
                     }))
                 },
                 {

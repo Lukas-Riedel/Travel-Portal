@@ -13,6 +13,7 @@ import { useCandidatePlaces } from "../hooks/useCandidatePlaces.ts"
 import { useCategory } from "../hooks/useCategory.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { CategoryCategory, PlaceIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 
 export default function CandidateCategoryPage() {
     const { categoryId } = useParams()
@@ -23,7 +24,7 @@ export default function CandidateCategoryPage() {
     const { category, updateCategoryName } = useCategory(categoryId)
     const { candidatePlaces, removeCandidatePlace } = useCandidatePlaces({ categoryId, include: [PlaceIncludedEntity.Categories] })
 
-    const countryCategoriesMap = new Map(candidatePlaces?.map(place => place.getCategory(CategoryCategory.Country))
+    const countryCategoriesMap = new Map(candidatePlaces?.map(place => getPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const handleCandidatePlaceCreated = () => {
@@ -39,7 +40,7 @@ export default function CandidateCategoryPage() {
             <StaticMapFrame>
                 <PlaceMap
                     places={candidatePlaces}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null} />
+                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country ?? "") ?? null} />
             </StaticMapFrame>
             <PlaceCardGrid
                 places={candidatePlaces}

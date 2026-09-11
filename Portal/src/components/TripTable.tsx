@@ -3,13 +3,14 @@ import {useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Trip } from "../classes/Trip"
+import type { Trip } from "../types/CoreSwaggerTypes"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { usePublicHolidays } from "../hooks/usePublicHolidays"
 import type { TimeTrackingEvent } from "../types/CoreSwaggerTypes"
 import { TimeTrackingEventType } from "../types/CoreSwaggerTypes"
 import { getEventHoursSum, getEvents, HOURS_PER_MAN_DAY } from "../utils/eventUtils"
 import { formatDateRange, getDaysFromTodayThrough, getTimezoneOrDefault, isBeginningOfCurrentYear, isToday } from "../utils/timeUtils"
+import { getTripDaysCount, isDayInTrip, isEndDayOfTrip, isStartDayOfTrip } from "../utils/tripUtils"
 import AppLink from "./AppLink"
 import Tooltip from "./Tooltip"
 
@@ -60,7 +61,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                     continue
                 }
 
-                const startingTrip = trips?.find(trip => trip.isStartDayOfTrip(day))
+                const startingTrip = trips?.find(trip => isStartDayOfTrip(trip, day))
                 if (startingTrip) {
                     tripBalances[startingTrip.id] = {
                         availableOvertimeHours: currentExpectedOvertimeHoursBalance,
@@ -79,7 +80,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                 currentExpectedOvertimeHoursBalance += doGetEventHoursSum(TimeTrackingEventType.PlannedWork)
 
                 if (!isFreeDay(day)) {
-                    if ((trips ?? []).some(trip => trip.isDayInTrip(day))) {
+                    if ((trips ?? []).some(trip => isDayInTrip(trip, day))) {
                         currentExpectedOvertimeHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                     }
                     else {
@@ -99,7 +100,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                     currentExpectedTimeOffHoursBalance -= standardWorkingHoursPerWorkingDay - submittedTimeOffHours
                 }
 
-                const endingTrip = trips?.find(trip => trip.isEndDayOfTrip(day))
+                const endingTrip = trips?.find(trip => isEndDayOfTrip(trip, day))
                 if (endingTrip) {
                     const endingBalance = tripBalances[endingTrip.id]
                     if (endingBalance) {
@@ -191,7 +192,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                                     )}
                                 </td>
                                 <td className="p-3 text-center">
-                                    {trip.getDaysCount(timezone)}
+                                    {getTripDaysCount(trip, timezone)}
                                 </td>
                                 {timeTrackingEvents && !isMobile && (
                                     <>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 
-import { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
 import { createCandidatePlace, listCandidatePlaces, removeCandidatePlace } from "../clients/coreClient.ts"
 import { useLocation } from "../contexts/LocationContext.jsx"
 import type { PlaceIncludedEntity, PlaceSortingStrategy } from "../types/CoreSwaggerTypes.ts"
@@ -36,7 +35,7 @@ export const useCandidatePlaces = ({ tripId, categoryId, labelId, nearbyPlaces, 
     })
 
     return {
-        candidatePlaces: response === null ? null : response.map(place => new DistanceAwarePlace(place, currentLocation ? getHaversineDistance(place, currentLocation) : undefined)),
+        candidatePlaces: response === null ? null : response.map(place => ({ ...place, distance: currentLocation ? getHaversineDistance(place, currentLocation) : undefined })),
         changeCurrentLocation: setCurrentLocation,
         createCandidatePlace: (name: string, address: string) => createCandidatePlace(name, address).then(refetchResponse),
         removeCandidatePlace: (placeId: string) => removeCandidatePlace(placeId).then(refetchResponse)

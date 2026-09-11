@@ -6,6 +6,7 @@ import { useEvents } from "../hooks/useEvents.ts"
 import { usePlace } from "../hooks/usePlace.ts"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getPlaceDateByAlbumId } from "../utils/placeUtils.ts"
 
 export default function AlbumPage() {
     const { placeId, albumId } = useParams()
@@ -15,7 +16,7 @@ export default function AlbumPage() {
     const { place, refreshPlaceAlbum } = usePlace(placeId)
     const photos = usePlaceAlbumPhotos(placeId, albumId)
 
-    const date = albumId ? place?.getDateByAlbumId(albumId) : undefined
+    const date = albumId && place ? getPlaceDateByAlbumId(place, albumId) : undefined
 
     return hasRole(UserRole.PlaceAlbumRead) && (
         <AlbumPhotoTileGrid

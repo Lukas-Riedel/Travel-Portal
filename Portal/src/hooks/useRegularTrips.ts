@@ -1,4 +1,3 @@
-import { Trip } from "../classes/Trip.ts"
 import { createTripTask, listRegularTrips, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } from "../clients/coreClient.ts"
 import type { TaskPriority, TripIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import type { UseRegularTripsResult } from "../types/UseRegularTripsResult.ts"
@@ -18,7 +17,7 @@ export const useRegularTrips = ({ year, include }: UseRegularTripsProps = {}): U
     })
 
     return {
-        trips: response === null ? null : response.map(trip => new Trip(trip)),
+        trips: response === null ? null : response,
         createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: number) => createTripTask(tripId, description, priority, deadline).then(refetchResponse),
         removeTripTask: (tripId: string, taskId: string) => removeTripTask(tripId, taskId).then(refetchResponse),
         updateTripTaskDescription: (tripId: string, taskId: string, newDescription: string) => updateTripTaskDescription(tripId, taskId, newDescription).then(refetchResponse),

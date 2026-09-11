@@ -2,10 +2,11 @@ import { getTime, parseISO } from "date-fns"
 import { ImagePlus, LocationEdit, RefreshCcw, SquarePen } from "lucide-react"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getPlaceCategory, getPlaceDate, isPlacePermanent } from "../utils/placeUtils.ts"
 import PlaceMap from "./PlaceMap.jsx"
 
 interface PlaceContentProps {
@@ -42,9 +43,9 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
     const handlePhotosAdded = () => {
         if (onlineAgents && onPhotosAdded && place) {
             showUploadPhotosToast(onlineAgents, (date, path, agentId, sendNotification, mainPhotoPosition) => {
-                const placeDate = place.getDate(parseISO(date))
+                const placeDate = getPlaceDate(place, parseISO(date))
                 const timestamp = Math.floor(getTime(parseISO(date)) / 1000)
-                if (!place.isPermanent() && !placeDate) {
+                if (!isPlacePermanent(place) && !placeDate) {
                     return Promise.reject("Unable to upload photos for the regular place for the date that does not exist.")
                 }
 
@@ -111,7 +112,7 @@ export default function PlaceContent({ place, onPhotosAdded, onExcerptChanged, o
             </div>
             <PlaceMap
                 places={[place]}
-                placeMainCategorySelector={place => (place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ?? null)}
+                placeMainCategorySelector={place => (getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata) ?? null)}
                 onRightClick={onLocationChanged ? ((latitude, longitude) => Promise.resolve(handleLocationUpdated(latitude, longitude))) : undefined} />
         </div>
     )

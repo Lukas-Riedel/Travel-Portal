@@ -1,9 +1,10 @@
 import {MoveLeft, MoveRight } from "lucide-react"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Trip } from "../classes/Trip.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { useRegularTrips } from "../hooks/useRegularTrips.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
+import { getTripFullName, isTripCandidate } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
 
 interface TripNavigationProps {
@@ -14,8 +15,8 @@ interface TripNavigationProps {
 export default function TripNavigation({ trip, canDisplayFutureTrips }: TripNavigationProps) {
     const { trips } = useRegularTrips()
 
-    const previousTrip = trip?.isCandidate() ? null : trips?.findLast(t => (t?.start ?? 0) < (trip?.start ?? 0)) ?? null
-    const nextTrip = trip?.isCandidate() ? null : trips?.find(t => (t?.start ?? Infinity) > (trip?.start ?? Infinity)) ?? null
+    const previousTrip = trip && isTripCandidate(trip) ? null : trips?.findLast(t => (t?.start ?? 0) < (trip?.start ?? 0)) ?? null
+    const nextTrip = trip && isTripCandidate(trip) ? null : trips?.find(t => (t?.start ?? Infinity) > (trip?.start ?? Infinity)) ?? null
 
     return (
         <div className="flex flex-col lg:flex-row lg:justify-between p-6 my-4 space-y-4 lg:space-y-0">
@@ -26,14 +27,14 @@ export default function TripNavigation({ trip, canDisplayFutureTrips }: TripNavi
                 <MoveLeft
                     className="mr-2"
                     size={16} />
-                {previousTrip?.getFullName()}
+                {previousTrip && getTripFullName(previousTrip)}
             </TripLink>
 
             <TripLink
                 trip={nextTrip}
                 isLoaded={!!(trip && trips)}
                 canDisplayFutureTrips={canDisplayFutureTrips}>
-                {nextTrip?.getFullName()}
+                {nextTrip && getTripFullName(nextTrip)}
                 <MoveRight
                     className="ml-2"
                     size={16} />

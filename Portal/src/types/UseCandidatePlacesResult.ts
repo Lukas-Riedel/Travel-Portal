@@ -1,4 +1,4 @@
-import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
+import type { DistanceAwarePlace } from "./DistanceAwarePlace.ts"
 import type { Coordinates } from "./Coordinates.ts"
 
 export interface UseCandidatePlacesResult {

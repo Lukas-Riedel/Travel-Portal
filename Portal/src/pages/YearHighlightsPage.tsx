@@ -9,6 +9,7 @@ import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import { useYear } from "../hooks/useYear"
 import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 
 export default function YearHighlightsPage() {
     const { year: yearParameter } = useParams()
@@ -23,7 +24,7 @@ export default function YearHighlightsPage() {
     const tripHighlightCandidates = trips?.map(trip => {
         const photos = trip.highlights?.filter(highlight => !year?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
         return {
-            title: trip.getFullName(),
+            title: getTripFullName(trip),
             getPhotos: () => Promise.resolve(photos)
         }
     }).filter(group => group.getPhotos !== undefined)

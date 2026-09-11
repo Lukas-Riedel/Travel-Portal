@@ -1,4 +1,4 @@
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Album } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import DateTile from "./DateTile.tsx"

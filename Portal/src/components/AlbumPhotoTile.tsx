@@ -2,11 +2,12 @@ import { Edit2, SendToBack, Star } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { type Album, type Photo } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
 import PhotoTile from "./PhotoTile.tsx"
 
@@ -55,7 +56,7 @@ export default function AlbumPhotoTile({ place, album, photo, photoPosition, onP
                     // TODO: Create a class with the method to obtain the thumbnail URL.
                     src={photo ? (photo.url + "=w350-h233") : null}
                     to={photo?.permalink}
-                    categories={place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ? [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)!] : undefined}
+                    categories={getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata) ? [getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)!] : undefined}
                     firstLineText={place.name}
                     secondLineText={formatTimestamp(getCurrentTimestamp(), t("general.format.date.year.included"))} />
             )}

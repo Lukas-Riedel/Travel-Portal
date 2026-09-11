@@ -1,13 +1,14 @@
 import { MapPin, Move, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
-import type { Place } from "../classes/Place.ts"
+import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { type Category,CategoryCategory } from "../types/CoreSwaggerTypes.ts"
 import { getOnlyElement } from "../utils/collectionUtils.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
@@ -53,7 +54,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
         <Card>
             <div className="flex justify-start items-center space-x-2">
                 <CategoryFlag
-                    category={category.metadata?.unicode ? category : (getOnlyElement(places.map((place: Place) => place.getCategory(CategoryCategory.Country)).filter((category, index, self) => category && self.findIndex(other => other?.id === category.id) === index)) ?? null)}
+                    category={category.metadata?.unicode ? category : (getOnlyElement(places.map((place: Place) => getPlaceCategory(place, CategoryCategory.Country)).filter((category, index, self) => category && self.findIndex(other => other?.id === category.id) === index)) ?? null)}
                     className="w-7 h-auto flex-shrink-0" />
                 <AppLink
                     to={category}

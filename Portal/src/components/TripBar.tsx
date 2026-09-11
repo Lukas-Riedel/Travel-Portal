@@ -1,5 +1,5 @@
 import type { TripIdentifier } from "../types/CoreSwaggerTypes"
-import { getTripFullName } from "../utils/formattingUtils"
+import { getTripFullName } from "../utils/tripUtils"
 import Bar from "./Bar"
 import BarItem from "./BarItem"
 

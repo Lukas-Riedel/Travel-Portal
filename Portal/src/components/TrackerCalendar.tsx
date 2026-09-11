@@ -4,7 +4,7 @@ import { CalendarPlus, ChevronLeft, ChevronRight, Clock, ClockPlus, Home,Palmtre
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Trip } from "../classes/Trip.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { useLocale } from "../hooks/useLocale.ts"
@@ -14,6 +14,7 @@ import { type TimeTrackingEvent,TimeTrackingEventType } from "../types/CoreSwagg
 import { getEventHoursSum, getEvents, HOURS_PER_MAN_DAY, TIME_TRACKING_EVENT_TYPE_ICONS } from "../utils/eventUtils.ts"
 import { getFlightLink } from "../utils/navigationUtils.ts"
 import { formatTimestamp, getNoonTimestamp, getTimezoneOrDefault, getWeekday, getZonedDate, ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
+import { isTripBetweenDates, isDayInTrip } from "../utils/tripUtils.ts"
 import Tooltip from "./Tooltip.tsx"
 
 const DAY_OF_WEEK_FORMAT = "EE"
@@ -50,7 +51,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
     const lastTripEnd = trips?.at(-1)?.end
     const latestAllowedDate = endOfYear(lastTripEnd ? fromUnixTime(lastTripEnd) : now)
 
-    const filteredTrips = trips?.filter(trip => trip.isBetweenDates(earliestAllowedDate, latestAllowedDate, timezone)) ?? []
+    const filteredTrips = trips?.filter(trip => isTripBetweenDates(trip, earliestAllowedDate, latestAllowedDate, timezone)) ?? []
 
     const isPreviousMonthDisabled = addMonths(date, -1) < earliestAllowedDate
 
@@ -100,7 +101,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
         }
 
         const standardWorkingHours = isFreeDay(day) ? 0 : standardWorkingHoursPerWorkingDay
-        const isInTrip = filteredTrips.some(trip => trip.isDayInTrip(day))
+        const isInTrip = filteredTrips.some(trip => isDayInTrip(trip, day))
 
         const positiveOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime] ?? null, hours => hours > 0, timezone)
         const negativeOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime] ?? null, hours => hours < 0, timezone)

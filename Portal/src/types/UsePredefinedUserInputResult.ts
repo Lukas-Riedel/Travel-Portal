@@ -1,9 +1,7 @@
 import type { GeoJSON, Geometry } from "geojson"
 
-import type { Place } from "../classes/Place.ts"
-import type { Trip } from "../classes/Trip.ts"
 import type { AppConfiguration } from "./AppConfiguration.ts"
-import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Photo, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Photo, Place, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 
 export interface UsePredefinedUserInputResult {

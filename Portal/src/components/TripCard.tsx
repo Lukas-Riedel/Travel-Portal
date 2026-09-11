@@ -6,6 +6,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.js"
 import { CategoryCategory, type Date, type Place, PlaceIncludedEntity, type Trip } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
@@ -30,7 +31,7 @@ export default function TripCard({ trip, onTripRemoved }: TripCardProps) {
     const countryCategories = (() => {
         const categoryMap = new Map()
         tripPlacesWithoutLayover?.forEach(place => {
-            const category = place.getCategory(CategoryCategory.Country)
+            const category = getPlaceCategory(place, CategoryCategory.Country)
             if (category) {
                 categoryMap.set(category.name, category)
             }

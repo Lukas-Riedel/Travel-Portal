@@ -2,7 +2,7 @@ import { TriangleAlert } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Place } from "../classes/Place"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput"
 import type { Album } from "../types/CoreSwaggerTypes"
 import { PlaceReviewItem } from "../types/PlaceReviewItem"

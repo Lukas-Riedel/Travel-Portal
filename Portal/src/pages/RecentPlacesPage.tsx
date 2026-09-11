@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 
-import { type Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
+import { getHaversineDistanceTo } from "../utils/placeUtils.ts"
+import { isCurrentTrip } from "../utils/tripUtils.ts"
 import PlaceMap from "../components/PlaceMap.jsx"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
 import StaticMapFrame from "../components/StaticMapFrame.tsx"
@@ -36,7 +38,7 @@ export default function RecentPlacesPage() {
             if (places.length === LIMIT_STEP) {
                 const breakIndex = places.findIndex((place, i) => {
                     const prev = places[i - 1]
-                    return i === 0 || prev == null ? false : place.getHaversineDistanceTo(prev) > MAX_DISTANCE
+                    return i === 0 || prev == null ? false : getHaversineDistanceTo(place, prev) > MAX_DISTANCE
                 })
 
                 const filteredPlaces = breakIndex === -1 ? places : places.slice(0, breakIndex)
@@ -74,10 +76,10 @@ export default function RecentPlacesPage() {
             <StaticMapFrame>
                 <PlaceMap
                     places={allPlaces}
-                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null}
                 />
             </StaticMapFrame>
-            {(hasRole(UserRole.PortalFutureRead) || upcomingOrCurrentTrip?.isCurrent()) && (upcomingOrCurrentTrip?.end ?? 0) < getMaximumAllowedTimetamp() && (
+            {(hasRole(UserRole.PortalFutureRead) || (upcomingOrCurrentTrip && isCurrentTrip(upcomingOrCurrentTrip))) && (upcomingOrCurrentTrip?.end ?? 0) < getMaximumAllowedTimetamp() && (
                 <TripSummary
                     trip={upcomingOrCurrentTrip}
                     displayDeviceData={hasRole(UserRole.PortalFutureRead)}

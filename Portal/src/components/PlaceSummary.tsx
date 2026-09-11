@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
@@ -15,7 +16,7 @@ interface PlaceSummaryProps {
 export default function PlaceSummary({ place }: PlaceSummaryProps) {
     const { t } = useTranslation()
 
-    const category = place && place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
+    const category = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
     return (
         <div className="w-full max-w-5xl mx-auto bg-white shadow-md overflow-hidden my-10 rounded-xl">

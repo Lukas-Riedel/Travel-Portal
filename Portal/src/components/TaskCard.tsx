@@ -1,10 +1,11 @@
 import { CircleArrowUp, SquarePen, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import type { Trip } from "../classes/Trip.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
 import LoadingCard from "./LoadingCard.tsx"
@@ -57,7 +58,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                 <AppLink
                     to={trip}
                     className="text-lg font-semibold hover:underline">
-                    {trip.getFullName()}
+                    {getTripFullName(trip)}
                 </AppLink>
                 {!!(onTaskDescriptionUpdated || onTaskPriorityUpdated || onTaskRemoved) && (
                     <ul className="flex justify-end gap-1 ml-auto">

@@ -2,7 +2,7 @@ import { Edit2, Folder } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import type { Place } from "../classes/Place.ts"
+import type { Category, Place } from "../types/CoreSwaggerTypes.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient.ts"
 import AppLink from "../components/AppLink.tsx"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
@@ -18,6 +18,7 @@ import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getHighlightsTier } from "../utils/highlightUtils.ts"
+import { getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
 
 export default function CategoryPage() {
     const { categoryId } = useParams()
@@ -30,7 +31,7 @@ export default function CategoryPage() {
         removeCategoryHighlight, updateCategoryMainHighlight, updateCategoryHighlightQualityAttributes } = useCategory(categoryId)
     const { places } = useTimeFilteredRegularPlaces({ categoryId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
-    const countryCategoriesMap = new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
+    const countryCategoriesMap = new Map(places?.map(place => doGetPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const totalScore = places?.map(place => place.score)?.filter((s): s is NonNullable<typeof s> => s != null)
@@ -52,14 +53,14 @@ export default function CategoryPage() {
         .then(_ => listPlaceAlbumPhotos(placeId, albumId))
         .then(photos => photos.find(photo => photo.id === photoId)!)
 
-    const getPlaceCategory = (place: Place): ReturnType<typeof place.getCategory> => {
+    const getPlaceCategory = (place: Place): Category | null => {
         if (countryCategoriesMap.size > 1) {
             return countryCategoriesMap.get(place?.country ?? "") ?? null
         }
         if (place?.country === category?.name) {
             return category ?? null
         }
-        return place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ?? null
+        return doGetPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata) ?? null
     }
 
     const handleMetadataChanged = () => {

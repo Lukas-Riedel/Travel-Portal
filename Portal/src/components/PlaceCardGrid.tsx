@@ -1,6 +1,6 @@
 
-import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
-import type { Place } from "../classes/Place.ts"
+import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import CardGrid from "./CardGrid.tsx"
 import PlaceCard from "./PlaceCard.tsx"
 

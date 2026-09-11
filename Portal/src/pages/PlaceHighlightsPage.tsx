@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext.tsx"
 import { usePlace } from "../hooks/usePlace"
 import { type Photo,UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 export default function PlaceHighlightsPage() {
@@ -55,7 +56,7 @@ export default function PlaceHighlightsPage() {
             <HighlightCandidateTileGrid
                 name={place?.name ?? null}
                 description={formatTimestamp(getCurrentTimestamp(), t("general.format.date.year.included"))}
-                categories={place ? [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
+                categories={place ? [getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
                 highlightCandidatesGroups={highlightCandidates ?? []}
                 onHighlightCreated={hasRole(UserRole.PlaceHighlightEdit) ? handleHighlightCreated : undefined}
                 onHighlightCandidateCreated={hasRole(UserRole.PlaceHighlightEdit) ? handleHighlightCandidateCreated : undefined} />

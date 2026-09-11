@@ -1,4 +1,4 @@
-import type { Trip } from "../classes/Trip.ts"
+import type { Trip } from "./CoreSwaggerTypes.ts"
 
 export interface UseCandidateTripsResult {
     trips: Trip[] | null

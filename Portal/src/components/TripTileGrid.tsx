@@ -1,4 +1,4 @@
-import type { Trip } from "../classes/Trip"
+import type { Trip } from "../types/CoreSwaggerTypes"
 import TileGrid from "./TileGrid"
 import TripTile from "./TripTile"
 

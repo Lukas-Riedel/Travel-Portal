@@ -1,5 +1,5 @@
 
-import type { Trip } from "../classes/Trip"
+import type { Trip } from "../types/CoreSwaggerTypes"
 import AppLink from "./AppLink"
 import TripTileGrid from "./TripTileGrid"
 
@@ -10,7 +10,7 @@ interface YearTripTileGridProps {
 
 export default function YearTripTileGrid({ year, trips }: YearTripTileGridProps) {
     // TODO: This should be ensured by the caller.
-    const yearTrips = trips?.filter(trip => trip.year == year && trip.isPast()) ?? []
+    const yearTrips = trips?.filter(trip => trip.year == year && (trip.end ?? 0) < Date.now() / 1000) ?? []
 
     return yearTrips.length > 0 && (
         <div className="my-4">

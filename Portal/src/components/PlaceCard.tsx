@@ -1,11 +1,12 @@
 import { Earth, Trash2 } from "lucide-react"
 
-import type { DistanceAwarePlace } from "../classes/DistanceAwarePlace.ts"
-import type { Place } from "../classes/Place.ts"
+import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Card from "./Card.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
@@ -22,7 +23,7 @@ export default function PlaceCard({ place, onPlaceRemoved }: PlaceCardProps) {
     const { showRemovePlaceToast } = usePredefinedUserInput()
     const { formatKilometers } = useFormatters()
 
-    const mostSpecificCategory = place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
+    const mostSpecificCategory = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
     const handlePlaceRemoved = () => {
         if (onPlaceRemoved) {

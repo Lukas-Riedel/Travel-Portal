@@ -9,11 +9,12 @@ import Lightbox, { type SlideImage } from "yet-another-react-lightbox"
 import Counter from "yet-another-react-lightbox/plugins/counter"
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { usePlaceAlbumPhotos } from "../hooks/usePlaceAlbumPhotos.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Album, Date } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
 import AppLink from "./AppLink.tsx"
 import PhotoTile from "./PhotoTile.tsx"
@@ -63,7 +64,7 @@ export default function DateTile({ place, date, onAlbumRefreshed }: DateTileProp
                 src={date?.album?.mainImageUrl ?? null}
                 firstLineText={place?.name}
                 secondLineText={date ? formatTimestamp(date.start, t("general.format.date.year.included"), place?.timezone) : undefined}
-                categories={place ? [place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
+                categories={place ? [getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)].filter((c): c is NonNullable<typeof c> => c != null) : undefined}
                 onClick={openGallery} />
             {onAlbumRefreshed && date?.album && (
                 <div className="flex justify-center gap-2 mt-2">

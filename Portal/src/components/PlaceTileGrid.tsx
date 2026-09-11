@@ -1,4 +1,4 @@
-import type { Place } from "../classes/Place"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Category } from "../types/CoreSwaggerTypes"
 import PlaceTile from "./PlaceTile"
 import TileGrid from "./TileGrid"

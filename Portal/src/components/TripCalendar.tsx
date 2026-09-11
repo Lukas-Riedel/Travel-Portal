@@ -4,13 +4,13 @@ import { ArrowRightLeft, Calendar, Copy, Earth, House, Upload } from "lucide-rea
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Place } from "../classes/Place.ts"
-import type { Trip } from "../classes/Trip.ts"
+import type { Place, Trip } from "../types/CoreSwaggerTypes.ts"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Date as PlaceDate, Flight, Note } from "../types/CoreSwaggerTypes.ts"
 import { getGoogleCalendarLink } from "../utils/navigationUtils.ts"
 import { formatTimestamp, getTripDays, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { getCalendarEvents, getTripPublicHoliday, getTripStay } from "../utils/tripUtils.ts"
 import CardGrid from "./CardGrid.tsx"
 import DayCard from "./DayCard.tsx"
 
@@ -70,11 +70,11 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
                     <DayCard
                         key={day.getTime()}
                         day={day}
-                        events={(places && trip?.getCalendarEvents(day, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
-                        stay={trip?.getStay(day, configuration?.homeLocation?.timezone)}
+                        events={(places && getCalendarEvents(day, trip?.flights, trip?.watchedFlights, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
+                        stay={trip ? getTripStay(trip, day, configuration?.homeLocation?.timezone) : undefined}
                         noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
                         fitness={trip?.fitness && trip.fitness[index] || undefined}
-                        publicHoliday={trip?.getPublicHoliday(day)}
+                        publicHoliday={trip ? getTripPublicHoliday(trip, day) : undefined}
                         timezone={timezone}
                         displayWarnings={displayWarnings}
                         onNoteAdded={onNoteAdded}

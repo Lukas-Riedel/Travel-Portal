@@ -1,5 +1,4 @@
-import type { Place } from "../classes/Place"
-import type { Album } from "./CoreSwaggerTypes"
+import type { Album, Place } from "./CoreSwaggerTypes"
 
 export type PlaceAlbum = {
   place: Place

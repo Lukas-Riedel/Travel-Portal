@@ -20,6 +20,7 @@ import { usePlace } from "../hooks/usePlace.js"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getHighlightsTier } from "../utils/highlightUtils.ts"
+import { getAllPlaceTrips, getPlaceAlbums, getPlaceCategory, getPastPlaceTrips } from "../utils/placeUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const NEARBY_PLACES_COUNT = 3
@@ -36,7 +37,7 @@ export default function PlacePage() {
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
-    const mostSpecificCategory = place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)
+    const mostSpecificCategory = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
     const attributes: Record<string, string | number | undefined> = {
         [t("place.attribute.quality")]: place?.quality && `${Math.round(place.quality)}%`,
@@ -85,8 +86,8 @@ export default function PlacePage() {
             <DateTileGrid
                 place={place}
                 onAlbumRefreshed={hasRole(UserRole.PlaceAlbumEdit) ? refreshPlaceAlbum : undefined} />
-            <TripBar trips={hasRole(UserRole.PortalFutureRead) ? (place?.getAllTrips() ?? null) : (place?.getPastTrips() ?? null)} />
-            {place != null && place.getAlbums().length > 0 && place.getPastTrips().length === 0
+            <TripBar trips={hasRole(UserRole.PortalFutureRead) ? (place ? getAllPlaceTrips(place) : null) : (place ? getPastPlaceTrips(place) : null)} />
+            {place != null && getPlaceAlbums(place).length > 0 && getPastPlaceTrips(place).length === 0
                 && <hr className="w-full h-0.5 my-4 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />}
             <NearbyPlaceTileGrid place={place} />
             <SunAltitudeBar place={place} />

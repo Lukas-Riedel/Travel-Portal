@@ -1,4 +1,4 @@
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Airline, Airport, Category, CategoryMetadata, DataConsistencyIssue, Fitness, Flight, GeographicalRegion } from "../types/CoreSwaggerTypes.ts"
 import CardGrid from "./CardGrid.tsx"
 import DataConsistencyIssueCard from "./DataConsistencyIssueCard.tsx"

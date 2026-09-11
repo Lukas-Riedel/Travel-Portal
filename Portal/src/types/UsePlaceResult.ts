@@ -1,5 +1,4 @@
-import type { Place } from "../classes/Place.ts";
-import type { Album, Highlight, Label, Note } from "./CoreSwaggerTypes.ts";
+import type { Album, Highlight, Label, Note, Place } from "./CoreSwaggerTypes.ts"
 
 export interface UsePlaceResult {
     place: Place | null

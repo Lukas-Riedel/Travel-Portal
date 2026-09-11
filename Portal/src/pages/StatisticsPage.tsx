@@ -27,7 +27,7 @@ export default function StatisticsPage() {
                 <PlaceMapAndFlightMapToggle
                     places={places}
                     flights={flights ?? null}
-                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null}
                     airportMainCategorySelector={airport => countryCategoriesMap?.get(airport.country ?? "") ?? null} />
             </StaticMapFrame>
             <StatisticsCardGrid

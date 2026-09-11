@@ -1,7 +1,7 @@
 import { Images,Map as MapIcon } from "lucide-react"
 import { useLayoutEffect, useRef, useState } from "react"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Airport, Category, Flight, Highlight, Photo } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"

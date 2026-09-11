@@ -3,7 +3,8 @@ import { Plus } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
+import { getPlaceCategory, getHaversineDistanceTo } from "../utils/placeUtils.ts"
 import CategoryCardGrid from "../components/CategoryCardGrid"
 import FloatingButton from "../components/FloatingButton"
 import PlaceMap from "../components/PlaceMap"
@@ -114,7 +115,7 @@ export default function PlansPage() {
 
     const countriesCandidatePlaces = groupPlacesByKey(filteredCandidatePlaces, place => place.country)
     const countriesVisitedPlaces = groupPlacesByKey(filteredVisitedPlaces, place => place.country)
-    const regionsVisitedPlaces = groupPlacesByKey(filteredVisitedPlaces, place => place.getCategory(CategoryCategory.Administrative)?.name)
+    const regionsVisitedPlaces = groupPlacesByKey(filteredVisitedPlaces, place => getPlaceCategory(place, CategoryCategory.Administrative)?.name)
 
     const tabs = [
         {

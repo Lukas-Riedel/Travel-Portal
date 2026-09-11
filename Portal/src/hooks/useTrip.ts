@@ -1,4 +1,3 @@
-import { Trip } from "../classes/Trip.ts"
 import {
 createTripExpense, createTripHighlight, createTripNote,     createTripTask,
     getTrip, refreshTripHighlights,
@@ -22,7 +21,7 @@ export const useTrip = (tripId?: string): UseTripResult => {
     })
 
     return {
-        trip: response && new Trip(response),
+        trip: response ?? null,
         removeTrip: () => removeTrip(tripId!),
         loadTrip: (candidateTripId: string) => replaceTrip(tripId!, candidateTripId).then(setResponse),
         moveTrip: (start: number) => updateTripStart(tripId!, start).then(setResponse),

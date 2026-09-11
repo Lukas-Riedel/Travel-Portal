@@ -1,4 +1,4 @@
-import type { Place } from "../classes/Place"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import PlaceSummary from "./PlaceSummary"
 
 const LOADING_PLACES_COUNT = 3

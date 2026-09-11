@@ -2,7 +2,7 @@ import { startOfDay } from "date-fns"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import type { Place } from "../classes/Place.ts"
+import type { Category, Place } from "../types/CoreSwaggerTypes.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient"
 import CardGrid from "../components/CardGrid"
 import DayCard from "../components/DayCard"
@@ -21,7 +21,8 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useYear } from "../hooks/useYear"
 import { type Airport, CategoryCategory, PlaceIncludedEntity, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getDayOfYear, getZonedDate } from "../utils/timeUtils.ts"
-import { getCalendarEvents } from "../utils/tripUtils.ts"
+import { filterPlaceDates, getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
+import { getCalendarEvents, isCurrentTrip, isFutureTrip, isPastTrip } from "../utils/tripUtils.ts"
 
 export default function YearPage() {
     const { year: yearParameter } = useParams()
@@ -37,18 +38,18 @@ export default function YearPage() {
 
     const flights = (yearTrips ?? []).flatMap(trip => trip.flights ?? []).filter((f): f is NonNullable<typeof f> => f != null).filter(flight => flight.registration)
     const timezone = configuration?.homeLocation?.timezone
-    const placesWithoutTrip = places?.map(place => place.withFilteredDates(date => !date.trip))?.filter(place => (place.dates?.length ?? 0) > 0)
+    const placesWithoutTrip = places?.map(place => filterPlaceDates(place, date => !date.trip))?.filter(place => (place.dates?.length ?? 0) > 0)
     const days = Array.from(new Set(placesWithoutTrip?.flatMap(p => p.dates?.map(d => startOfDay(getZonedDate(d.start, timezone ?? "")).getTime()) ?? [])))
         .sort((a, b) => a - b).map(timestamp => new Date(timestamp))
 
-    const visitedCountriesMap = new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
+    const visitedCountriesMap = new Map(places?.map(place => doGetPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const attributes: Record<string, string | number | undefined> = {
         [t("year.attribute.highlightsCount")]: year?.highlights?.length
     }
 
-    const getPlaceCategory = (place: Place): ReturnType<typeof place.getCategory> => countryCategoriesMap?.get(place?.country ?? "") ?? null
+    const getPlaceCategory = (place: Place): Category | null => countryCategoriesMap?.get(place?.country ?? "") ?? null
     const getAirportCategory = (airport: Airport) => countryCategoriesMap?.get(airport.country ?? "") ?? null
 
     const handlePhotoCorrected = async (placeId: string, albumId: string, fileName: string, base64Data: string, photoId: string) => createPlaceAlbumPhoto(placeId, albumId, fileName, base64Data, photoId)
@@ -78,9 +79,9 @@ export default function YearPage() {
                 onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updateYearHighlightQualityAttributes : undefined} />
             <StatisticsPanel statistics={year ? (year.statistics ?? []) : null} />
             {hasRole(UserRole.PortalFutureRead) && (
-                <TripTable trips={yearTrips?.filter(trip => trip.isFuture()) ?? null} />
+                <TripTable trips={yearTrips?.filter(trip => isFutureTrip(trip)) ?? null} />
             )}
-            <TripTileGrid trips={yearTrips?.filter(trip => trip.isPast())?.slice()?.reverse() ?? null} />
+            <TripTileGrid trips={yearTrips?.filter(trip => isPastTrip(trip))?.slice()?.reverse() ?? null} />
             <CardGrid rowSize={4}>
                 {days?.map((day, index) => (
                     <DayCard
@@ -94,7 +95,7 @@ export default function YearPage() {
                 ))}
             </CardGrid>
             {hasRole(UserRole.TripExpenseRead) && (
-                <ExpenseSummary expenses={yearTrips?.filter(trip => trip.isPast() || trip.isCurrent())?.flatMap(trip => trip.expenses ?? []) ?? null} />
+                <ExpenseSummary expenses={yearTrips?.filter(trip => isPastTrip(trip) || isCurrentTrip(trip))?.flatMap(trip => trip.expenses ?? []) ?? null} />
             )}
         </>
     )

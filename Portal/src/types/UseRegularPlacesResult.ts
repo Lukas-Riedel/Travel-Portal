@@ -1,4 +1,4 @@
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "./CoreSwaggerTypes.ts"
 
 export interface UseRegularPlacesResult {
     places: Place[] | null

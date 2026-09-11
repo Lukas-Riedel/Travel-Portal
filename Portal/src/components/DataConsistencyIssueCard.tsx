@@ -3,8 +3,8 @@ import { Wrench } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { AdminNavigationTarget } from "../classes/AdminNavigationTarget.ts"
-import type { Place } from "../classes/Place.ts"
-import type { Trip } from "../classes/Trip.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { listCategories } from "../clients/coreClient.ts"
 import { useAppNavigate } from "../hooks/useAppNavigate.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
@@ -98,7 +98,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
     const handleAdministrativeCategoryAssigned = async (place: Place) => {
         if (onGeographicalExtensionCategoryAdded) {
             const categoryCandidates = await listCategories({ country: place.country, categories: [CategoryCategory.Administrative] })
-            return showAssignCategoryToast(categoryCandidates, categoryName => onGeographicalExtensionCategoryAdded(categoryName, place.country, CategoryCategory.Administrative, place.latitude, place.longitude))
+            return showAssignCategoryToast(categoryCandidates, categoryName => onGeographicalExtensionCategoryAdded(categoryName, place.country ?? "", CategoryCategory.Administrative, place.latitude, place.longitude))
         }
     }
 
@@ -219,10 +219,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         [DataConsistencyIssueName.PlaceWithoutAdministrativeCategory]: {
             name: t("issue.place.category.unassigned.administrative.name"),
             isResolvable: !!onGeographicalExtensionCategoryAdded,
-            getProperties: (place: Place) => (
+            getProperties: (place: Place): Record<string, string | number> => (
                 {
                     [t("issue.place.category.unassigned.administrative.label.name")]: place.name,
-                    [t("issue.place.category.unassigned.administrative.label.country")]: place.country
+                    [t("issue.place.category.unassigned.administrative.label.country")]: place.country ?? ""
                 }
             ),
             resolve: handleAdministrativeCategoryAssigned
@@ -230,7 +230,7 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         [DataConsistencyIssueName.PlaceWithoutCountry]: {
             name: t("issue.place.category.unassigned.country.name"),
             isResolvable: !!onPlaceCountryChanged,
-            getProperties: (place: Place) => (
+            getProperties: (place: Place): Record<string, string | number> => (
                 {
                     [t("issue.place.category.unassigned.country.label.name")]: place.name,
                 }
@@ -240,10 +240,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         [DataConsistencyIssueName.NonReviewedPlace]: {
             name: t("issue.place.nonreviewed.name"),
             isResolvable: true,
-            getProperties: (place: Place) => (
+            getProperties: (place: Place): Record<string, string | number> => (
                 {
                     [t("issue.place.nonreviewed.label.name")]: place.name,
-                    [t("issue.place.nonreviewed.label.country")]: place.country
+                    [t("issue.place.nonreviewed.label.country")]: place.country ?? ""
                 }
             ),
             resolve: navigate
@@ -261,10 +261,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         [DataConsistencyIssueName.DateWithoutTime]: {
             name: t("issue.place.date.time.nonset.name"),
             isResolvable: true,
-            getProperties: (place: Place) => (
+            getProperties: (place: Place): Record<string, string | number> => (
                 {
                     [t("issue.place.date.time.nonset.label.name")]: place.name,
-                    [t("issue.place.date.time.nonset.label.country")]: place.country,
+                    [t("issue.place.date.time.nonset.label.country")]: place.country ?? "",
                     [t("issue.place.date.time.nonset.label.date")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.date.year.included"))
                 }
             ),
@@ -299,10 +299,10 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
         [DataConsistencyIssueName.DateWithIncorrectTime]: {
             name: t("issue.place.date.time.unaligned.name"),
             isResolvable: true,
-            getProperties: (place: Place) => (
+            getProperties: (place: Place): Record<string, string | number> => (
                 {
                     [t("issue.place.date.time.unaligned.label.name")]: place.name,
-                    [t("issue.place.date.time.unaligned.label.country")]: place.country,
+                    [t("issue.place.date.time.unaligned.label.country")]: place.country ?? "",
                     [t("issue.place.date.time.unaligned.label.date")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.date.year.included")),
                     [t("issue.place.date.time.unaligned.label.time")]: formatTimestamp(place.dates?.[0]?.start ?? 0, t("general.format.time"))
                 }

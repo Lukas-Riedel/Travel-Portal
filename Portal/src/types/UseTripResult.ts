@@ -1,5 +1,4 @@
-import type { Trip } from "../classes/Trip.ts"
-import type { Expense, ExpenseCurrency,ExpenseType, Highlight, Note, Task, TaskPriority } from "./CoreSwaggerTypes.ts"
+import type { Expense, ExpenseCurrency, ExpenseType, Highlight, Note, Task, TaskPriority, Trip } from "./CoreSwaggerTypes.ts"
 
 export interface UseTripResult {
     trip: Trip | null,

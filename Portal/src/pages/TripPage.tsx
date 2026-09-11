@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient"
 import ExpenseSummary from "../components/ExpenseSummary"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
@@ -18,8 +18,10 @@ import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 import { useEvents } from "../hooks/useEvents"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useTrip } from "../hooks/useTrip"
-import { type Airport, CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { type Airport, type Category, CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
+import { getTripFullName, isTripCandidate, isPastTrip } from "../utils/tripUtils.ts"
 
 export default function TripPage() {
     const { tripId } = useParams()
@@ -35,21 +37,21 @@ export default function TripPage() {
     const { candidatePlaces } = useCandidatePlaces({ tripId, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], sort: PlaceSortingStrategy.ValueScore })
     const countryCategoriesMap = useCountryCategoriesMap()
 
-    const tripPlaces = trip?.isCandidate() ? candidatePlaces : places
+    const tripPlaces = trip && isTripCandidate(trip) ? candidatePlaces : places
     const tripPlacesWithoutLayover = trip && (tripPlaces?.filter(place => !place.dates?.some(date => date?.layover)) ?? null)
 
-    const visitedCountriesMap = new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
+    const visitedCountriesMap = new Map(tripPlacesWithoutLayover?.map(place => doGetPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     const attributes: Record<string, string | number | undefined> = {
         [t("trip.attribute.highlightsCount")]: trip?.highlights?.length
     }
 
-    const getPlaceCategory = (place: Place): ReturnType<typeof place.getCategory> => {
+    const getPlaceCategory = (place: Place): Category | null => {
         if (visitedCountriesMap.size > 1) {
-            return visitedCountriesMap.get(place?.country) ?? null
+            return visitedCountriesMap.get(place?.country ?? "") ?? null
         }
-        return place?.getCategory(InternalCategoryCategory.MostSpecificWithMetadata) ?? null
+        return doGetPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata) ?? null
     }
     const getAirportCategory = (airport: Airport) => countryCategoriesMap?.get(airport.country ?? "") ?? null
 
@@ -61,7 +63,7 @@ export default function TripPage() {
     return hasRole(UserRole.TripRead) && (
         <>
             <PageHeader
-                name={trip ? trip.getFullName() : null}
+                name={trip ? getTripFullName(trip) : null}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.TripEdit) ? attributes : undefined}
                 onHighlightsRefreshed={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) ? (highlightsCount => refreshTripHighlights(highlightsCount)) : undefined}
@@ -84,7 +86,7 @@ export default function TripPage() {
                 places={tripPlaces}
                 tripCandidates={candidateTrips}
                 displayWarnings={hasRole(UserRole.PortalWarningRead)}
-                onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !trip?.isCandidate() ? publishPhotosUploadingTriggeredEvent : undefined}
+                onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) && !(trip && isTripCandidate(trip)) ? publishPhotosUploadingTriggeredEvent : undefined}
                 onNoteAdded={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}
                 onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined}
                 onTripMoved={hasRole(UserRole.TripEdit) ? moveTrip : undefined}
@@ -92,10 +94,10 @@ export default function TripPage() {
             <PlaceTileGrid
                 places={tripPlacesWithoutLayover?.filter(place => place.dates?.some(date => date?.start < Date.now() / 1000)) ?? null}
                 placeMainCategorySelector={getPlaceCategory} />
-            {hasRole(UserRole.TripExpenseRead) && !trip?.isCandidate() && (
+            {hasRole(UserRole.TripExpenseRead) && !(trip && isTripCandidate(trip)) && (
                 <ExpenseSummary
                     expenses={trip ? (trip.expenses ?? []) : null}
-                    expenseCandidates={trip?.isPast() ? [] : [
+                    expenseCandidates={trip && isPastTrip(trip) ? [] : [
                         ...(trip?.flights?.map(flight => ({ type: ExpenseType.Flight, description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
                         ...(trip?.stays?.map(stay => ({ type: ExpenseType.Hotel, description: stay.name })) ?? [])
                     ]}

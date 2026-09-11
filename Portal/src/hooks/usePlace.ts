@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 
-import { Place } from "../classes/Place.ts"
 import {
 createPlaceHighlight, createPlaceLabel, createPlaceNote, getCoordinates,     getPlace, refreshPlaceAlbum,     refreshPlaceHighlights,
 removePlaceHighlight,
@@ -34,7 +33,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
     }, [startedUploadingsCount])
 
     return {
-        place: response && new Place(response),
+        place: response ?? null,
         updatePlaceName: (name: string) => updatePlaceName(placeId!, name).then(refetchResponse),
         updatePlaceAddress: (address: string) => getCoordinates(address).then(coordinates => updatePlaceLocation(placeId!, coordinates.latitude, coordinates.longitude)).then(refetchResponse),
         createPlaceHighlight: (photoId: string) => createPlaceHighlight(placeId!, photoId).then(refetchResponse),

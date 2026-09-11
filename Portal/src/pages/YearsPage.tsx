@@ -9,6 +9,7 @@ import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPla
 import { useYears } from "../hooks/useYears.js"
 import { PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentYear } from "../utils/timeUtils.ts"
+import { isFutureTrip } from "../utils/tripUtils.ts"
 
 export default function YearsPage() {
     const { hasRole } = useAuth()
@@ -23,10 +24,10 @@ export default function YearsPage() {
             <StaticMapFrame>
                 <PlaceMap
                     places={places}
-                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country) ?? null} />
+                    placeMainCategorySelector={place => countryCategoriesMap?.get(place.country ?? "") ?? null} />
             </StaticMapFrame>
             {hasRole(UserRole.PortalFutureRead) && (
-                <TripTable trips={trips?.filter(trip => trip?.isFuture()) ?? null} />
+                <TripTable trips={trips?.filter(trip => trip && isFutureTrip(trip)) ?? null} />
             )}
             {(years?.filter(year => year.mainHighlight)?.map(year => year.id) ?? [getCurrentYear()]).map(year => (
                 <YearTripTileGrid

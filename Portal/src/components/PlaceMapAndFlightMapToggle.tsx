@@ -1,7 +1,7 @@
 import { MapPin, Plane } from "lucide-react"
 import { useState } from "react"
 
-import type { Place } from "../classes/Place"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Airport, Category, Flight } from "../types/CoreSwaggerTypes"
 import FlightMap from "./FlightMap"
 import PlaceMap from "./PlaceMap"

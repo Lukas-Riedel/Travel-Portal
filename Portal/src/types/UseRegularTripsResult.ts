@@ -1,5 +1,4 @@
-import type { Trip } from "../classes/Trip.ts"
-import type { Task, TaskPriority } from "./CoreSwaggerTypes.ts"
+import type { Task, TaskPriority, Trip } from "./CoreSwaggerTypes.ts"
 
 export interface UseRegularTripsResult {
     trips: Trip[] | null

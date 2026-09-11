@@ -10,6 +10,8 @@ import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useTrip } from "../hooks/useTrip"
 import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 import { formatDateRange } from "../utils/timeUtils.ts"
 
 export default function TripHighlightsPage() {
@@ -75,9 +77,9 @@ export default function TripHighlightsPage() {
                     onHighlightRemoved={hasRole(UserRole.TripHighlightEdit) ? handleHighlightRemoved : undefined} />
             )}
             <HighlightCandidateTileGrid
-                name={trip?.getFullName() ?? null}
+                name={trip ? getTripFullName(trip) : null}
                 description={formatDateRange(trip?.start ?? 0, trip?.end ?? 0, t("general.format.date.year.included"))}
-                categories={places?.map(place => place.getCategory(InternalCategoryCategory.MostSpecificWithMetadata)).filter((c): c is NonNullable<typeof c> => c != null).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
+                categories={places?.map(place => getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)).filter((c): c is NonNullable<typeof c> => c != null).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
                 highlightCandidatesGroups={highlightCandidates ?? []}
                 onHighlightCreated={hasRole(UserRole.TripHighlightEdit) ? handleHighlightCreated : undefined}
                 onHighlightCandidateCreated={hasRole(UserRole.TripHighlightEdit) ? handleHighlightCandidateCreated : undefined} />

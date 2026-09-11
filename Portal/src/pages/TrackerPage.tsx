@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { useRegularTrips } from "../hooks/useRegularTrips"
 import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents"
 import { TimeTrackingEventType, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { isFutureTrip } from "../utils/tripUtils.ts"
 
 export default function TrackerPage() {
     const { hasRole } = useAuth()
@@ -22,7 +23,7 @@ export default function TrackerPage() {
             <TimeOffBalanceSummary timeTrackingEvents={timeTrackingEvents} />
             {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable
-                    trips={trips?.filter(trip => trip?.isFuture()) ?? null}
+                    trips={trips?.filter(trip => trip && isFutureTrip(trip)) ?? null}
                     timeTrackingEvents={timeTrackingEvents} />
             )}
         </>

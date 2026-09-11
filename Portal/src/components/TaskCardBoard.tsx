@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Minus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import type { Trip } from "../classes/Trip.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { type Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import CardGrid from "./CardGrid.tsx"
 import TaskCard from "./TaskCard.tsx"

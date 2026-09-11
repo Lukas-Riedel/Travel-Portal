@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 
-import { Place } from "../classes/Place.ts"
 import { createPermanentPlace, listRegularPlaces, removePermanentPlace } from "../clients/coreClient.ts"
 import type { PlaceIncludedEntity, PlaceSortingStrategy } from "../types/CoreSwaggerTypes.ts"
 import type { UseRegularPlacesResult } from "../types/UseRegularPlacesResult.ts"
@@ -45,7 +44,7 @@ export const useRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, p
     }, [startedUploadingsCount])
 
     return {
-        places: response === null ? null : response.map(place => new Place(place)),
+        places: response === null ? null : response,
         createPermanentPlace: (name: string, address: string) => createPermanentPlace(name, address).then(refetchResponse),
         removePermanentPlace: (placeId: string) => removePermanentPlace(placeId).then(refetchResponse)
     }

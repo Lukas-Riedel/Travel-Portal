@@ -1,4 +1,4 @@
-import type { Place } from "../classes/Place.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Album, Photo } from "../types/CoreSwaggerTypes.ts"
 import AlbumPhotoTile from "./AlbumPhotoTile.tsx"
 import TileGrid from "./TileGrid.jsx"

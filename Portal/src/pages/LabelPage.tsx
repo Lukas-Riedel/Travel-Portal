@@ -11,6 +11,7 @@ import { useLabel } from "../hooks/useLabel"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 
 export default function LabelPage() {
     const { labelId } = useParams()
@@ -19,7 +20,7 @@ export default function LabelPage() {
     const { label, updateLabelName } = useLabel(labelId)
     const { places } = useTimeFilteredRegularPlaces({ labelId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
-    const countryCategoriesMap = new Map(places?.map(place => place.getCategory(CategoryCategory.Country))
+    const countryCategoriesMap = new Map(places?.map(place => getPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
 
     return hasRole(UserRole.LabelRead) && (
@@ -31,12 +32,12 @@ export default function LabelPage() {
             <StaticMapFrame>
                 <PlaceMap
                     places={places}
-                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null}
+                    placeMainCategorySelector={place => countryCategoriesMap.get(place.country ?? "") ?? null}
                 />
             </StaticMapFrame>
             <PlaceTileGrid
                 places={places}
-                placeMainCategorySelector={place => countryCategoriesMap.get(place.country) ?? null} />
+                placeMainCategorySelector={place => countryCategoriesMap.get(place.country ?? "") ?? null} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">
                     {label && (

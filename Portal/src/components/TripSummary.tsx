@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Trip } from "../classes/Trip.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useCachedCoordinates } from "../hooks/useCachedCoordinates.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
@@ -17,7 +17,9 @@ import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getMapLink } from "../utils/navigationUtils.ts"
 import { getSunAltitude } from "../utils/sunUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { formatDateRange, formatTimestamp, getCurrentHour, getCurrentTimestamp, getTripDays, isTodayOrFutureDay, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { getCalendarEvents, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
 import DayCard from "./DayCard.tsx"
@@ -76,13 +78,13 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
     const days = trip && getTripDays(trip, places ?? undefined, timezone)?.filter(date => isTodayOrFutureDay(date, timezone))
 
     const tripPlacesWithoutLayover = trip && places?.filter(place => !place.dates?.some(date => date?.layover))
-    const countryCategories = [...new Map(tripPlacesWithoutLayover?.map(place => place.getCategory(CategoryCategory.Country))
+    const countryCategories = [...new Map(tripPlacesWithoutLayover?.map(place => getPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category])).values()].sort((a, b) => a.name.localeCompare(b.name))
 
     const [targetLocation, setTargetLocation] = useState<Coordinates | null>(null)
 
     // TODO: Make this expression more readable.
-    const targetAddress = useMemo(() => trip?.getStay(startOfDay(new Date(Date.now() - 1000 * (getCurrentHour(lastSeenBridgeXDevice?.data?.timezone) < HOTEL_STANDARD_CHECK_OUT_HOUR ? ONE_DAY_SECONDS : 0))), configuration?.homeLocation?.timezone)?.address,
+    const targetAddress = useMemo(() => trip ? getTripStay(trip, startOfDay(new Date(Date.now() - 1000 * (getCurrentHour(lastSeenBridgeXDevice?.data?.timezone) < HOTEL_STANDARD_CHECK_OUT_HOUR ? ONE_DAY_SECONDS : 0))), configuration?.homeLocation?.timezone)?.address : undefined,
         [trip, lastSeenBridgeXDevice?.data?.timezone, configuration?.homeLocation?.timezone])
 
     useEffect(() => {
@@ -103,7 +105,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         }
     }, [targetAddress])
 
-    const tripProgress = trip?.isCurrent() ? Math.min(Math.max(((getCurrentTimestamp() - (trip.start ?? 0)) / ((trip.end ?? 1) - (trip.start ?? 0))) * 100, 0), 100) : undefined
+    const tripProgress = trip && isCurrentTrip(trip) ? Math.min(Math.max(((getCurrentTimestamp() - (trip.start ?? 0)) / ((trip.end ?? 1) - (trip.start ?? 0))) * 100, 0), 100) : undefined
 
     if (!trip) {
         return (
@@ -139,7 +141,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                         {formatDateRange(trip.start, trip.end, t("general.format.date.year.included"))}
                     </div>
                 )}
-                {lastSeenBridgeXDevice && (displayDeviceData || trip.isCurrent()) && (
+                {lastSeenBridgeXDevice && (displayDeviceData || isCurrentTrip(trip)) && (
                     <>
                         {lastSeenBridgeXDevice.lastSeen + LOCATION_UNAVAILABLE_THRESHOLD_SECONDS > getCurrentTimestamp() ? (
                             <div className="flex items-center justify-center w-full text-green-600 space-x-1 mt-4 link-hover hover:text-green-400">
@@ -248,11 +250,11 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                 <DayCard
                     key={index}
                     day={day}
-                    events={(places && trip?.getCalendarEvents(day, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
-                    stay={trip?.getStay(day, configuration?.homeLocation?.timezone)}
+                    events={(places && getCalendarEvents(day, trip?.flights, trip?.watchedFlights, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
+                    stay={trip ? getTripStay(trip, day, configuration?.homeLocation?.timezone) : undefined}
                     fitness={trip?.fitness?.[(day.getTime() - startOfDay(fromUnixTime(trip?.start ?? 0)).getTime()) / (ONE_DAY_SECONDS * 1000)]}
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
-                    publicHoliday={trip?.getPublicHoliday(day)}
+                    publicHoliday={getTripPublicHoliday(trip, day)}
                     timezone={timezone}
                     displayWarnings={displayWarnings}
                     onNoteAdded={onNoteAdded}

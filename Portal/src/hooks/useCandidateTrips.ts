@@ -1,4 +1,3 @@
-import { Trip } from "../classes/Trip.ts"
 import { listCandidateTrips, removeTrip } from "../clients/coreClient.ts"
 import type { TripIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import type { UseCandidateTripsResult } from "../types/UseCandidateTripsResult.ts"
@@ -17,7 +16,7 @@ export const useCandidateTrips = ({ include }: UseCandidateTripsProps = {}): Use
     })
 
     return {
-        trips: response === null ? null : response.map(trip => new Trip(trip)),
+        trips: response === null ? null : response,
         removeTrip: (tripId: string) => removeTrip(tripId).then(refetchResponse)
     }
 }
