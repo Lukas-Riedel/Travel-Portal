@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { AppConfiguration } from "../types/AppConfiguration.ts"
-import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
@@ -637,6 +637,22 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             },
             t("category.prompt.update.confirmed"),
             t("category.prompt.update.failed"),
+        )
+
+    const showUpdateLabelToast = (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) =>
+        showFormToast(
+            t("label.prompt.update.message"),
+            [
+                {
+                    type: "text",
+                    required: false,
+                    label: t("label.prompt.update.label.unicode"),
+                    defaultValue: label.metadata?.unicode
+                }
+            ],
+            (unicode: string | undefined) => updateMetadata({ unicode }),
+            t("label.prompt.update.confirmed"),
+            t("label.prompt.update.failed"),
         )
 
     const showAssignAirlineCodeToast = (airlines: Airline[], assignAirlineCode: (airlineId: string) => Promise<Airline>) =>
@@ -1499,6 +1515,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showUpdateHighlightToast,
         showRemoveHighlightToast,
         showAssignLabelToast,
-        showUnassignLabelToast
+        showUnassignLabelToast,
+        showUpdateLabelToast
     }
 }

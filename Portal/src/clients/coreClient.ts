@@ -8,7 +8,7 @@ import type { AppConfiguration } from "../types/AppConfiguration.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, Location, Note, PendingPhoto, Photo,
+    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelMetadata, Location, Note, PendingPhoto, Photo,
     Place, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity,
 } from "../types/CoreSwaggerTypes.ts"
@@ -128,6 +128,15 @@ export const updateLabelName = async (labelId: string, name: string): Promise<La
     coreClient.patch<Label>(`labels/${labelId}`,
         {
             name
+        }
+    ).then(extractData)
+
+export const updateLabelMetadata = async (labelId: string, { unicode }: LabelMetadata = {}): Promise<Label> =>
+    coreClient.patch<Label>(`labels/${labelId}`,
+        {
+            metadata: {
+                unicode
+            }
         }
     ).then(extractData)
 

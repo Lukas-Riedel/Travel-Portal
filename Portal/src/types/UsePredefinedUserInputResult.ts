@@ -1,7 +1,7 @@
 import type { GeoJSON, Geometry } from "geojson"
 
 import type { AppConfiguration } from "./AppConfiguration.ts"
-import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, Note, Photo, Place, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, LabelMetadata, Note, Photo, Place, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 
 export interface UsePredefinedUserInputResult {
@@ -82,4 +82,5 @@ export interface UsePredefinedUserInputResult {
     showRemoveTaskToast: (removeTask: () => Promise<void>) => Promise<boolean>
     showUpdateTaskPriorityToast: (updateTaskPriority: (priority: TaskPriority) => Promise<Task>) => Promise<boolean>
     showUpdateTaskDescriptionToast: (description: string, updateTaskDescription: (description: string) => Promise<Task>) => Promise<boolean>
+    showUpdateLabelToast: (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) => Promise<boolean>
 }

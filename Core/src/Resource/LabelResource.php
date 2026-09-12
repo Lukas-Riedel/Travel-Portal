@@ -199,6 +199,19 @@
                             description: "The name of the label",
                             type: "string",
                             example: "Village"
+                        ),                       
+                        new OA\Property(
+                            property: "metadata",
+                            description: "The metadata of the label",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "unicode",
+                                    description: "The unicode of the metadata of the label",
+                                    type: "string",
+                                    example: "1f1ec-1f1e7"
+                                )
+                            ]
                         )
                     ]
                 )
@@ -283,6 +296,13 @@
             $newName = $this->getJsonBodyField($request, "name");
             if ($newName !== null) {
                 $wasUpdated |= $this->labelService->updateLabelName($labelId, $newName);
+            }
+
+            $newMetadata = $this->getJsonBodyField($request, "metadata");
+            if ($newMetadata !== null) {
+                if (isset($newMetadata["unicode"])) {
+                    $wasUpdated |= $this->labelService->updateLabelUnicode($labelId, $newMetadata["unicode"]);
+                }
             }
 
             if (!$wasUpdated) {

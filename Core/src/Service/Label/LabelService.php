@@ -14,7 +14,7 @@
         }
         
         public function createLabel(string $placeId, string $labelName) : Label {
-            $label = new Label($this->getOrCreateLabelId($labelName), $labelName);
+            $label = new Label($this->getOrCreateLabelId($labelName), $labelName, null);
             $this->labelMapper->insertLabel($placeId, $label->getId());
             return $label;
         }
@@ -48,6 +48,10 @@
 
         public function updateLabelName(string $labelId, string $name) : bool {
             return $this->labelMapper->updateLabelName($labelId, $name);
+        }
+
+        public function updateLabelUnicode(string $labelId, string $unicode) : bool {
+            return $this->labelMapper->updateLabelUnicode($labelId, $unicode);
         }
 
         public function removeLabelForPlace(string $placeId, string $labelId) : bool {
