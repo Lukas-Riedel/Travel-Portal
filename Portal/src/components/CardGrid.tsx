@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { Children,useCallback, useEffect, useState } from "react"
+import { Children, useCallback, useEffect, useState } from "react"
 
 import { cn } from "../utils/formattingUtils.ts"
 import LoadingCard from "./LoadingCard.tsx"
@@ -28,6 +28,10 @@ export default function CardGrid({ children, rowSize, columnSize, className = "m
 
     const [gridTemplateColumns, setGridTemplateColumns] = useState(() => getRealRowSize(window.innerWidth))
     const [currentPage, setCurrentPage] = useState(1)
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [currentPage])
 
     useEffect(() => {
         const handleGridResized = () => setGridTemplateColumns(getRealRowSize(window.innerWidth))
