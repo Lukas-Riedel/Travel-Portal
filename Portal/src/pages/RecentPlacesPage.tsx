@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Place } from "../types/CoreSwaggerTypes.ts"
-import { getHaversineDistanceTo } from "../utils/placeUtils.ts"
-import { isCurrentTrip } from "../utils/tripUtils.ts"
 import PlaceMap from "../components/PlaceMap.jsx"
 import PlaceSummaryList from "../components/PlaceSummaryList.jsx"
 import StaticMapFrame from "../components/StaticMapFrame.tsx"
@@ -14,8 +11,11 @@ import { useEvents } from "../hooks/useEvents.ts"
 import { useRegularPlaces } from "../hooks/useRegularPlaces.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { useUpcomingOrCurrentTrip } from "../hooks/useUpcomingOrCurrentTrip.js"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp, getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
+import { isCurrentTrip } from "../utils/tripUtils.ts"
 
 const LIMIT_STEP = 10
 const MAX_DISTANCE = 2000
@@ -38,7 +38,7 @@ export default function RecentPlacesPage() {
             if (places.length === LIMIT_STEP) {
                 const breakIndex = places.findIndex((place, i) => {
                     const prev = places[i - 1]
-                    return i === 0 || prev == null ? false : getHaversineDistanceTo(place, prev) > MAX_DISTANCE
+                    return i === 0 || prev == null ? false : getHaversineDistance(place, prev) > MAX_DISTANCE
                 })
 
                 const filteredPlaces = breakIndex === -1 ? places : places.slice(0, breakIndex)

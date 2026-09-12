@@ -1,7 +1,8 @@
 import { useFormatters } from "../hooks/useFormatters.ts"
 import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import { getPlaceCategory, getHaversineDistanceTo } from "../utils/placeUtils.ts"
+import { getHaversineDistance } from "../utils/geocodingUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import PlaceTile from "./PlaceTile"
 import TileGrid from "./TileGrid"
 
@@ -18,7 +19,7 @@ export default function NearbyPlaceTileGrid({ place }: NearbyPlaceTileGridProps)
                     key={nearbyPlace.id}
                     place={nearbyPlace}
                     mainCategory={getPlaceCategory(nearbyPlace, InternalCategoryCategory.MostSpecificWithMetadata) ?? undefined}
-                    secondLineText={formatKilometers(Math.round(getHaversineDistanceTo(nearbyPlace, place!)))} />
+                    secondLineText={formatKilometers(Math.round(getHaversineDistance(nearbyPlace, place!)))} />
             ))}
         </TileGrid>
     )
