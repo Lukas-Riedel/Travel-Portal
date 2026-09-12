@@ -24,14 +24,6 @@ export function getPlaceCategory(place: Place, categoryCategory: ExtendedCategor
     return place.categories?.findLast(category => category.category === categoryCategory) ?? null
 }
 
-export function getEuclideanDistanceTo(place: Place, coords: Coordinates): number {
-    return getEuclideanDistance(coords, place)
-}
-
-export function getHaversineDistanceTo(place: Place, coords: Coordinates): number {
-    return getHaversineDistance(coords, place)
-}
-
 export function getPastPlaceTrips(place: Place): TripIdentifier[] {
     return [...new Map(
         (place.dates ?? [])

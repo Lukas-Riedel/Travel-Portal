@@ -9,8 +9,6 @@ import AppLink from "./AppLink.tsx"
 import Bar from "./Bar.tsx"
 import BarItem from "./BarItem.tsx"
 
-const LOADING_LABELS_COUNT = 3
-
 interface LabelBarProps {
     labels: Label[] | null
     onLabelAdded?: (label: string) => Promise<Label>

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { Place } from "../types/CoreSwaggerTypes.ts"
-import { getPlaceCategory, getHaversineDistanceTo } from "../utils/placeUtils.ts"
+import { getPlaceCategory } from "../utils/placeUtils.ts"
 import CategoryCardGrid from "../components/CategoryCardGrid"
 import FloatingButton from "../components/FloatingButton"
 import PlaceMap from "../components/PlaceMap"
