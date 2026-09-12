@@ -1,5 +1,6 @@
 
-import { getLabel, updateLabelName } from "../clients/coreClient.ts"
+import { getLabel, updateLabelMetadata, updateLabelName } from "../clients/coreClient.ts"
+import type { LabelMetadata } from "../types/CoreSwaggerTypes.ts"
 import type { UseLabelResult } from "../types/UseLabelResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { useQuery } from "./useQuery.ts"
@@ -14,6 +15,7 @@ export const useLabel = (labelId?: string): UseLabelResult => {
 
     return {
         label: response,
-        updateLabelName: (name: string) => updateLabelName(labelId!, name).then(setResponse)
+        updateLabelName: (name: string) => updateLabelName(labelId!, name).then(setResponse),
+        updateLabelMetadata: (metadata: LabelMetadata) => updateLabelMetadata(labelId!, metadata).then(setResponse)
     }
 }

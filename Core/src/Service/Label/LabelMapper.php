@@ -29,7 +29,8 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeId)
                 ->getMappedResultSet(function($labelRow) {
-                    return new Label($labelRow["id"], $labelRow["name"]);
+                    $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
+                    return new Label($labelRow["id"], $labelRow["name"], $metadata);
                 });
         }
 
@@ -42,7 +43,8 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($labelRow) {
-                    return new Label($labelRow["id"], $labelRow["name"]);
+                    $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
+                    return new Label($labelRow["id"], $labelRow["name"], $metadata);
                 });
         }
 
@@ -61,8 +63,9 @@
             if ($labelRow === null) {
                 return null;
             }
-            
-            return new Label($labelRow["id"], $labelRow["name"]);
+
+            $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
+            return new Label($labelRow["id"], $labelRow["name"], $metadata);
         }
 
         public function selectPlaceIdsForLabelId(string $labelId) : array {            
@@ -137,6 +140,19 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $labelId)
+                ->execute() === 1;
+        }
+
+        public function updateLabelUnicode(string $labelId, string $unicode) : bool {
+            $sql = <<<'SQL'
+                UPDATE label_identifier
+                SET unicode = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($unicode, $labelId)
                 ->execute() === 1;
         }
 

@@ -850,6 +850,14 @@
                 "message": "Opravdu chceš odstranit tento štítek?",
                 "confirmed": "Štítek byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit štítek"
+            },
+            "update": {
+                "message": "Zadej nové údaje pro štítek:",
+                "label": {
+                    "unicode": "Unikód"
+                },
+                "confirmed": "Štítek byl úspěšně aktualizován",
+                "failed": "Nepodařilo se aktualizovat štítek"
             }
         }
     },

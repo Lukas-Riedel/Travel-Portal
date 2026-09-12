@@ -20,17 +20,24 @@
                 type: "string",
                 description: "The name of the label",
                 example: "City"
+            ),
+            new OA\Property(
+                property: "metadata",
+                description: "The metadata of the label",
+                ref: "#/components/schemas/LabelMetadata"
             )
         ]
     )]
-    class Label implements \JsonSerializable {     
+    class Label implements \JsonSerializable {
 
         private readonly string $id;
         private readonly string $name;
+        private readonly ?LabelMetadata $metadata;
 
-        public function __construct(string $id, string $name) {
+        public function __construct(string $id, string $name, ?LabelMetadata $metadata) {
             $this->id = $id;
             $this->name = $name;
+            $this->metadata = $metadata;
         }
 
         public function getId() : string {
@@ -39,6 +46,10 @@
 
         public function getName() : string {
             return $this->name;
+        }
+
+        public function getMetadata() : ?LabelMetadata {
+            return $this->metadata;
         }
 
         #[\ReturnTypeWillChange]

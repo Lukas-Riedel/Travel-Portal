@@ -5,6 +5,7 @@ import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useLabels } from "../hooks/useLabels.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Label } from "../types/CoreSwaggerTypes.ts"
+import { getUnicode } from "../utils/formattingUtils.ts"
 import AppLink from "./AppLink.tsx"
 import Bar from "./Bar.tsx"
 import BarItem from "./BarItem.tsx"
@@ -54,6 +55,9 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
                             <AppLink
                                 to={label}
                                 className="text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full lg:pr-5">
+                                {label.metadata?.unicode && (
+                                    `${getUnicode(label.metadata.unicode)} `
+                                )}
                                 {label.name}
                             </AppLink>
                             <button
@@ -66,6 +70,9 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
                         <BarItem
                             key={label.id}
                             to={label}>
+                            {label.metadata?.unicode && (
+                                `${getUnicode(label.metadata.unicode)} `
+                            )}
                             {label.name}
                         </BarItem>
                     ))}
@@ -76,6 +83,9 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
                             <AppLink
                                 to={label}
                                 className="text-sm font-medium text-center lg:text-left px-6 lg:pl-0 w-full lg:pr-5">
+                                {label.metadata?.unicode && (
+                                    `${getUnicode(label.metadata.unicode)} `
+                                )}
                                 {label.name}
                             </AppLink>
                             <button
