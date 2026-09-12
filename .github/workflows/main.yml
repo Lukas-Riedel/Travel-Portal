@@ -3,6 +3,7 @@ on:
   push:
     branches:
     - master
+    - tmp-labels-review
 jobs:
   detect-changes:
     name: Detect Changes

@@ -19,6 +19,7 @@ import CategoryPage from "./pages/CategoryPage.jsx"
 import CountriesPage from "./pages/CountriesPage.jsx"
 import FlightsPage from "./pages/FlightsPage.jsx"
 import LabelPage from "./pages/LabelPage.jsx"
+import LabelsPage from "./pages/LabelsPage.tsx"
 import PlaceHighlightsPage from "./pages/PlaceHighlightsPage.jsx"
 import PlacePage from "./pages/PlacePage.jsx"
 import PlansPage from "./pages/PlansPage.jsx"
@@ -152,6 +153,7 @@ function AppContent() {
             <Route path="/place/:placeId/highlight" element={<MainLayout><PlaceHighlightsPage /></MainLayout>} />
             <Route path="/category/:categoryId" element={<MainLayout><CategoryPage /></MainLayout>} />
             <Route path="/category/:categoryId/highlight" element={<MainLayout><CategoryHighlightsPage /></MainLayout>} />
+            <Route path="/label" element={<MainLayout><LabelsPage /></MainLayout>} />
             <Route path="/label/:labelId" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
             <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />

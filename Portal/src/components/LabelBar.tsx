@@ -1,4 +1,5 @@
 import { Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useLabels } from "../hooks/useLabels.ts"
@@ -28,7 +29,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
 
     const handleKnownLabelAdded = (label: Label) => {
         if (onLabelAdded) {
-            showAssignLabelToast(() => onLabelAdded(label.name))
+            onLabelAdded(label.name).then(label => toast.success(`Štítek ${label.name} byl úspěšně přiřazen.`)).catch(e => toast.error(`Štítek ${label.name} nebyl přiřazen.`))
         }
     }
 
