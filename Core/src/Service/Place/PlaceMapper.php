@@ -706,7 +706,7 @@
         public function updatePlaceExcerpt(string $placeId, string $excerpt) : bool {
             $sql = <<<'SQL'
                 UPDATE place_identifier
-                SET excerpt = ?
+                SET excerpt = regexp_replace(regexp_replace(excerpt, '[*_]', '', 'g'), '[–—‐‑−]+', '-', 'g')
                 WHERE id = ?
             SQL;
 
