@@ -41,7 +41,7 @@
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return get_object_vars($this);
+            return array_merge(get_object_vars($this), array("tier" => $this->tier?->name));
         }
     }
 ?>

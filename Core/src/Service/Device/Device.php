@@ -88,9 +88,7 @@
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            $objectVars = get_object_vars($this);
-            unset($objectVars["userId"]);
-            return $objectVars;
+            return array_diff_key(get_object_vars($this), array("userId" => null));
         }
     }
 ?>
