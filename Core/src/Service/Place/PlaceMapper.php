@@ -165,7 +165,7 @@
                     return new CategoryPlaces($this->categoryService->getCategoryIdentifierById($categoryRow["category_id"]),
                         array_filter(array_map(function($placeId) use(&$start, &$end, &$placesCache) {
                             if (!isset($placesCache[$placeId])) {
-                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, $start, $end, null, PHP_INT_MAX,
+                                $places = $this->selectRegularPlaces($placeId, null, null, null, null, null, null, null, null, $start, $end, null, PHP_INT_MAX,
                                     array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                                 $placesCache[$placeId] = count($places) === 0 ? null : $places[0];                                
                             }
@@ -191,7 +191,7 @@
                 });
         }
         
-        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
+        public function selectRegularPlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?string $tripId, ?int $year, ?string $albumId, ?string $photoId, ?float $maxQuality, ?PlaceQualityTier $maxTier, ?int $minStart, ?int $maxEnd, ?int $nearbyPlaces, ?int $limit, array $includedEntities, PlaceSortingStrategy $placeSortingStrategy) : array {
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
 
@@ -281,6 +281,9 @@
             if ($maxQuality !== null) {
                 $whereClauseBuilder->withClause("pi.quality <= ?", $maxQuality);
             }
+            if ($maxTier !== null) {
+                $whereClauseBuilder->withClause("(pi.tier >= ? OR pi.tier IS NULL)", $maxTier->value);
+            }
             if ($minStart !== null) {
                 $whereClauseBuilder->withClause("(? <= pe.\"start\" OR pe.\"start\" IS NULL)", $minStart);
             }
@@ -360,8 +363,9 @@
                         $excerpt = $placeRow["excerpt"];
                     }
                     
+                    $quality = $placeRow["quality"] !== null && $placeRow["tier"] !== null ? new PlaceQuality($placeRow["quality"], PlaceQualityTier::from($placeRow["tier"])) : null;
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"], $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"],
-                        $mainHighlights[$placeRow["main_highlight_id"]] ?? null, $placeRow["score"], $placeRow["quality"], $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
+                        $mainHighlights[$placeRow["main_highlight_id"]] ?? null, $placeRow["score"], $quality, $excerpt, $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -464,8 +468,9 @@
                     $nearbyPlacesArr = $this->selectCandidateNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
                 }
 
+                $quality = $placeRow["quality"] !== null && $placeRow["tier"] !== null ? new PlaceQuality($placeRow["quality"], PlaceQualityTier::from($placeRow["tier"])) : null;
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
-                    $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt,
+                    $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $quality, $excerpt,
                     $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
             }
             
@@ -538,9 +543,10 @@
                         $nearbyPlacesArr = $this->selectCandidateNearbyPlaces($placeRow["id"], $placeRow["latitude"], $placeRow["longitude"], $nearbyPlaces);
                     }
 
+                    $quality = $placeRow["quality"] !== null && $placeRow["tier"] !== null ? new PlaceQuality($placeRow["quality"], PlaceQualityTier::from($placeRow["tier"])) : null;
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
-                        $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $placeRow["quality"], $excerpt, $categories,
-                        $highlights, $labels, $notes, $nearbyPlacesArr, array()); 
+                        $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $quality, $excerpt, $categories,
+                        $highlights, $labels, $notes, $nearbyPlacesArr, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -560,8 +566,9 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($placeIdentifierRow) {
+                    $quality = $placeIdentifierRow["quality"] !== null && $placeIdentifierRow["tier"] !== null ? new PlaceQuality($placeIdentifierRow["quality"], PlaceQualityTier::from($placeIdentifierRow["tier"])) : null;
                     return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["elevation"],
-                        $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
+                        $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $quality, $placeIdentifierRow["excerpt"]);
                 });
         }
 
@@ -582,8 +589,9 @@
                 return null;
             }
 
+            $quality = $placeIdentifierRow["quality"] !== null && $placeIdentifierRow["tier"] !== null ? new PlaceQuality($placeIdentifierRow["quality"], PlaceQualityTier::from($placeIdentifierRow["tier"])) : null;
             return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["elevation"],
-                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
+                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $quality, $placeIdentifierRow["excerpt"]);
         }
 
         public function selectPlaceIdentifierById(string $placeId) : ?PlaceIdentifier {
@@ -602,8 +610,9 @@
                 return null;
             }
 
+            $quality = $placeIdentifierRow["quality"] !== null && $placeIdentifierRow["tier"] !== null ? new PlaceQuality($placeIdentifierRow["quality"], PlaceQualityTier::from($placeIdentifierRow["tier"])) : null;
             return new PlaceIdentifier($placeIdentifierRow["id"], $placeIdentifierRow["name"], $this->getCountryName($placeIdentifierRow["country_category_id"]), $placeIdentifierRow["latitude"], $placeIdentifierRow["longitude"], $placeIdentifierRow["elevation"],
-                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $placeIdentifierRow["quality"], $placeIdentifierRow["excerpt"]);
+                $placeIdentifierRow["timezone"], $this->highlightService->getHighlight($placeIdentifierRow["main_highlight_id"]), $placeIdentifierRow["score"], $quality, $placeIdentifierRow["excerpt"]);
         }
 
         public function selectPlaceEventId(string $placeId, int $start) : ?string {
@@ -690,16 +699,17 @@
                 ->execute() === 1;
         }
 
-        public function updatePlaceQuality(string $placeId, ?float $quality) : bool {
+        public function updatePlaceQuality(string $placeId, ?float $quality, ?PlaceQualityTier $tier) : bool {
             $sql = <<<'SQL'
                 UPDATE place_identifier
-                SET quality = ?
+                SET quality = ?,
+                    tier = ?
                 WHERE id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($quality, $placeId)
+                ->withParameters($quality, $tier?->value, $placeId)
                 ->execute() === 1;
         }
 
@@ -741,15 +751,17 @@
                     elevation,
                     excerpt,
                     score,
-                    quality
+                    quality,
+                    tier
                 )
                 VALUES (
-                    ?, 
-                    ?, 
-                    ?, 
-                    ?, 
-                    ?, 
-                    ?, 
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
                     ?,
                     ?,
                     ?
@@ -763,7 +775,7 @@
                 ->withParameters($placeIdentifier->getName(), $placeIdentifier->getCountry() === null ? null
                     : $this->categoryService->getCategoryIdentifier($placeIdentifier->getCountry())->getId(),
                     $placeIdentifier->getTimezone(), $placeIdentifier->getLatitude(), $placeIdentifier->getLongitude(), $placeIdentifier->getElevation(),
-                    $placeIdentifier->getExcerpt(), $placeIdentifier->getScore(), $placeIdentifier->getQuality())
+                    $placeIdentifier->getExcerpt(), $placeIdentifier->getScore(), $placeIdentifier->getQuality()?->getRating(), $placeIdentifier->getQuality()?->getTier()->value)
                 ->getSingleColumn("id");
                 
             if ($id === null) {
@@ -1006,7 +1018,7 @@
                 ->withParameters($placeId, $longitude, $latitude, $limit)
                 ->getMappedResultSet(function($placeIdentifierRow) use(&$includedEntities) {
                     return $this->selectRegularPlaces($placeIdentifierRow["id"], null, null, null, null,
-                        null, null, null, null, time(), null, null, $includedEntities, PlaceSortingStrategy::OldestAscending)[0];
+                        null, null, null, null, null, time(), null, null, $includedEntities, PlaceSortingStrategy::OldestAscending)[0];
                 });
         }
 

@@ -8,6 +8,7 @@
     use Core\Event\EventPublisher;
     use Core\Service\Category\CategoryCategory;
     use Core\Service\Category\CategoryService;
+    use Core\Service\Highlight\Highlight;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Trip\TripService;
@@ -25,9 +26,14 @@
         private readonly int $photoScoreMultiplier;
         private readonly int $mainHighlightQualityMultiplier;
         private readonly float $indoorImagesRatio;
+        private readonly int $lowImpressionQualityThreshold;
+        private readonly int $lowCompositionQualityThreshold;
+        private readonly int $lowShadowsQualityThreshold;
+        private readonly int $lowSkyQualityThreshold;
 
         public function __construct(PlaceService $placeService, TripService $tripService, CategoryService $categoryService, PhotoService $photoService,
-            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier, float $indoorImagesRatio) {
+            CalendarClient $calendarClient, EventPublisher $eventPublisher, int $highlightScoreMultiplier, int $photoScoreMultiplier, int $mainHighlightQualityMultiplier,
+            float $indoorImagesRatio, int $lowImpressionQualityThreshold, int $lowCompositionQualityThreshold, int $lowShadowsQualityThreshold, int $lowSkyQualityThreshold) {
             $this->placeService = $placeService;
             $this->tripService = $tripService;
             $this->categoryService = $categoryService;
@@ -38,13 +44,17 @@
             $this->photoScoreMultiplier = $photoScoreMultiplier;
             $this->mainHighlightQualityMultiplier = $mainHighlightQualityMultiplier;
             $this->indoorImagesRatio = $indoorImagesRatio;
+            $this->lowImpressionQualityThreshold = $lowImpressionQualityThreshold;
+            $this->lowCompositionQualityThreshold = $lowCompositionQualityThreshold;
+            $this->lowShadowsQualityThreshold = $lowShadowsQualityThreshold;
+            $this->lowSkyQualityThreshold = $lowSkyQualityThreshold;
         }
 
         public function onCategoryRenamed(mixed $message) : void {
             $categoryIdentifier = $this->categoryService->getCategoryIdentifierById($message["categoryId"]);
             if ($categoryIdentifier?->getCategory() === CategoryCategory::Country) {
                 $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null,
-                    null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                    null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
                     
                 foreach ($places as &$place) {
                     foreach ($place->getDates() as &$date) {
@@ -87,7 +97,7 @@
 
         public function onCategoryInvalidated(mixed $message) : void {
             $places = $this->placeService->getRegularPlaces($message["categoryId"], null, null, null, null, null, null,
-                null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
+                null, null, null, null, null, array(), PlaceSortingStrategy::OldestAscending);
             foreach ($places as &$place) {
                 $this->eventPublisher->publish(Event::PlaceUpdated($place->getPlaceIdentifier()->getId()));
             }
@@ -158,8 +168,14 @@
             $place = $this->placeService->getRegularPlace($placeId);
 
             if ($place !== null) {
+                $highlights = $place->getHighlights();
+                if (count($highlights) === 0) {
+                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), null, null);
+                    return;
+                }
+
                 $highlightQualities = array();
-                foreach ($place->getHighlights() as &$highlight) {
+                foreach ($highlights as &$highlight) {
                     $highlightQuality = $highlight->getQuality();
                     if ($highlightQuality !== null) {
                         $count = ($highlight->getId() === $place->getMainHighlight()?->getId()) ? $this->mainHighlightQualityMultiplier : 1;
@@ -167,14 +183,53 @@
                     }
                 }
 
-                if (count($highlightQualities) === 0) {
-                    $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), null);
-                    return;
+                $rating = null;
+                if (count($highlightQualities) > 0) {
+                    $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
+                    $rating = pow($product, 1 / count($highlightQualities));
                 }
 
-                $product = array_reduce($highlightQualities, fn($carry, $q) => $carry * $q, 1.0);
-                $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), pow($product, 1 / count($highlightQualities)));
+                $tier = $this->getTier($highlights, $place->getMainHighlight());
+                $this->placeService->updatePlaceQuality($place->getPlaceIdentifier()->getId(), $rating, $tier);
             }
+        }
+
+        private function getTier(array $highlights, ?Highlight $mainHighlight) : ?PlaceQualityTier {
+            if (count($highlights) === 0) {
+                return null;
+            }
+
+            $highlightsWithLowImpressionCount = count(array_filter($highlights, fn($h) => $h->getAttributes()->getImpression() !== null && $h->getAttributes()->getImpression() < $this->lowImpressionQualityThreshold));
+            if ($highlightsWithLowImpressionCount > count($highlights) / 2) {
+                return PlaceQualityTier::E;
+            }
+
+            if ($highlightsWithLowImpressionCount > 1) {
+                return PlaceQualityTier::D;
+            }
+
+            $highlightsWithLowCompositionCount = count(array_filter($highlights, fn($h) => $h->getAttributes()->getComposition() !== null && $h->getAttributes()->getComposition() < $this->lowCompositionQualityThreshold));
+            $highlightsWithLowShadowsCount = count(array_filter($highlights, fn($h) => $h->getAttributes()->getShadows() !== null && $h->getAttributes()->getShadows() < $this->lowShadowsQualityThreshold));
+            $highlightsWithLowSkyCount = count(array_filter($highlights, fn($h) => $h->getAttributes()->getSky() !== null && $h->getAttributes()->getSky() < $this->lowSkyQualityThreshold));
+
+            $mainHighlightLowComposition = $mainHighlight?->getAttributes()->getComposition() !== null && $mainHighlight->getAttributes()->getComposition() < $this->lowCompositionQualityThreshold;
+            $mainHighlightLowShadows = $mainHighlight?->getAttributes()->getShadows() !== null && $mainHighlight->getAttributes()->getShadows() < $this->lowShadowsQualityThreshold;
+            $mainHighlightLowSky = $mainHighlight?->getAttributes()->getSky() !== null && $mainHighlight->getAttributes()->getSky() < $this->lowSkyQualityThreshold;
+
+            if ($highlightsWithLowCompositionCount === count($highlights) || $highlightsWithLowShadowsCount === count($highlights) || $highlightsWithLowSkyCount === count($highlights)
+                || $mainHighlightLowComposition || $mainHighlightLowShadows || $mainHighlightLowSky) {
+                return PlaceQualityTier::C;
+            }
+
+            if ($highlightsWithLowCompositionCount > count($highlights) / 2 || $highlightsWithLowShadowsCount > count($highlights) / 2 || $highlightsWithLowSkyCount > count($highlights) / 2) {
+                return PlaceQualityTier::B;
+            }
+
+            if ($highlightsWithLowCompositionCount > 0 || $highlightsWithLowShadowsCount > 0 || $highlightsWithLowSkyCount > 0) {
+                return PlaceQualityTier::A;
+            }
+
+            return PlaceQualityTier::S;
         }
 
         private function updatePlaceScore(string $placeId) : void {

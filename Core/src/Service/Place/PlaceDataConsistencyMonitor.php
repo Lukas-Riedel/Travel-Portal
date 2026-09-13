@@ -26,7 +26,7 @@
             $dataConsistencyIssues = array();
 
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
-                time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
+                null, time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithoutAdministrativeCategory = array_filter($relevantPlaces, fn($place) => $place->getName() !== $place->getCountry()
                 && count(array_filter($place->getCategories(), fn($category) => $category->getCategory() === CategoryCategory::Administrative)) === 0);
@@ -36,7 +36,7 @@
             }
             
             $relevantPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
-                time(), null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                null, time(), null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
             $placesWithDatesWithoutTime = array_map(fn($place) => $place->withUpdatedDates(array_filter($place->getDates(), 
                 // TODO: This doesn't work for days switching from/to DST.
@@ -67,7 +67,7 @@
             }
                         
             $relevantPlaces = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
-                null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
+                null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending),
                 $this->placeService->getCandidatePlaces(null, null, null, null, array(PlaceIncludedEntity::Dates->value)));
 
             $duplicatedPlacesGroups = array_filter(array_values(array_reduce($relevantPlaces,

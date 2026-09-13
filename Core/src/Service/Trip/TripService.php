@@ -70,7 +70,7 @@
             }
 
             $places = $this->placeService->getRegularPlaces(null, null, $tripId, null, null, null, null, null,
-                null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
+                null, null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["tripHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));

@@ -1,5 +1,5 @@
 import { useAuth } from "../contexts/AuthContext.jsx"
-import { type PlaceIncludedEntity, type PlaceSortingStrategy,UserRole } from "../types/CoreSwaggerTypes.ts"
+import { type PlaceIncludedEntity, type PlaceQualityTier, type PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { UseTimeFilteredRegularPlacesResult } from "../types/UseTimeFilteredRegularPlacesResult.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { useRegularPlaces } from "./useRegularPlaces.ts"
@@ -13,14 +13,16 @@ interface UseTimeFilteredRegularPlacesProps {
     photoId?: string
     minStart?: number
     maxEnd?: number
+    maxQuality?: number
+    maxTier?: PlaceQualityTier
     limit?: number
     include?: PlaceIncludedEntity[]
     sort?: PlaceSortingStrategy
 }
 
-export const useTimeFilteredRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, limit, include, sort }: UseTimeFilteredRegularPlacesProps = {}): UseTimeFilteredRegularPlacesResult => {
+export const useTimeFilteredRegularPlaces = ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, maxQuality, maxTier, limit, include, sort }: UseTimeFilteredRegularPlacesProps = {}): UseTimeFilteredRegularPlacesResult => {
     const { hasRole } = useAuth()
 
     const adjustedMaxEnd = Math.min(maxEnd ?? Number.MAX_SAFE_INTEGER, hasRole(UserRole.PortalFutureRead) ? Number.MAX_SAFE_INTEGER : getCurrentOrMaximumAllowedTimestamp())
-    return useRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd: adjustedMaxEnd, limit, include, sort })
+    return useRegularPlaces({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd: adjustedMaxEnd, maxQuality, maxTier, limit, include, sort })
 }

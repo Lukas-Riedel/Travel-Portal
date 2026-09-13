@@ -1,11 +1,11 @@
 import { MapPin, Move, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
-import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { type Category,CategoryCategory } from "../types/CoreSwaggerTypes.ts"
+import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
 import { getOnlyElement } from "../utils/collectionUtils.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
@@ -83,7 +83,7 @@ export default function CategoryCard({ category, places, onCurrentLocationChange
                                 to={place}
                                 className="ml-2 text-indigo-600 link-hover hover:text-indigo-300">
                                 {getEntityPrettyName(place.name)}
-                                {(place?.quality ?? 0) > 0 ? ` (${Math.round(place.quality ?? 0)} %)` : ""}
+                                {(place?.quality?.rating ?? 0) > 0 ? ` (${Math.round(place.quality?.rating ?? 0)} %)` : ""}
                             </AppLink>
                             {onPlaceRemoved && (
                                 <button

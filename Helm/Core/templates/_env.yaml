@@ -157,6 +157,14 @@
   value: "{{ .Values.core.photo.indoor.ratio }}"
 - name: MAIN_HIGHLIGHT_QUALITY_MULTIPLIER
   value: "{{ .Values.core.place.quality.multiplier.highlight.main }}"
+- name: LOW_IMPRESSION_QUALITY_THRESHOLD
+  value: "{{ .Values.core.place.quality.threshold.impression.low }}"
+- name: LOW_COMPOSITION_QUALITY_THRESHOLD
+  value: "{{ .Values.core.place.quality.threshold.composition.low }}"
+- name: LOW_SHADOWS_QUALITY_THRESHOLD
+  value: "{{ .Values.core.place.quality.threshold.shadows.low }}"
+- name: LOW_SKY_QUALITY_THRESHOLD
+  value: "{{ .Values.core.place.quality.threshold.sky.low }}"
 - name: STATISTICS_VALUES_COUNT_LIMIT
   value: "{{ .Values.core.statistics.values.limit }}"
 - name: ALBUM_THUMBNAIL_BUCKET

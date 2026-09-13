@@ -9,9 +9,9 @@ import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
     Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelMetadata, Location, Note, PendingPhoto, Photo,
-    Place, PlaceIncludedEntity, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
-    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity,
-} from "../types/CoreSwaggerTypes.ts"
+    Place, PlaceIncludedEntity,     PlaceQualityTier,
+PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
 import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
@@ -377,8 +377,8 @@ export const createPermanentPlace = async (name: string, address: string): Promi
         }
     ).then(extractData)
 
-export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, nearbyPlaces, limit, include, sort }:
-    { tripId?: string, categoryId?: string, labelId?: string, year?: number, albumId?: string, photoId?: string, minStart?: number, maxEnd?: number, nearbyPlaces?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
+export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, albumId, photoId, minStart, maxEnd, maxQuality, maxTier, nearbyPlaces, limit, include, sort }:
+    { tripId?: string, categoryId?: string, labelId?: string, year?: number, albumId?: string, photoId?: string, minStart?: number, maxEnd?: number, maxQuality?: number, maxTier?: PlaceQualityTier, nearbyPlaces?: number, limit?: number, include?: PlaceIncludedEntity[], sort?: PlaceSortingStrategy } = {}): Promise<Place[]> =>
     coreClient.get<Place[]>(createQueryPath("places",
         {
             type: PlaceType.Regular,
@@ -390,6 +390,8 @@ export const listRegularPlaces = async ({ tripId, categoryId, labelId, year, alb
             photoId,
             minStart,
             maxEnd,
+            maxQuality,
+            maxTier,
             nearbyPlaces,
             limit,
             include: include?.join(","),

@@ -58,7 +58,7 @@
             }
 
             $places = $placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null,
-                time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
+                null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["categoryHighlightsSelecting"];
             $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));

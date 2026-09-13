@@ -19,8 +19,7 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePlace } from "../hooks/usePlace.js"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import { getHighlightsTier } from "../utils/highlightUtils.ts"
-import { getAllPlaceTrips, getPlaceAlbums, getPlaceCategory, getPastPlaceTrips } from "../utils/placeUtils.ts"
+import { getAllPlaceTrips, getPastPlaceTrips,getPlaceAlbums, getPlaceCategory } from "../utils/placeUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const NEARBY_PLACES_COUNT = 3
@@ -40,8 +39,8 @@ export default function PlacePage() {
     const mostSpecificCategory = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
     const attributes: Record<string, string | number | undefined> = {
-        [t("place.attribute.quality")]: place?.quality && `${Math.round(place.quality)}%`,
-        [t("place.attribute.tier")]: place ? getHighlightsTier(place.highlights ?? [], place.mainHighlight) : undefined,
+        [t("place.attribute.quality")]: place?.quality?.rating ? `${Math.round(place.quality.rating)}%` : undefined,
+        [t("place.attribute.tier")]: place?.quality?.tier,
         [t("place.attribute.score")]: place?.score,
         [t("place.attribute.highlightsCount")]: place?.highlights?.length,
         [t("place.attribute.elevation")]: place?.elevation && formatMeters(place.elevation)

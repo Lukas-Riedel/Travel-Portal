@@ -107,6 +107,15 @@ core:
       multiplier:
         highlight:
           main: "3"
+      threshold:
+        impression:
+          low: "100"
+        composition:
+          low: "100"
+        shadows:
+          low: "60"
+        sky:
+          low: "50"
   statistics:
     values:
       limit: "10"
