@@ -22,16 +22,16 @@ import { useQueryParamState } from "../hooks/useQueryParamState.ts"
 import { useRegions } from "../hooks/useRegions.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
 import type { Place } from "../types/CoreSwaggerTypes.ts"
-import { CategoryCategory, type CompositeRegion, type GeographicalRegion, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, type CompositeRegion, type GeographicalRegion, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { PlansMenuTabName } from "../types/PlansMenuTabName.ts"
-import { getPlaceCategory } from "../utils/placeUtils.ts"
+import { getPlaceCategory, PLACE_QUALITY_TIER_ORDER } from "../utils/placeUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const DEFAULT_MAX_DISTANCE = 250
 const DEFAULT_MAX_QUALITY = 80
 
-const INSUFFICIENT_QUALITY_THRESHOLD = 50
-const AVERAGE_QUALITY_THRESHOLD = 70
+const INSUFFICIENT_QUALITY_TIERS = [PlaceQualityTier.D, PlaceQualityTier.E]
+const AVERAGE_QUALITY_TIERS = [PlaceQualityTier.B, PlaceQualityTier.C]
 
 const TAB_URL_QUERY_PARAM_NAME = "tab"
 
@@ -62,15 +62,16 @@ export default function PlansPage() {
         const candidatePlacesInRegion = candidatePlaces?.filter(containsRegion) || []
         const visitedPlacesInRegion = visitedPlaces?.filter(containsRegion) || []
 
-        const qualities = visitedPlacesInRegion.map(place => place.quality?.rating).filter((rating): rating is number => rating != null)
-        const minimumQuality = qualities.length > 0 ? Math.min(...qualities) : 0
-        const averageQuality = qualities.length > 0 ? qualities.reduce((a: number, b: number) => a + b, 0) / qualities.length : 0
+        const lowestTier = visitedPlacesInRegion
+            .map(place => place.quality?.tier)
+            .filter((tier): tier is PlaceQualityTier => tier != null)
+            .reduce<PlaceQualityTier | undefined>((min, tier) => !min || PLACE_QUALITY_TIER_ORDER.indexOf(tier) > PLACE_QUALITY_TIER_ORDER.indexOf(min) ? tier : min, undefined)
 
-        if (averageQuality > 0 && averageQuality < INSUFFICIENT_QUALITY_THRESHOLD) {
+        if (lowestTier && INSUFFICIENT_QUALITY_TIERS.includes(lowestTier)) {
             return "#FF0000"
         }
 
-        if ((averageQuality >= INSUFFICIENT_QUALITY_THRESHOLD && averageQuality < AVERAGE_QUALITY_THRESHOLD) || minimumQuality < AVERAGE_QUALITY_THRESHOLD) {
+        if (lowestTier && AVERAGE_QUALITY_TIERS.includes(lowestTier)) {
             return "#FFFF00"
         }
 

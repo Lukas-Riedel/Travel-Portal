@@ -15,18 +15,9 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 import type { Category, Place } from "../types/CoreSwaggerTypes.ts"
-import { CategoryCategory, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, PlaceIncludedEntity, type PlaceQualityTier, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import { getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
-
-const TIER_ORDER: PlaceQualityTier[] = [
-    PlaceQualityTier.S,
-    PlaceQualityTier.A,
-    PlaceQualityTier.B,
-    PlaceQualityTier.C,
-    PlaceQualityTier.D,
-    PlaceQualityTier.E
-]
+import { getPlaceCategory as doGetPlaceCategory, PLACE_QUALITY_TIER_ORDER } from "../utils/placeUtils.ts"
 
 export default function CategoryPage() {
     const { categoryId } = useParams()
@@ -50,7 +41,7 @@ export default function CategoryPage() {
 
     const lowestTier = places?.map(place => place.quality?.tier)
         ?.filter((tier): tier is PlaceQualityTier => tier != null)
-        ?.reduce<PlaceQualityTier | undefined>((min, tier) => !min || TIER_ORDER.indexOf(tier) > TIER_ORDER.indexOf(min) ? tier : min, undefined)
+        ?.reduce<PlaceQualityTier | undefined>((min, tier) => !min || PLACE_QUALITY_TIER_ORDER.indexOf(tier) > PLACE_QUALITY_TIER_ORDER.indexOf(min) ? tier : min, undefined)
 
     const attributes: Record<string, string | number | undefined> = {
         [t("category.attribute.category")]: category?.category && t(`category.category.${category?.category}`),
@@ -105,7 +96,7 @@ export default function CategoryPage() {
                 placeMainCategorySelector={getPlaceCategory} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">
-                    {category && (
+                    {category && hasRole(UserRole.PortalFutureRead) && (
                         <AppLink
                             target={AppLinkTarget.Plans}
                             to={category}
