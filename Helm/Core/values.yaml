@@ -152,6 +152,10 @@ core:
     step:
       minute:
         threshold: "30"
+  voucher:
+    expiring:
+      notification:
+        threshold: "604800"
   timezone: Europe/Prague
   backup:
     location: /var/tmp/db.sql.gz

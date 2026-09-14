@@ -16,7 +16,7 @@ class FlightLoggedNotificationFactory(
         val actualArrival = (args["actualArrival"] as? Number)?.toLong() ?: return null
         val timezone = args["timezone"] as? String ?: return null
 
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+        val formatter = DateTimeFormatter.ofPattern(context.getString(R.string.format_time))
             .withLocale(Locale.getDefault())
             .withZone(ZoneId.of(timezone))
 

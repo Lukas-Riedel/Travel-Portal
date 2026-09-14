@@ -205,6 +205,8 @@
   value: "{{ .Values.core.fitness.update.threshold.days }}"
 - name: STEPS_PER_MINUTE_THRESHOLD
   value: "{{ .Values.core.fitness.step.minute.threshold }}"
+- name: VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD
+  value: "{{ .Values.core.voucher.expiring.notification.threshold }}"
 - name: BACKUP_LOCATION
   value: "{{ .Values.core.backup.location }}"
 - name: BACKUP_LIMIT

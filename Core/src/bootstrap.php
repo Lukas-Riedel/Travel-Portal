@@ -43,6 +43,7 @@
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
     use Core\Service\Expense\ExpenseService;
+    use Core\Service\Expense\ExpenseServiceListener;
     use Core\Service\Expense\ExpenseStatisticsProvider;
     use Core\Service\Fitness\FitnessDataConsistencyMonitor;
     use Core\Service\Fitness\FitnessService;
@@ -255,6 +256,7 @@
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
+        new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

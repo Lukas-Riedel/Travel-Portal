@@ -156,7 +156,8 @@
         "processingFailed": {
             "photosUploadingTriggered": "Nahrávání fotek pro místo {{placeName}} se nezdařilo",
             "photoReplacingTriggered": "Nahrazování fotky pro místo {{placeName}} se nezdařilo"
-        }
+        },
+        "voucherExpiring": "Poukaz vydavatele {{issuer}} o hodnotě {{value}} {{currency}} expiruje dne {{formattedExpiration}}"
     },
     "search": {
         "label": {

@@ -56,6 +56,15 @@ export default function App() {
         })
     }, [taskDeadlineReachedEvents])
 
+    const { events: voucherExpiringEvents } = useEvents(EventType.VoucherExpiring)
+    useEffect(() => {
+        (voucherExpiringEvents ?? []).forEach(event => {
+            event.markAsRead()
+
+            toast.success(t("notification.voucherExpiring", { issuer: event.args.issuer, value: event.args.value, currency: event.args.currency, formattedExpiration: formatTimestamp(event.args.expiration, t("general.format.date.year.included")) }))
+        })
+    }, [voucherExpiringEvents])
+
     const { events: flightLoggedEvents } = useEvents(EventType.FlightLogged)
     useEffect(() => {
         (flightLoggedEvents ?? []).forEach(event => {

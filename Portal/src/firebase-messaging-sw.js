@@ -50,9 +50,24 @@ onBackgroundMessage(messaging, payload => {
         })
     }
 
+    if (payload.data.event === "VoucherExpiring") {
+        const args = JSON.parse(payload.data.args)
+        const formattedExpiration = new Intl.DateTimeFormat(undefined, {
+            day: "numeric",
+            month: "numeric",
+            year: "numeric"
+        }).format(new Date(args.expiration * 1000))
+
+        self.registration.showNotification("Blíží se expirace poukazu", {
+            body: `Poukaz vydavatele ${args.issuer} o hodnotě ${args.value} ${args.currency} expiruje dne ${formattedExpiration}`,
+            icon: "icon-192.png",
+            data: "/admin?tab=vouchers"
+        })
+    }
+
     if (payload.data.event === "FlightLogged") {
         const args = JSON.parse(payload.data.args)
-        const formattedActualArrival = new Intl.DateTimeFormat(undefined, {
+        const formattedActualArrival = new Intl.DateTimeFormat("cs-CZ", {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,

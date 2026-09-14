@@ -65,6 +65,14 @@
             return $subscription;
         }
 
+        public function getVouchersForNotifications(int $threshold) : array {
+            return $this->expenseMapper->selectVouchersForNotifications($threshold);
+        }
+
+        public function resetVoucherLastNotification(string $voucherId) : bool {
+            return $this->expenseMapper->updateVoucherLastNotification($voucherId, time());
+        }
+
         public function getAllVouchers() : array {
             $this->expenseMapper->deleteExpiredVouchers();
             return $this->expenseMapper->selectAllVouchers();
