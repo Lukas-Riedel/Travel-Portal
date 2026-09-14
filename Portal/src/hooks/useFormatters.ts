@@ -2,19 +2,30 @@ import { useTranslation } from "react-i18next"
 
 import { StatisticsUnit } from "../types/CoreSwaggerTypes.ts"
 import type { UseFormattersResult } from "../types/UseFormattersResult.ts"
-import { getCurrentTimestamp } from "../utils/timeUtils.ts"
+import { getCurrentTimestamp, ONE_DAY_SECONDS, ONE_HOUR_SECONDS, ONE_MINUTE_SECONDS, ONE_WEEK_SECONDS } from "../utils/timeUtils.ts"
 
 type UnitFormatter = (value: number) => string
 
 export function useFormatters(): UseFormattersResult {
     const { t } = useTranslation()
 
-    const formatDuration = (value: number, includeSeconds?: boolean) => {
-        const h = Math.floor(value / 3600)
-        const m = Math.floor((value % 3600) / 60)
-        const s = Math.round(value % 60)
+    const formatDuration = (value: number, includeSeconds?: boolean, forceHours?: boolean) => {
+        const w = Math.floor(value / ONE_WEEK_SECONDS)
+        const d = Math.floor((value % ONE_WEEK_SECONDS) / ONE_DAY_SECONDS)
+        const h = Math.floor((value % (forceHours ? Number.MAX_VALUE : ONE_DAY_SECONDS)) / ONE_HOUR_SECONDS)
+        const m = Math.floor((value % ONE_HOUR_SECONDS) / ONE_MINUTE_SECONDS)
+        const s = Math.round(value % ONE_MINUTE_SECONDS)
 
         const parts: string[] = []
+
+        if (!forceHours && w > 0) {
+            parts.push(t("general.unit.week", { count: w }))
+        }
+
+        if (!forceHours && d > 0) {
+            parts.push(t("general.unit.day", { count: d }))
+        }
+
         if (h > 0) {
             parts.push(t("general.unit.hour", { count: h }))
         }
@@ -23,7 +34,7 @@ export function useFormatters(): UseFormattersResult {
             parts.push(t("general.unit.minute", { count: m }))
         }
 
-        if ((s > 0 || (h === 0 && m === 0)) && includeSeconds) {
+        if (includeSeconds && (s > 0 || (w === 0 && d === 0 && h === 0 && m === 0))) {
             parts.push(t("general.unit.second", { count: s }))
         }
 

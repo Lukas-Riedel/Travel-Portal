@@ -9,8 +9,7 @@ import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
     Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelMetadata, Location, Note, PendingPhoto, Photo,
-    Place, PlaceIncludedEntity,     PlaceQualityTier,
-PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
@@ -725,11 +724,12 @@ export const updatePlaceNoteContent = async (placeId: string, noteId: string, co
 export const removePlaceNote = async (placeId: string, noteId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}/notes/${noteId}`)
 
-export const createTripTask = async (tripId: string, description: string, priority: TaskPriority, deadline?: number): Promise<Task> =>
+export const createTripTask = async (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: number): Promise<Task> =>
     coreClient.post<Task>(`trips/${tripId}/tasks`,
         {
             description,
             priority,
+            notificationInterval,
             deadline
         }
     ).then(extractData)

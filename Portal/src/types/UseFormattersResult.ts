@@ -1,7 +1,7 @@
 import type { StatisticsUnit } from "./CoreSwaggerTypes.ts"
 
 export interface UseFormattersResult {
-    formatDuration: (value: number, includeSeconds?: boolean) => string
+    formatDuration: (value: number, includeSeconds?: boolean, forceHours?: boolean) => string
     formatEvents: (value: number) => string
     formatKilometers: (value: number) => string
     formatMillimeters: (value: number) => string

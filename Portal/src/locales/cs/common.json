@@ -110,7 +110,10 @@
             "airport_other": "{{count}} letišť",
             "night_one": "{{count}} noc",
             "night_few": "{{count}} noci",
-            "night_other": "{{count}} nocí"
+            "night_other": "{{count}} nocí",
+            "week_one": "{{count}} týden",
+            "week_few": "{{count}} týdny",
+            "week_other": "{{count}} týdnů"
         },
         "time": {
             "ago": {
@@ -650,7 +653,8 @@
             "description": "Popis",
             "trip": "Výlet",
             "priority": "Priorita",
-            "deadline": "Termín"
+            "deadline": "Termín",
+            "notificationInterval": "Interval upomínek"
         },
         "prompt": {
             "create": {

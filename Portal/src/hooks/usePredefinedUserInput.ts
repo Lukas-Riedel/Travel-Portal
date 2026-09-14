@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { AppConfiguration } from "../types/AppConfiguration.ts"
-import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type Note, type Photo,type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type Note, type Photo, type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
@@ -16,7 +16,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { showConfirmToast, showInputToast, showFormToast, showBranchingToast } = useUserInput()
     const { configuration } = useConfiguration()
     const { t } = useTranslation()
-    const { formatMillimeters } = useFormatters()
+    const { formatMillimeters, formatDuration } = useFormatters()
 
     const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
         showInputToast(
@@ -1294,7 +1294,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 },
                 {
                     type: "text",
-                    label: t("region.prompt.create.composite.label.excluded"), 
+                    label: t("region.prompt.create.composite.label.excluded"),
                     required: false
                 }
             ],
@@ -1359,7 +1359,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("day.prompt.copy.failed")
         )
 
-    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: Date) => Promise<Task>) =>
+    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date) => Promise<Task>) =>
         showFormToast(
             t("task.prompt.create.message"),
             [
@@ -1390,9 +1390,16 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     type: "datetime-local",
                     label: t("task.label.deadline"),
                     required: false
+                },
+                {
+                    type: "select",
+                    label: t("task.label.notificationInterval"),
+                    required: true,
+                    options: [{ id: "", name: "" }].concat([3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({id: `${interval}`, name: formatDuration(interval)}))),
                 }
-            ],
-            (tripId: string, description: string, priority: string, deadline: string | undefined) => createTripTask(tripId, description, priority as TaskPriority, deadline ? new Date(deadline) : undefined),
+            ] as const,
+            (tripId: string, description: string, priority: string, deadline: string | undefined, notificationInterval: string) =>
+                createTripTask(tripId, description, priority as TaskPriority, notificationInterval ? parseInt(notificationInterval) : undefined, deadline ? new Date(deadline) : undefined),
             t("task.prompt.create.confirmed"),
             t("task.prompt.create.failed")
         )

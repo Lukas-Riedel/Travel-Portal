@@ -2,20 +2,17 @@
     namespace Core\Service\Task;
     
     use Core\Client\Database\DatabaseClient;
-    use Core\Client\Database\TransactionManager;
 
     class TaskService {
 
         private readonly TaskMapper $taskMapper;
-        private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient) {
             $this->taskMapper = new TaskMapper($databaseClient);
-            $this->transactionManager = $databaseClient;
         }
 
-        public function createTask(string $description, TaskPriority $priority, ?int $deadline, string $tripId) : Task {
-            $task = new Task(null, $description, $priority, $deadline);
+        public function createTask(string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, string $tripId) : Task {
+            $task = new Task(null, $description, $priority, $deadline, $notificationInterval);
             $this->taskMapper->insertTask($task, $tripId);
             return $task;
         }

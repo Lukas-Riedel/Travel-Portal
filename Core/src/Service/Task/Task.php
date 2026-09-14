@@ -32,6 +32,13 @@
                 type: "integer",
                 format: "int64",
                 example: 1689786000
+            ),
+            new OA\Property(
+                property: "notificationInterval",
+                description: "The interval to repeat deadline notifications in seconds",
+                type: "integer",
+                format: "int64",
+                example: 86400
             )
         ]
     )]
@@ -41,12 +48,14 @@
         private readonly string $description;
         private readonly TaskPriority $priority;
         private readonly ?int $deadline;
+        private readonly ?int $notificationInterval;
 
-        public function __construct(?string $id, string $description, TaskPriority $priority, ?int $deadline) {
+        public function __construct(?string $id, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval) {
             $this->id = $id;
             $this->description = $description;
             $this->priority = $priority;
             $this->deadline = $deadline;
+            $this->notificationInterval = $notificationInterval;
         }
 
         public function getId() : string {
@@ -67,6 +76,10 @@
 
         public function getDeadline() : ?int {
             return $this->deadline;
+        }
+
+        public function getNotificationInterval() : ?int {
+            return $this->notificationInterval;
         }
 
         #[\ReturnTypeWillChange]
