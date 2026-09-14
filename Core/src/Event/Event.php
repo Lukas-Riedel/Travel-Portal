@@ -280,6 +280,10 @@
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("task" => $task));
         }
 
+        public static function VoucherExpiring(string $issuer, float $value, string $currency, int $expiration) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventVoucherExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("issuer" => $issuer, "value" => $value, "currency" => $currency, "expiration" => $expiration));
+        }
+
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventNewDataConsistencyIssueDetectedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
         }

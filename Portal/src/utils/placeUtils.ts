@@ -1,11 +1,18 @@
 import { fromUnixTime, isSameDay } from "date-fns"
 
-import type { Album, Category, Date, Highlight, Place, TripIdentifier } from "../types/CoreSwaggerTypes.ts"
+import { type Album, type Category, type Date, type Highlight, type Place, PlaceQualityTier, type TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { ExtendedCategoryCategory } from "../types/ExtendedCategoryCategory.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import { getEuclideanDistance, getHaversineDistance } from "./geocodingUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "./timeUtils.ts"
-import type { Coordinates } from "../types/Coordinates.ts"
+
+export const PLACE_QUALITY_TIER_ORDER: PlaceQualityTier[] = [
+    PlaceQualityTier.S,
+    PlaceQualityTier.A,
+    PlaceQualityTier.B,
+    PlaceQualityTier.C,
+    PlaceQualityTier.D,
+    PlaceQualityTier.E
+]
 
 export function filterPlaceDates(place: Place, dateFilter: (date: Date) => boolean): Place {
     return { ...place, dates: place.dates?.filter(dateFilter) }

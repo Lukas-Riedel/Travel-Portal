@@ -1654,6 +1654,13 @@
                             type: "integer",
                             format: "int64",
                             example: 1689786000
+                        ),
+                        new OA\Property(
+                            property: "notificationInterval",
+                            description: "The interval to repeat deadline notifications in seconds",
+                            type: "integer",
+                            format: "int64",
+                            example: 86400
                         )
                     ]
                 )
@@ -1735,8 +1742,11 @@
             $description = $this->requireJsonBodyField($request, "description");
             $priority = $this->requireJsonBodyField($request, "priority");
             $deadline = $this->getJsonBodyField($request, "deadline");
+            $notificationInterval = $this->getJsonBodyField($request, "notificationInterval");
 
-            return $this->taskService->createTask($description, TaskPriority::from($priority), $deadline, $tripId);
+            $mappedPriority = TaskPriority::from($priority);
+
+            return $this->taskService->createTask($description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
         }
 
         #[OA\Patch(

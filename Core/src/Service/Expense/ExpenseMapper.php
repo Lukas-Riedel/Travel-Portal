@@ -344,6 +344,38 @@
                 ->execute();
         }
 
+        public function selectVouchersForNotifications(int $threshold) : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM expense_voucher
+                WHERE expiration IS NOT NULL
+                    AND last_notification IS NULL
+                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
+                    AND expiration - ROUND(EXTRACT(EPOCH FROM NOW())) <= ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($threshold)
+                ->getMappedResultSet(function($voucherRow) {
+                    return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
+                        $voucherRow["value"], ExpenseCurrency::from($voucherRow["currency"]), $voucherRow["expiration"]);
+                });
+        }
+
+        public function updateVoucherLastNotification(string $voucherId, int $lastNotification) : bool {
+            $sql = <<<'SQL'
+                UPDATE expense_voucher
+                SET last_notification = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($lastNotification, $voucherId)
+                ->execute() > 0;
+        }
+
         public function deleteExpiredVouchers() : int {
             $sql = <<<'SQL'
                 DELETE

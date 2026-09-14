@@ -251,16 +251,16 @@
         private function selectCompositeRegionCategoryIdentifiers(string $compositeRegionCategoryId, bool $included) : array {
             $sql = <<<'SQL'
                 SELECT ci.*
-                FROM region_composite re
+                FROM region_composite rc
                 INNER JOIN category_identifier ci
-                    ON re.subject_category_id = ci.id
-                WHERE re.category_id = ?
-                    AND re.included = ?
+                    ON rc.subject_category_id = ci.id
+                WHERE rc.category_id = ?
+                    AND rc.included = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($compositeRegionCategoryId, $included)
+                ->withParameters($compositeRegionCategoryId, $included ? "true" : "false")
                 ->getMappedResultSet(function($categoryIdentifierRow) {
                     $metadata = $categoryIdentifierRow["color"] === null && $categoryIdentifierRow["unicode"] === null && $categoryIdentifierRow["public_holidays_calendar"] === null
                         ? null : new CategoryMetadata($categoryIdentifierRow["color"], $categoryIdentifierRow["unicode"], $categoryIdentifierRow["public_holidays_calendar"]);

@@ -42,7 +42,7 @@
             }
 
             $places = $this->placeService->getRegularPlaces(null, null, null, $yearId, null, null, null, null,
-                time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
+                null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
             $trips = $tripService->getRegularTrips($yearId, null, time(), array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["yearHighlightsSelecting"];

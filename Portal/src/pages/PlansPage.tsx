@@ -3,8 +3,6 @@ import { Plus } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Place } from "../types/CoreSwaggerTypes.ts"
-import { getPlaceCategory } from "../utils/placeUtils.ts"
 import CategoryCardGrid from "../components/CategoryCardGrid"
 import FloatingButton from "../components/FloatingButton"
 import PlaceMap from "../components/PlaceMap"
@@ -23,15 +21,17 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useQueryParamState } from "../hooks/useQueryParamState.ts"
 import { useRegions } from "../hooks/useRegions.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces"
-import { CategoryCategory, type CompositeRegion, type GeographicalRegion, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, type CompositeRegion, type GeographicalRegion, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { PlansMenuTabName } from "../types/PlansMenuTabName.ts"
+import { getPlaceCategory, PLACE_QUALITY_TIER_ORDER } from "../utils/placeUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const DEFAULT_MAX_DISTANCE = 250
 const DEFAULT_MAX_QUALITY = 80
 
-const INSUFFICIENT_QUALITY_THRESHOLD = 50
-const AVERAGE_QUALITY_THRESHOLD = 70
+const INSUFFICIENT_QUALITY_TIERS = [PlaceQualityTier.D, PlaceQualityTier.E]
+const AVERAGE_QUALITY_TIERS = [PlaceQualityTier.B, PlaceQualityTier.C]
 
 const TAB_URL_QUERY_PARAM_NAME = "tab"
 
@@ -62,15 +62,16 @@ export default function PlansPage() {
         const candidatePlacesInRegion = candidatePlaces?.filter(containsRegion) || []
         const visitedPlacesInRegion = visitedPlaces?.filter(containsRegion) || []
 
-        const qualities = visitedPlacesInRegion.filter(place => place.quality).map(place => place.quality as number)
-        const minimumQuality = Math.min(...qualities)
-        const averageQuality = qualities.reduce((a: number, b: number) => a + b, 0) / qualities.length
+        const lowestTier = visitedPlacesInRegion
+            .map(place => place.quality?.tier)
+            .filter((tier): tier is PlaceQualityTier => tier != null)
+            .reduce<PlaceQualityTier | undefined>((min, tier) => !min || PLACE_QUALITY_TIER_ORDER.indexOf(tier) > PLACE_QUALITY_TIER_ORDER.indexOf(min) ? tier : min, undefined)
 
-        if (averageQuality > 0 && averageQuality < INSUFFICIENT_QUALITY_THRESHOLD) {
+        if (lowestTier && INSUFFICIENT_QUALITY_TIERS.includes(lowestTier)) {
             return "#FF0000"
         }
 
-        if ((averageQuality >= INSUFFICIENT_QUALITY_THRESHOLD && averageQuality < AVERAGE_QUALITY_THRESHOLD) || minimumQuality < AVERAGE_QUALITY_THRESHOLD) {
+        if (lowestTier && AVERAGE_QUALITY_TIERS.includes(lowestTier)) {
             return "#FFFF00"
         }
 
@@ -108,10 +109,10 @@ export default function PlansPage() {
         })), [regions, getRegionColor, visitedPlaces])
 
     const filteredCandidatePlaces = candidatePlaces?.filter(place => !place.distance || place.distance <= maxDistance) ?? null
-    const filteredVisitedPlaces = visitedPlaces?.filter(place => !place.quality || place.quality <= maxQuality) ?? null
+    const filteredVisitedPlaces = visitedPlaces?.filter(place => !place.quality?.rating || place.quality.rating <= maxQuality) ?? null
 
     const furthestPlace = candidatePlaces?.filter((place): place is Place & { distance: number } => place.distance != null)?.reduce((max, place) => !max || place.distance > max.distance ? place : max, undefined as (Place & { distance: number }) | undefined)
-    const lowestQualityPlace = visitedPlaces?.filter((place): place is Place & { quality: number } => place.quality != null)?.reduce((min, place) => !min || place.quality < min.quality ? place : min, undefined as (Place & { quality: number }) | undefined)
+    const lowestQualityPlace = visitedPlaces?.filter((place): place is Place & { quality: { rating: number } } => place.quality?.rating != null)?.reduce((min, place) => !min || place.quality.rating < min.quality.rating ? place : min, undefined as (Place & { quality: { rating: number } }) | undefined)
 
     const countriesCandidatePlaces = groupPlacesByKey(filteredCandidatePlaces, place => place.country)
     const countriesVisitedPlaces = groupPlacesByKey(filteredVisitedPlaces, place => place.country)
@@ -190,7 +191,7 @@ export default function PlansPage() {
                         valueFormatter={value => `${value}%`}
                         value={maxQuality}
                         defaultValue={DEFAULT_MAX_QUALITY}
-                        minValue={Math.ceil(lowestQualityPlace?.quality ?? 0)}
+                        minValue={Math.ceil(lowestQualityPlace?.quality.rating ?? 0)}
                         maxValue={100}
                         onValueChanged={setMaxQuality} />
                     <CategoryCardGrid

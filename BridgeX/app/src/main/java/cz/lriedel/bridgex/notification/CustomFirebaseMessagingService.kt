@@ -35,6 +35,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             DeviceLogOnRequestedNotificationFactory(this),
             NewDataConsistencyIssuesDetectedNotificationFactory(this),
             TaskDeadlineReachedNotificationFactory(this),
+            VoucherExpiringNotificationFactory(this),
             FlightLoggedNotificationFactory(this),
             FlightReminderReceivedNotificationFactory(this)
         ).associateBy { factory ->

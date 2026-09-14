@@ -2,7 +2,6 @@ import { Edit2, Folder } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import type { Category, Place } from "../types/CoreSwaggerTypes.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient.ts"
 import AppLink from "../components/AppLink.tsx"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
@@ -15,10 +14,10 @@ import { useEvents } from "../hooks/useEvents.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useTimeFilteredRegularPlaces } from "../hooks/useTimeFilteredRegularPlaces.ts"
 import { AppLinkTarget } from "../types/AppLinkTarget.ts"
-import { CategoryCategory, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import type { Category, Place } from "../types/CoreSwaggerTypes.ts"
+import { CategoryCategory, PlaceIncludedEntity, type PlaceQualityTier, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import { getHighlightsTier } from "../utils/highlightUtils.ts"
-import { getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
+import { getPlaceCategory as doGetPlaceCategory, PLACE_QUALITY_TIER_ORDER } from "../utils/placeUtils.ts"
 
 export default function CategoryPage() {
     const { categoryId } = useParams()
@@ -36,14 +35,18 @@ export default function CategoryPage() {
 
     const totalScore = places?.map(place => place.score)?.filter((s): s is NonNullable<typeof s> => s != null)
         ?.reduce((acc, score) => acc + score, 0)
-    const totalQuality = places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)
+    const totalQuality = places?.map(place => place.quality?.rating)?.filter((q): q is NonNullable<typeof q> => q != null)
         ?.reduce((acc, quality) => acc + quality, 0)
-    const placesWithQualityCount = places?.map(place => place.quality)?.filter((q): q is NonNullable<typeof q> => q != null)?.length
+    const placesWithQualityCount = places?.map(place => place.quality?.rating)?.filter((q): q is NonNullable<typeof q> => q != null)?.length
+
+    const lowestTier = places?.map(place => place.quality?.tier)
+        ?.filter((tier): tier is PlaceQualityTier => tier != null)
+        ?.reduce<PlaceQualityTier | undefined>((min, tier) => !min || PLACE_QUALITY_TIER_ORDER.indexOf(tier) > PLACE_QUALITY_TIER_ORDER.indexOf(min) ? tier : min, undefined)
 
     const attributes: Record<string, string | number | undefined> = {
         [t("category.attribute.category")]: category?.category && t(`category.category.${category?.category}`),
         [t("category.attribute.averageQuality")]: totalQuality && placesWithQualityCount && `${Math.round(totalQuality / placesWithQualityCount)}%`,
-        [t("category.attribute.tier")]: category ? getHighlightsTier(category.highlights ?? [], category.mainHighlight) : undefined,
+        [t("category.attribute.tier")]: lowestTier,
         [t("category.attribute.totalScore")]: totalScore ?? undefined,
         [t("category.attribute.highlightsCount")]: category?.highlights?.length
     }
@@ -93,7 +96,7 @@ export default function CategoryPage() {
                 placeMainCategorySelector={getPlaceCategory} />
             <div className="flex justify-end">
                 <div className="flex items-center gap-2">
-                    {category && (
+                    {category && hasRole(UserRole.PortalFutureRead) && (
                         <AppLink
                             target={AppLinkTarget.Plans}
                             to={category}

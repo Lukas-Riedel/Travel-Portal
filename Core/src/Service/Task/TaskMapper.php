@@ -2,12 +2,8 @@
     namespace Core\Service\Task;
     
     use Core\Client\Database\DatabaseClient;
-    use Core\Common\CommonConstants;
 
     class TaskMapper {
-        
-        // TODO: Make this configurable per task?
-        private const SEND_NOTIFICATION_INTERVAL = CommonConstants::ONE_DAY_SECONDS;
         
         private readonly DatabaseClient $databaseClient;
 
@@ -45,7 +41,7 @@
                 return null;
             }
 
-            return new Task($taskRow["id"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]));
+            return new Task($taskRow["id"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]));
         }
 
         public function selectTasks(string $tripId) : array {
@@ -61,7 +57,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]));
+                    return new Task($taskRow["id"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]));
                 });
         }
 
@@ -71,7 +67,7 @@
                 FROM task
                 WHERE deadline IS NOT NULL AND (
                     (last_notification IS NULL AND deadline < ROUND(EXTRACT(EPOCH FROM NOW())))
-                    OR (last_notification IS NOT NULL AND last_notification + ? < ROUND(EXTRACT(EPOCH FROM NOW())))
+                    OR (last_notification IS NOT NULL AND notification_interval IS NOT NULL AND last_notification + notification_interval < ROUND(EXTRACT(EPOCH FROM NOW())))
                 )
                 ORDER BY priority ASC,
                     deadline ASC NULLS LAST
@@ -79,9 +75,8 @@
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters(self::SEND_NOTIFICATION_INTERVAL)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]));
+                    return new Task($taskRow["id"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]));
                 });
         }
 
@@ -91,9 +86,11 @@
                     trip_id,
                     description,
                     priority,
-                    deadline
+                    deadline,
+                    notification_interval
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?,
                     ?,
@@ -104,8 +101,8 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline())
-                ->getSingleColumn("id");                 
+                ->withParameters($tripId, $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval())
+                ->getSingleColumn("id");
 
             if ($id === null) {
                 return false;

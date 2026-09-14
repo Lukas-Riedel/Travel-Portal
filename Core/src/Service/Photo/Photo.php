@@ -139,7 +139,7 @@
 
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
-            return array_merge(array_diff_key(get_object_vars($this), ["urlProvider" => null]), ["url" => ($this->urlProvider)()]);
+            return array_merge(array_diff_key(get_object_vars($this), array("urlProvider" => null)), array("url" => ($this->urlProvider)()));
         }
     }
 ?>

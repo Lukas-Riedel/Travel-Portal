@@ -32,8 +32,8 @@
             $statistics = array();
 
             if ($statisticsKind === StatisticsKind::Fact) {        
-                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, 
-                    null, $start, $end, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null,
+                    null, null, $start, $end, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $visitedPlacesCount = count($relevantPlaces);
                 if ($statisticsType === StatisticsType::Trip) {
@@ -75,7 +75,7 @@
                 $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");
                 $permanentPlaceIds = $this->placeService->getAllPermanentPlaceIds(); 
                 $relevantPlaces = $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null,
-                    null, $start, $end, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
+                    null, null, $start, $end, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
 
                 $distances = array();
                 foreach ($relevantPlaces as &$relevantPlace) {
@@ -131,25 +131,25 @@
                     }
                                         
                     $northernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLatitude()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeDescending));
+                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeDescending));
                     if (count($northernmostPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::NorthernmostPlaces, $northernmostPlaces, StatisticsUnit::Latitude);
                     }
 
                     $southernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLatitude()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeAscending));
+                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LatitudeAscending));
                     if (count($southernmostPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::SouthernmostPlaces, $southernmostPlaces, StatisticsUnit::Latitude);
                     }
 
                     $easternmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLongitude()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeDescending));
+                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeDescending));
                     if (count($easternmostPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::EasternmostPlaces, $easternmostPlaces, StatisticsUnit::Longitude);
                     }
 
                     $westernmostPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getLongitude()),
-                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeAscending));
+                        $this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::LongitudeAscending));
                     if (count($westernmostPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::WesternmostPlaces, $westernmostPlaces, StatisticsUnit::Longitude);
                     }
@@ -178,7 +178,7 @@
 
                 if ($statisticsType === StatisticsType::Overall) {
                     $lowestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
-                        array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending),
+                        array_filter($this->placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationAscending),
                             fn($place) => $place->getElevation() < 0));
                     if (count($lowestPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::LowestPlaces, $lowestPlaces, StatisticsUnit::ElevationMeters);
@@ -187,7 +187,7 @@
                     $highestPlaces = array_map(fn($place) => new KeyValuePair($place->getName(), $place->getElevation()),
                         // Use Trip ID to filter out permanent places.
                         $this->placeService->getRegularPlaces($categoryId, null, $statisticsType === StatisticsType::Trip ? $entityId : null, null,
-                            null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationDescending));
+                            null, null, null, null, $start, $end, null, null, array(), PlaceSortingStrategy::ElevationDescending));
                     if (count($highestPlaces) > 0) {
                         $statistics[] = new Statistics(StatisticsName::HighestPlaces, $highestPlaces, StatisticsUnit::ElevationMeters);
                     }

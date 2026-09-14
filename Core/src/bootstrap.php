@@ -43,6 +43,7 @@
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
     use Core\Service\Expense\ExpenseService;
+    use Core\Service\Expense\ExpenseServiceListener;
     use Core\Service\Expense\ExpenseStatisticsProvider;
     use Core\Service\Fitness\FitnessDataConsistencyMonitor;
     use Core\Service\Fitness\FitnessService;
@@ -245,7 +246,7 @@
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $distributedCacheClient, $eventPublisher, $scheduler),
-        new PlaceServiceListener($placeService, $tripService, $categoryService, $photoService, $calendarClient, $eventPublisher, getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER"), getenv("INDOOR_PHOTO_RATIO")),
+        new PlaceServiceListener($placeService, $tripService, $categoryService, $photoService, $calendarClient, $eventPublisher, getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER"), getenv("INDOOR_PHOTO_RATIO"), getenv("LOW_IMPRESSION_QUALITY_THRESHOLD"), getenv("LOW_COMPOSITION_QUALITY_THRESHOLD"), getenv("LOW_SHADOWS_QUALITY_THRESHOLD"), getenv("LOW_SKY_QUALITY_THRESHOLD")),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
@@ -255,6 +256,7 @@
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
+        new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

@@ -8,6 +8,7 @@
     <string name="title_photo_not_replaced">Fotka nebyla nahrazena</string>
     <string name="title_issues_detected">Vyskytly se nové problémy</string>
     <string name="title_task_deadline_reached">Blíží se termín úkolu</string>
+    <string name="title_voucher_expiring">Blíží se expirace poukazu</string>
     <string name="title_flight_landed">Let přistál</string>
     <string name="title_highlights_created">Highlighty byly vytvořeny</string>
     <string name="title_highlights_not_created">Highlighty nebyly vytvořeny</string>
@@ -18,5 +19,8 @@
     <string name="message_photos_not_uploaded">Nahrávání fotek pro místo %1$s se nezdařilo</string>
     <string name="message_photo_not_replaced">Nahrazování fotky pro místo %1$s se nezdařilo</string>
     <string name="message_issues_detected">Hlášeno %1$d nových problémů</string>
+    <string name="message_voucher_expiring">Poukaz vydavatele %1$s o hodnotě %2$s %3$s expiruje dne %4$s</string>
     <string name="message_flight_landed">Let %1$s přistál na letišti %2$s v %3$s místního času</string>
+    <string name="format_date">d.M.yyyy</string>
+    <string name="format_time">HH:mm</string>
 </resources>

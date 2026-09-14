@@ -34,7 +34,7 @@
                     }
                 }
                 else {
-                    $regularPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, self::NEARBY_PLACES_COUNT, null,
+                    $regularPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null, self::NEARBY_PLACES_COUNT, null,
                         array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Dates->value, PlaceIncludedEntity::Labels->value), PlaceSortingStrategy::OldestAscending);
                 }
                 $this->doIndex($documentBuffer, $regularPlaces);

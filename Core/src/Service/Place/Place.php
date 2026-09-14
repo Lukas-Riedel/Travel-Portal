@@ -70,10 +70,8 @@
             ),
             new OA\Property(
                 property: "quality",
-                type: "number",
-                format: "float",
-                description: "The quality of the place",
-                example: 93
+                ref: "#/components/schemas/PlaceQuality",
+                description: "The quality of the place"
             ),
             new OA\Property(
                 property: "excerpt",
@@ -130,7 +128,7 @@
         private readonly string $timezone;
         private readonly ?Highlight $mainHighlight;
         private readonly float $score;
-        private readonly ?float $quality;
+        private readonly ?PlaceQuality $quality;
         private readonly ?string $excerpt;
         private array $categories;
         private array $highlights;
@@ -140,7 +138,7 @@
         private array $dates;
 
         public function __construct(string $id, string $name, ?string $country, float $latitude, float $longitude, int $elevation,
-            string $timezone, ?Highlight $mainHighlight, float $score, ?float $quality, ?string $excerpt, array $categories,
+            string $timezone, ?Highlight $mainHighlight, float $score, ?PlaceQuality $quality, ?string $excerpt, array $categories,
             array $highlights, array $labels, array $notes, array $nearbyPlaces, array $dates) {
             $this->id = $id;
             $this->name = $name;
@@ -197,7 +195,7 @@
             return $this->score;
         }
 
-        public function getQuality() : ?float {
+        public function getQuality() : ?PlaceQuality {
             return $this->quality;
         }
 

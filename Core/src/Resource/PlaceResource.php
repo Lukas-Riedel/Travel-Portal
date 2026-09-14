@@ -11,6 +11,7 @@
     use Core\Service\Place\Date;
     use Core\Service\Place\Place;
     use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceQualityTier;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Core\Service\Place\PlaceType;
@@ -226,6 +227,12 @@
                     example: 80
                 ),
                 new OA\Parameter(
+                    name: "maxTier",
+                    in: "query",
+                    description: "The maximum quality tier of the places",
+                    schema: new OA\Schema(ref: "#/components/schemas/PlaceQualityTier")
+                ),
+                new OA\Parameter(
                     name: "type",
                     in: "query",
                     description: "The type of the place",
@@ -318,6 +325,7 @@
             $minStart = $this->getQueryParameter($request, "minStart");
             $maxEnd = $this->getQueryParameter($request, "maxEnd");
             $maxQuality = $this->getQueryParameter($request, "maxQuality");
+            $maxTier = $this->getQueryParameter($request, "maxTier");
             $type = $this->getQueryParameter($request, "type") ?? PlaceType::Regular->value;
             $nearbyPlaces = $this->getQueryParameter($request, "nearbyPlaces");
             $limit = $this->getQueryParameter($request, "limit");
@@ -342,9 +350,10 @@
             $mappedInclude = array_map(fn($include) => $include->value, $allowedIncludes);
             $mappedSort = PlaceSortingStrategy::from($sort);
             $mappedType = PlaceType::from($type);
+            $mappedTier = $maxTier !== null ? PlaceQualityTier::from($maxTier) : null;
             
             $places = match ($mappedType) {
-                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
+                PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $mappedTier, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
                 PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $nearbyPlaces, $mappedInclude)
             };
 

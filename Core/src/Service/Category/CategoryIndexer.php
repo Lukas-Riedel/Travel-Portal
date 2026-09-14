@@ -25,7 +25,7 @@
                     : $this->categoryService->getCategories(null, CategoryCategory::values(), array());
 
                 foreach ($categories as &$category) {
-                    $categoryPlaces = $this->placeService->getRegularPlaces($category->getId(), null, null, null, null, null, null, null, time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
+                    $categoryPlaces = $this->placeService->getRegularPlaces($category->getId(), null, null, null, null, null, null, null, null, time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
                     $documentBuffer->add($category->getId(), array($category->getName()), count($categoryPlaces) === 0);
                 }
             }

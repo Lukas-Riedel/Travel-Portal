@@ -4,17 +4,17 @@ import { CalendarPlus, ChevronLeft, ChevronRight, Clock, ClockPlus, Home,Palmtre
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { useLocale } from "../hooks/useLocale.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { usePublicHolidays } from "../hooks/usePublicHolidays.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { type TimeTrackingEvent,TimeTrackingEventType } from "../types/CoreSwaggerTypes.ts"
 import { getEventHoursSum, getEvents, HOURS_PER_MAN_DAY, TIME_TRACKING_EVENT_TYPE_ICONS } from "../utils/eventUtils.ts"
 import { getFlightLink } from "../utils/navigationUtils.ts"
 import { formatTimestamp, getNoonTimestamp, getTimezoneOrDefault, getWeekday, getZonedDate, ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
-import { isTripBetweenDates, isDayInTrip } from "../utils/tripUtils.ts"
+import { isDayInTrip,isTripBetweenDates } from "../utils/tripUtils.ts"
 import Tooltip from "./Tooltip.tsx"
 
 const DAY_OF_WEEK_FORMAT = "EE"
@@ -359,7 +359,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                                     </div>
                                                                     <Tooltip>
                                                                         <ClockPlus size={16} />
-                                                                        {`${event.description} (${formatDuration(event.hours * 3600)})`}
+                                                                        {`${event.description} (${formatDuration(event.hours * 3600, false, true)})`}
                                                                     </Tooltip>
                                                                 </div>
                                                             ))}

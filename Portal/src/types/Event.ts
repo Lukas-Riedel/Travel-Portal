@@ -24,6 +24,11 @@ interface TaskDeadlineReachedEvent extends EventBase {
     args: { task: string }
 }
 
+interface VoucherExpiringEvent extends EventBase {
+    name: EventType.VoucherExpiring
+    args: { issuer: string; value: number; currency: string; expiration: number }
+}
+
 interface FlightLoggedEvent extends EventBase {
     name: EventType.FlightLogged
     args: { flight: string; to: string; actualArrival: number }
@@ -49,6 +54,7 @@ export type Event =
     | PhotoReplacingTriggeredEvent
     | NewDataConsistencyIssuesDetectedEvent
     | TaskDeadlineReachedEvent
+    | VoucherExpiringEvent
     | FlightLoggedEvent
     | FlightReminderReceivedEvent
     | AllAlbumsInvalidatedEvent

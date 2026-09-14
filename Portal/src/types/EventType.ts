@@ -8,6 +8,7 @@ export enum EventType {
     ProcessingFailed = "ProcessingFailed",
     NewDataConsistencyIssuesDetected = "NewDataConsistencyIssuesDetected",
     TaskDeadlineReached = "TaskDeadlineReached",
+    VoucherExpiring = "VoucherExpiring",
     FlightLogged = "FlightLogged",
     FlightReminderReceived = "FlightReminderReceived"
 }

@@ -107,6 +107,15 @@ core:
       multiplier:
         highlight:
           main: "3"
+      threshold:
+        impression:
+          low: "100"
+        composition:
+          low: "100"
+        shadows:
+          low: "60"
+        sky:
+          low: "50"
   statistics:
     values:
       limit: "10"
@@ -143,6 +152,10 @@ core:
     step:
       minute:
         threshold: "30"
+  voucher:
+    expiring:
+      notification:
+        threshold: "604800"
   timezone: Europe/Prague
   backup:
     location: /var/tmp/db.sql.gz

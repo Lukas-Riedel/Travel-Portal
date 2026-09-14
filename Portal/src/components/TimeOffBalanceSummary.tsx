@@ -36,7 +36,7 @@ export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBal
                                 {balance !== undefined ? (
                                     <div>
                                         <div className="text-lg">
-                                            {formatDuration(balance * 3600)}
+                                            {formatDuration(balance * 3600, false, true)}
                                         </div>
                                         <div className="text-xs">
                                             {formatDays(Math.floor(balance / standardWorkingHoursPerWorkingDay + 1e-10))}
