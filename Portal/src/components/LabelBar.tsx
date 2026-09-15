@@ -44,7 +44,7 @@ export default function LabelBar({ labels, onLabelAdded, onLabelRemoved }: Label
     }
 
     return (!labels || labels.length > 0 || onLabelAdded) && (
-        <Bar>
+        <Bar className="lg:flex-wrap">
             {labels && (
                 <>
                     {labels.map(label => onLabelRemoved && !configuration?.dynamicLabels?.some((dynamicLabel: DynamicLabel) => dynamicLabel.name == label.name) ? (
