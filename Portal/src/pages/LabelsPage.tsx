@@ -18,7 +18,7 @@ export default function LabelsPage() {
         <CardGrid
             columnSize={10}
             rowSize={1}>
-            {places.map(place => (
+            {places.filter(place => (place.labels?.filter(label => !label.name.includes("Poslední"))?.length ?? 0) === 0).map(place => (
                 <Card>
                     <div className="flex justify-start items-center">
                         <CategoryFlag
