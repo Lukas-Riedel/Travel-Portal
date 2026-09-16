@@ -4,20 +4,20 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { useCachedCoordinates } from "../hooks/useCachedCoordinates.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import type { Coordinates } from "../types/Coordinates.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import type { Date as PlaceDate, Flight, Note, Place } from "../types/CoreSwaggerTypes.ts"
 import { CategoryCategory, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getMapLink } from "../utils/navigationUtils.ts"
-import { getSunAltitude } from "../utils/sunUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
+import { getSunAltitude } from "../utils/sunUtils.ts"
 import { formatDateRange, formatTimestamp, getCurrentHour, getCurrentTimestamp, getTripDays, isTodayOrFutureDay, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { getCalendarEvents, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
@@ -228,7 +228,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                 {formatRefreshedBefore(lastSeenBridgeXDevice.lastSeen)}
                             </li>
                         </ul>
-                        {tripProgress && (
+                        {tripProgress !== undefined && (
                             <div className="w-full mt-4">
                                 <div className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700 relative">
                                     <div
