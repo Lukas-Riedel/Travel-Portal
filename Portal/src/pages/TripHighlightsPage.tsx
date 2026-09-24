@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -11,8 +11,8 @@ import { useTrip } from "../hooks/useTrip"
 import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
-import { getTripFullName } from "../utils/tripUtils.ts"
 import { formatDateRange } from "../utils/timeUtils.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 
 export default function TripHighlightsPage() {
     const { tripId } = useParams()
@@ -24,7 +24,7 @@ export default function TripHighlightsPage() {
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
-    const highlightCandidates = places
+    const highlightCandidates = useMemo(() => places
         ?.flatMap(place => (place.dates ?? [])
             .reverse()
             .map(date => date.album)
@@ -54,7 +54,7 @@ export default function TripHighlightsPage() {
                         })
                     })
             }))
-        )
+    ), [places, trip])
 
     const handleHighlightCreated = async (photoId: string) => createTripHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))
