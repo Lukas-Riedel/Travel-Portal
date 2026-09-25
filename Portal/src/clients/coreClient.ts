@@ -464,6 +464,9 @@ export const removeCandidatePlace = async (placeId: string): Promise<void> =>
 export const removePermanentPlace = async (placeId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}?type=${SpecialPlaceType.Permanent}`)
 
+export const removeRegularPlace = async (placeId: string): Promise<void> =>
+    coreClient.delete(`places/${placeId}`)
+
 export const createPlaceAlbum = async (placeId: string, timestamp: number): Promise<Album> =>
     coreClient.post<Album>(`places/${placeId}/albums?timestamp=${timestamp}`)
         .then(extractData)

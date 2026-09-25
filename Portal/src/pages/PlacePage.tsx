@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import { createPlaceAlbumPhoto, listPlaceAlbumPhotos } from "../clients/coreClient.js"
+import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, removeCandidatePlace } from "../clients/coreClient.js"
 import CategoryBar from "../components/CategoryBar.jsx"
 import DateTileGrid from "../components/DateTileGrid.jsx"
 import HighlightCarousel from "../components/HighlightCarousel.tsx"
@@ -19,7 +19,7 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePlace } from "../hooks/usePlace.js"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
-import { getAllPlaceTrips, getPastPlaceTrips,getPlaceAlbums, getPlaceCategory } from "../utils/placeUtils.ts"
+import { getAllPlaceTrips, getPastPlaceTrips, getPlaceAlbums, getPlaceCategory } from "../utils/placeUtils.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 
 const NEARBY_PLACES_COUNT = 3
@@ -30,11 +30,13 @@ export default function PlacePage() {
     const { publishPhotosUploadingTriggeredEvent, publishPhotoReplacingTriggeredEvent } = useEvents()
     const { t } = useTranslation()
     const { formatMeters } = useFormatters()
-
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
         updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
-        createPlaceNote, removePlaceNote, refreshPlaceHighlights } = usePlace(placeId, NEARBY_PLACES_COUNT)
+        createPlaceNote, removePlaceNote, refreshPlaceHighlights, removePlace } = usePlace(placeId, NEARBY_PLACES_COUNT)
+
+    const handlePlaceRemoved = () =>
+        removePlace().then(() => removeCandidatePlace(placeId!).catch(() => {}))
 
     const mostSpecificCategory = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
@@ -61,7 +63,8 @@ export default function PlacePage() {
                 categories={mostSpecificCategory ? [mostSpecificCategory] : undefined}
                 internalAttributes={hasRole(UserRole.PlaceEdit) ? attributes : undefined}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) ? (highlightsCount => refreshPlaceHighlights(highlightsCount)) : undefined}
-                onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined} />
+                onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined}
+                onRemoved={hasRole(UserRole.PlaceEdit) ? handlePlaceRemoved : undefined} />
             <HighlightCarousel
                 place={place ?? undefined}
                 highlights={place ? (place.highlights ?? []).filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) : null}

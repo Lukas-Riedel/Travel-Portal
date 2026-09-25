@@ -5,6 +5,7 @@ createPlaceHighlight, createPlaceLabel, createPlaceNote, getCoordinates,     get
 removePlaceHighlight,
 removePlaceLabel,
 removePlaceNote,
+removeRegularPlace,
 updateHighlightQualityAttributes,     updatePlaceAlbumsReviewed,
     updatePlaceCountry,
     updatePlaceExcerpt, updatePlaceLocation,     updatePlaceMainHighlight, updatePlaceName,     updatePlaceNoteContent} from "../clients/coreClient.ts"
@@ -52,6 +53,7 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         updatePlaceNoteContent: (noteId: string, content: string) => updatePlaceNoteContent(placeId!, noteId, content).then(refetchResponse),
         removePlaceNote: (noteId: string) => removePlaceNote(placeId!, noteId).then(refetchResponse),
         updatePlaceCountry: (country: string) => updatePlaceCountry(placeId!, country).then(refetchResponse),
-        refreshPlaceHighlights: (count: number) => refreshPlaceHighlights(placeId!, count).then(refetchResponse)
+        refreshPlaceHighlights: (count: number) => refreshPlaceHighlights(placeId!, count).then(refetchResponse),
+        removePlace: () => removeRegularPlace(placeId!)
     }
 }

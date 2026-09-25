@@ -645,9 +645,9 @@
                 new OA\Parameter(
                     name: "type",
                     in: "query",
-                    required: true,
-                    description: "The type of the place",
-                    schema: new OA\Schema(ref: "#/components/schemas/SpecialPlaceType")                    
+                    required: false,
+                    description: "The type of the place. When omitted, the regular place is removed.",
+                    schema: new OA\Schema(ref: "#/components/schemas/SpecialPlaceType")
                 )
             ],
             responses: [
@@ -713,14 +713,19 @@
             $this->requireRole($request, UserRole::PlaceEdit);
 
             $placeId = $this->requirePathArgument($routeArguments, "placeId");
-            $type = $this->requireQueryParameter($request, "type");
-                        
-            $mappedType = SpecialPlaceType::from($type);
+            $type = $this->getQueryParameter($request, "type");
 
-            $wasRemoved = match ($mappedType) {
-                SpecialPlaceType::Permanent => $this->placeService->removePermanentPlace($placeId),
-                SpecialPlaceType::Candidate => $this->placeService->removeCandidatePlace($placeId)
-            };
+            if ($type === null) {
+                $wasRemoved = $this->placeService->removeRegularPlace($placeId);
+            } 
+            else {
+                $mappedType = SpecialPlaceType::from($type);
+
+                $wasRemoved = match ($mappedType) {
+                    SpecialPlaceType::Permanent => $this->placeService->removePermanentPlace($placeId),
+                    SpecialPlaceType::Candidate => $this->placeService->removeCandidatePlace($placeId)
+                };
+            }
             
             if (!$wasRemoved) {
                 throw new NotFoundException($placeId);

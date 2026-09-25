@@ -304,6 +304,23 @@
             return $this->removeSpecialPlace(SpecialPlaceType::Candidate, $placeId);
         }
 
+        public function removeRegularPlace(string $placeId) : bool {
+            $place = $this->getRegularPlace($placeId);
+            if ($place === null) {
+                return false;
+            }
+
+            $wasRemoved = true;
+            foreach ($place->getDates() as &$date) {
+                $eventId = $this->placeMapper->selectPlaceEventId($placeId, $date->getStart());
+                if ($eventId !== null) {
+                    $wasRemoved &= $this->googleClient->deleteCalendarEvent(Calendar::Places, $eventId);
+                }
+            }
+
+            return $wasRemoved;
+        }
+
         public function refreshPlaceEventLocation(string $placeId, int $start) : bool {
             $placeIdentifier = $this->getPlaceIdentifierById($placeId);
             if ($placeIdentifier === null) {
