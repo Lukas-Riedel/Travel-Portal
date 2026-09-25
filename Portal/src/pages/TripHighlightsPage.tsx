@@ -6,9 +6,10 @@ import { listPlaceAlbumPhotos } from "../clients/coreClient"
 import HighlightCandidateTileGrid from "../components/HighlightCandidateTileGrid"
 import HighlightCarousel from "../components/HighlightCarousel.tsx"
 import { useAuth } from "../contexts/AuthContext.tsx"
+import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useTrip } from "../hooks/useTrip"
-import { type Photo,PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
+import { type Photo, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { formatDateRange } from "../utils/timeUtils.ts"
@@ -18,6 +19,7 @@ export default function TripHighlightsPage() {
     const { tripId } = useParams()
     const { hasRole } = useAuth()
     const { t } = useTranslation()
+    const { configuration } = useConfiguration()
 
     const { trip, createTripHighlight } = useTrip(tripId)
     const { places } = useRegularPlaces({ tripId, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Highlights], sort: PlaceSortingStrategy.ValueOldest })
@@ -54,7 +56,7 @@ export default function TripHighlightsPage() {
                         })
                     })
             }))
-    ), [places, trip])
+        ), [places, trip])
 
     const handleHighlightCreated = async (photoId: string) => createTripHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))
@@ -78,7 +80,7 @@ export default function TripHighlightsPage() {
             )}
             <HighlightCandidateTileGrid
                 name={trip ? getTripFullName(trip) : null}
-                description={formatDateRange(trip?.start ?? 0, trip?.end ?? 0, t("general.format.date.year.included"))}
+                description={formatDateRange(trip?.start ?? 0, (trip?.end ?? 1) - 1, t("general.format.date.year.included"), configuration?.homeLocation?.timezone)}
                 categories={places?.map(place => getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)).filter((c): c is NonNullable<typeof c> => c != null).filter((c, i, arr) => !arr.slice(0, i).some(x => x.id === c.id))}
                 highlightCandidatesGroups={highlightCandidates ?? []}
                 onHighlightCreated={hasRole(UserRole.TripHighlightEdit) ? handleHighlightCreated : undefined}

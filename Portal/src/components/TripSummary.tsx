@@ -138,7 +138,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                 </AppLink>
                 {trip.start && trip.end && (
                     <div className="text-xl text-gray-700">
-                        {formatDateRange(trip.start, trip.end, t("general.format.date.year.included"))}
+                        {formatDateRange(trip.start, trip.end - 1, t("general.format.date.year.included"), configuration?.homeLocation?.timezone)}
                     </div>
                 )}
                 {lastSeenBridgeXDevice && (displayDeviceData || isCurrentTrip(trip)) && (
