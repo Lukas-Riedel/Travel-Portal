@@ -28,12 +28,14 @@
 
         private readonly array $models;
         private readonly array $refreshHours;
+        private readonly float $cloudCoverConfidenceCoefficient;
 
-        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, array $models, array $refreshHours) {
+        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, array $models, array $refreshHours, float $cloudCoverConfidenceCoefficient) {
             $this->httpClient = $httpClient;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->models = $models;
             $this->refreshHours = $refreshHours;
+            $this->cloudCoverConfidenceCoefficient = $cloudCoverConfidenceCoefficient;
         }
 
         public function getForecast(float $latitude, float $longitude, int $start, int $end) : Weather {
@@ -172,7 +174,7 @@
                 return max(1.0, abs($median) * 0.05);
             }
 
-            return max(1.0, $iqr * 0.5);
+            return max(1.0, $iqr * $this->cloudCoverConfidenceCoefficient);
         }
 
         private function getPrecipitationProbability(array $values) : float {
