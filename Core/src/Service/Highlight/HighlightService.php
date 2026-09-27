@@ -117,10 +117,15 @@
             $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$placeService) {
                 $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
 
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));   
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));
                 // TODO: Move this to onHighlightCreated.
-                foreach ($placeService->getRegularPlace($placeId)->getCategories() as &$category) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));                    
+                $place = $placeService->getRegularPlace($placeId);
+                foreach ($place->getCategories() as &$category) {
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));
+                }
+                // TODO: Move this to onHighlightCreated.
+                foreach ($place->getLabels() as &$label) {
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Label->value, $label->getId(), $highlightId));
                 }
             });
 
@@ -227,6 +232,61 @@
 
             return $wasRemoved;
         }
+
+
+        public function getLabelHighlights(string $labelId) : array {
+            // TODO: Introduce a property for PlaceService $placeService.
+            global $placeService;
+
+            $highlights = array();
+            $deletedHighlightIds = array_map(fn($highlight) => $highlight->getId(),
+                $this->highlightMapper->selectHighlightsForEntity(HighlightType::Label, $labelId));
+
+            foreach ($placeService->getRegularPlaces(null, $labelId, null, null, null, null, null, null, null, null, null, null,
+                array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending) as &$labelPlace) {
+                    foreach ($labelPlace->getHighlights() as &$labelHighlightCandidate) {
+                        if (!in_array($labelHighlightCandidate->getId(), $deletedHighlightIds)) {
+                            $highlights[] = $labelHighlightCandidate;
+                        }
+                    }
+                }
+
+            return $highlights;
+        }
+
+        public function createLabelHighlight(string $labelId, string $photoId) : Highlight {
+            $highlightId = $this->highlightMapper->selectHighlightId($photoId);
+            if ($highlightId === null) {
+                throw new \RuntimeException("Cannot create a highlight for the label. Does a related place highlight exist?");
+            }
+            if (empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Place, $highlightId))) {
+                throw new \RuntimeException("Cannot create a highlight for the label. Does a related place highlight exist?");
+            }
+
+            $wasCreated = true;
+            $this->transactionManager->executeAtomically(function() use(&$labelId, &$highlightId, &$wasCreated) {
+                // TODO: Throw an exception if the highlight couldn't be created (because it already exists -> HTTP 400).
+                $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Label, $labelId, $highlightId) > 0;
+                if ($wasCreated) {
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Label->value, $labelId, $highlightId));
+                }
+            });
+
+            return $this->getHighlight($highlightId);
+        }
+
+        public function removeLabelHighlight(string $labelId, string $highlightId) : bool {
+            $wasRemoved = true;
+            $this->transactionManager->executeAtomically(function() use(&$labelId, &$highlightId, &$wasRemoved) {
+                $wasRemoved &= $this->highlightMapper->insertHighlight(HighlightType::Label, $labelId, $highlightId);
+                if ($wasRemoved) {
+                    $this->eventPublisher->publish(Event::HighlightRemoved(HighlightType::Label->value, $labelId, $highlightId));
+                }
+            });
+
+            return $wasRemoved;
+        }
+
 
         public function removeYearHighlight(int $year, string $highlightId) : bool {
             $tripHighlightExists = !empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlightId));

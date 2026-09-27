@@ -18,7 +18,7 @@
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Label) {
                 $labels = $entityId !== null
                     ? array($this->labelService->getLabel($entityId))
-                    : $this->labelService->getAllLabels();
+                    : $this->labelService->getAllLabels(array());
 
                 foreach ($labels as &$label) {
                     $documentBuffer->add($label->getId(), array($label->getName()), false);

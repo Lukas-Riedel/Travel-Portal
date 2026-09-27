@@ -89,6 +89,8 @@ core:
         max: "30"
       category:
         max: "30"
+      label:
+        max: "30"
       candidate:
         coefficient: "20"
       cluster:

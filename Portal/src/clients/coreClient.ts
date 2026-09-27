@@ -8,7 +8,7 @@ import type { AppConfiguration } from "../types/AppConfiguration.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelMetadata, Location, Note, PendingPhoto, Photo,
+    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
     Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
@@ -119,8 +119,8 @@ export const getLabel = async (labelId: string): Promise<Label> =>
     coreClient.get<Label>(`labels/${labelId}`)
         .then(extractData)
 
-export const listLabels = async (): Promise<Label[]> =>
-    coreClient.get<Label[]>("labels")
+export const listLabels = async ({ include }: { include?: LabelIncludedEntity[] } = {}): Promise<Label[]> =>
+    coreClient.get<Label[]>(createQueryPath("labels", { include: include?.join(",") }))
         .then(extractData)
 
 export const updateLabelName = async (labelId: string, name: string): Promise<Label> =>
@@ -138,6 +138,33 @@ export const updateLabelMetadata = async (labelId: string, { unicode }: LabelMet
             }
         }
     ).then(extractData)
+
+export const updateLabelMainHighlight = async (labelId: string, mainHighlightId: string): Promise<Label> =>
+    coreClient.patch<Label>(`labels/${labelId}`,
+        {
+            mainHighlight: {
+                id: mainHighlightId
+            }
+        }
+    ).then(extractData)
+
+export const createLabelHighlight = async (labelId: string, photoId: string): Promise<Highlight> =>
+    coreClient.post<Highlight>(`labels/${labelId}/highlights`,
+        {
+            photo: {
+                id: photoId
+            }
+        }
+    ).then(extractData)
+
+export const removeLabelHighlight = async (labelId: string, highlightId: string): Promise<void> =>
+    coreClient.delete(`labels/${labelId}/highlights/${highlightId}`)
+
+export const refreshLabelHighlights = async (labelId: string, count: number): Promise<Highlight[]> =>
+    coreClient.post<Highlight[]>(createQueryPath(`labels/${labelId}/highlights/refresh`,
+        {
+            count
+        })).then(extractData)
 
 export const getAirport = async (airportId: string): Promise<Airport> =>
     coreClient.get<Airport>(`airports/${airportId}`)

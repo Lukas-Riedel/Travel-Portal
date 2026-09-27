@@ -864,6 +864,9 @@
                 "confirmed": "Štítek byl úspěšně aktualizován",
                 "failed": "Nepodařilo se aktualizovat štítek"
             }
+        },
+        "attribute": {
+            "highlightsCount": "Počet highlightů"
         }
     },
     "entity": {

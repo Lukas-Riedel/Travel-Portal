@@ -33,7 +33,7 @@ spec:
       initContainers:
         - name: {{ .Release.Name }}-deploy
           image: "{{ .Values.core.image }}:{{ .Values.core.tag }}"
-          command: ["php", "-d", "max_execution_time=300", "-d", "memory_limit=300M", "/var/www/html/src/deploy.php"]
+          command: ["php", "-d", "max_execution_time=300", "-d", "memory_limit=300M", "/var/www/html/src/migrate.php"]
           volumeMounts:
 {{- include "core.volumeMounts" . | nindent 12 }}
           env:

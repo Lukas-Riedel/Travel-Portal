@@ -259,8 +259,8 @@ jobs:
           --atomic
   deploy-portal:
     name: Deploy Portal
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.portal == 'true' }}
+    needs: [detect-changes, deploy-core]
+    if: ${{ needs.detect-changes.outputs.portal == 'true' && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

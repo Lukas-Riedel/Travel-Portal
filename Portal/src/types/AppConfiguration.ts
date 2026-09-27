@@ -56,5 +56,4 @@ export interface AppConfiguration {
     }
     flightReminders?: { text: string; title: string; secondsBefore: number }[]
     agent?: Record<string, unknown>
-    labels?: unknown
 }

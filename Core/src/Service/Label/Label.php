@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Label;
 
+    use Core\Service\Highlight\Highlight;
     use OpenApi\Attributes as OA;
 
     #[OA\Schema(
@@ -25,6 +26,17 @@
                 property: "metadata",
                 description: "The metadata of the label",
                 ref: "#/components/schemas/LabelMetadata"
+            ),
+            new OA\Property(
+                property: "mainHighlight",
+                description: "The main highlight of the label",
+                ref: "#/components/schemas/Highlight"
+            ),
+            new OA\Property(
+                property: "highlights",
+                description: "The highlights of the label",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/Highlight")
             )
         ]
     )]
@@ -33,11 +45,15 @@
         private readonly string $id;
         private readonly string $name;
         private readonly ?LabelMetadata $metadata;
+        private readonly ?Highlight $mainHighlight;
+        private array $highlights;
 
-        public function __construct(string $id, string $name, ?LabelMetadata $metadata) {
+        public function __construct(string $id, string $name, ?LabelMetadata $metadata, ?Highlight $mainHighlight, array $highlights) {
             $this->id = $id;
             $this->name = $name;
             $this->metadata = $metadata;
+            $this->mainHighlight = $mainHighlight;
+            $this->highlights = $highlights;
         }
 
         public function getId() : string {
@@ -50,6 +66,18 @@
 
         public function getMetadata() : ?LabelMetadata {
             return $this->metadata;
+        }
+
+        public function getMainHighlight() : ?Highlight {
+            return $this->mainHighlight;
+        }
+
+        public function getHighlights() : array {
+            return $this->highlights;
+        }
+
+        public function resetHighlights() : void {
+            $this->highlights = array();
         }
 
         #[\ReturnTypeWillChange]

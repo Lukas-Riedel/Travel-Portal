@@ -176,7 +176,7 @@
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"), getenv("STEPS_PER_MINUTE_THRESHOLD"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
-    $labelService = new LabelService($databaseClient, $configurationService);
+    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
@@ -254,7 +254,7 @@
         new YearServiceListener($yearService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
-        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
         new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),

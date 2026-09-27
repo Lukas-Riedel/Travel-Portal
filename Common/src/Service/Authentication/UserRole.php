@@ -32,6 +32,8 @@
         case HighlightEdit = "highlight.edit";
         case LabelRead = "label.read";
         case LabelEdit = "label.edit";
+        case LabelHighlightRead = "label.highlight.read";
+        case LabelHighlightEdit = "label.highlight.edit";
         case MonitoringRead = "monitoring.read";
         case PlaceRead = "place.read";
         case PlaceEdit = "place.edit";
