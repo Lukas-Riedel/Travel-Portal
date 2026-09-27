@@ -151,7 +151,7 @@ export default function AdminPage() {
 
     const handleFlightCreated = () => {
         showCreateFlightToast(async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
-            if (type === FlightType.Scheduled || FlightType.Logged) {
+            if (type === FlightType.Scheduled || type === FlightType.Logged) {
                 return createScheduledFlight(flight, from, to, await doGetAirportLocalTime(from, scheduledDeparture), await doGetAirportLocalTime(to, scheduledArrival))
             }
             else if (type === FlightType.Watched) {
