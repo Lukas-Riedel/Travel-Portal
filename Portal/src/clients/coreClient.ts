@@ -4,7 +4,7 @@ import * as authRefresh from "axios-auth-refresh"
 import type { GeoJSON } from "geojson"
 
 import { useAuthStore } from "../hooks/useAuthStore.ts"
-import type { AppConfiguration } from "../types/AppConfiguration.ts"
+import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,

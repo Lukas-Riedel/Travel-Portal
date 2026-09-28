@@ -1,6 +1,6 @@
 import type { GeoJSON, Geometry } from "geojson"
 
-import type { AppConfiguration } from "./AppConfiguration.ts"
+import type { AppConfiguration } from "./CoreSwaggerTypes.ts"
 import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, LabelMetadata, Note, Photo, Place, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 

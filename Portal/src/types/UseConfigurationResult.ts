@@ -1,4 +1,4 @@
-import type { AppConfiguration } from "./AppConfiguration.ts"
+import type { AppConfiguration } from "./CoreSwaggerTypes.ts"
 
 export interface UseConfigurationResult {
     configuration: AppConfiguration | null

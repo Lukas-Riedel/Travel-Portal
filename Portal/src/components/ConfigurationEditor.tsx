@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import ReactJson from "react-json-view"
 
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
-import type { AppConfiguration } from "../types/AppConfiguration.ts"
+import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import Editor from "./Editor.tsx"
 
 interface ConfigurationEditorProps {
