@@ -141,16 +141,26 @@
         ]
     )]
     #[OA\Schema(
-        schema: "FlightRemindersConfiguration",
+        schema: "EphemeralTasksConfiguration",
         type: "array",
-        description: "The flight reminders configuration",
+        description: "The ephemeral tasks configuration",
         items: new OA\Items(
             type: "object",
-            required: ["text", "title", "secondsBefore"],
+            required: ["source", "title", "text", "priority", "trigger"],
             properties: [
+                new OA\Property(property: "source", type: "string", example: "flight.scheduled"),
                 new OA\Property(property: "title", type: "string", example: "Upcoming flight"),
                 new OA\Property(property: "text", type: "string", example: "Flight {flight} departs at {formattedTime} local time."),
-                new OA\Property(property: "secondsBefore", type: "integer", example: 3600)
+                new OA\Property(property: "priority", ref: "#/components/schemas/TaskPriority"),
+                new OA\Property(
+                    property: "trigger",
+                    type: "object",
+                    required: ["seconds"],
+                    properties: [
+                        new OA\Property(property: "seconds", type: "integer", example: 3600)
+                    ]
+                ),
+                new OA\Property(property: "notificationInterval", type: "integer", example: 259200)
             ]
         )
     )]
@@ -174,7 +184,7 @@
             new OA\Property(property: "generativeContentPrompt", ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
             new OA\Property(property: "openLineage", ref: "#/components/schemas/OpenLineageConfiguration"),
             new OA\Property(property: "highlight", ref: "#/components/schemas/HighlightConfiguration"),
-            new OA\Property(property: "flightReminders", ref: "#/components/schemas/FlightRemindersConfiguration"),
+            new OA\Property(property: "ephemeralTasks", ref: "#/components/schemas/EphemeralTasksConfiguration"),
             new OA\Property(property: "agent", ref: "#/components/schemas/AgentConfiguration")
         ]
     )]

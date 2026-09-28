@@ -276,12 +276,8 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function FlightReminderReceived(string $flight, string $title, string $text) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventFlightReminderReceivedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("flight" => $flight, "title" => $title, "text" => $text));
-        }
-        
-        public static function TaskDeadlineReached(string $task) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("task" => $task));
+        public static function TaskDeadlineReached(?string $title, string $task, ?string $url) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("title" => $title, "task" => $task, "url" => $url));
         }
 
         public static function VoucherExpiring(string $issuer, float $value, string $currency, int $expiration) : Event {

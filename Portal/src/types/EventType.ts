@@ -10,5 +10,4 @@ export enum EventType {
     TaskDeadlineReached = "TaskDeadlineReached",
     VoucherExpiring = "VoucherExpiring",
     FlightLogged = "FlightLogged",
-    FlightReminderReceived = "FlightReminderReceived"
 }

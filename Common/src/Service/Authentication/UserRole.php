@@ -81,7 +81,6 @@
         case SearchRead = "search.read";
         case SearchEdit = "search.edit";
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
-        case EventFlightReminderReceivedRead = "event.flightreminderreceived.read";
         case EventTaskDeadlineReachedRead = "event.taskdeadlinereached.read";
         case EventVoucherExpiringRead = "event.voucherexpiring.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";

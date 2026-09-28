@@ -333,7 +333,7 @@
             $sort = $this->getQueryParameter($request, "sort") ?? PlaceSortingStrategy::OldestAscending->value;
             
             $requestedIncludes = array_map(fn($entity) => PlaceIncludedEntity::from($entity), array_filter(explode(",", $include)));
-            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
                 $requiredRole = match($entity) {
                     PlaceIncludedEntity::Categories => UserRole::PlaceCategoryRead,
                     PlaceIncludedEntity::Dates => UserRole::PlaceDateRead,

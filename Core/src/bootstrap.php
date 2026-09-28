@@ -54,6 +54,8 @@
     use Core\Service\Flight\FlightService;
     use Core\Service\Flight\FlightServiceListener;
     use Core\Service\Flight\FlightStatisticsProvider;
+    use Core\Service\Flight\ScheduledFlightEphemeralTaskProvider;
+    use Core\Service\Flight\WatchedFlightEphemeralTaskProvider;
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
     use Core\Service\Geocoding\GeocodingService;
@@ -180,11 +182,19 @@
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
-    $taskService = new TaskService($databaseClient);
+    $taskService = new TaskService($databaseClient, $distributedCacheClient, $configurationService);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
+
+    // Ephemeral task providers.
+    $ephemeralTaskProviders = array(
+        new ScheduledFlightEphemeralTaskProvider($flightService),
+        new WatchedFlightEphemeralTaskProvider($tripService)
+    );
+    $taskService->setEphemeralTaskProviders($ephemeralTaskProviders);
+    $taskService->setTripService($tripService);
 
     // Statistics providers.
     $statisticsProviders = array(
@@ -242,7 +252,7 @@
         new IndexServiceListener($indexService, $photoService, $highlightService, $placeService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
-        new FlightServiceListener($flightService, $deviceService, $tripService, $configurationService, $calendarClient, $distributedCacheClient, $eventPublisher, $scheduler, $logger),
+        new FlightServiceListener($flightService, $deviceService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $distributedCacheClient, $eventPublisher, $scheduler),

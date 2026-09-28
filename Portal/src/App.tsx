@@ -75,15 +75,6 @@ export default function App() {
         })
     }, [flightLoggedEvents])
 
-    const { events: flightReminderReceivedEvents } = useEvents(EventType.FlightReminderReceived)
-    useEffect(() => {
-        (flightReminderReceivedEvents ?? []).forEach(event => {
-            event.markAsRead()
-
-            toast.success(event.args.text)
-        })
-    }, [flightReminderReceivedEvents])
-
     const { events: processingStartedEvents } = useEvents(EventType.ProcessingStarted)
     useEffect(() => {
         (processingStartedEvents ?? []).forEach(event => {

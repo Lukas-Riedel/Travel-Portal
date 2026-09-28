@@ -29,9 +29,12 @@
             if ($this->scheduler->requestExecution(self::SEND_TASK_NOTIFICATIONS_ACTION_NAME, self::SEND_TASK_NOTIFICATIONS_ACTION_INTERVAL)) {
                 foreach ($this->taskService->getTasksForNotifications() as &$task) {
                     $trip = $this->tripService->getRegularTrip($this->taskService->getTripIdForTask($task->getId()));
-                    $this->eventPublisher->publish(Event::TaskDeadlineReached(sprintf(self::TASK_NOTIFICATION_FORMAT, $trip->getFullName(), $task->getDescription())));
-                    $this->taskService->resetTaskLastNotification($task->getId());
-                }       
+                    $this->eventPublisher->publish(Event::TaskDeadlineReached(null, sprintf(self::TASK_NOTIFICATION_FORMAT, $trip->getFullName(), $task->getDescription()), null));
+                }
+
+                foreach ($this->taskService->getEphemeralTasksForNotifications() as &$task) {
+                    $this->eventPublisher->publish(Event::TaskDeadlineReached($task->getTitle(), $task->getDescription(), $task->getUrl()));
+                }
             }
         }
     }

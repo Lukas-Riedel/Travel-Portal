@@ -21,7 +21,7 @@ interface NewDataConsistencyIssuesDetectedEvent extends EventBase {
 
 interface TaskDeadlineReachedEvent extends EventBase {
     name: EventType.TaskDeadlineReached
-    args: { task: string }
+    args: { title?: string; task: string; url?: string }
 }
 
 interface VoucherExpiringEvent extends EventBase {
@@ -32,11 +32,6 @@ interface VoucherExpiringEvent extends EventBase {
 interface FlightLoggedEvent extends EventBase {
     name: EventType.FlightLogged
     args: { flight: string; to: string; actualArrival: number }
-}
-
-interface FlightReminderReceivedEvent extends EventBase {
-    name: EventType.FlightReminderReceived
-    args: { text: string }
 }
 
 interface AllAlbumsInvalidatedEvent extends EventBase {
@@ -56,6 +51,5 @@ export type Event =
     | TaskDeadlineReachedEvent
     | VoucherExpiringEvent
     | FlightLoggedEvent
-    | FlightReminderReceivedEvent
     | AllAlbumsInvalidatedEvent
     | FolderSynchronizationRequestedEvent

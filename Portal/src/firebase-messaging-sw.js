@@ -43,10 +43,10 @@ onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "TaskDeadlineReached") {
         const args = JSON.parse(payload.data.args)
 
-        self.registration.showNotification("Blíží se termín úkolu", {
+        self.registration.showNotification(args.title ?? "Blíží se termín úkolu", {
             body: args.task,
             icon: "icon-192.png",
-            data: "/admin?tab=tasks"
+            data: args.url ?? "/admin?tab=tasks"
         })
     }
 
@@ -76,16 +76,6 @@ onBackgroundMessage(messaging, payload => {
 
         self.registration.showNotification("Let přistál", {
             body: "Let " + args.flight + " přistál na letišti " + args.to + " v " + formattedActualArrival + " místního času",
-            icon: "icon-192.png",
-            data: "https://www.flightradar24.com/data/flights/" + args.flight
-        })
-    }
-
-    if (payload.data.event === "FlightReminderReceived") {
-        const args = JSON.parse(payload.data.args)
-
-        self.registration.showNotification(args.title, {
-            body: args.text,
             icon: "icon-192.png",
             data: "https://www.flightradar24.com/data/flights/" + args.flight
         })

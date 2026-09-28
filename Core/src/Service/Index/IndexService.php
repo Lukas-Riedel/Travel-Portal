@@ -221,7 +221,7 @@
             }
 
             $prioritizedPhotoIdsMap = array_flip($prioritizedPhotoIds);
-            $candidates = array_map(function($index, $entry) use (&$clustersMetadata, &$mainHighlightPhotoId, &$prioritizedPhotoIdsMap) {
+            $candidates = array_map(function($index, $entry) use(&$clustersMetadata, &$mainHighlightPhotoId, &$prioritizedPhotoIdsMap) {
                 $photoId = $entry->getData()["photo_id"];
                 $clusterMetadata = $clustersMetadata[$index];
                 

@@ -1,14 +1,12 @@
 <?php
     namespace Core\Service\Flight;
 
-    use Common\Client\Cache\CacheClient;
     use Common\Service\Authentication\UserRole;
     use Core\Client\Calendar\CalendarClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceType;
     use Core\Service\Trip\TripService;
@@ -18,31 +16,23 @@
         
         private const LOG_FLIGHTS_ACTION_NAME = "LOG_FLIGHTS";
         private const LOG_FLIGHTS_ACTION_DEFAULT_INTERVAL = 4 * CommonConstants::ONE_HOUR_SECONDS;
-                
-        private const FLIGHT_REMINDER_CACHE_KEY_FORMAT = "FlightServiceListener:FlightReminder:%s:%s:%s";
 
-        private const HI_TIME_FORMAT = "H:i";
-        private const KEY_PLACEHOLDER_FORMAT = "{%s}";
         private const ESTIMATED_ARRIVAL_TIME_MARGIN_SECONDS = 5 * 60;
 
         private readonly FlightService $flightService;
         private readonly DeviceService $deviceService;
         private readonly TripService $tripService;
-        private readonly ConfigurationService $configurationService;
         private readonly CalendarClient $calendarClient;
-        private readonly CacheClient $distributedCacheClient;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
         private readonly Logger $logger;
 
-        public function __construct(FlightService $flightService, DeviceService $deviceService, TripService $tripService, ConfigurationService $configurationService, CalendarClient $calendarClient,
-            CacheClient $distributedCacheClient, EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
+        public function __construct(FlightService $flightService, DeviceService $deviceService, TripService $tripService, CalendarClient $calendarClient,
+            EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger) {
             $this->flightService = $flightService;
             $this->deviceService = $deviceService;
             $this->tripService = $tripService;
-            $this->configurationService = $configurationService;
             $this->calendarClient = $calendarClient;
-            $this->distributedCacheClient = $distributedCacheClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
             $this->logger = $logger;
@@ -125,32 +115,6 @@
                 $this->eventPublisher->publish(Event::FlightArrived($firstNonLoggedFlight->getFlight(), $firstNonLoggedFlight->getFrom()->getShortName(),
                     $firstNonLoggedFlight->getTo()->getShortName(), $firstNonLoggedFlight->getStart()));
             }
-
-            foreach ($this->flightService->getAllNonLoggedFlights() as &$flight) {
-                if ($flight->getStart() < time()) {
-                    continue;
-                }
-
-                foreach ($this->configurationService->getConfigurationEntry("flightReminders") as &$flightReminder) {
-                    if (time() + $flightReminder["secondsBefore"] < $flight->getStart()) {
-                        continue;
-                    }
-
-                    $cacheKey = $this->getFlightReminderCacheKey($flight->getFlight(), $flight->getStart(), $flightReminder["title"]);
-                    if ($this->distributedCacheClient->trySet($cacheKey, true, $flightReminder["secondsBefore"])) {
-                        $this->eventPublisher->publish(Event::FlightReminderReceived($flight->getFlight(), $flightReminder["title"], $this->createText($flightReminder["text"], array("flight" => $flight->getFlight(),
-                            "formattedTime" => (new \DateTime())->setTimestamp($flight->getStart())->setTimezone(new \DateTimeZone($flight->getFrom()->getTimezone()))->format(self::HI_TIME_FORMAT)))));
-                    }
-                }
-            }
-        }
-
-        private function getFlightReminderCacheKey(string $flight, int $scheduledDeparture, string $reminderName) : string {
-            return sprintf(self::FLIGHT_REMINDER_CACHE_KEY_FORMAT, $flight, $scheduledDeparture, $reminderName);
-        }
-        
-        private function createText(string $format, array $context) : string {
-            return str_replace(array_map(fn($key) => sprintf(self::KEY_PLACEHOLDER_FORMAT, $key), array_keys($context)), array_values($context), $format);
         }
     }
 ?>

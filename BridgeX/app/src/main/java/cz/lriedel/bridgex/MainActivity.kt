@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
-        loadWebViewUrl(savedInstanceState, intent.getStringExtra("flight"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"),
+        loadWebViewUrl(savedInstanceState, intent.getStringExtra("url"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"),
             intent.getStringExtra("year"), intent.getStringExtra("task"), intent.getStringExtra("issues")?.toIntOrNull() ?: intent.getIntExtra("issues", 0))
         CoroutineScope(Dispatchers.IO).launch {
             deviceInitializer.initialize()
@@ -98,18 +98,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadWebViewUrl(savedInstanceState: Bundle?, flight: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, task: String?, issues: Int) {
-        if (flight != null) {
-            val flightUrl = "https://www.flightradar24.com/data/flights/$flight"
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(flightUrl)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) 
+    private fun loadWebViewUrl(savedInstanceState: Bundle?, url: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, task: String?, issues: Int) {
+        if (url != null) {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             webView.context.startActivity(intent)
-
+            
             return
         }
     
-        val url = when {
+        val portalUrl = when {
             placeId != null -> "${BuildConfig.PORTAL_BASE_URL}place/$placeId"
             tripId != null -> "${BuildConfig.PORTAL_BASE_URL}trip/$tripId"
             categoryId != null -> "${BuildConfig.PORTAL_BASE_URL}category/$categoryId"
@@ -121,8 +120,8 @@ class MainActivity : AppCompatActivity() {
         
         if (savedInstanceState == null) {
             val bustParam = System.currentTimeMillis() / BUST_PARAM_MS
-            val separator = if (url.contains("?")) "&" else "?"
-            webView.loadUrl("$url${separator}t=$bustParam")
+            val separator = if (portalUrl.contains("?")) "&" else "?"
+            webView.loadUrl("$portalUrl${separator}t=$bustParam")
         }
         else {
             webView.restoreState(savedInstanceState)
