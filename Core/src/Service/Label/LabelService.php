@@ -37,7 +37,7 @@
         }
 
         public function getLabelsForPlace(string $placeId) : array {
-            return $this->labelMapper->selectLabels(null, $placeId, LabelIncludedEntity::values());
+            return $this->labelMapper->selectLabels(null, $placeId, array());
         }
 
         public function getPlaceIdsForLabelId(string $labelId) : array {
