@@ -77,7 +77,7 @@ export default function AdminPage() {
     const filteredWatchedFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
     const watchedFlights = filteredWatchedFlights ? [...filteredWatchedFlights].sort((a, b) => a.start - b.start) : null
 
-    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).map(task => ({ task, trip }))) ?? null
+    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).filter(task => task.id !== undefined).map(task => ({ task, trip }))) ?? null
 
     const tabs = [
         {
@@ -151,7 +151,7 @@ export default function AdminPage() {
 
     const handleFlightCreated = () => {
         showCreateFlightToast(async (flight, from, scheduledDeparture, to, scheduledArrival, type) => {
-            if (type === FlightType.Scheduled || FlightType.Logged) {
+            if (type === FlightType.Scheduled || type === FlightType.Logged) {
                 return createScheduledFlight(flight, from, to, await doGetAirportLocalTime(from, scheduledDeparture), await doGetAirportLocalTime(to, scheduledArrival))
             }
             else if (type === FlightType.Watched) {

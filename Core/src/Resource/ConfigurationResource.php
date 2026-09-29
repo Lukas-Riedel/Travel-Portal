@@ -39,10 +39,7 @@
                 new OA\Response(
                     response: 200,
                     description: "Success. Retrieved a collection of configuration entries.",
-                    content: new OA\JsonContent(
-                        type: "object",
-                        additionalProperties: true
-                    )
+                    content: new OA\JsonContent(ref: "#/components/schemas/AppConfiguration")
                 ),
                 new OA\Response(
                     response: 400,
@@ -100,20 +97,37 @@
             requestBody: new OA\RequestBody(
                 required: true,
                 content: new OA\JsonContent(
-                    type: "object",
-                    additionalProperties: true,
-                    example: [
-                        "mainCurrency" => "EUR"
+                    oneOf: [
+                        new OA\Schema(ref: "#/components/schemas/ExpensifyConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/DynamicLabelsConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/HomeLocationConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/CalendarConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/TimeTrackingConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/OpenLineageConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/HighlightConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/EphemeralTasksConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/AgentConfiguration")
                     ]
                 )
             ),
             responses: [
                 new OA\Response(
                     response: 200,
-                    description: "Success. Returned a replace configuration entry with the specified key.",
+                    description: "Success. Returned a replaced configuration entry with the specified key.",
                     content: new OA\JsonContent(
-                        type: "object",
-                        additionalProperties: true
+                        oneOf: [
+                            new OA\Schema(ref: "#/components/schemas/ExpensifyConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/DynamicLabelsConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/HomeLocationConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/CalendarConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/TimeTrackingConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/OpenLineageConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/HighlightConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/EphemeralTasksConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/AgentConfiguration")
+                        ]
                     )
                 ),
                 new OA\Response(

@@ -6,7 +6,7 @@ import { useQuery } from "./useQuery.ts"
 export const useLabels = (): UseLabelsResult => {
     const { response } = useQuery({
         queryKey: ["listLabels"],
-        queryFn: listLabels,
+        queryFn: () => listLabels(),
         staleTime: ONE_DAY_SECONDS * 1000
     })
 

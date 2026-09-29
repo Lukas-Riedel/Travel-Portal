@@ -493,7 +493,7 @@ function AbsenceInfo({ timeTrackingEventType, timeTrackingEvents, onEventRemoved
                 )}
                 <Tooltip>
                     <Icon size={16} />
-                    {t("general.time.remaining", { duration: formatDuration(Math.min(...timeTrackingEvents.map(e => e.balance)) * ONE_HOUR_SECONDS) })}
+                    {t("general.time.remaining", { duration: formatDuration(Math.min(...timeTrackingEvents.map(e => e.balance)) * ONE_HOUR_SECONDS, false, true) })}
                 </Tooltip>
             </div>
         </li>

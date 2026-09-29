@@ -89,6 +89,8 @@ core:
         max: "30"
       category:
         max: "30"
+      label:
+        max: "30"
       candidate:
         coefficient: "20"
       cluster:
@@ -139,6 +141,10 @@ core:
       models: ecmwf_ifs025_ensemble,icon_global_eps
       refresh:
         hours: 1,7,13,19
+      cloud:
+        cover:
+          confidence:
+            coefficient: "0.15"
   fitness:
     overwrite:
       threshold:

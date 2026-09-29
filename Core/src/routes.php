@@ -39,7 +39,7 @@
         MonitoringResource::register($app, $monitoringService);
         EventResource::register($app, $eventPublisher);
         HighlightResource::register($app, $highlightService, $logger);
-        LabelResource::register($app, $labelService, $logger);
+        LabelResource::register($app, $labelService, $highlightService, $logger);
         StatisticsResource::register($app, $statisticsService);
         TrackerResource::register($app, $timeTrackingService);
         SubscriptionResource::register($app, $expenseService);

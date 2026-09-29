@@ -1,8 +1,8 @@
 import { addDays, eachDayOfInterval, endOfDay, format, fromUnixTime, getDay, isSameDay, startOfDay } from "date-fns"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
 
-import type { Place, Trip } from "../types/CoreSwaggerTypes.ts"
 import { getCoordinates } from "../clients/coreClient.ts"
+import type { Place, Trip } from "../types/CoreSwaggerTypes.ts"
 
 export const ONE_MINUTE_SECONDS = 60
 export const ONE_HOUR_SECONDS = 60 * ONE_MINUTE_SECONDS
@@ -48,9 +48,9 @@ export function formatTimestamp(dateOrTimestamp: number | Date, timestampFormat:
     return format(getZonedDate(typeof dateOrTimestamp === "number" ? dateOrTimestamp : (dateOrTimestamp.getTime() / 1000), getTimezoneOrDefault(timezone)), timestampFormat)
 }
 
-export function formatDateRange(startDateOrTimestamp: number | Date, endDateOrTimestamp: number | Date, timestampFormat: string): string {
-    const startFormatted = formatTimestamp(startDateOrTimestamp, timestampFormat)
-    const endFormatted = formatTimestamp(endDateOrTimestamp, timestampFormat)
+export function formatDateRange(startDateOrTimestamp: number | Date, endDateOrTimestamp: number | Date, timestampFormat: string, timezone?: string): string {
+    const startFormatted = formatTimestamp(startDateOrTimestamp, timestampFormat, timezone)
+    const endFormatted = formatTimestamp(endDateOrTimestamp, timestampFormat, timezone)
 
     if (startFormatted === endFormatted) {
         return startFormatted

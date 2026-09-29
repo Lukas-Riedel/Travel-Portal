@@ -44,6 +44,17 @@
             $this->categoryService->updateCategories($this->placeService->getPlaceIdentifierById($message["placeId"]));
         }
 
+        public function onCategoryUpdated(mixed $message) : void {
+            $category = $this->categoryService->getCategory($message["categoryId"]);
+            if ($category->getMainHighlight() === null && count($category->getHighlights()) > 0) {
+                $this->categoryService->updateCategoryMainHighlight($message["categoryId"], $category->getHighlights()[0]->getId());
+            }
+
+            if (count($category->getHighlights()) !== $this->maxHighlightsPerCategoryCount) {
+                $this->categoryService->refreshCategoryHighlights($message["categoryId"], $this->maxHighlightsPerCategoryCount);
+            }
+        }
+
         public function onHighlightCreated(mixed $message) : void {
             if ($message["highlightType"] === HighlightType::Category->value) {
                 $category = $this->categoryService->getCategory($message["entityId"]);

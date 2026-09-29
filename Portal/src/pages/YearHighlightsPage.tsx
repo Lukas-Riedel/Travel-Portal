@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 
 import { listPlaceAlbumPhotos } from "../clients/coreClient"
@@ -21,30 +21,32 @@ export default function YearHighlightsPage() {
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
-    const tripHighlightCandidates = trips?.map(trip => {
-        const photos = trip.highlights?.filter(highlight => !year?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
-        return {
-            title: getTripFullName(trip),
-            getPhotos: () => Promise.resolve(photos)
-        }
-    }).filter(group => group.getPhotos !== undefined)
+    const highlightCandidates = useMemo(() => {
+        const tripHighlightCandidates = trips?.map(trip => {
+            const photos = trip.highlights?.filter(highlight => !year?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
+            return {
+                title: getTripFullName(trip),
+                getPhotos: () => Promise.resolve(photos)
+            }
+        }).filter(group => group.getPhotos !== undefined)
 
-    const dayTripHighlightCandidates = places
-        ?.flatMap(place => (place.dates ?? [])
-            .filter(date => !date.trip)
-            .reverse()
-            .map(date => date.album)
-            .filter((a): a is NonNullable<typeof a> => a != null)
-            .reverse()
-            .map(album => ({
-                title: album.name,
-                getPhotos: () => listPlaceAlbumPhotos(place.id, album.id)
-                    .then(photos => photos
-                        .filter(photo => !year?.highlights
-                            ?.some(highlight => highlight.photo.id === photo.id)))
-            })))
+        const dayTripHighlightCandidates = places
+            ?.flatMap(place => (place.dates ?? [])
+                .filter(date => !date.trip)
+                .reverse()
+                .map(date => date.album)
+                .filter((a): a is NonNullable<typeof a> => a != null)
+                .reverse()
+                .map(album => ({
+                    title: album.name,
+                    getPhotos: () => listPlaceAlbumPhotos(place.id, album.id)
+                        .then(photos => photos
+                            .filter(photo => !year?.highlights
+                                ?.some(highlight => highlight.photo.id === photo.id)))
+                })))
 
-    const highlightCandidates = [...(tripHighlightCandidates ?? []), ...(dayTripHighlightCandidates ?? [])]
+        return [...(tripHighlightCandidates ?? []), ...(dayTripHighlightCandidates ?? [])]
+    }, [trips, year, places])
 
     const handleHighlightCreated = async (photoId: string) => createYearHighlight(photoId)
         .then(highlight => (setCurrentPhotos(previous => previous ? previous.filter(photo => photo.id !== photoId) : null), highlight))

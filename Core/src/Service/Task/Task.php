@@ -7,13 +7,19 @@
         schema: "Task",
         type: "object",
         description: "A class representing a task",
-        required: ["id", "description", "priority"],
+        required: ["description", "priority"],
         properties: [
             new OA\Property(
                 property: "id",
                 description: "The identifier of the task",
                 type: "string",
                 example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
+            ),
+            new OA\Property(
+                property: "title",
+                description: "The title of the task",
+                type: "string",
+                example: "Upcoming flight"
             ),
             new OA\Property(
                 property: "description",
@@ -39,31 +45,45 @@
                 type: "integer",
                 format: "int64",
                 example: 86400
+            ),
+            new OA\Property(
+                property: "url",
+                description: "An external URL associated with the task",
+                type: "string",
+                example: "https://www.flightradar24.com/data/flights/EK139"
             )
         ]
     )]
     class Task implements \JsonSerializable {     
            
         private ?string $id;
+        private readonly ?string $title;
         private readonly string $description;
         private readonly TaskPriority $priority;
         private readonly ?int $deadline;
         private readonly ?int $notificationInterval;
+        private readonly ?string $url;
 
-        public function __construct(?string $id, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval) {
+        public function __construct(?string $id, ?string $title, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url) {
             $this->id = $id;
+            $this->title = $title;
             $this->description = $description;
             $this->priority = $priority;
             $this->deadline = $deadline;
             $this->notificationInterval = $notificationInterval;
+            $this->url = $url;
         }
 
-        public function getId() : string {
+        public function getId() : ?string {
             return $this->id;
         }
 
         public function setId(string $id) : void {
             $this->id = $id;
+        }
+
+        public function getTitle() : ?string {
+            return $this->title;
         }
 
         public function getDescription() : string {
@@ -80,6 +100,10 @@
 
         public function getNotificationInterval() : ?int {
             return $this->notificationInterval;
+        }
+
+        public function getUrl() : ?string {
+            return $this->url;
         }
 
         #[\ReturnTypeWillChange]

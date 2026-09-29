@@ -3,7 +3,7 @@ import type { Feature, GeoJSON, Geometry } from "geojson"
 import { useTranslation } from "react-i18next"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
-import type { AppConfiguration } from "../types/AppConfiguration.ts"
+import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type Note, type Photo, type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"

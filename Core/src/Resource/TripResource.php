@@ -157,7 +157,7 @@
             $sort = $this->getQueryParameter($request, "sort") ?? TripSortingStrategy::OldestAscending->value;
             
             $requestedIncludes = array_map(fn($entity) => TripIncludedEntity::from($entity), array_filter(explode(",", $include)));
-            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
                 $requiredRole = match($entity) {
                     TripIncludedEntity::Expenses => UserRole::TripExpenseRead,
                     TripIncludedEntity::Fitness => UserRole::TripFitnessRead,

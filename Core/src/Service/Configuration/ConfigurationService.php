@@ -6,7 +6,6 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
 
-    // TODO: Initialize the database with default values if they don't exist, and delete unused keys -> in deploy.php.
     class ConfigurationService {
 
         private readonly ConfigurationMapper $configurationMapper;
@@ -49,6 +48,7 @@
             );
         }
 
+        // TODO: The value for a given key is not validated and can be anything. This must be solved through typed hydration — deserializing configuration entries from plain arrays into strongly-typed objects, which will make structural validation a natural byproduct of the PHP type system.
         public function updateConfigurationEntry(string $key, mixed $value) : bool {
             $wasUpdated = true;
             $this->transactionManager->executeAtomically(function() use(&$wasUpdated, &$key, &$value) {

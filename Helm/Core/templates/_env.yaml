@@ -141,6 +141,8 @@
   value: "{{ .Values.core.highlight.selecting.year.max }}"
 - name: MAX_HIGHLIGHTS_PER_CATEGORY_COUNT
   value: "{{ .Values.core.highlight.selecting.category.max }}"
+- name: MAX_HIGHLIGHTS_PER_LABEL_COUNT
+  value: "{{ .Values.core.highlight.selecting.label.max }}"
 - name: SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT
   value: "{{ .Values.core.highlight.selecting.candidate.coefficient }}"
 - name: CLUSTERS_COUNT_COEFFICIENT
@@ -193,6 +195,8 @@
   value: "{{ .Values.core.forecast.actual.models }}"
 - name: ACTUAL_WEATHER_FORECAST_REFRESH_HOURS
   value: "{{ .Values.core.forecast.actual.refresh.hours }}"
+- name: ACTUAL_WEATHER_FORECAST_CLOUD_COVER_CONFIDENCE_COEFFICIENT
+  value: "{{ .Values.core.forecast.actual.cloud.cover.confidence.coefficient }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
   value: "{{ .Values.core.fitness.overwrite.threshold.coefficient }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE

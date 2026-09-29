@@ -53,7 +53,7 @@ function HighlightCandidateTileGridGroup({ name, description, categories, highli
         if (shouldLoadOnRender) {
             handlePhotosLoaded()
         }
-    }, [shouldLoadOnRender, handlePhotosLoaded])
+    }, [shouldLoadOnRender, highlightCandidatesGroup])
 
     return (
         <div key={highlightCandidatesGroup.title}>

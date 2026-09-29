@@ -6,8 +6,10 @@
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Highlight\HighlightType;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
+    use Monolog\Logger;
 
     class LabelServiceListener {
         
@@ -19,24 +21,29 @@
         private readonly ConfigurationService $configurationService;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
+        private readonly Logger $logger;
 
-        public function __construct(LabelService $labelService, PlaceService $placeService, ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        private readonly int $maxHighlightsPerLabelCount;
+
+        public function __construct(LabelService $labelService, PlaceService $placeService, ConfigurationService $configurationService, EventPublisher $eventPublisher,
+            Scheduler $scheduler, Logger $logger, int $maxHighlightsPerLabelCount) {
             $this->labelService = $labelService;
             $this->placeService = $placeService;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
+            $this->logger = $logger;
+            $this->maxHighlightsPerLabelCount = $maxHighlightsPerLabelCount;
         }
 
         public function onAllDynamicLabelsInvalidated(mixed $message) : void {
             foreach ($this->configurationService->getConfigurationEntry("dynamicLabels") as &$dynamicLabel) {
-                $this->labelService->removeLabelForAllPlaces($this->labelService->getOrCreateLabelId($dynamicLabel["name"]));
+                $labelId = $this->labelService->getOrCreateLabelId($dynamicLabel["name"]);
+
                 $labeledPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                     time() - $dynamicLabel["interval"], time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
-                
-                foreach ($labeledPlaces as &$labeledPlace) {
-                    $this->labelService->createLabel($labeledPlace->getId(), $dynamicLabel["name"]);
-                }
+
+                $this->labelService->reassignLabelForPlaces($labelId, array_map(fn($place) => $place->getId(), $labeledPlaces));
             }
         }
 
@@ -46,9 +53,58 @@
             }
         }
 
+        public function onLabelUpdated(mixed $message) : void {
+            $label = $this->labelService->getLabel($message["labelId"]);
+            if ($label !== null) {
+                if ($label->getMainHighlight() === null && count($label->getHighlights()) > 0) {
+                    $this->labelService->updateLabelMainHighlight($message["labelId"], $label->getHighlights()[0]->getId());
+                }
+
+                if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
+                    $this->labelService->refreshLabelHighlights($message["labelId"], $this->maxHighlightsPerLabelCount);
+                }
+            }
+        }
+
+        public function onHighlightCreated(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Label->value) {
+                $label = $this->labelService->getLabel($message["entityId"]);
+                if ($label !== null) {
+                    if ($label->getMainHighlight() === null) {
+                        $this->labelService->updateLabelMainHighlight($message["entityId"], $message["highlightId"]);
+                    }
+                    
+                    if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
+                        $this->labelService->refreshLabelHighlights($message["entityId"], $this->maxHighlightsPerLabelCount);
+                    }
+                }
+            }
+        }
+
+        public function onHighlightRemoved(mixed $message) : void {
+            if ($message["highlightType"] === HighlightType::Label->value) {
+                $label = $this->labelService->getLabel($message["entityId"]);
+                if ($label !== null) {
+                    if ($label->getMainHighlight() === null || $label->getMainHighlight()->getId() === $message["highlightId"]) {
+                        if (count($label->getHighlights()) > 0) {
+                            $this->labelService->updateLabelMainHighlight($label->getId(), $label->getHighlights()[0]->getId());
+                        }
+                        else {
+                            $this->labelService->updateLabelMainHighlight($label->getId(), null);
+                        }
+                    }
+                    
+                    if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
+                        $this->logger->debug("There are " . count($label->getHighlights()) . "/" . $this->maxHighlightsPerLabelCount . " highlights for the '" . $message["entityId"] . "' label. Refreshing the highlights...");
+                        $this->labelService->refreshLabelHighlights($message["entityId"], $this->maxHighlightsPerLabelCount);
+                    }
+                }
+            }
+        }
+
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME, self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL)) {
-                $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());                
+                $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());
             }
         }
     }

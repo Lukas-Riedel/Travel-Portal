@@ -54,6 +54,8 @@
     use Core\Service\Flight\FlightService;
     use Core\Service\Flight\FlightServiceListener;
     use Core\Service\Flight\FlightStatisticsProvider;
+    use Core\Service\Flight\ScheduledFlightEphemeralTaskProvider;
+    use Core\Service\Flight\WatchedFlightEphemeralTaskProvider;
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
     use Core\Service\Geocoding\GeocodingService;
@@ -126,7 +128,7 @@
     $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($extendedHttpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($flareSolverrHttpClient);
-    $actualForecastClient = new OpenMeteoActualForecastClient($extendedHttpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")));
+    $actualForecastClient = new OpenMeteoActualForecastClient($extendedHttpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")), getenv("ACTUAL_WEATHER_FORECAST_CLOUD_COVER_CONFIDENCE_COEFFICIENT"));
     $historicalForecastClient = new OpenMeteoHistoricalForecastClient($extendedHttpClient);
     $encryptionClient = new EncryptionClient(getenv("ENCRYPTION_PRIVATE_KEY"));
     $messagingClient = new RabbitMQMessagingClient(getenv("RMQ_INTERNAL_HOST"), getenv("RMQ_INTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"), getenv("RMQ_HEARTBEAT"), getenv("RMQ_PREFETCH_COUNT"), $databaseClient, $loggingContext, $logger);
@@ -176,15 +178,23 @@
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"), getenv("STEPS_PER_MINUTE_THRESHOLD"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
-    $labelService = new LabelService($databaseClient, $configurationService);
+    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
-    $taskService = new TaskService($databaseClient);
+    $taskService = new TaskService($databaseClient, $distributedCacheClient, $configurationService);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
+
+    // Ephemeral task providers.
+    $ephemeralTaskProviders = array(
+        new ScheduledFlightEphemeralTaskProvider($flightService),
+        new WatchedFlightEphemeralTaskProvider($tripService)
+    );
+    $taskService->setEphemeralTaskProviders($ephemeralTaskProviders);
+    $taskService->setTripService($tripService);
 
     // Statistics providers.
     $statisticsProviders = array(
@@ -242,7 +252,7 @@
         new IndexServiceListener($indexService, $photoService, $highlightService, $placeService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
-        new FlightServiceListener($flightService, $deviceService, $tripService, $configurationService, $calendarClient, $distributedCacheClient, $eventPublisher, $scheduler, $logger),
+        new FlightServiceListener($flightService, $deviceService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $distributedCacheClient, $eventPublisher, $scheduler),
@@ -254,7 +264,7 @@
         new YearServiceListener($yearService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
-        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler),
+        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
         new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),

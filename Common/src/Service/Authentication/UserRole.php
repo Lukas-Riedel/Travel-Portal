@@ -32,6 +32,8 @@
         case HighlightEdit = "highlight.edit";
         case LabelRead = "label.read";
         case LabelEdit = "label.edit";
+        case LabelHighlightRead = "label.highlight.read";
+        case LabelHighlightEdit = "label.highlight.edit";
         case MonitoringRead = "monitoring.read";
         case PlaceRead = "place.read";
         case PlaceEdit = "place.edit";
@@ -79,7 +81,6 @@
         case SearchRead = "search.read";
         case SearchEdit = "search.edit";
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
-        case EventFlightReminderReceivedRead = "event.flightreminderreceived.read";
         case EventTaskDeadlineReachedRead = "event.taskdeadlinereached.read";
         case EventVoucherExpiringRead = "event.voucherexpiring.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";

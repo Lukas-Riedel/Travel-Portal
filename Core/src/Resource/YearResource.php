@@ -110,7 +110,7 @@
             $include = $this->getQueryParameter($request, "include") ?? "";
             
             $requestedIncludes = array_map(fn($entity) => YearIncludedEntity::from($entity), array_filter(explode(",", $include)));
-            $allowedIncludes = array_filter($requestedIncludes, function($entity) use (&$request) {
+            $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
                 $requiredRole = match($entity) {
                     YearIncludedEntity::Fitness => UserRole::YearFitnessRead,
                     YearIncludedEntity::Statistics => UserRole::YearStatisticsRead,

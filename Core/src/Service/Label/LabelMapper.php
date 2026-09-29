@@ -4,68 +4,61 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\WhereClauseBuilder;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Highlight\HighlightService;
 
     class LabelMapper {
         
         private readonly DatabaseClient $databaseClient;
         private readonly ConfigurationService $configurationService;
+        private readonly HighlightService $highlightService;
 
-        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService) {
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService) {
             $this->databaseClient = $databaseClient;
             $this->configurationService = $configurationService;
+            $this->highlightService = $highlightService;
         }
 
-        public function selectLabelsForPlace(string $placeId) : array {
+        public function selectLabels(?string $labelId, ?string $placeId, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT li.*
-                FROM label l
-                INNER JOIN label_identifier li
-                    ON l.label_id = li.id
-                WHERE l.place_id = ?
-                ORDER BY li.name ASC
+                FROM label_identifier li
+                WHERE :CONDITIONS
+                ORDER BY li.name
             SQL;
 
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($placeId)
-                ->getMappedResultSet(function($labelRow) {
-                    $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
-                    return new Label($labelRow["id"], $labelRow["name"], $metadata);
-                });
-        }
+            $whereClauseBuilder = new WhereClauseBuilder();
+            if ($labelId !== null) {
+                $whereClauseBuilder->withClause("li.id = ?", $labelId);
+            }
+            if ($placeId !== null) {
+                $whereClauseBuilder->withClause("EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id AND l.place_id = ?)", $placeId);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
 
-        public function selectAllLabels() : array {
-            $sql = <<<'SQL'
-                SELECT *
-                FROM label_identifier
-            SQL;
+            $labelRows = $this->databaseClient
+                ->statementBuilder($sql, $whereClause)
+                ->getResultSet();
 
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->getMappedResultSet(function($labelRow) {
-                    $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
-                    return new Label($labelRow["id"], $labelRow["name"], $metadata);
-                });
-        }
+            $mainHighlightIds = array_filter(array_map(fn($labelRow) => $labelRow["main_highlight_id"], $labelRows), fn($highlightId) => $highlightId !== null);
 
-        public function selectLabel(string $labelId) : ?Label {
-            $sql = <<<'SQL'
-                SELECT *
-                FROM label_identifier
-                WHERE id = ?
-            SQL;
-
-            $labelRow = $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($labelId)
-                ->getSingleRow();
-
-            if ($labelRow === null) {
-                return null;
+            $mainHighlights = array();
+            foreach ($this->highlightService->getHighlights($mainHighlightIds) as &$mainHighlight) {
+                $mainHighlights[$mainHighlight->getId()] = $mainHighlight;
             }
 
-            $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
-            return new Label($labelRow["id"], $labelRow["name"], $metadata);
+            $labels = array();
+            foreach ($labelRows as &$labelRow) {
+                $highlights = array();
+                if (in_array(LabelIncludedEntity::Highlights->value, $includedEntities)) {
+                    $highlights = $this->highlightService->getLabelHighlights($labelRow["id"]);
+                }
+
+                $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
+                $labels[] = new Label($labelRow["id"], $labelRow["name"], $metadata,
+                    $mainHighlights[$labelRow["main_highlight_id"]] ?? null, $highlights);
+            }
+
+            return $labels;
         }
 
         public function selectPlaceIdsForLabelId(string $labelId) : array {            
@@ -155,6 +148,21 @@
                 ->withParameters($unicode, $labelId)
                 ->execute() === 1;
         }
+
+
+        public function updateLabelMainHighlight(string $labelId, ?string $highlightIdentifier) : bool {
+            $sql = <<<'SQL'
+                UPDATE label_identifier
+                SET main_highlight_id = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($highlightIdentifier, $labelId)
+                ->execute() === 1;
+        }
+
 
         public function deleteLabelForPlace(string $placeId, string $labelId) : int {
             $sql = <<<'SQL'

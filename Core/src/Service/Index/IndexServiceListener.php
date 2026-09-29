@@ -37,6 +37,10 @@
             $this->indexService->index(IndexType::Composite, IndexableEntityType::Category, $message["categoryId"]);
         }
 
+        public function onLabelUpdated(mixed $message) : void {
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Label, $message["labelId"]);
+        }
+
         public function onFlightLogged(mixed $message) : void {
             $this->indexService->index(IndexType::Composite, IndexableEntityType::Airport, null);
             $this->indexService->index(IndexType::Composite, IndexableEntityType::Airline, null);

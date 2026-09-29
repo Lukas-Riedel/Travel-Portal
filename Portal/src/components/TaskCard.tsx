@@ -1,8 +1,8 @@
 import { CircleArrowUp, SquarePen, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import type { Task, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
 import { getTripFullName } from "../utils/tripUtils.ts"
@@ -24,20 +24,20 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
     const { showRemoveTaskToast, showUpdateTaskPriorityToast, showUpdateTaskDescriptionToast } = usePredefinedUserInput()
 
     const handleTaskRemoved = () => {
-        if (onTaskRemoved && task) {
-            showRemoveTaskToast(() => onTaskRemoved(task.id))
+        if (onTaskRemoved && task && task.id) {
+            showRemoveTaskToast(() => onTaskRemoved(task.id!))
         }
     }
 
     const handleTaskDescriptionUpdated = () => {
-        if (onTaskDescriptionUpdated && task) {
-            showUpdateTaskDescriptionToast(task.description, description => onTaskDescriptionUpdated(task.id, description))
+        if (onTaskDescriptionUpdated && task && task.id) {
+            showUpdateTaskDescriptionToast(task.description, description => onTaskDescriptionUpdated(task.id!, description))
         }
     }
 
     const handleTaskPriorityUpdated = () => {
-        if (onTaskPriorityUpdated && task) {
-            showUpdateTaskPriorityToast(priority => onTaskPriorityUpdated(task.id, priority))
+        if (onTaskPriorityUpdated && task && task.id) {
+            showUpdateTaskPriorityToast(priority => onTaskPriorityUpdated(task.id!, priority))
         }
     }
 

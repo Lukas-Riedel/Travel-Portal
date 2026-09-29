@@ -3,9 +3,9 @@ import {useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Trip } from "../types/CoreSwaggerTypes"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { usePublicHolidays } from "../hooks/usePublicHolidays"
+import type { Trip } from "../types/CoreSwaggerTypes"
 import type { TimeTrackingEvent } from "../types/CoreSwaggerTypes"
 import { TimeTrackingEventType } from "../types/CoreSwaggerTypes"
 import { getEventHoursSum, getEvents, HOURS_PER_MAN_DAY } from "../utils/eventUtils"
@@ -181,7 +181,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
                                 </td>
                                 <td className="p-3 text-center">
                                     {trip.start && trip.end && (
-                                        formatDateRange(trip.start, trip.end, t("general.format.date.year.excluded"))
+                                        formatDateRange(trip.start, trip.end - 1, t("general.format.date.year.excluded"), configuration?.homeLocation?.timezone)
                                     )}
                                 </td>
                                 <td className="p-3 text-center">
