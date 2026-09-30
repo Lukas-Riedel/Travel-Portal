@@ -6,6 +6,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
 
+    // TODO: Define a strategy for initializing system default configuration entries on fresh install and migrating them when keys are added or removed.
     class ConfigurationService {
 
         private readonly ConfigurationMapper $configurationMapper;
