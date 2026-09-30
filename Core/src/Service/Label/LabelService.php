@@ -18,6 +18,19 @@
     class LabelService {
 
         private const AUTO_ASSIGNMENT_BATCH_SIZE = 20;
+        private const AUTO_ASSIGNMENT_RESPONSE_SCHEMA = array(
+            "type" => "array",
+            "items" => array(
+                "type" => "object",
+                "properties" => array(
+                    "label"  => array("type" => "string", "description" => "The name of the label being evaluated."),
+                    "place"  => array("type" => "string", "description" => "The name of the place being evaluated."),
+                    "reason" => array("type" => "string", "description" => "One sentence explaining why the answer is true or false."),
+                    "answer" => array("type" => "boolean", "description" => "True only if the place is clearly and prominently known for this label, false otherwise.")
+                ),
+                "required" => array("reason", "answer")
+            )
+        );
 
         private readonly LabelMapper $labelMapper;
         private readonly HighlightService $highlightService;
@@ -193,7 +206,7 @@
         private function getAutoAssignmentResponse(string $promptKey, array $context) : array {
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")[$promptKey];
 
-            $response = $this->generativeContentClient->getResponse($prompt, $context);
+            $response = $this->generativeContentClient->getResponse($prompt, $context, self::AUTO_ASSIGNMENT_RESPONSE_SCHEMA);
             if ($response === null) {
                 $this->logger->error("The auto-assignment request was not successful. Response: null");
                 return array();

@@ -35,23 +35,33 @@
             $this->googleGeminiApiKey = $googleGeminiApiKey;
         }
 
-        public function getResponse(string $query, array $context) : ?string {
-             $payload = array(
+        public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
+            $prompt = $this->createPrompt($query, $context);
+            $payload = array(
                 "contents" => array(
                     array(
                         "parts" => array(
                             array(
-                                "text" => $this->createPrompt($query, $context)
+                                "text" => $prompt
                             )
                         )
                     )
                 )
             );
 
+            if ($responseJsonSchema !== null) {
+                $payload["generationConfig"] = array(
+                    "responseMimeType" => "application/json",
+                    "responseJsonSchema" => $responseJsonSchema
+                );
+            }
+
             foreach ($this->getModels() as &$model) {
-                try {                
-                    return trim($this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::GENERATE_CONTENT_URL_FORMAT, $model, $this->googleGeminiApiKey),
+                try {
+                    $response = trim($this->httpClient->executeRequest(HttpMethod::POST, sprintf(self::GENERATE_CONTENT_URL_FORMAT, $model, $this->googleGeminiApiKey),
                         array("Content-Type: application/json"), json_encode($payload))["candidates"][0]["content"]["parts"][0]["text"]);
+                    $this->logger->debug("The {$model} generative content request was successful. Prompt: " . $prompt . " Response: " . $response);
+                    return $response;
                 }
                 catch (\Throwable $e) {
                     $this->logger->error("The {$model} generative content request was not successful. Reason: " . $e->getMessage(), array("error" => $e));
@@ -81,7 +91,9 @@
                 return version_compare($b, $a);
             });
 
-            $this->distributedCacheClient->set(self::MODELS_CACHE_KEY, $models, self::MODELS_CACHE_TTL);
+            if (!empty($models)) {
+                $this->distributedCacheClient->set(self::MODELS_CACHE_KEY, $models, self::MODELS_CACHE_TTL);
+            }
 
             return $models;
         }
