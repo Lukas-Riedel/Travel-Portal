@@ -105,7 +105,7 @@
                 ->execute() === 1;
         }
 
-        public function insertLabelId(string $labelName) : bool {    
+        public function insertLabelId(string $labelName) : ?string {
             $sql = <<<'SQL'
                 INSERT INTO label_identifier (
                     name
@@ -114,15 +114,15 @@
                     ?
                 )
                 ON CONFLICT DO NOTHING
+                RETURNING id
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelName)
-                ->execute() === 1;
+                ->getSingleColumn("id");
         }
         
-
         public function updateLabelName(string $labelId, string $name) : bool {
             $sql = <<<'SQL'
                 UPDATE label_identifier

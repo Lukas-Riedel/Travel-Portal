@@ -35,6 +35,7 @@ export default function PlacePage() {
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights, removePlace } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
+    // TODO: Doesn't work if this page displays a candidate (removing a regular place returns 404).
     const handlePlaceRemoved = () =>
         removePlace().then(() => removeCandidatePlace(placeId!).catch(() => {}))
 
@@ -43,7 +44,7 @@ export default function PlacePage() {
     const attributes: Record<string, string | number | undefined> = {
         [t("place.attribute.quality")]: place?.quality?.rating ? `${Math.round(place.quality.rating)}%` : undefined,
         [t("place.attribute.tier")]: place?.quality?.tier,
-        [t("place.attribute.score")]: place?.score,
+        [t("place.attribute.score")]: place?.score ? place.score : undefined,
         [t("place.attribute.highlightsCount")]: place?.highlights?.length,
         [t("place.attribute.elevation")]: place?.elevation && formatMeters(place.elevation)
     }

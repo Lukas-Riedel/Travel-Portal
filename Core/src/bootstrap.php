@@ -178,9 +178,10 @@
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"), getenv("STEPS_PER_MINUTE_THRESHOLD"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
-    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher);
+    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher, $generativeContentClient, $logger);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
+    $labelService->setPlaceService($placeService);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
     $taskService = new TaskService($databaseClient, $distributedCacheClient, $configurationService);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,

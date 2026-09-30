@@ -102,6 +102,25 @@
             }
         }
 
+        public function onPlaceCreated(mixed $message) : void {
+            $place = $this->placeService->getRegularPlace($message["placeId"]);
+            if ($place === null) {
+                $place = $this->placeService->getCandidatePlace($message["placeId"]);
+            }
+
+            if ($place !== null) {
+                $this->labelService->assignLabelsToPlace($place);
+            }
+        }
+
+        public function onLabelCreated(mixed $message) : void {
+            $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
+            $label = $this->labelService->getLabel($message["labelId"]);            
+            if ($label !== null && !in_array($label->getName(), $dynamicLabelNames)) {
+                $this->labelService->assignPlacesToLabel($label);
+            }
+        }
+
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME, self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL)) {
                 $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());
