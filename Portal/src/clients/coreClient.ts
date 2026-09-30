@@ -157,6 +157,9 @@ export const createLabelHighlight = async (labelId: string, photoId: string): Pr
         }
     ).then(extractData)
 
+export const removeLabel = async (labelId: string): Promise<void> =>
+    coreClient.delete(`labels/${labelId}`)
+
 export const removeLabelHighlight = async (labelId: string, highlightId: string): Promise<void> =>
     coreClient.delete(`labels/${labelId}/highlights/${highlightId}`)
 

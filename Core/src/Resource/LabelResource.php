@@ -34,6 +34,7 @@
                 $group->get("", [$resource, "listLabels"]);
                 $group->get("/{labelId}", [$resource, "getLabel"]);
                 $group->patch("/{labelId}", [$resource, "updateLabel"]);
+                $group->delete("/{labelId}", [$resource, "removeLabel"]);
                 $group->post("/{labelId}/highlights", [$resource, "createLabelHighlight"]);
                 $group->post("/{labelId}/highlights/refresh", [$resource, "refreshLabelHighlights"]);
                 $group->delete("/{labelId}/highlights/{highlightId}", [$resource, "removeLabelHighlight"]);
@@ -668,6 +669,81 @@
             $wasRemoved = $this->highlightService->removeLabelHighlight($labelId, $highlightId);
             if (!$wasRemoved) {
                 throw new NotFoundException($highlightId);
+            }
+
+            return null;
+        }
+
+        #[OA\Delete(
+            path: "/labels/{labelId}",
+            summary: "Remove a label with the specified identifier",
+            operationId: "removeLabel",
+            tags: ["Labels"],
+            security: [ ["bearerAuth" => []] ],
+            parameters: [
+                new OA\Parameter(
+                    name: "labelId",
+                    in: "path",
+                    required: true,
+                    description: "The identifier of the label",
+                    schema: new OA\Schema(type: "string"),
+                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
+                )
+            ],
+            responses: [
+                new OA\Response(
+                    response: 204,
+                    description: "Success. Removed a label with the specified identifier."
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: "Not Found. The requested resource did not exist.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Not Found",
+                                ref: "#/components/examples/NotFound"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function removeLabel(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::LabelEdit);
+
+            $labelId = $this->requirePathArgument($routeArguments, "labelId");
+
+            $wasRemoved = $this->labelService->removeLabelForAllPlaces($labelId);
+            if (!$wasRemoved) {
+                throw new NotFoundException($labelId);
             }
 
             return null;
