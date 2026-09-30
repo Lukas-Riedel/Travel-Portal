@@ -14,6 +14,8 @@
     use Core\Service\Trip\TripSortingStrategy;
 
     class YearService {
+
+        private const HIGHLIGHTS_SELECTING_PLACE_LIMIT = 20;
         
         private readonly YearMapper $yearMapper;
         private readonly PlaceService $placeService;
@@ -46,7 +48,7 @@
             $trips = $tripService->getRegularTrips($yearId, null, time(), array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["yearHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), array_slice($places, 0, self::HIGHLIGHTS_SELECTING_PLACE_LIMIT)))));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear($yearId, $query ?? $yearId, $count,
                 $year->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($trip) => $trip->getMainHighlight()?->getPhoto()?->getId(), $trips)));

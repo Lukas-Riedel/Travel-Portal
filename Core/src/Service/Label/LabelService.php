@@ -105,8 +105,7 @@
 
             $places = $this->placeService->getRegularPlaces(null, $labelId, null, null, null, null, null, null,
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
-            // TODO: Do not propagate the label name to the second argument as it makes no sense to use a text embedding for lables. Allow nullable text embedding.
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $label->getName(), $count,
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $count,
                 $label->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
 
             foreach ($label->getHighlights() as &$highlight) {

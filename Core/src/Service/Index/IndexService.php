@@ -112,8 +112,8 @@
                     $embedding, count($prioritizedPhotoIds), null, $categoryPlaceIds, array(), $prioritizedPhotoIds, null, null));
         }
 
-        public function getSelectedPhotoIdsForLabel(array $labelPlaceIds, string $query, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
-            return $this->doGetSelectedPhotoIds($query, $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
+        public function getSelectedPhotoIdsForLabel(array $labelPlaceIds, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
+            return $this->doGetSelectedPhotoIds(null, $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
                     $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, null, $labelPlaceIds, array(), array(), true, null),
                 fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
@@ -178,7 +178,7 @@
             };
         }
 
-        private function doGetSelectedPhotoIds(string $query, int $count, ?string $mainHighlightPhotoId,
+        private function doGetSelectedPhotoIds(?string $query, int $count, ?string $mainHighlightPhotoId,
             ?array $prioritizedPhotoIds, callable $entriesQuerySupplier, callable $prioritizedEntriesQuerySupplier) : array {            
             $combinedEmbedding = $this->computeEmbeddingForPhotoSelection($query);
             $searchEntries = $this->searchClient->search($this->photoIndexName, $entriesQuerySupplier($combinedEmbedding));
@@ -267,18 +267,24 @@
             return array_values($selectedPhotoIds);
         }
 
-        private function computeEmbeddingForPhotoSelection(string $query) : array {
-            $contentEmbedding = $this->embeddingClient->getTextEmbedding($query);
+        private function computeEmbeddingForPhotoSelection(?string $query) : array {
             $styleEmbedding = $this->getStyleEmbedding();
             $negativeEmbedding = $this->getNegativeEmbedding();
 
-            $finalVector = array_map(fn($v, $n) => $v - ($n * $this->negativeEmbeddingCoefficient), $contentEmbedding, $negativeEmbedding);
-            if ($styleEmbedding !== null) {
-                $finalVector = array_map(fn($c, $s) => $c + ($s * $this->styleEmbeddingCoefficient), $finalVector, $styleEmbedding);
+            if ($query === null) {
+                $finalVector = array_map(fn($v, $n) => $v - ($n * $this->negativeEmbeddingCoefficient), $styleEmbedding ?? $negativeEmbedding, $negativeEmbedding);
+            }
+            else {
+                $contentEmbedding = $this->embeddingClient->getTextEmbedding($query);
+                $finalVector = array_map(fn($v, $n) => $v - ($n * $this->negativeEmbeddingCoefficient), $contentEmbedding, $negativeEmbedding);
+                
+                if ($styleEmbedding !== null) {
+                    $finalVector = array_map(fn($c, $s) => $c + ($s * $this->styleEmbeddingCoefficient), $finalVector, $styleEmbedding);
+                }
             }
 
             $norm = sqrt(array_sum(array_map(fn($v) => $v ** 2, $finalVector)));
-            return $norm > 1e-10 ? array_map(fn($v) => $v / $norm, $finalVector) : $contentEmbedding;
+            return array_map(fn($v) => $v / $norm, $finalVector);
         }
 
         private function getStyleEmbedding() : ?array {         

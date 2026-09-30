@@ -25,6 +25,8 @@
 
         private const CIRCLE_APPROXIMATION_POINTS_COUNT = 10;
 
+        private const HIGHLIGHTS_SELECTING_PLACE_LIMIT = 20;
+
         private readonly CategoryMapper $categoryMapper;        
         private readonly EventPublisher $eventPublisher;
         private readonly CacheClient $memoryCacheClient;
@@ -61,7 +63,7 @@
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
 
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["categoryHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), array_slice($places, 0, self::HIGHLIGHTS_SELECTING_PLACE_LIMIT)))));
 
             $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $query ?? $category->getName(), $count,
                 $category->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
