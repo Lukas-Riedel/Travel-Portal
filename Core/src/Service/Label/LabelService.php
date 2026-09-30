@@ -17,14 +17,14 @@
 
     class LabelService {
 
-        private const AUTO_ASSIGNMENT_BATCH_SIZE = 20;
+        private const AUTO_ASSIGNMENT_BATCH_SIZE = 15;
         private const AUTO_ASSIGNMENT_RESPONSE_SCHEMA = array(
             "type" => "array",
             "items" => array(
                 "type" => "object",
                 "properties" => array(
-                    "label"  => array("type" => "string", "description" => "The name of the label being evaluated."),
-                    "place"  => array("type" => "string", "description" => "The name of the place being evaluated."),
+                    "labelId"  => array("type" => "string", "description" => "The identifier of the label being evaluated (if available)."),
+                    "placeId"  => array("type" => "string", "description" => "The identifier of the place being evaluated (if available)."),
                     "reason" => array("type" => "string", "description" => "One sentence explaining why the answer is true or false."),
                     "answer" => array("type" => "boolean", "description" => "True only if the place is clearly and prominently known for this label, false otherwise.")
                 ),
@@ -167,11 +167,11 @@
             $labels = array_filter($this->getAllLabels(array()), fn($label) => !in_array($label->getName(), $dynamicLabelNames));
             
             foreach (array_chunk(array_values($labels), self::AUTO_ASSIGNMENT_BATCH_SIZE) as &$labels) {
-                $labelsList = implode(", ", array_map(fn($i, $label) => ($i + 1) . ". " . $label->getName(), array_keys($labels), $labels));
-                $answers = $this->getAutoAssignmentResponse("labelAutoAssignmentForPlace", array("name" => $place->getName(), "country" => $place->getCountry() ?? "UNKNOWN", "region" => $this->getPlaceRegion($place) ?? "UNKNOWN", "labels" => $labelsList));
+                $labelsList = implode(", ", array_map(fn($i, $label) => ($i + 1) . ". " . $label->getName() . " (labelId: " . $label->getId() . ")", array_keys($labels), $labels));
+                $answers = $this->getAutoAssignmentResponse("labelAutoAssignmentForPlace", "labelId", array("name" => $place->getName(), "country" => $place->getCountry() ?? "UNKNOWN", "region" => $this->getPlaceRegion($place) ?? "UNKNOWN", "labels" => $labelsList));
 
                 foreach ($labels as &$label) {
-                    if ($answers[$label->getName()] ?? false) {
+                    if ($answers[$label->getId()] ?? false) {
                         $this->transactionManager->executeAtomically(function() use(&$place, &$label) {
                             $this->labelMapper->deleteLabelForPlace($place->getId(), $label->getId());
                             $this->labelMapper->insertLabel($place->getId(), $label->getId());
@@ -186,11 +186,11 @@
             $places = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending), $this->placeService->getCandidatePlaces(null, null, null, null, array(PlaceIncludedEntity::Categories->value)));
 
             foreach (array_chunk($places, self::AUTO_ASSIGNMENT_BATCH_SIZE) as $places) {
-                $placesList = implode(", ", array_map(fn($i, $place) => ($i + 1) . ". " . $place->getName() . " (" . ($place->getCountry() ?? "UNKNOWN") . ", " . ($this->getPlaceRegion($place) ?? "UNKNOWN") . ")", array_keys($places), $places));
-                $answers = $this->getAutoAssignmentResponse("labelAutoAssignmentForLabel", array("label" => $label->getName(), "places" => $placesList));
+                $placesList = implode(", ", array_map(fn($i, $place) => ($i + 1) . ". " . $place->getName() . ", " . ($this->getPlaceRegion($place) ?? "UNKNOWN") . ", " . ($place->getCountry() ?? "UNKNOWN") . " (placeId: " . $place->getId() . ")", array_keys($places), $places));
+                $answers = $this->getAutoAssignmentResponse("labelAutoAssignmentForLabel", "placeId", array("label" => $label->getName(), "places" => $placesList));
 
                 foreach ($places as &$place) {
-                    if ($answers[$place->getName()] ?? false) {
+                    if ($answers[$place->getId()] ?? false) {
                         $this->transactionManager->executeAtomically(function() use(&$place, &$label) {
                             $this->labelMapper->deleteLabelForPlace($place->getId(), $label->getId());
                             $this->labelMapper->insertLabel($place->getId(), $label->getId());
@@ -203,7 +203,7 @@
             }
         }
 
-        private function getAutoAssignmentResponse(string $promptKey, array $context) : array {
+        private function getAutoAssignmentResponse(string $promptKey, string $resultKeySelector, array $context) : array {
             $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")[$promptKey];
 
             $response = $this->generativeContentClient->getResponse($prompt, $context, self::AUTO_ASSIGNMENT_RESPONSE_SCHEMA);
@@ -219,12 +219,9 @@
             }
 
             $result = array();
-            foreach ($decoded as $item) {
-                $name = $item["label"] ?? $item["place"] ?? null;
-                $answer = $item["answer"] ?? null;
-                
-                if ($name !== null && is_bool($answer)) {
-                    $result[$name] = $answer;
+            foreach ($decoded as &$item) {                
+                if (isset($item[$resultKeySelector]) && is_bool($item["answer"])) {
+                    $result[$item[$resultKeySelector]] = $item["answer"];
                 }
             }
 
