@@ -1,7 +1,6 @@
 <?php
     namespace Core\Service\Stay;
 
-    use Core\Client\Calendar\Calendar;
     use Core\Client\Calendar\CalendarClient;
     use Core\Service\Trip\TripService;
 
@@ -18,14 +17,18 @@
         }
 
         public function onCalendarInvalidated(mixed $message) : void {
-            if ($message["calendar"] === Calendar::Stays->value) {
-                $this->stayService->refreshCalendar($this->tripService);
+            foreach (StayType::cases() as &$stayType) {
+                if ($stayType->getCalendar()->value === $message["calendar"]) {
+                    $this->stayService->refreshCalendar(array($stayType), $this->tripService);
+                }
             }
         }
 
         public function onCalendarWatchRenewing(mixed $message) : void {
-            if ($message["calendar"] === Calendar::Stays->value) {
-                $this->calendarClient->watchCalendar(Calendar::Stays);
+            foreach (StayType::cases() as &$stayType) {
+                if ($stayType->getCalendar()->value === $message["calendar"]) {
+                    $this->calendarClient->watchCalendar($stayType->getCalendar());
+                }
             }
         }
     }

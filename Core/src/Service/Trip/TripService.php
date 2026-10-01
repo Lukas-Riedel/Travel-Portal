@@ -221,7 +221,7 @@
                 $this->tripMapper->deleteAllTripEvents();            
                 foreach ($tripEvents as &$tripEvent) {
                     $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
-                    $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
+                    $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(),
                         $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
                     $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());

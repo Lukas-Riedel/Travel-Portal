@@ -84,6 +84,7 @@
     use Core\Service\Stay\StayService;
     use Core\Service\Stay\StayServiceListener;
     use Core\Service\Stay\StayStatisticsProvider;
+    use Core\Service\Stay\WatchedStayEphemeralTaskProvider;
     use Core\Service\Task\TaskService;
     use Core\Service\Task\TaskServiceListener;
     use Core\Service\TimeTracking\TimeTrackingService;
@@ -192,7 +193,8 @@
     // Ephemeral task providers.
     $ephemeralTaskProviders = array(
         new ScheduledFlightEphemeralTaskProvider($flightService),
-        new WatchedFlightEphemeralTaskProvider($tripService)
+        new WatchedFlightEphemeralTaskProvider($tripService),
+        new WatchedStayEphemeralTaskProvider($tripService, $stayService)
     );
     $taskService->setEphemeralTaskProviders($ephemeralTaskProviders);
     $taskService->setTripService($tripService);

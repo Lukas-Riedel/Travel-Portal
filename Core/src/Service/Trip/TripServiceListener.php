@@ -16,6 +16,7 @@
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\PlaceService;
     use Core\Service\Stay\StayService;
+    use Core\Service\Stay\StayType;
 
     class TripServiceListener {
         
@@ -57,7 +58,7 @@
                 $this->transactionManager->executeAtomically(function() {
                     $this->tripService->refreshCalendar();
                     $this->placeService->refreshCalendar($this->tripService);
-                    $this->stayService->refreshCalendar($this->tripService);
+                    $this->stayService->refreshCalendar(StayType::cases(), $this->tripService);
                     $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== null), $this->tripService);
                 });
             }

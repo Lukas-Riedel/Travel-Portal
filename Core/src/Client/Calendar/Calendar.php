@@ -5,6 +5,7 @@
         case Trips = "trips";
         case Places = "places";
         case Stays = "stays";
+        case WatchedStays = "watchedStays";
         case Flights = "flights";
         case WatchedFlights = "watchedFlights";
     }
