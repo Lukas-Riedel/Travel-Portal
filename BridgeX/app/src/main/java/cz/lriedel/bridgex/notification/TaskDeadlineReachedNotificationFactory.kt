@@ -10,10 +10,14 @@ class TaskDeadlineReachedNotificationFactory(
         val title = args["title"] as? String ?: context.getString(R.string.title_task_deadline_reached)
         val task = args["task"] as? String ?: return null
         val url = args["url"] as? String
+        val tripId = args["tripId"] as? String
 
         val intentExtras = mutableMapOf<String, Any>("task" to task)
         if (url != null) {
             intentExtras["url"] = url
+        }
+        if (tripId != null) {
+            intentExtras["tripId"] = tripId
         }
 
         return Notification(title, task, intentExtras)

@@ -29,7 +29,7 @@
             if ($this->scheduler->requestExecution(self::SEND_TASK_NOTIFICATIONS_ACTION_NAME, self::SEND_TASK_NOTIFICATIONS_ACTION_INTERVAL)) {
                 foreach ($this->taskService->getTasksForNotifications() as &$task) {
                     $trip = $this->tripService->getRegularTrip($this->taskService->getTripIdForTask($task->getId()));
-                    $this->eventPublisher->publish(Event::TaskDeadlineReached(null, sprintf(self::TASK_NOTIFICATION_FORMAT, $trip->getFullName(), $task->getDescription()), null));
+                    $this->eventPublisher->publish(Event::TaskDeadlineReached(null, sprintf(self::TASK_NOTIFICATION_FORMAT, $trip->getFullName(), $task->getDescription()), null, $trip->getId()));
                 }
 
                 foreach ($this->taskService->getEphemeralTasksForNotifications() as &$task) {

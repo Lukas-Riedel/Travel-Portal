@@ -288,8 +288,8 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function TaskDeadlineReached(?string $title, string $task, ?string $url) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("title" => $title, "task" => $task, "url" => $url));
+        public static function TaskDeadlineReached(?string $title, string $task, ?string $url, ?string $tripId = null) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("title" => $title, "task" => $task, "url" => $url, "tripId" => $tripId));
         }
 
         public static function VoucherExpiring(string $issuer, float $value, string $currency, int $expiration) : Event {

@@ -37,7 +37,7 @@
         }
 
         public function createTask(string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, string $tripId) : Task {
-            $task = new Task(null, null, $description, $priority, $deadline, $notificationInterval, null);
+            $task = new Task(null, null, $description, $priority, $deadline, $notificationInterval, null, true);
             $this->taskMapper->insertTask($task, $tripId);
             return $task;
         }

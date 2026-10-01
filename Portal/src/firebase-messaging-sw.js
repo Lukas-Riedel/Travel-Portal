@@ -46,7 +46,7 @@ onBackgroundMessage(messaging, payload => {
         self.registration.showNotification(args.title ?? "Blíží se termín úkolu", {
             body: args.task,
             icon: "icon-192.png",
-            data: args.url ?? "/admin?tab=tasks"
+            data: args.url ?? (args.tripId ? `/trip/${args.tripId}` : "/admin?tab=tasks")
         })
     }
 

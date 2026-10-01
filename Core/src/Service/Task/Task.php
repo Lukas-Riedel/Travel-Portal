@@ -71,7 +71,7 @@
         private readonly ?string $url;
         private readonly bool $actionable;
 
-        public function __construct(?string $id, ?string $title, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable = true) {
+        public function __construct(?string $id, ?string $title, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable) {
             $this->id = $id;
             $this->title = $title;
             $this->description = $description;
