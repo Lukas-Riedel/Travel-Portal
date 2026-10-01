@@ -84,33 +84,6 @@
         ]
     )]
     #[OA\Schema(
-        schema: "OpenLineageConfiguration",
-        type: "object",
-        description: "The OpenLineage configuration",
-        required: ["producer"],
-        properties: [
-            new OA\Property(
-                property: "producer",
-                type: "object",
-                required: ["ibmCloud", "googleDrive"],
-                properties: [
-                    new OA\Property(
-                        property: "ibmCloud",
-                        type: "object",
-                        required: ["enabled"],
-                        properties: [new OA\Property(property: "enabled", type: "boolean", example: false)]
-                    ),
-                    new OA\Property(
-                        property: "googleDrive",
-                        type: "object",
-                        required: ["enabled"],
-                        properties: [new OA\Property(property: "enabled", type: "boolean", example: false)]
-                    )
-                ]
-            )
-        ]
-    )]
-    #[OA\Schema(
         schema: "HighlightConfiguration",
         type: "object",
         description: "The highlight configuration",
@@ -183,7 +156,6 @@
             new OA\Property(property: "calendar", ref: "#/components/schemas/CalendarConfiguration"),
             new OA\Property(property: "timeTracking", ref: "#/components/schemas/TimeTrackingConfiguration"),
             new OA\Property(property: "generativeContentPrompt", ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
-            new OA\Property(property: "openLineage", ref: "#/components/schemas/OpenLineageConfiguration"),
             new OA\Property(property: "highlight", ref: "#/components/schemas/HighlightConfiguration"),
             new OA\Property(property: "ephemeralTasks", ref: "#/components/schemas/EphemeralTasksConfiguration"),
             new OA\Property(property: "agent", ref: "#/components/schemas/AgentConfiguration")

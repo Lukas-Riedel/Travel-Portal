@@ -215,4 +215,8 @@
   value: "{{ .Values.core.backup.location }}"
 - name: BACKUP_LIMIT
   value: "{{ .Values.core.backup.limit }}"
+- name: OPENLINEAGE_IBM_CLOUD_ENABLED
+  value: "{{ .Values.core.openlineage.producer.ibmCloud.enabled }}"
+- name: OPENLINEAGE_GOOGLE_DRIVE_ENABLED
+  value: "{{ .Values.core.openlineage.producer.googleDrive.enabled }}"
 {{- end }}

@@ -3,7 +3,6 @@
 
     use Core\Event\Event;
     use Core\Event\EventPublisher;
-    use Core\Service\Configuration\ConfigurationService;
 
     class OpenLineageEventManager {
 
@@ -19,11 +18,6 @@
             $this->openLineageEventPublishers = $openLineageEventPublishers;
             $this->eventPublisher = $eventPublisher;
             $this->coreBaseUrl = $coreBaseUrl;
-        }
-
-        public static function isOpenLineageEnabled(ConfigurationService $configurationService) : bool {
-            $producers = $configurationService->getConfigurationEntry("openLineage")["producer"];
-            return array_reduce($producers, fn($carry, $producer) => $carry || $producer["enabled"], false);            
         }
 
         public function initializeEvent(string $jobName) : void {

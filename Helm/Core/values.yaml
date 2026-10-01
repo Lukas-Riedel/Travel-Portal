@@ -163,6 +163,12 @@ core:
       notification:
         threshold: "604800"
   timezone: Europe/Prague
+  openlineage:
+    producer:
+      ibmCloud:
+        enabled: false
+      googleDrive:
+        enabled: false
   backup:
     location: /var/tmp/db.sql.gz
     limit: "8"

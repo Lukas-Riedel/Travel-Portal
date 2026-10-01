@@ -234,13 +234,16 @@
     );
     $indexService->setEntityIndexers($entityIndexers);
 
-    // OpenLineage manager. Switching the producers on or off will require a script restart for changes to take effect.
+    // OpenLineage manager.
     $openLineageEventManager = null;
-    if (OpenLineageEventManager::isOpenLineageEnabled($configurationService)) {
-        $openLineageEventPublishers = array(
-            new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $extendedHttpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
-            new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
-        );
+    $openLineageEventPublishers = array();
+    if (getenv("OPENLINEAGE_IBM_CLOUD_ENABLED") === "true") {
+        $openLineageEventPublishers[] = new IbmCloudOpenLineageEventPublisher($authenticationService, $extendedHttpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger);
+    }
+    if (getenv("OPENLINEAGE_GOOGLE_DRIVE_ENABLED") === "true") {
+        $openLineageEventPublishers[] = new GoogleDriveOpenLineageEventPublisher($googleClient);
+    }
+    if (!empty($openLineageEventPublishers)) {
         $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
         $messagingClient->setOpenLineageEventManager($openLineageEventManager);
         $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
