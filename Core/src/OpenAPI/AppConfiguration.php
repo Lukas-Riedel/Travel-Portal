@@ -160,7 +160,8 @@
                         new OA\Property(property: "seconds", type: "integer", example: 3600)
                     ]
                 ),
-                new OA\Property(property: "notificationInterval", type: "integer", example: 259200)
+                new OA\Property(property: "notificationInterval", type: "integer", example: 259200),
+                new OA\Property(property: "actionable", type: "boolean", example: true)
             ]
         )
     )]

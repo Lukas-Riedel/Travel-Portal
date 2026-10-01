@@ -46,7 +46,7 @@ export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated
 
     return (
         <div
-            className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm w-full my-6 items-stretch">
+            className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm w-full my-6 items-start">
             {PRIORITY_ORDER.map(priority => {
                 if (!groups[priority]) {
                     return null
@@ -56,7 +56,7 @@ export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated
                 return (
                     <div
                         key={priority}
-                        className="flex flex-col h-full">
+                        className="flex flex-col">
                         <div className="flex items-center gap-2 px-1 mb-3">
                             <Icon
                                 className={color}
@@ -71,15 +71,15 @@ export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated
                         </div>
                         <CardGrid
                             rowSize={1}
-                            className="mb-6 flex-1">
+                            className="mb-6">
                             {groups[priority].map(({ task, trip }) => (
                                 <TaskCard
-                                    key={task.id}
+                                    key={task.id ?? `${trip.id}:${task.description}:${task.deadline}`}
                                     task={task}
                                     trip={trip}
-                                    onTaskDescriptionUpdated={onTaskDescriptionUpdated ? ((taskId, newDescription) => onTaskDescriptionUpdated(trip.id, taskId, newDescription)) : undefined}
-                                    onTaskPriorityUpdated={onTaskPriorityUpdated ? ((taskId, newPriority) => onTaskPriorityUpdated(trip.id, taskId, newPriority)) : undefined}
-                                    onTaskRemoved={onTaskRemoved ? ((taskId) => onTaskRemoved(trip.id, taskId)) : undefined} />
+                                    onTaskDescriptionUpdated={task.id && onTaskDescriptionUpdated ? ((taskId, newDescription) => onTaskDescriptionUpdated(trip.id, taskId, newDescription)) : undefined}
+                                    onTaskPriorityUpdated={task.id && onTaskPriorityUpdated ? ((taskId, newPriority) => onTaskPriorityUpdated(trip.id, taskId, newPriority)) : undefined}
+                                    onTaskRemoved={task.id && onTaskRemoved ? ((taskId) => onTaskRemoved(trip.id, taskId)) : undefined} />
                             ))}
                         </CardGrid>
                     </div>
