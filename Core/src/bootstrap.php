@@ -187,6 +187,7 @@
     $taskService = new TaskService($databaseClient, $distributedCacheClient, $configurationService);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
+    $geocodingService->setTripService($tripService);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient);
 

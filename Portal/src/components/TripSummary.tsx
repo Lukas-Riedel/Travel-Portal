@@ -11,9 +11,8 @@ import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import type { Coordinates } from "../types/Coordinates.ts"
 import type { Trip } from "../types/CoreSwaggerTypes.ts"
-import type { Date as PlaceDate, Flight, Note, Place } from "../types/CoreSwaggerTypes.ts"
+import { type Date as PlaceDate, type Flight, type Note, type Place, AddressType } from "../types/CoreSwaggerTypes.ts"
 import { CategoryCategory, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
-import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getMapLink } from "../utils/navigationUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
@@ -45,14 +44,12 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
     const getCachedCoordinates = useCachedCoordinates()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], enabled: !!trip?.id })
-    const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
-        ...(trip?.stays?.filter(stay => stay.address)?.map(stay => ({ name: stay.name, address: stay.address!, type: KnownAddressType.Stay })) ?? []),
-        ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.from.shortName }), address: t("airport.format", { name: flight.from.shortName }), type: KnownAddressType.Airport })) ?? []),
-        ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.to.shortName }), address: t("airport.format", { name: flight.to.shortName }), type: KnownAddressType.Airport })) ?? [])
-    ])
+    const lastSeenBridgeXDevice = useLastSeenBridgeXDevice()
 
     const currentSunAltitude = lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude ? Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)) : undefined
     const SunAltitudeIcon = currentSunAltitude && currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude && currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon
+
+    const formattedAddressName = lastSeenBridgeXDevice?.data?.address?.type === AddressType.Home ? t("general.label.home") : lastSeenBridgeXDevice?.data?.address?.name 
 
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
 
@@ -152,24 +149,30 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                         href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
                                         target="_blank"
                                         rel="noopener noreferrer">
-                                        {lastSeenBridgeXDevice.data.address?.name}
+                                        {formattedAddressName}
                                     </a>
                                 ) : (
                                     <span className="text-xs truncate">
-                                        {lastSeenBridgeXDevice.data.address?.name}
+                                        {formattedAddressName}
                                     </span>
                                 )}
                             </div>
                         ) : (
                             <div className="flex items-center justify-center w-full text-red-600 space-x-1 mt-6 link-hover hover:text-red-400">
                                 <LocateOffIcon size={16} />
-                                <a
-                                    className="text-xs truncate"
-                                    href={getMapLink(lastSeenBridgeXDevice.data.address?.address ?? "")}
-                                    target="_blank"
-                                    rel="noopener noreferrer">
-                                    {lastSeenBridgeXDevice.data.address?.name}
-                                </a>
+                                {lastSeenBridgeXDevice.data.address?.address ? (
+                                    <a
+                                        className="text-xs truncate"
+                                        href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
+                                        target="_blank"
+                                        rel="noopener noreferrer">
+                                        {formattedAddressName}
+                                    </a>
+                                ) : (
+                                    <span className="text-xs truncate">
+                                        {formattedAddressName}
+                                    </span>
+                                )}
                             </div>
                         )}
                         <ul className="text-[10px] text-gray-500 mt-2 space-y-0.5">

@@ -6,6 +6,9 @@
     use Core\Client\Google\GoogleClient;
     use Core\Common\CommonConstants;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Trip\TripIncludedEntity;
+    use Core\Service\Trip\TripService;
+    use Core\Service\Trip\TripSortingStrategy;
 
     class GeocodingService {
 
@@ -23,10 +26,16 @@
         private const LOCATION_CACHE_KEY_FORMAT = "GeocodingService:Location:%s-%s";
         private const LOCATION_CACHE_TTL = CommonConstants::ONE_MONTH_SECONDS;
 
+        private const AIRPORT_RADIUS_KM = 3.0;
+        private const STAY_RADIUS_KM = 0.5;
+        private const HOME_RADIUS_KM = 0.5;
+
         private readonly ConfigurationService $configurationService;
         private readonly CacheClient $distributedCacheClient;
         private readonly GoogleClient $googleClient;
         private readonly GenerativeContentClient $generativeContentClient;
+
+        private ?TripService $tripService = null;
 
         public function __construct(ConfigurationService $configurationService, CacheClient $distributedCacheClient, GoogleClient $googleClient, GenerativeContentClient $generativeContentClient) {
             $this->configurationService = $configurationService;
@@ -35,13 +44,51 @@
             $this->generativeContentClient = $generativeContentClient;
         }
 
+        public function setTripService(TripService $tripService) : void {
+            $this->tripService = $tripService;
+        }
+
         public function getAddress(float $latitude, float $longitude, bool $fetchIfNotPresent = true) : ?Address {
-            $address = $this->tryGetCachedAddress($latitude, $longitude);
-            if ($address !== null || !$fetchIfNotPresent) {
-                return $address;
+            $address = $this->doGetAddress($latitude, $longitude, $fetchIfNotPresent);
+
+            $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");
+            if ($this->getDistance($latitude, $longitude, $homeLocation["latitude"], $homeLocation["longitude"]) < self::HOME_RADIUS_KM) {
+                return new Address(AddressType::Home, $address->getName(), $address->getAddress());
             }
 
-            return $this->createAddress($latitude, $longitude);
+            if ($this->tripService !== null) {
+                foreach ($this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestDescending) as &$trip) {
+                    if (!$trip->isPastOrCurrent()) {
+                        continue;
+                    }
+
+                    foreach ($trip->getFlights() as &$flight) {
+                        foreach (array($flight->getFrom(), $flight->getTo()) as &$airport) {
+                            if ($airport->getLatitude() !== null && $airport->getLongitude() !== null
+                                && $this->getDistance($latitude, $longitude, $airport->getLatitude(), $airport->getLongitude()) < self::AIRPORT_RADIUS_KM) {
+                                return new Address(AddressType::Airport, $airport->getLongName() ?? $address->getAddress(), $airport->getLongName() ?? $address->getAddress());
+                            }
+                        }
+                    }
+
+                    if (!$trip->isCurrent()) {
+                        continue;
+                    }
+
+                    foreach ($trip->getStays() as &$stay) {
+                        if ($stay->getAddress() === null) {
+                            continue;
+                        }
+                        
+                        $resolvedLocation = $this->getLocation($stay->getAddress());
+                        if ($this->getDistance($latitude, $longitude, $resolvedLocation->getLatitude(), $resolvedLocation->getLongitude()) < self::STAY_RADIUS_KM) {
+                            return new Address(AddressType::Stay, $stay->getName(), $address->getAddress());
+                        }
+                    }
+                }
+            }
+
+            return $address;
         }
 
         public function getLocation(string $address, bool $fetchIfNotPresent = true) : ?Location {
@@ -102,13 +149,22 @@
             return new Location($location["country"], $location["latitude"], $location["longitude"], $location["elevation"], $location["timezone"]);
         }
 
+        private function doGetAddress(float $latitude, float $longitude, bool $fetchIfNotPresent = true) : ?Address {
+            $address = $this->tryGetCachedAddress($latitude, $longitude);
+            if ($address !== null || !$fetchIfNotPresent) {
+                return $address;
+            }
+
+            return $this->createAddress($latitude, $longitude);
+        }
+
         private function tryGetCachedAddress(float $latitude, float $longitude) : ?Address {
             $address = $this->distributedCacheClient->get($this->getLocationCacheKey($latitude, $longitude), self::LOCATION_CACHE_TTL);
             if ($address === null) {
                 return null;
             }
 
-            return new Address($address["address"]);
+            return new Address(AddressType::from($address["type"]), $address["name"], $address["address"]);
         }
 
         private function tryParseLocation(string $address) : ?Location {
@@ -172,10 +228,10 @@
             return null;
         }
 
-        private function createAddress(float $latitude, float $longitude) : Address {
+        private function createAddress(float $latitude, float $longitude) : Address {            
             $address = $this->googleClient->getAddress($latitude, $longitude);
 
-            $convertedAddress = new Address($address);
+            $convertedAddress = new Address(AddressType::Other, $address, $address);
             $this->distributedCacheClient->set($this->getLocationCacheKey($latitude, $longitude), $convertedAddress, self::LOCATION_CACHE_TTL);
 
             return $convertedAddress;
