@@ -28,8 +28,6 @@
 
         private const AIRPORT_RADIUS_KM = 3.0;
         private const STAY_RADIUS_KM = 0.5;
-        private const HOME_RADIUS_KM = 0.5;
-
         private readonly ConfigurationService $configurationService;
         private readonly CacheClient $distributedCacheClient;
         private readonly GoogleClient $googleClient;
@@ -53,7 +51,7 @@
 
             foreach ($this->configurationService->getConfigurationEntry("knownAddresses") as &$knownAddress) {
                 if ($this->getDistance($latitude, $longitude, $knownAddress["latitude"], $knownAddress["longitude"]) < $knownAddress["radius"]) {
-                    return new Address(AddressType::Other, $knownAddress["name"], $address->getAddress());
+                    return new Address($knownAddress["name"], $address->getAddress());
                 }
             }
 
@@ -67,7 +65,7 @@
                         foreach (array($flight->getFrom(), $flight->getTo()) as &$airport) {
                             if ($airport->getLatitude() !== null && $airport->getLongitude() !== null && $airport->getLongName() !== null
                                 && $this->getDistance($latitude, $longitude, $airport->getLatitude(), $airport->getLongitude()) < self::AIRPORT_RADIUS_KM) {
-                                return new Address(AddressType::Airport, $airport->getLongName(), $airport->getLongName());
+                                return new Address($airport->getLongName(), $airport->getLongName());
                             }
                         }
                     }
@@ -83,7 +81,7 @@
                         
                         $resolvedLocation = $this->getLocation($stay->getAddress());
                         if ($this->getDistance($latitude, $longitude, $resolvedLocation->getLatitude(), $resolvedLocation->getLongitude()) < self::STAY_RADIUS_KM) {
-                            return new Address(AddressType::Stay, $stay->getName(), $address->getAddress());
+                            return new Address($stay->getName(), $address->getAddress());
                         }
                     }
                 }
@@ -165,7 +163,7 @@
                 return null;
             }
 
-            return new Address(AddressType::from($address["type"]), $address["name"], $address["address"]);
+            return new Address($address["name"], $address["address"]);
         }
 
         private function tryParseLocation(string $address) : ?Location {
@@ -232,7 +230,7 @@
         private function createAddress(float $latitude, float $longitude) : Address {            
             $address = $this->googleClient->getAddress($latitude, $longitude);
 
-            $convertedAddress = new Address(AddressType::Other, $address, $address);
+            $convertedAddress = new Address($address, $address);
             $this->distributedCacheClient->set($this->getLocationCacheKey($latitude, $longitude), $convertedAddress, self::LOCATION_CACHE_TTL);
 
             return $convertedAddress;

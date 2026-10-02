@@ -11,7 +11,7 @@ import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import type { Coordinates } from "../types/Coordinates.ts"
 import type { Trip } from "../types/CoreSwaggerTypes.ts"
-import { type Date as PlaceDate, type Flight, type Note, type Place, AddressType } from "../types/CoreSwaggerTypes.ts"
+import { type Date as PlaceDate, type Flight, type Note, type Place } from "../types/CoreSwaggerTypes.ts"
 import { CategoryCategory, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getMapLink } from "../utils/navigationUtils.ts"
@@ -48,8 +48,6 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
 
     const currentSunAltitude = lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude ? Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)) : undefined
     const SunAltitudeIcon = currentSunAltitude && currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude && currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon
-
-    const formattedAddressName = lastSeenBridgeXDevice?.data?.address?.type === AddressType.Home ? t("general.label.home") : lastSeenBridgeXDevice?.data?.address?.name 
 
     const [timezone, setTimezone] = useState<string | undefined>(undefined)
 
@@ -149,11 +147,11 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                         href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
                                         target="_blank"
                                         rel="noopener noreferrer">
-                                        {formattedAddressName}
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
                                     </a>
                                 ) : (
                                     <span className="text-xs truncate">
-                                        {formattedAddressName}
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
                                     </span>
                                 )}
                             </div>
@@ -166,11 +164,11 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                         href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
                                         target="_blank"
                                         rel="noopener noreferrer">
-                                        {formattedAddressName}
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
                                     </a>
                                 ) : (
                                     <span className="text-xs truncate">
-                                        {formattedAddressName}
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
                                     </span>
                                 )}
                             </div>

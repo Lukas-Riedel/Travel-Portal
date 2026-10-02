@@ -76,7 +76,7 @@ class DeviceInitializer(
             }
         }
 
-        return DeviceData(fcmToken, location?.latitude, location?.longitude, DeviceAddressData(address?.name, address?.address, address?.type),
+        return DeviceData(fcmToken, location?.latitude, location?.longitude, DeviceAddressData(address?.name, address?.address),
             java.util.TimeZone.getDefault().id, batteryLevel / batteryScale.toDouble() * 100)
     }
 

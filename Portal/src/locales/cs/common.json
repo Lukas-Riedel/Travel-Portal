@@ -9,8 +9,7 @@
             "trip": "Výlet",
             "year": "Rok",
             "category": "Kategorie",
-            "entity": "Entita",
-            "home": "Domov"
+            "entity": "Entita"
         },
         "format": {
             "time": "HH:mm",
