@@ -51,9 +51,10 @@
         public function getAddress(float $latitude, float $longitude, bool $fetchIfNotPresent = true) : ?Address {
             $address = $this->doGetAddress($latitude, $longitude, $fetchIfNotPresent);
 
-            $homeLocation = $this->configurationService->getConfigurationEntry("homeLocation");
-            if ($this->getDistance($latitude, $longitude, $homeLocation["latitude"], $homeLocation["longitude"]) < self::HOME_RADIUS_KM) {
-                return new Address(AddressType::Home, $address->getName(), $address->getAddress());
+            foreach ($this->configurationService->getConfigurationEntry("knownAddresses") as &$knownAddress) {
+                if ($this->getDistance($latitude, $longitude, $knownAddress["latitude"], $knownAddress["longitude"]) < $knownAddress["radius"]) {
+                    return new Address(AddressType::Other, $knownAddress["name"], $address->getAddress());
+                }
             }
 
             if ($this->tripService !== null) {
