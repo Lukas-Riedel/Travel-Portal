@@ -1635,8 +1635,14 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["content"],
+                    required: ["title", "priority"],
                     properties: [
+                        new OA\Property(
+                            property: "title",
+                            description: "The title of the task",
+                            type: "string",
+                            example: "Daily briefing"
+                        ),
                         new OA\Property(
                             property: "description",
                             description: "The description of the task",
@@ -1661,6 +1667,12 @@
                             type: "integer",
                             format: "int64",
                             example: 86400
+                        ),
+                        new OA\Property(
+                            property: "autoDelete",
+                            description: "Whether to automatically delete the task after its deadline is reached",
+                            type: "boolean",
+                            example: false
                         )
                     ]
                 )
@@ -1739,14 +1751,16 @@
             $this->requireRole($request, UserRole::TripTaskEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
-            $description = $this->requireJsonBodyField($request, "description");
+            $title = $this->requireJsonBodyField($request, "title");
+            $description = $this->getJsonBodyField($request, "description");
             $priority = $this->requireJsonBodyField($request, "priority");
             $deadline = $this->getJsonBodyField($request, "deadline");
             $notificationInterval = $this->getJsonBodyField($request, "notificationInterval");
+            $autoDelete = $this->getJsonBodyField($request, "autoDelete") ?? false;
 
             $mappedPriority = TaskPriority::from($priority);
 
-            return $this->taskService->createTask($description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
+            return $this->taskService->createTask($title, $description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $autoDelete, $tripId);
         }
 
         #[OA\Patch(
@@ -1760,6 +1774,12 @@
                 content: new OA\JsonContent(
                     type: "object",
                     properties: [
+                        new OA\Property(
+                            property: "title",
+                            description: "The title of the task",
+                            type: "string",
+                            example: "Upcoming flight"
+                        ),
                         new OA\Property(
                             property: "description",
                             description: "The description of the task",
@@ -1860,9 +1880,14 @@
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $taskId = $this->requirePathArgument($routeArguments, "taskId");
 
+            $newTitle = $this->getJsonBodyField($request, "title");
+            if ($newTitle !== null) {
+                $wasUpdated |= $this->taskService->updateTaskTitle($taskId, $newTitle);
+            }
+            
             $newDescription = $this->getJsonBodyField($request, "description");
             if ($newDescription !== null) {
-                $wasUpdated |= $this->taskService->updateTaskDescription($taskId, $newDescription);
+                $wasUpdated |= $this->taskService->updateTaskDescription($taskId, $newDescription === "" ? null : $newDescription);
             }
 
             $newPriority = $this->getJsonBodyField($request, "priority");

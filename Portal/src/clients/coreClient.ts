@@ -757,19 +757,22 @@ export const updatePlaceNoteContent = async (placeId: string, noteId: string, co
 export const removePlaceNote = async (placeId: string, noteId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}/notes/${noteId}`)
 
-export const createTripTask = async (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: number): Promise<Task> =>
+export const createTripTask = async (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string, autoDelete?: boolean): Promise<Task> =>
     coreClient.post<Task>(`trips/${tripId}/tasks`,
         {
+            title,
             description,
             priority,
             notificationInterval,
-            deadline
+            deadline,
+            autoDelete
         }
     ).then(extractData)
 
-export const updateTripTaskDescription = async (tripId: string, taskId: string, description: string): Promise<Task> =>
+export const updateTripTaskTitle = async (tripId: string, taskId: string, title: string, description?: string): Promise<Task> =>
     coreClient.patch<Task>(`trips/${tripId}/tasks/${taskId}`,
         {
+            title,
             description
         }
     ).then(extractData)

@@ -7,7 +7,7 @@
         schema: "Task",
         type: "object",
         description: "A class representing a task",
-        required: ["description", "priority", "actionable"],
+        required: ["title", "priority", "actionable", "autoDelete"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -23,7 +23,7 @@
             ),
             new OA\Property(
                 property: "description",
-                description: "The description of the task",
+                description: "The optional description of the task",
                 type: "string",
                 example: "Complete the project documentation"
             ),
@@ -54,24 +54,31 @@
             ),
             new OA\Property(
                 property: "actionable",
-                description: "Whether the task can be acted upon (e.g. edited or removed)",
+                description: "Whether the task can be acted upon",
                 type: "boolean",
                 example: true
+            ),
+            new OA\Property(
+                property: "autoDelete",
+                description: "Whether to automatically delete the task after its deadline is reached",
+                type: "boolean",
+                example: false
             )
         ]
     )]
     class Task implements \JsonSerializable {
            
         private ?string $id;
-        private readonly ?string $title;
-        private readonly string $description;
+        private readonly string $title;
+        private readonly ?string $description;
         private readonly TaskPriority $priority;
         private readonly ?int $deadline;
         private readonly ?int $notificationInterval;
         private readonly ?string $url;
         private readonly bool $actionable;
+        private readonly bool $autoDelete;
 
-        public function __construct(?string $id, ?string $title, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable) {
+        public function __construct(?string $id, string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable, bool $autoDelete) {
             $this->id = $id;
             $this->title = $title;
             $this->description = $description;
@@ -80,6 +87,7 @@
             $this->notificationInterval = $notificationInterval;
             $this->url = $url;
             $this->actionable = $actionable;
+            $this->autoDelete = $autoDelete;
         }
 
         public function getId() : ?string {
@@ -90,11 +98,11 @@
             $this->id = $id;
         }
 
-        public function getTitle() : ?string {
+        public function getTitle() : string {
             return $this->title;
         }
 
-        public function getDescription() : string {
+        public function getDescription() : ?string {
             return $this->description;
         }
 
@@ -116,6 +124,10 @@
 
         public function isActionable() : bool {
             return $this->actionable;
+        }
+
+        public function isAutoDelete() : bool {
+            return $this->autoDelete;
         }
 
         #[\ReturnTypeWillChange]

@@ -272,7 +272,7 @@
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
-        new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
+        new TaskServiceListener($taskService, $eventPublisher, $scheduler),
         new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)

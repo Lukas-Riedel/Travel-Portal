@@ -61,7 +61,7 @@ export default function AdminPage() {
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
     const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: DeviceType.Agent })
-    const { trips, createTripTask, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } = useRegularTrips({ include: [TripIncludedEntity.WatchedFlights, TripIncludedEntity.Tasks] })
+    const { trips, createTripTask, removeTripTask, updateTripTaskTitle, updateTripTaskPriority } = useRegularTrips({ include: [TripIncludedEntity.WatchedFlights, TripIncludedEntity.Tasks] })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense, updateTripNoteContent,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: [PlaceIncludedEntity.Categories], minStart: 0, maxEnd: 0 })
@@ -202,12 +202,12 @@ export default function AdminPage() {
     }
 
     const handleTaskCreated = () => {
-        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, description, priority, notificationInterval, deadline) => {
+        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, title, priority, notificationInterval, deadline, description, autoDelete) => {
             if (deadline && !isTodayOrFutureDay(deadline)) {
                 return Promise.reject("Deadline must be in the future.")
             }
 
-            return createTripTask(tripId, description, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined)
+            return createTripTask(tripId, title, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined, description, autoDelete)
         })
     }
 
@@ -406,7 +406,7 @@ export default function AdminPage() {
                 <>
                     <TaskCardBoard
                         tasksWithTrips={tasksWithTrips}
-                        onTaskDescriptionUpdated={updateTripTaskDescription}
+                        onTaskTitleAndDescriptionUpdated={updateTripTaskTitle}
                         onTaskPriorityUpdated={updateTripTaskPriority}
                         onTaskRemoved={removeTripTask} />
                     <FloatingButton

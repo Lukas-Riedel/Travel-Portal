@@ -1359,7 +1359,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("day.prompt.copy.failed")
         )
 
-    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date) => Promise<Task>) =>
+    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date, description?: string, autoDelete?: boolean) => Promise<Task>) =>
         showFormToast(
             t("task.prompt.create.message"),
             [
@@ -1374,8 +1374,13 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 },
                 {
                     type: "text",
-                    label: t("task.label.description"),
+                    label: t("task.label.title"),
                     required: true
+                },
+                {
+                    type: "text",
+                    label: t("task.label.description"),
+                    required: false
                 },
                 {
                     type: "select",
@@ -1394,12 +1399,18 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "select",
                     label: t("task.label.notificationInterval"),
-                    required: true,
-                    options: [{ id: "", name: "" }].concat([3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({id: `${interval}`, name: formatDuration(interval)}))),
+                    required: false,
+                    options: [3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({id: `${interval}`, name: formatDuration(interval)})),
+                },
+                {
+                    type: "checkbox",
+                    label: t("task.label.autoDelete"),
+                    required: false,
+                    defaultValue: false
                 }
             ] as const,
-            (tripId: string, description: string, priority: string, deadline: string | undefined, notificationInterval: string) =>
-                createTripTask(tripId, description, priority as TaskPriority, notificationInterval ? parseInt(notificationInterval) : undefined, deadline ? new Date(deadline) : undefined),
+            (tripId: string, title: string, description: string | undefined, priority: string, deadline: string | undefined, notificationInterval: string, autoDelete: boolean) =>
+                createTripTask(tripId, title, priority as TaskPriority, notificationInterval ? parseInt(notificationInterval) : undefined, deadline ? new Date(deadline) : undefined, description, autoDelete),
             t("task.prompt.create.confirmed"),
             t("task.prompt.create.failed")
         )
@@ -1431,23 +1442,30 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         )
 
 
-    const showUpdateTaskDescriptionToast = (description: string, updateTaskDescription: (description: string) => Promise<Task>) =>
+    const showUpdateTaskTitleAndDescriptionToast = (title: string, description: string | undefined, updateTaskTitle: (title: string, description?: string) => Promise<Task>) =>
         showFormToast(
-            t("task.prompt.update.description.message"),
+            t("task.prompt.update.title.message"),
             [
                 {
                     type: "text",
+                    label: t("task.label.title"),
                     required: true,
-                    defaultValue: description
+                    defaultValue: title
+                },
+                {
+                    type: "text",
+                    label: t("task.label.description"),
+                    required: false,
+                    defaultValue: description ?? undefined
                 }
             ],
-            updateTaskDescription,
-            t("task.prompt.update.description.confirmed"),
-            t("task.prompt.update.description.failed")
+            (newTitle: string, newDescription?: string) => updateTaskTitle(newTitle, newDescription),
+            t("task.prompt.update.title.confirmed"),
+            t("task.prompt.update.title.failed")
         )
 
     return {
-        showUpdateTaskDescriptionToast,
+        showUpdateTaskTitleAndDescriptionToast,
         showUpdateTaskPriorityToast,
         showRemoveTaskToast,
         showCreateTripTaskToast,

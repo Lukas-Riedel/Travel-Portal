@@ -1,4 +1,4 @@
-import { createTripTask, listRegularTrips, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } from "../clients/coreClient.ts"
+import { createTripTask, listRegularTrips, removeTripTask, updateTripTaskPriority,updateTripTaskTitle } from "../clients/coreClient.ts"
 import type { TaskPriority, TripIncludedEntity } from "../types/CoreSwaggerTypes.ts"
 import type { UseRegularTripsResult } from "../types/UseRegularTripsResult.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
@@ -18,9 +18,9 @@ export const useRegularTrips = ({ year, include }: UseRegularTripsProps = {}): U
 
     return {
         trips: response === null ? null : response,
-        createTripTask: (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: number) => createTripTask(tripId, description, priority, notificationInterval, deadline).then(refetchResponse),
+        createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string, autoDelete?: boolean) => createTripTask(tripId, title, priority, notificationInterval, deadline, description, autoDelete).then(refetchResponse),
         removeTripTask: (tripId: string, taskId: string) => removeTripTask(tripId, taskId).then(refetchResponse),
-        updateTripTaskDescription: (tripId: string, taskId: string, newDescription: string) => updateTripTaskDescription(tripId, taskId, newDescription).then(refetchResponse),
+        updateTripTaskTitle: (tripId: string, taskId: string, newTitle: string, newDescription?: string) => updateTripTaskTitle(tripId, taskId, newTitle, newDescription).then(refetchResponse),
         updateTripTaskPriority: (tripId: string, taskId: string, newPriority: TaskPriority) => updateTripTaskPriority(tripId, taskId, newPriority).then(refetchResponse)
     }
 }

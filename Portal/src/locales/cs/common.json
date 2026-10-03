@@ -650,11 +650,13 @@
     },
     "task": {
         "label": {
+            "title": "Název",
             "description": "Popis",
             "trip": "Výlet",
             "priority": "Priorita",
             "deadline": "Termín",
-            "notificationInterval": "Interval upomínek"
+            "notificationInterval": "Interval upomínek",
+            "autoDelete": "Smazat po termínu"
         },
         "prompt": {
             "create": {
@@ -668,10 +670,10 @@
                     "confirmed": "Priorita byla úspěšně aktualizována",
                     "failed": "Nepodařilo se aktualizovat prioritu"
                 },
-                "description": {
-                    "message": "Zadej nový popis úkolu:",
-                    "confirmed": "Popis byl úspěšně aktualizován",
-                    "failed": "Nepodařilo se aktualizovat popis"
+                "title": {
+                    "message": "Zadej nový název úkolu:",
+                    "confirmed": "Název byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat název"
                 }
             },
             "remove": {

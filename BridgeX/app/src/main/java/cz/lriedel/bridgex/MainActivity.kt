@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity() {
             categoryId != null -> "${BuildConfig.PORTAL_BASE_URL}category/$categoryId"
             year != null -> "${BuildConfig.PORTAL_BASE_URL}year/$year"
             issues > 0 -> "${BuildConfig.PORTAL_BASE_URL}admin?tab=issues"
-            task != null -> "${BuildConfig.PORTAL_BASE_URL}admin?tab=tasks"
             else -> BuildConfig.PORTAL_BASE_URL
         }
         

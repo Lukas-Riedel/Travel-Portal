@@ -5,8 +5,7 @@ removeTrip, removeTripExpense,
 removeTripHighlight,
 removeTripNote,
     removeTripTask,
-replaceTrip, updateHighlightQualityAttributes,     updateTripExpenseDescription, updateTripExpenseValue,     updateTripMainHighlight, updateTripName,     updateTripNoteContent, updateTripStart,     updateTripTaskDescription,
-    updateTripTaskPriority} from "../clients/coreClient.ts"
+replaceTrip, updateHighlightQualityAttributes,     updateTripExpenseDescription, updateTripExpenseValue,     updateTripMainHighlight, updateTripName,     updateTripNoteContent, updateTripStart,         updateTripTaskPriority,updateTripTaskTitle} from "../clients/coreClient.ts"
 import type { ExpenseCurrency, ExpenseType, TaskPriority } from "../types/CoreSwaggerTypes.ts"
 import type { UseTripResult } from "../types/UseTripResult.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
@@ -35,8 +34,8 @@ export const useTrip = (tripId?: string): UseTripResult => {
         removeTripExpense: (expenseId: string) => removeTripExpense(tripId!, expenseId).then(refetchResponse),
         updateTripExpenseDescription: (expenseId: string, description: string) => updateTripExpenseDescription(tripId!, expenseId, description).then(refetchResponse),
         updateTripExpenseValue: (expenseId: string, value: number, currency: ExpenseCurrency) => updateTripExpenseValue(tripId!, expenseId, value, currency).then(refetchResponse),
-        createTripTask: (tripId: string, description: string, priority: TaskPriority, deadline?: number) => createTripTask(tripId, description, priority, deadline).then(refetchResponse),
-        updateTripTaskDescription: (tripId: string, taskId: string, description: string) => updateTripTaskDescription(tripId, taskId, description).then(refetchResponse),
+        createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string, autoDelete?: boolean) => createTripTask(tripId, title, priority, notificationInterval, deadline, description, autoDelete).then(refetchResponse),
+        updateTripTaskTitle: (tripId: string, taskId: string, title: string, description?: string) => updateTripTaskTitle(tripId, taskId, title, description).then(refetchResponse),
         updateTripTaskPriority: (tripId: string, taskId: string, priority: TaskPriority) => updateTripTaskPriority(tripId, taskId, priority).then(refetchResponse),
         removeTripTask: (tripId: string, taskId: string) => removeTripTask(tripId, taskId).then(refetchResponse),
         createTripNote: (name: string) => createTripNote(tripId!, name).then(refetchResponse),

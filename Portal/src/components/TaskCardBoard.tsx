@@ -8,7 +8,7 @@ import TaskCard from "./TaskCard.tsx"
 
 interface TaskCardBoardProps {
     tasksWithTrips: { task: Task, trip: Trip }[] | null
-    onTaskDescriptionUpdated?: (tripId: string, taskId: string, newDescription: string) => Promise<Task>
+    onTaskTitleAndDescriptionUpdated?: (tripId: string, taskId: string, newTitle: string, newDescription?: string) => Promise<Task>
     onTaskPriorityUpdated?: (tripId: string, taskId: string, newPriority: TaskPriority) => Promise<Task>
     onTaskRemoved?: (tripId: string, taskId: string) => Promise<void>
 }
@@ -29,7 +29,7 @@ const PRIORITY_ORDER: TaskPriority[] = [
     TaskPriority.Lowest
 ]
 
-export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated, onTaskPriorityUpdated, onTaskRemoved }: TaskCardBoardProps) {
+export default function TaskCardBoard({ tasksWithTrips, onTaskTitleAndDescriptionUpdated, onTaskPriorityUpdated, onTaskRemoved }: TaskCardBoardProps) {
     const { t } = useTranslation()
 
     const sortedTasks = tasksWithTrips ? [...tasksWithTrips].sort((a, b) => {
@@ -77,7 +77,7 @@ export default function TaskCardBoard({ tasksWithTrips, onTaskDescriptionUpdated
                                     key={task.id ?? `${trip.id}:${task.description}:${task.deadline}`}
                                     task={task}
                                     trip={trip}
-                                    onTaskDescriptionUpdated={task.id && onTaskDescriptionUpdated ? ((taskId, newDescription) => onTaskDescriptionUpdated(trip.id, taskId, newDescription)) : undefined}
+                                    onTaskTitleAndDescriptionUpdated={task.id && onTaskTitleAndDescriptionUpdated ? ((taskId, newTitle, newDescription) => onTaskTitleAndDescriptionUpdated(trip.id, taskId, newTitle, newDescription)) : undefined}
                                     onTaskPriorityUpdated={task.id && onTaskPriorityUpdated ? ((taskId, newPriority) => onTaskPriorityUpdated(trip.id, taskId, newPriority)) : undefined}
                                     onTaskRemoved={task.id && onTaskRemoved ? ((taskId) => onTaskRemoved(trip.id, taskId)) : undefined} />
                             ))}

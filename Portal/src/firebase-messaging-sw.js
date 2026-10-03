@@ -43,10 +43,10 @@ onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "TaskDeadlineReached") {
         const args = JSON.parse(payload.data.args)
 
-        self.registration.showNotification(args.title ?? "Blíží se termín úkolu", {
-            body: args.task,
+        self.registration.showNotification(args.title, {
+            body: args.task ?? "",
             icon: "icon-192.png",
-            data: args.url ?? (args.tripId ? `/trip/${args.tripId}` : "/admin?tab=tasks")
+            data: args.tripId && `/trip/${args.tripId}`
         })
     }
 

@@ -7,8 +7,8 @@ class TaskDeadlineReachedNotificationFactory(
     private val context: Context
 ) : NotificationFactory {
     override suspend fun create(args: Map<String, Any>): Notification? {
-        val title = args["title"] as? String ?: context.getString(R.string.title_task_deadline_reached)
-        val task = args["task"] as? String ?: return null
+        val title = args["title"] as? String ?: return null
+        val task = args["task"] as? String ?: ""
         val url = args["url"] as? String
         val tripId = args["tripId"] as? String
 
