@@ -2,13 +2,11 @@ cd Portal
 npx lint-staged
 cd ..
 
-cd Cortex
-STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$" | sed "s|^Cortex/||")
-if [ -n "$STAGED_PY" ]; then
-  echo "$STAGED_PY" | xargs python -m ruff check --fix
-  echo "$STAGED_PY" | sed "s|^|Cortex/|" | xargs git add
+STAGED_PY_FULL=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$")
+if [ -n "$STAGED_PY_FULL" ]; then
+  echo "$STAGED_PY_FULL" | sed "s|^Cortex/||" | (cd Cortex && xargs python -m ruff check --fix)
+  echo "$STAGED_PY_FULL" | xargs git add
 fi
-cd ..
 
 for PROJECT in Core Iam Common; do
   STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^${PROJECT}/.*\.php$" | sed "s|^${PROJECT}/||")

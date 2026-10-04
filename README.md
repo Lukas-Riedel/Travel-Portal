@@ -30,13 +30,14 @@ The Travel Portal is "data-driven" in its purest form, leveraging an array of AP
 * **Aviation Logbook:** As an **aviation enthusiast**, I track every flight. The system automatically fetches data from **Flightradar24 APIs** to log flight history (routes, aircraft types, mileage) without me lifting a finger.
 * **Environmental Context:** For every trip, the system pulls historical and real-time data, such as **weather forecasts** and local time zones, to create a complete record of the experience.
 * **Interactive Mapping:** Using the **Google Maps JavaScript API**, the portal renders dynamic markers filterable by **years** or **geographical regions**.
-* **AI-Generated Narratives:** The **Gemini API** analyzes all collected metadata to automatically generate rich, human-like text content.
+* **Agentic AI:** The portal goes beyond one-shot prompting - Gemini operates as a **context-aware assistant** that pulls live data from the backend to ground its responses in real personal travel history.
+* **Semantic Search:** Powered by vector embeddings, the portal understands meaning rather than keywords. Searching for, e.g., *"white sand beach"*, surfaces every place and photo where a white sand beach was captured even without an exact match in the metadata.
 * **Smart Media Handling:** Since Google Photos API calls are "expensive" (quotas/latency), the system implements a caching layer. Selected photos are cached in a local **S3 storage (MinIO)** within the cluster for instant loading.
 * **Real-time Notifications**: The system stays proactive. Through integration with **Firebase Cloud Messaging (FCM)**, the portal sends instant push notifications to the mobile device regarding flight updates, successful data synchronizations, or AI processing completions.
 
 ---
 
-## 🏗 Microservices Architecture & Security
+## 🏗 System Architecture
 
 The system is decoupled into specialized services, utilizing **RabbitMQ** for asynchronous communication and a centralized **Identity and Access Management (IAM)** layer.
 
@@ -48,15 +49,25 @@ The system is decoupled into specialized services, utilizing **RabbitMQ** for as
 ### 🧱 Specialized Services
 * **Portal (React):** A high-performance PWA serving as the main interface. Focused on map visualizations and gallery rendering. By implementing **Service Workers**, the portal supports offline caching and handles **Web Push Notifications** via **FCM**, ensuring real-time updates reach the desktop even when the browser tab is inactive.
 * **Core (PHP / REST API):** The central brain. Since PHP is single-threaded, Core includes a **dedicated background worker** that consumes **RabbitMQ** tasks to handle complex API integrations without blocking the API response. **Maintained in PHP for historical reasons** (originally built for shared hosting), it has since been modernized into a cloud-native service.
-* **Cortex (Python / REST API):** The AI heart of the system. Originally an RMQ listener, it has been refactored into a **high-performance REST API**. Its main responsibility is to transform raw data (images or text) into **high-dimensional vectors (embeddings)** using specialized ML models.
+* **Cortex (Python / REST API):** The AI heart of the system. A **high-performance REST API** responsible for transforming raw data into **high-dimensional vectors (embeddings)** for semantic search, and serving as the **agentic AI orchestrator**, managing the Gemini function-calling loop, tool registry, and persistent conversation history.
 * **Agent (Java / RabbitMQ Client):** A worker for heavy lifting, such as high-volume image processing, metadata extraction, and massive data synchronization.
 * **BridgeX (Android / Native):** A native gateway providing access to **GPS tracking** for precise location history and **Health Connect** integration. It also serves as a specialized container that renders the **Portal via an optimized WebView**. This allows for a seamless mobile experience while acting as a **native FCM consumer** for low-latency system alerts.
+
+### 🤖 Agentic AI
+The portal includes a conversational AI layer built on **Gemini's function calling** capabilities. Rather than receiving a static data snapshot, Gemini can **actively request context from the backend** mid-conversation - querying trips, looking up visited locations, and reading notes - before composing a response.
+
+This enables natural interactions such as:
+* *"Plan my next trip to Italy based on places I haven't visited yet, taking into account preferences from previous trips"*
+* *"Summarize everything I noted during my last trip to Japan"*
+* *"When I'm back from Las Vegas, remind me every day to buy a flight ticket to Dubai until I do"*
+
+The agentic layer is orchestrated by **Cortex**, which manages the tool registry, persistent behavioral instructions (skills), and multi-turn conversation history. New tools and skills are added incrementally as the portal grows.
 
 ### 📉 Storage & Caching Strategy
 * **MinIO (S3):** High-speed media caching to bypass Google Photos API limitations.
 * **Redis:** Used exclusively for data with specific **TTL (Time To Live)**. No traditional sessions are used; Redis handles the lifecycle of temporary data automatically.
 * **PostgreSQL:** The robust relational foundation for all structured business data.
-* **OpenSearch:** Serves as the primary engine for high-performance discovery, decoupling search heavy-lifting from the relational database. Beyond full-text search, it acts as a **Vector Database**, enabling **k-NN (k-nearest neighbors)** search to find similar or diverse content across thousands of records.
+* **OpenSearch:** The primary engine for high-performance discovery, decoupling search from the relational database. Beyond full-text search, it acts as a **Vector Database**, enabling **semantic k-NN search** across trips, locations, and photos.
 
 ---
 

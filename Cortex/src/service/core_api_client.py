@@ -1,9 +1,24 @@
 from typing import Any
+
 import requests
-from src.core.logger import logger, transaction_id
+
+from src.core.logger import transaction_id
 from src.service.authentication_service import AuthenticationService
 
 
+# TODO: Deadlock risk — Core calls Cortex synchronously (blocking) and Cortex's agentic AI
+# callback calls Core back to fetch data. If Core's thread pool is exhausted waiting for Cortex,
+# it cannot serve Cortex's callback request → deadlock.
+#
+# Proposed fix: decouple the call chain via a message queue (RabbitMQ / Redis).
+# Core enqueues the agentic AI request instead of calling Cortex directly over HTTP,
+# and exposes a status/result polling endpoint. Cortex consumes tasks from the queue,
+# processes them (including calling Core back for data), and writes the result back.
+# Core then returns the result via the polling endpoint once Cortex signals completion.
+# This breaks the synchronous call cycle entirely.
+#
+# Until that is implemented: every Core API call in this class MUST have an explicit timeout
+# set to prevent threads from blocking indefinitely and masking the deadlock.
 class CoreApiClient:
     def __init__(self, core_host: str, core_port: int, authentication_service: AuthenticationService):
         self.base_url = f"http://{core_host}:{core_port}"

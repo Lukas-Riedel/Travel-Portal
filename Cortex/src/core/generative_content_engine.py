@@ -12,6 +12,8 @@ MODEL_NAME: Final[str] = "gemini"
 MODEL_WHITELIST: Final[list[str]] = ["flash", "pro"]
 MODEL_BLACKLIST: Final[list[str]] = ["image", "latest", "preview", "omni", "tts", "transcribe"]
 GENERATE_CONTENT_ACTION: Final[str] = "generatecontent"
+
+
 class GenerativeContentEngine:
     def __init__(
         self,
