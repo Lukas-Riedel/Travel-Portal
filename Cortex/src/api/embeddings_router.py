@@ -11,8 +11,6 @@ router = APIRouter(
     dependencies=[Depends(require_backend_service_account)],
 )
 
-TARGET_LANGUAGE: Final[str] = "en"
-
 
 class TextEmbeddingRequest(BaseModel):
     data: str = Field(

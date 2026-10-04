@@ -21,8 +21,6 @@ def get_current_user(
 def require_backend_service_account(
     request: Request, user_info: dict = Depends(get_current_user)
 ):
-    auth_service: AuthenticationService = request.app.state.authentication_service
-
     if user_info.get("client") != os.getenv("IAM_BACKEND_CLIENT_ID"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

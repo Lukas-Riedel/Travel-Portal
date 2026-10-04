@@ -18,6 +18,9 @@ cortex:
         id: travel-portal-app
       backend:
         id: admin-cli
+  core:
+    host: core
+    port: 8080
   grafana:
     client:
       name: travel-portal-service

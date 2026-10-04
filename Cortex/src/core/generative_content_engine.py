@@ -5,23 +5,31 @@ from google import genai
 from google.genai import types
 
 from src.core.logger import logger
+from src.core.skill_loader import SkillLoader
+from src.tools.registry import ToolRegistry
 
 MODEL_NAME: Final[str] = "gemini"
 MODEL_WHITELIST: Final[list[str]] = ["flash", "pro"]
 MODEL_BLACKLIST: Final[list[str]] = ["image", "latest", "preview", "omni", "tts", "transcribe"]
 GENERATE_CONTENT_ACTION: Final[str] = "generatecontent"
-
-
 class GenerativeContentEngine:
-    def __init__(self, api_key: str) -> None:
-        self._client = genai.Client(api_key=api_key)
-        self._models = self._load_models()
-        logger.info(f"Loaded {len(self._models)} LLM model(s): {self._models}")
+    def __init__(
+        self,
+        api_key: str,
+        tool_registry: ToolRegistry | None = None,
+        skill_loader: SkillLoader | None = None,
+    ) -> None:
+        self.client = genai.Client(api_key=api_key)
+        self.tool_registry = tool_registry
+        self.skill_loader = skill_loader or SkillLoader()
+        self.system_instruction = self.skill_loader.load_skills()
+        self.models = self.load_models()
+        logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
 
-    def _load_models(self) -> list[str]:
+    def load_models(self) -> list[str]:
         candidates: list[str] = []
 
-        for model in self._client.models.list():
+        for model in self.client.models.list():
             name: str = model.name
 
             if MODEL_NAME not in name:
@@ -41,29 +49,45 @@ class GenerativeContentEngine:
         return candidates
 
     def generate(self, messages: list[dict[str, str]], schema: dict[str, Any] | None = None) -> str:
-        config = types.GenerateContentConfig(
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
-            **({"response_mime_type": "application/json", "response_schema": schema} if schema is not None else {}),
-        )
+        if not messages:
+            return ""
 
-        contents = [
+        # Previous messages form the history, last message is sent to chat
+        history: list[types.Content] = [
             types.Content(
                 role=msg["role"],
                 parts=[types.Part.from_text(text=msg["text"])],
             )
-            for msg in messages
+            for msg in messages[:-1]
         ]
+        last_message = messages[-1]["text"]
 
-        for model in self._models:
+        tools = self.tool_registry.get_callable_tools() if self.tool_registry else []
+
+        config_kwargs: dict[str, Any] = {}
+        if self.system_instruction:
+            config_kwargs["system_instruction"] = self.system_instruction
+
+        if tools:
+            config_kwargs["tools"] = tools
+
+        if schema is not None:
+            config_kwargs["response_mime_type"] = "application/json"
+            config_kwargs["response_schema"] = schema
+
+        config = types.GenerateContentConfig(**config_kwargs)
+
+        for model in self.models:
             logger.debug(f"Attempting generative content request with model '{model}'...")
             try:
-                response = self._client.models.generate_content(
+                chat = self.client.chats.create(
                     model=model,
-                    contents=contents,
+                    history=list(history) if history else None,
                     config=config,
                 )
+                response = chat.send_message(last_message)
                 logger.info(f"Generative content request succeeded with model '{model}'.")
-                return response.text
+                return response.text or ""
             except Exception as exc:
                 logger.warning(f"Model '{model}' is unavailable ({exc}). Trying next model...")
                 continue
