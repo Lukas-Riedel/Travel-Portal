@@ -18,7 +18,7 @@
     use Core\Client\Forecast\OpenMeteoActualForecastClient;
     use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
     use Core\Client\GenerativeContent\CachingGenerativeContentClient;
-    use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
+    use Core\Client\GenerativeContent\CortexGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\ExtendedHttpClient;
     use Core\Client\Http\FlareSolverrHttpClient;
@@ -121,12 +121,7 @@
     $httpClient = new StandardHttpClient(getenv("APP_NAME"), $loggingContext, $logger);
     $extendedHttpClient = new ExtendedHttpClient($httpClient);
     $flareSolverrHttpClient = new FlareSolverrHttpClient($extendedHttpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"), $logger);
-    $googleClient = new GoogleClient($distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
-    $generativeContentClient = new GeminiGenerativeContentClient($extendedHttpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
-    $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
     $translationClient = new LibreTranslateTranslationClient($extendedHttpClient, $distributedCacheClient, getenv("LIBRE_TRANSLATE_HOST"), getenv("LIBRE_TRANSLATE_PORT"));
-    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL")); 
-    $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($extendedHttpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($flareSolverrHttpClient);
     $actualForecastClient = new OpenMeteoActualForecastClient($extendedHttpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")), getenv("ACTUAL_WEATHER_FORECAST_CLOUD_COVER_CONFIDENCE_COEFFICIENT"));
@@ -143,6 +138,19 @@
         $messagingClient
     );
 
+    // Authentication service.
+    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+
+    // Authenticated clients.
+    $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
+    $cloudMessagingClient = new FirebaseCloudMessagingClient($authenticationService, getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
+    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
+    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
+    $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $clusteringClient = new CortexClusteringClient($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $distributedCacheClient, getenv("WORKER_QUEUE_NAME"));
     $calendarClient->setEventPublisher($eventPublisher);
@@ -153,15 +161,7 @@
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
     $googleClient->setConfigurationService($configurationService);
 
-    // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));
-    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
-    $cloudMessagingClient->setAuthenticationService($authenticationService);
-    $googleClient->setAuthenticationService($authenticationService);
-
     // Services.
-    $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $clusteringClient = new CortexClusteringClient($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $indexService = new IndexService($clusteringClient, $embeddingClient, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
         getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"), getenv("STYLE_EMBEDDING_COEFFICIENT"), getenv("NEGATIVE_EMBEDDING_COEFFICIENT"));
     $geocodingService = new GeocodingService($configurationService, $distributedCacheClient, $googleClient, $generativeContentClient);

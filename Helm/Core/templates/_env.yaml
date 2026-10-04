@@ -96,11 +96,6 @@
     secretKeyRef:
       name: {{ .Release.Name }}-secret
       key: google-maps-api-key
-- name: GOOGLE_GEMINI_API_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Release.Name }}-secret
-      key: google-gemini-api-key
 - name: FCM_PROJECT_ID
   value: "{{ .Values.core.fcm.project.id }}"
 - name: EXCHANGE_RATE_API_KEY

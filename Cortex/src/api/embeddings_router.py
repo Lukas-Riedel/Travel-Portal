@@ -55,7 +55,7 @@ def get_text_embedding(
     request: TextEmbeddingRequest,
     req_obj: Request,
 ):
-    embedding = req_obj.app.state.ai_engine.get_text_embedding(request.data).flatten()
+    embedding = req_obj.app.state.embeddings_engine.get_text_embedding(request.data).flatten()
 
     return {"embedding": [float(x) for x in embedding], "dimensions": len(embedding)}
 
@@ -71,6 +71,6 @@ def get_text_embedding(
     },
 )
 def get_photo_embedding(request: PhotoEmbeddingRequest, req_obj: Request):
-    embedding = req_obj.app.state.ai_engine.get_photo_embedding(request.data).flatten()
+    embedding = req_obj.app.state.embeddings_engine.get_photo_embedding(request.data).flatten()
 
     return {"embedding": [float(x) for x in embedding], "dimensions": len(embedding)}

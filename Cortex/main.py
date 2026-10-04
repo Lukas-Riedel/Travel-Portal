@@ -10,10 +10,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.api.clustering_router import router as clustering_router
 from src.api.embeddings_router import router as embeddings_router
+from src.api.generativecontent_router import router as generativecontent_router
 from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
-from src.core.ai_engine import AiEngine
 from src.core.clustering_engine import ClusteringEngine
+from src.core.embeddings_engine import EmbeddingsEngine
+from src.core.generative_content_engine import GenerativeContentEngine
 from src.core.logger import logger, transaction_id
 from src.service.authentication_service import AuthenticationService
 
@@ -22,8 +24,8 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.ai_engine = AiEngine(
-        os.getenv("EMBEDDINGS_MODEL_NAME"), 
+    app.state.embeddings_engine = EmbeddingsEngine(
+        os.getenv("EMBEDDINGS_MODEL_NAME"),
         os.getenv("ENGINE_DEVICE"),
     )
     app.state.clustering_engine = ClusteringEngine()
@@ -31,6 +33,9 @@ async def lifespan(app: FastAPI):
         os.getenv("IAM_HOST"),
         int(os.getenv("IAM_PORT")),
         os.getenv("IAM_APP_CLIENT_ID"),
+    )
+    app.state.generative_content_engine = GenerativeContentEngine(
+        os.getenv("GEMINI_API_KEY"),
     )
     yield
 
@@ -41,6 +46,7 @@ app = FastAPI(
 app.include_router(management_router)
 app.include_router(embeddings_router)
 app.include_router(clustering_router)
+app.include_router(generativecontent_router)
 app.add_middleware(LoggingMiddleware)
 
 

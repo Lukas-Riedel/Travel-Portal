@@ -19,26 +19,22 @@
         private const OPENLINEAGE_DATASET_NAMESPACE_FORMAT = "fcm://%s";
         private const OPENLINEAGE_DATASET_NAME_FORMAT = "%s/%s";
 
+        private readonly AuthenticationService $authenticationService;
         private readonly HttpClient $httpClient;
         private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
 
         private readonly string $projectId;
 
-        private ?AuthenticationService $authenticationService;
         private ?OpenLineageEventManager $openLineageEventManager;
 
-        public function __construct(string $projectId, HttpClient $httpClient, LoggingContext $loggingContext, Logger $logger) {
+        public function __construct(AuthenticationService $authenticationService, string $projectId, HttpClient $httpClient, LoggingContext $loggingContext, Logger $logger) {
+            $this->authenticationService = $authenticationService;
             $this->projectId = $projectId;
             $this->httpClient = $httpClient;
             $this->loggingContext = $loggingContext;
             $this->logger = $logger;
-            $this->authenticationService = null;
             $this->openLineageEventManager = null;
-        }
-
-        public function setAuthenticationService(AuthenticationService $authenticationService) : void {
-            $this->authenticationService = $authenticationService;
         }
 
         public function setOpenLineageEventManager(OpenLineageEventManager $openLineageEventManager) : void {

@@ -47,6 +47,7 @@
         private const FOLDER_LOCK_FORMAT = "GoogleClient:Lock:Folder:%s";
         private const FOLDER_LOCK_TTL = 10;
 
+        private readonly AuthenticationService $authenticationService;
         private readonly CacheClient $distributedCacheClient;
         private readonly HttpClient $httpClient;
         private readonly Logger $logger;
@@ -54,23 +55,18 @@
         private readonly string $googleMapsApiKey;
 
         private ?ConfigurationService $configurationService;
-        private ?AuthenticationService $authenticationService;
 
-        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey) {
+        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey) {
+            $this->authenticationService = $authenticationService;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->httpClient = $httpClient;
             $this->logger = $logger;
             $this->googleMapsApiKey = $googleMapsApiKey;
             $this->configurationService = null;
-            $this->authenticationService = null;
         }
 
         public function setConfigurationService(ConfigurationService $configurationService) : void {
             $this->configurationService = $configurationService;
-        }
-
-        public function setAuthenticationService(AuthenticationService $authenticationService) : void {
-            $this->authenticationService = $authenticationService;
         }
 
         public function getLocation(string $address) : mixed {
