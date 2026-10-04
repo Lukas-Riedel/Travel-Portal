@@ -36,7 +36,7 @@
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
-            return $this->doGetResponse(array(array("role" => "user", "text" => $this->createPrompt($query, $context))), $responseJsonSchema);
+            return $this->doGetResponse(array(array("role" => "user", "text" => $this->createPrompt($query, $context))), $responseJsonSchema, false);
         }
 
         public function getChatResponse(string $prompt, ?string $conversationId = null, ?array $responseJsonSchema = null) : ?GenerativeContentResult {
@@ -46,7 +46,7 @@
 
             $messages[] = array("role" => "user", "text" => $prompt);
 
-            $response = $this->doGetResponse($messages, $responseJsonSchema);
+            $response = $this->doGetResponse($messages, $responseJsonSchema, true);
             if ($response === null) {
                 return null;
             }
@@ -57,15 +57,16 @@
             return new GenerativeContentResult($response, $targetConversationId);
         }
 
-        private function doGetResponse(array $messages, ?array $responseJsonSchema = null) : ?string {
+        private function doGetResponse(array $messages, ?array $responseJsonSchema, bool $useSkills) : ?string {
             $payload = array("messages" => $messages);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
             }
 
+            $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");
             $response = $this->httpClient->executeRequest(
                 HttpMethod::POST,
-                $this->getCortexBaseUrl() . self::GENERATIVE_CONTENT_API_ENDPOINT_PATH,
+                $url,
                 array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"),
                 json_encode($payload)
             );

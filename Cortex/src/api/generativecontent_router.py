@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -52,10 +52,16 @@ class GenerativeContentRequest(BaseModel):
 def generate_content(
     request: GenerativeContentRequest,
     req_obj: Request,
+    use_skills: bool = Query(
+        True,
+        alias="useSkills",
+        description="Whether to include skills and tools in the prompt context",
+    ),
 ):
     text: str = req_obj.app.state.generative_content_engine.generate(
         [message.model_dump() for message in request.messages],
         request.schema,
+        use_skills,
     )
 
     if request.schema is not None:

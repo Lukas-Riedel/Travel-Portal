@@ -50,7 +50,12 @@ class GenerativeContentEngine:
         candidates.sort(key=lambda n: [int(x) if x.isdigit() else x for x in n.replace("-", ".").split(".")], reverse=True)
         return candidates
 
-    def generate(self, messages: list[dict[str, str]], schema: dict[str, Any] | None = None) -> str:
+    def generate(
+        self,
+        messages: list[dict[str, str]],
+        schema: dict[str, Any] | None = None,
+        use_skills: bool = True,
+    ) -> str:
         if not messages:
             return ""
 
@@ -64,14 +69,14 @@ class GenerativeContentEngine:
         ]
         last_message = messages[-1]["text"]
 
-        tools = self.tool_registry.get_callable_tools() if self.tool_registry else []
-
         config_kwargs: dict[str, Any] = {}
-        if self.system_instruction:
-            config_kwargs["system_instruction"] = self.system_instruction
+        if use_skills:
+            if self.system_instruction:
+                config_kwargs["system_instruction"] = self.system_instruction
 
-        if tools:
-            config_kwargs["tools"] = tools
+            tools = self.tool_registry.get_callable_tools() if self.tool_registry else []
+            if tools:
+                config_kwargs["tools"] = tools
 
         if schema is not None:
             config_kwargs["response_mime_type"] = "application/json"
