@@ -6,6 +6,7 @@
     use Common\Client\Http\HttpMethod;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
+    use Core\Service\Configuration\ConfigurationService;
     use Monolog\Logger;
     use Ramsey\Uuid\Uuid;
 
@@ -20,15 +21,17 @@
 
         private readonly AuthenticationService $authenticationService;
         private readonly CacheClient $distributedCacheClient;
+        private readonly ConfigurationService $configurationService;
         private readonly HttpClient $httpClient;
         private readonly Logger $logger;
 
         private readonly string $cortexHost;
         private readonly int $cortexPort;
 
-        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, HttpClient $httpClient, Logger $logger, string $cortexHost, int $cortexPort) {
+        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, ConfigurationService $configurationService, HttpClient $httpClient, Logger $logger, string $cortexHost, int $cortexPort) {
             $this->authenticationService = $authenticationService;
             $this->distributedCacheClient = $distributedCacheClient;
+            $this->configurationService = $configurationService;
             $this->httpClient = $httpClient;
             $this->logger = $logger;
             $this->cortexHost = $cortexHost;
@@ -61,6 +64,9 @@
             $payload = array("messages" => $messages);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
+            }
+            if ($useSkills) {
+                $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"];
             }
 
             $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");

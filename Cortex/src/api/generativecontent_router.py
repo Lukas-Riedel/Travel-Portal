@@ -37,6 +37,10 @@ class GenerativeContentRequest(BaseModel):
         None,
         description="Optional JSON Schema for structured output",
     )
+    context: str | None = Field(
+        None,
+        description="Optional personal context prepended to the system instruction",
+    )
 
 
 @router.post(
@@ -62,6 +66,7 @@ def generate_content(
         [message.model_dump() for message in request.messages],
         request.schema,
         use_skills,
+        request.context,
     )
 
     if request.schema is not None:

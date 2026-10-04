@@ -50,7 +50,7 @@
         
         public function watchCalendar(Calendar $calendar) : void {
             $event = Event::CalendarInvalidating($calendar->value, self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);
-            $eventId = $this->eventPublisher->publish($event);
+            $eventId = $this->eventPublisher?->publish($event);
 
             $this->googleClient->watchCalendar($calendar, $calendar->value . "_" . time(),
                 sprintf(self::WATCH_CALENDAR_CALLBACK_URL_FORMAT, $this->coreBaseUrl, $eventId), self::GOOGLE_CALENDAR_WATCH_TTL_SECONDS);

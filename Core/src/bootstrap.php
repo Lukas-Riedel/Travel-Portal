@@ -143,23 +143,24 @@
     $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
 
     // Authenticated clients.
-    $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $cloudMessagingClient = new FirebaseCloudMessagingClient($authenticationService, getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
-    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
-    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
     $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $clusteringClient = new CortexClusteringClient($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
 
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $distributedCacheClient, getenv("WORKER_QUEUE_NAME"));
-    $calendarClient->setEventPublisher($eventPublisher);
 
     $scheduler = new Scheduler($databaseClient, $distributedCacheClient, $eventPublisher);
 
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
-    $googleClient->setConfigurationService($configurationService);
+
+    // Configured clients.
+    $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"), $configurationService);
+    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $distributedCacheClient, $configurationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
+    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
+    $calendarClient->setEventPublisher($eventPublisher);
 
     // Services.
     $indexService = new IndexService($clusteringClient, $embeddingClient, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),

@@ -55,6 +55,7 @@ class GenerativeContentEngine:
         messages: list[dict[str, str]],
         schema: dict[str, Any] | None = None,
         use_skills: bool = True,
+        context: str | None = None,
     ) -> str:
         if not messages:
             return ""
@@ -71,8 +72,9 @@ class GenerativeContentEngine:
 
         config_kwargs: dict[str, Any] = {}
         if use_skills:
-            if self.system_instruction:
-                config_kwargs["system_instruction"] = self.system_instruction
+            parts = [p for p in [context, self.system_instruction] if p]
+            if parts:
+                config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
             tools = self.tool_registry.get_callable_tools() if self.tool_registry else []
             if tools:

@@ -54,18 +54,14 @@
 
         private readonly string $googleMapsApiKey;
 
-        private ?ConfigurationService $configurationService;
+        private readonly ConfigurationService $configurationService;
 
-        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey) {
+        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, HttpClient $httpClient, Logger $logger, string $googleMapsApiKey, ConfigurationService $configurationService) {
             $this->authenticationService = $authenticationService;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->httpClient = $httpClient;
             $this->logger = $logger;
             $this->googleMapsApiKey = $googleMapsApiKey;
-            $this->configurationService = null;
-        }
-
-        public function setConfigurationService(ConfigurationService $configurationService) : void {
             $this->configurationService = $configurationService;
         }
 
