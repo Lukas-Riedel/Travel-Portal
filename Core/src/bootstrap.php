@@ -145,7 +145,7 @@
     // Authenticated clients.
     $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
     $cloudMessagingClient = new FirebaseCloudMessagingClient($authenticationService, getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
-    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
     $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));

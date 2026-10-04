@@ -13,13 +13,25 @@ router = APIRouter(
 )
 
 
+class MessageTurn(BaseModel):
+    role: str = Field(
+        ...,
+        description="The role of the message sender (e.g., 'user' or 'model')",
+        example="user",
+    )
+    text: str = Field(
+        ...,
+        description="The text content of the message turn",
+        example="What is the capital of France?",
+    )
+
+
 class GenerativeContentRequest(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    prompt: str = Field(
+    messages: list[MessageTurn] = Field(
         ...,
-        description="The prompt to send to the generative model",
-        example="What is the capital of France?",
+        description="The list of conversation message turns to send to the generative model",
     )
     schema: dict | None = Field(
         None,
@@ -42,7 +54,7 @@ def generate_content(
     req_obj: Request,
 ):
     text: str = req_obj.app.state.generative_content_engine.generate(
-        request.prompt,
+        [message.model_dump() for message in request.messages],
         request.schema,
     )
 

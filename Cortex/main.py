@@ -88,7 +88,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         f"{error_type}: {message}",
         extra={
             "error": error_content,
-            "stacktrace": traceback.format_exc().splitlines(),
             "transaction_id": t_id,
         },
     )

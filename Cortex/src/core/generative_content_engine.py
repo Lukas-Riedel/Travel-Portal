@@ -40,18 +40,26 @@ class GenerativeContentEngine:
         candidates.sort(key=lambda n: [int(x) if x.isdigit() else x for x in n.replace("-", ".").split(".")], reverse=True)
         return candidates
 
-    def generate(self, prompt: str, schema: dict[str, Any] | None = None) -> str:
+    def generate(self, messages: list[dict[str, str]], schema: dict[str, Any] | None = None) -> str:
         config = types.GenerateContentConfig(
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
             **({"response_mime_type": "application/json", "response_schema": schema} if schema is not None else {}),
         )
+
+        contents = [
+            types.Content(
+                role=msg["role"],
+                parts=[types.Part.from_text(text=msg["text"])],
+            )
+            for msg in messages
+        ]
 
         for model in self._models:
             logger.debug(f"Attempting generative content request with model '{model}'...")
             try:
                 response = self._client.models.generate_content(
                     model=model,
-                    contents=prompt,
+                    contents=contents,
                     config=config,
                 )
                 logger.info(f"Generative content request succeeded with model '{model}'.")
