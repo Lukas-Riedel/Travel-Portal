@@ -58,6 +58,28 @@ class CoreApiClient:
 
         return response.json()
 
+    def get_trip(self, trip_id: str, include: str | None = None) -> dict[str, Any]:
+        url = f"{self.base_url}/trips/{trip_id}"
+        params: dict[str, Any] = {}
+        if include:
+            params["include"] = include
+
+        response = requests.get(url, params=params, headers=self.get_headers(), timeout=15)
+
+        return response.json()
+
+    def search(self, query: str, include: str | None = None, limit: int | None = None) -> list[dict[str, Any]]:
+        url = f"{self.base_url}/search"
+        params: dict[str, Any] = {"query": query}
+        if include:
+            params["include"] = include
+        if limit is not None:
+            params["limit"] = limit
+
+        response = requests.get(url, params=params, headers=self.get_headers(), timeout=15)
+
+        return response.json()
+
     def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes"
         payload = {"content": content}

@@ -8,9 +8,18 @@ A trip object contains:
 - `id` (string, UUID): Unique identifier of the trip.
 - `name` (string): Title/name of the trip (e.g., "Las Vegas & Grand Canyon 2025").
 - `year` (integer): Year of the trip.
-- `start` (integer, epoch seconds): Start date and time of the trip.
-- `end` (integer, epoch seconds): End date and time of the trip.
+- `start` (integer, Unix epoch seconds): Raw start timestamp — **prefer `start_iso` for display and reasoning**.
+- `end` (integer, Unix epoch seconds): Raw end timestamp — **prefer `end_iso` for display and reasoning**.
+- `start_iso` (string, ISO 8601 UTC): Human-readable start date, e.g. `"2025-07-05T08:00:00Z"`. Use this when talking about or comparing dates.
+- `end_iso` (string, ISO 8601 UTC): Human-readable end date, e.g. `"2025-07-19T20:00:00Z"`. Use this when talking about or comparing dates.
+- `duration_days` (integer): Number of calendar days the trip spans (inclusive). Use this when the user asks how long a trip is.
 - `countries` (list of strings): Countries visited.
+
+## Date & Duration Guidelines
+- Always use `start_iso` / `end_iso` when displaying or reasoning about trip dates — never present raw epoch integers to the user.
+- When the user asks "when does the trip start/end?", answer with the date portion of `start_iso` / `end_iso` (e.g. "5 July 2025").
+- When the user asks "how long is the trip?", use `duration_days` directly (e.g. "14 days").
+- `start_iso` and `end_iso` are UTC. If the user asks for local time and the timezone is known, convert accordingly; otherwise state that times are in UTC.
 
 ## Trip Selection Guidelines & Tools
 1. **Upcoming Trip**: When the user refers to the next / upcoming trip, call `get_upcoming_trip()`.

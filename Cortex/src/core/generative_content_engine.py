@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Final
 
 from fastapi import HTTPException, status
@@ -50,6 +51,16 @@ class GenerativeContentEngine:
         candidates.sort(key=lambda n: [int(x) if x.isdigit() else x for x in n.replace("-", ".").split(".")], reverse=True)
         return candidates
 
+    @staticmethod
+    def build_environmental_context() -> str:
+        now_utc = datetime.now(tz=timezone.utc)
+        return (
+            f"## Environmental Context\n"
+            f"Today is {now_utc.strftime('%A, %d %B %Y')}. "
+            f"Current UTC time: {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}. "
+            f"Current year: {now_utc.year}."
+        )
+
     def generate(
         self,
         messages: list[dict[str, str]],
@@ -72,7 +83,7 @@ class GenerativeContentEngine:
 
         config_kwargs: dict[str, Any] = {}
         if use_skills:
-            parts = [p for p in [context, self.system_instruction] if p]
+            parts = [p for p in [self.build_environmental_context(), context, self.system_instruction] if p]
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
