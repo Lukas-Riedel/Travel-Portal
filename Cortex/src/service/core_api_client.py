@@ -30,6 +30,7 @@ class CoreApiClient:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "Accept": "application/json",
+            "Request-Origin": "cortex",
         }
 
         t_id = transaction_id.get()

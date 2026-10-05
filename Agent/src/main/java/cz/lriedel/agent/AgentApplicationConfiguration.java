@@ -2,6 +2,8 @@ package cz.lriedel.agent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import cz.lriedel.agent.model.api.DeviceType;
 import cz.lriedel.agent.persistance.Configuration;
 import cz.lriedel.agent.persistance.ConfigurationRepository;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
@@ -73,6 +75,7 @@ public class AgentApplicationConfiguration {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .defaultHeader(LoggingContext.REQUEST_ORIGIN_HEADER, DeviceType.AGENT.getValue())
             .connectTimeout(Duration.ofSeconds(5))
             .readTimeout(Duration.ofSeconds(30))
             .build();
@@ -84,6 +87,7 @@ public class AgentApplicationConfiguration {
         return new RestTemplateBuilder()
             .rootUri(serviceUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .defaultHeader(LoggingContext.REQUEST_ORIGIN_HEADER, DeviceType.AGENT.getValue())
             .connectTimeout(Duration.ofSeconds(5))
             .readTimeout(Duration.ofSeconds(10))
             .build();

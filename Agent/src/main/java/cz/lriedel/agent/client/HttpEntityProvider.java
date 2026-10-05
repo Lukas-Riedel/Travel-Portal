@@ -47,8 +47,6 @@ public class HttpEntityProvider {
             httpHeaders.add(TRANSACTION_ID_HEADER, transactionId);
         }
 
-        httpHeaders.add(REQUEST_ORIGIN_HEADER, loggingContext.getRequestOrigin());
-
         return httpHeaders;
     }
 }

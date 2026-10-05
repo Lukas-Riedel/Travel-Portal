@@ -1,9 +1,9 @@
 import time
+
 import requests
 from fastapi import HTTPException, status
 from jose import jwk, jwt
 from jose.utils import base64url_decode
-from src.core.logger import logger
 
 
 class AuthenticationService:
@@ -36,16 +36,16 @@ class AuthenticationService:
         }
 
         try:
-            response = requests.post(self.token_endpoint, json=payload, headers={"Content-Type": "application/json"}, timeout=10)
+            response = requests.post(self.token_endpoint, json=payload, headers={"Content-Type": "application/json", "Request-Origin": "cortex"}, timeout=10)
+            if response.status_code != 200:
+                raise RuntimeError(f"Could not fetch service token. Reason: {response.text}")
 
             data = response.json()
-            access_token = data.get("accessToken")
-            expires_in = data.get("expiresIn")
 
-            self.cached_service_token = access_token
-            # Cache for 80% of the expiration duration to avoid edge-of-expiry issues
-            self.service_token_expires_at = current_time + (expires_in * 0.8)
-            return access_token
+            self.cached_service_token = data.get("accessToken")
+            self.service_token_expires_at = current_time + (data.get("expiresIn") * 0.8)
+
+            return data.get("accessToken")
         except Exception as exc:
             raise
 
