@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Final
+from typing import Any
 
 from fastapi import HTTPException, status
 from google import genai
@@ -9,16 +9,12 @@ from src.core.logger import logger
 from src.core.skill_loader import SkillLoader
 from src.tools.registry import ToolRegistry
 
-MODEL_NAME: Final[str] = "gemini"
-MODEL_WHITELIST: Final[list[str]] = ["flash", "pro"]
-MODEL_BLACKLIST: Final[list[str]] = ["image", "latest", "preview", "omni", "tts", "transcribe"]
-GENERATE_CONTENT_ACTION: Final[str] = "generatecontent"
-
 
 class GenerativeContentEngine:
     def __init__(
         self,
         api_key: str,
+        models: str,
         tool_registry: ToolRegistry | None = None,
         skill_loader: SkillLoader | None = None,
     ) -> None:
@@ -26,30 +22,8 @@ class GenerativeContentEngine:
         self.tool_registry = tool_registry
         self.skill_loader = skill_loader or SkillLoader()
         self.system_instruction = self.skill_loader.load_skills()
-        self.models = self.load_models()
+        self.models = [m.strip() for m in models.split(",") if m.strip()]
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
-
-    def load_models(self) -> list[str]:
-        candidates: list[str] = []
-
-        for model in self.client.models.list():
-            name: str = model.name
-
-            if MODEL_NAME not in name:
-                continue
-            if not any(w in name for w in MODEL_WHITELIST):
-                continue
-            if any(b in name for b in MODEL_BLACKLIST):
-                continue
-
-            supported = [a.lower() for a in (model.supported_actions or [])]
-            if GENERATE_CONTENT_ACTION not in supported:
-                continue
-
-            candidates.append(name)
-
-        candidates.sort(key=lambda n: [int(x) if x.isdigit() else x for x in n.replace("-", ".").split(".")], reverse=True)
-        return candidates
 
     @staticmethod
     def build_environmental_context() -> str:

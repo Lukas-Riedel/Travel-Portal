@@ -71,7 +71,9 @@ core:
     client:
       name: travel-portal-service
   origin:
-    whitelist: https://travel-portal.eu,https://lriedel.cz
+    whitelist:
+      - https://travel-portal.eu
+      - https://lriedel.cz
   bucket:
     album:
       thumbnail: album-thumbnails
@@ -138,9 +140,15 @@ core:
   forecast:
     actual:
       days: "10"
-      models: ecmwf_ifs025_ensemble,icon_global_eps
+      models:
+        - ecmwf_ifs025_ensemble
+        - icon_global_eps
       refresh:
-        hours: 1,7,13,19
+        hours:
+          - 1
+          - 7
+          - 13
+          - 19
       cloud:
         cover:
           confidence:

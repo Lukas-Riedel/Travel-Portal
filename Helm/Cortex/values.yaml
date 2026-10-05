@@ -9,6 +9,16 @@ cortex:
     port: 8080
   model:
     embeddings: clip-ViT-L-14
+    generative:
+      - models/gemini-3.5-flash-lite
+      - models/gemini-3.5-flash
+      - models/gemini-3.6-flash
+      - models/gemini-3.1-flash-lite
+      - models/gemini-3.7-flash
+      - models/gemini-3.8-flash
+      - models/gemini-2.5-flash-lite
+      - models/gemini-2.5-flash
+      - models/gemini-3-flash
   engine: cpu
   iam:
     host: iam

@@ -1,5 +1,4 @@
 import os
-import traceback
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -50,8 +49,9 @@ async def lifespan(app: FastAPI):
     app.state.skill_loader = SkillLoader()
     app.state.generative_content_engine = GenerativeContentEngine(
         os.getenv("GEMINI_API_KEY"),
-        tool_registry=app.state.tool_registry,
-        skill_loader=app.state.skill_loader,
+        os.getenv("GEMINI_MODELS"),
+        app.state.tool_registry,
+        app.state.skill_loader,
     )
     yield
 

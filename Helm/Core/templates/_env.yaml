@@ -125,7 +125,7 @@
       name: iam-secret
       key: backend-client-secret
 - name: ALLOWED_REQUEST_ORIGINS
-  value: "{{ .Values.core.origin.whitelist }}"
+  value: "{{ join "," .Values.core.origin.whitelist }}"
 - name: COMPOSITE_INDEX_NAME
   value: "{{ .Values.core.index.composite }}"
 - name: PHOTO_INDEX_NAME
@@ -187,9 +187,9 @@
 - name: ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE
   value: "{{ .Values.core.forecast.actual.days }}"
 - name: ACTUAL_WEATHER_FORECAST_MODELS
-  value: "{{ .Values.core.forecast.actual.models }}"
+  value: "{{ join "," .Values.core.forecast.actual.models }}"
 - name: ACTUAL_WEATHER_FORECAST_REFRESH_HOURS
-  value: "{{ .Values.core.forecast.actual.refresh.hours }}"
+  value: "{{ join "," .Values.core.forecast.actual.refresh.hours }}"
 - name: ACTUAL_WEATHER_FORECAST_CLOUD_COVER_CONFIDENCE_COEFFICIENT
   value: "{{ .Values.core.forecast.actual.cloud.cover.confidence.coefficient }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
