@@ -144,7 +144,7 @@ core:
       cloud:
         cover:
           confidence:
-            coefficient: "0.15"
+            coefficient: "0.3"
   fitness:
     overwrite:
       threshold:

@@ -1,6 +1,5 @@
-cd Portal
-npx lint-staged
-cd ..
+#!/usr/bin/env sh
+npx lint-staged --cwd Portal --config Portal/package.json --allow-empty
 
 STAGED_PY_FULL=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$")
 if [ -n "$STAGED_PY_FULL" ]; then
