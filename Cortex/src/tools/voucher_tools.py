@@ -1,0 +1,86 @@
+from datetime import datetime, timezone
+from typing import Any
+
+from src.service.core_api_client import CoreApiClient
+
+
+class VoucherTools:
+    def __init__(self, core_api_client: CoreApiClient):
+        self.core_api_client = core_api_client
+
+    def get_tools(self) -> list[Any]:
+        return [
+            self.get_vouchers,
+            self.create_voucher,
+        ]
+
+    def get_vouchers(self) -> list[dict[str, Any]]:
+        """Retrieves all available vouchers and discount coupons stored in Travel Portal.
+        Use this when the user asks about available vouchers, discount codes, or promotional credits
+        (e.g. "what vouchers do I have?", "do I have any Flixbus or airline coupons?").
+
+        Returns:
+            A list of voucher objects, where each object contains:
+            - code (string): The voucher code.
+            - issuer (string): The issuer name.
+            - value (number): Monetary value.
+            - currency (string): Currency code.
+            - expiration (string | null): ISO 8601 UTC expiration datetime (if expiration was provided).
+        """
+        vouchers = self.core_api_client.get_vouchers()
+        if isinstance(vouchers, dict) and vouchers.get("message"):
+            return vouchers
+        
+        return [self._extract_voucher(v) for v in vouchers]
+
+    def create_voucher(
+        self,
+        code: str,
+        issuer: str,
+        value: float,
+        currency: str,
+        expiration: int | None = None,
+    ) -> dict[str, Any]:
+        """Creates and stores a new voucher / gift card / discount coupon in Travel Portal.
+        Use this when the user asks to save, record, or store a voucher code or coupon.
+
+        Args:
+            code: The unique code / alphanumeric voucher identifier (e.g. "SUMMER2025", "FLIX-9923-AZ").
+            issuer: The issuer or service name (e.g. "FLIXBUS", "Airbnb", "Ryanair", "Booking.com").
+            value: The monetary amount or value of the voucher (e.g. 50.0).
+            currency: 3-letter currency code (e.g. "EUR", "USD", "CZK", "GBP").
+            expiration: Optional expiration timestamp in Unix epoch seconds. Omit or pass None if no expiry.
+
+        Returns:
+            The created voucher object containing:
+            - code (string): The voucher code.
+            - issuer (string): The issuer name.
+            - value (number): Monetary value.
+            - currency (string): Currency code.
+            - expiration (string | null): ISO 8601 UTC expiration datetime (if expiration was provided).
+        """
+        voucher = self.core_api_client.create_voucher(
+            code=code,
+            issuer=issuer,
+            value=value,
+            currency=currency.upper(),
+            expiration=expiration,
+        )
+        if isinstance(voucher, dict) and voucher.get("message"):
+            return voucher
+
+        return self._extract_voucher(voucher)
+
+    def _extract_voucher(self, voucher: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "code": voucher.get("code"),
+            "issuer": voucher.get("issuer"),
+            "value": voucher.get("value"),
+            "currency": voucher.get("currency"),
+            "expiration": self._epoch_to_iso(voucher.get("expiration"))
+        }
+
+    def _epoch_to_iso(self, epoch: int | None) -> str | None:
+        if epoch is None:
+            return None
+        return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

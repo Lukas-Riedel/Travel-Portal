@@ -104,7 +104,7 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $task->getTitle(), $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval(), $task->isAutoDelete())
+                ->withParameters($tripId, $task->getTitle(), $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval(), $task->isAutoDelete() ? "true" : "false")
                 ->getSingleColumn("id");
 
             if ($id === null) {

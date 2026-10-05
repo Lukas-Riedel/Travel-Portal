@@ -24,7 +24,7 @@ class CoreApiClient:
         self.base_url = f"http://{core_host}:{core_port}"
         self.auth_service = authentication_service
 
-    def get_headers(self) -> dict[str, str]:
+    def request(self, method: str, url: str, **kwargs: Any) -> Any:
         token = self.auth_service.get_service_access_token()
         headers = {
             "Authorization": f"Bearer {token}",
@@ -37,7 +37,8 @@ class CoreApiClient:
         if t_id:
             headers["Transaction-Id"] = t_id
 
-        return headers
+        response = requests.request(method, url, headers=headers, timeout=15, **kwargs)
+        return response.json()
 
     def get_trips(
         self,
@@ -45,7 +46,7 @@ class CoreApiClient:
         trip_type: str = "regular",
         include: str | None = None,
         sort: str | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/trips"
         params: dict[str, Any] = {"type": trip_type}
         if year is not None:
@@ -55,21 +56,14 @@ class CoreApiClient:
         if sort:
             params["sort"] = sort
 
-        response = requests.get(url, params=params, headers=self.get_headers(), timeout=15)
+        return self.request("GET", url, params=params)
 
-        return response.json()
-
-    def get_trip(self, trip_id: str, include: str | None = None) -> dict[str, Any]:
+    def get_trip(self, trip_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}"
-        params: dict[str, Any] = {}
-        if include:
-            params["include"] = include
 
-        response = requests.get(url, params=params, headers=self.get_headers(), timeout=15)
+        return self.request("GET", url)
 
-        return response.json()
-
-    def search(self, query: str, include: str | None = None, limit: int | None = None) -> list[dict[str, Any]]:
+    def search(self, query: str, include: str | None = None, limit: int | None = None) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/search"
         params: dict[str, Any] = {"query": query}
         if include:
@@ -77,14 +71,143 @@ class CoreApiClient:
         if limit is not None:
             params["limit"] = limit
 
-        response = requests.get(url, params=params, headers=self.get_headers(), timeout=15)
-
-        return response.json()
+        return self.request("GET", url, params=params)
 
     def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes"
         payload = {"content": content}
 
-        response = requests.post(url, json=payload, headers=self.get_headers(), timeout=15)
+        return self.request("POST", url, json=payload)
 
-        return response.json()
+    def update_trip_note(self, trip_id: str, note_id: str, content: str | None = None) -> dict[str, Any]:
+        url = f"{self.base_url}/trips/{trip_id}/notes/{note_id}"
+        payload: dict[str, Any] = {}
+        if content is not None:
+            payload["content"] = content
+
+        return self.request("PATCH", url, json=payload)
+
+    def create_trip_expense(
+        self,
+        trip_id: str,
+        description: str,
+        value: float,
+        currency: str,
+        expense_type: str,
+        subscription_id: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/trips/{trip_id}/expenses"
+        payload: dict[str, Any] = {
+            "description": description,
+            "value": value,
+            "currency": currency,
+            "type": expense_type,
+        }
+        if subscription_id:
+            payload["subscription"] = {"id": subscription_id}
+
+        return self.request("POST", url, json=payload)
+
+    def create_trip_task(
+        self,
+        trip_id: str,
+        title: str,
+        priority: str,
+        description: str | None = None,
+        deadline: int | None = None,
+        notification_interval: int | None = None,
+        auto_delete: bool = False,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/trips/{trip_id}/tasks"
+        payload: dict[str, Any] = {
+            "title": title,
+            "priority": priority,
+            "autoDelete": auto_delete,
+        }
+        if description is not None:
+            payload["description"] = description
+        if deadline is not None:
+            payload["deadline"] = deadline
+        if notification_interval is not None:
+            payload["notificationInterval"] = notification_interval
+
+        return self.request("POST", url, json=payload)
+
+    def update_trip_task(
+        self,
+        trip_id: str,
+        task_id: str,
+        title: str | None = None,
+        description: str | None = None,
+        priority: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/trips/{trip_id}/tasks/{task_id}"
+        payload: dict[str, Any] = {}
+        if title is not None:
+            payload["title"] = title
+        if description is not None:
+            payload["description"] = description
+        if priority is not None:
+            payload["priority"] = priority
+
+        return self.request("PATCH", url, json=payload)
+
+    def get_vouchers(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/vouchers"
+
+        return self.request("GET", url)
+
+    def get_voucher(self, voucher_id: str) -> dict[str, Any]:
+        url = f"{self.base_url}/vouchers/{voucher_id}"
+
+        return self.request("GET", url)
+
+    def create_voucher(
+        self,
+        code: str,
+        issuer: str,
+        value: float,
+        currency: str,
+        expiration: int | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/vouchers"
+        payload: dict[str, Any] = {
+            "code": code,
+            "issuer": issuer,
+            "value": value,
+            "currency": currency,
+        }
+        if expiration is not None:
+            payload["expiration"] = expiration
+
+        return self.request("POST", url, json=payload)
+
+    def update_voucher(self, voucher_id: str, value: float | None = None) -> dict[str, Any]:
+        url = f"{self.base_url}/vouchers/{voucher_id}"
+        payload: dict[str, Any] = {}
+        if value is not None:
+            payload["value"] = value
+
+        return self.request("PATCH", url, json=payload)
+
+    def get_subscriptions(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/subscriptions"
+
+        return self.request("GET", url)
+
+    def create_subscription(
+        self,
+        description: str,
+        value: float,
+        currency: str,
+        expiration: int,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/subscriptions"
+        payload: dict[str, Any] = {
+            "description": description,
+            "value": value,
+            "currency": currency,
+            "expiration": expiration,
+        }
+
+        return self.request("POST", url, json=payload)

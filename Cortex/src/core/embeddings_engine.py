@@ -22,8 +22,7 @@ class EmbeddingsEngine:
             return self._post_process_embedding(
                 self.model.encode([text], convert_to_tensor=True, normalize_embeddings=True))
 
-    @staticmethod
-    def _post_process_embedding(embedding: Tensor) -> Tensor:
+    def _post_process_embedding(self, embedding: Tensor) -> Tensor:
         if embedding.ndimension() == 1:
             embedding = embedding.unsqueeze(0)
 
@@ -35,7 +34,6 @@ class EmbeddingsEngine:
         img.thumbnail(self._get_thumbnail_size(), Image.Resampling.LANCZOS)
         return img
 
-    @staticmethod
-    def _get_thumbnail_size() -> tuple[int, int]:
+    def _get_thumbnail_size(self) -> tuple[int, int]:
         # TODO: Make the size configurable in the deployment.
         return 512, 512

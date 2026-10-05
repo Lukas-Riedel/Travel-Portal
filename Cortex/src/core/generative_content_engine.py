@@ -25,16 +25,6 @@ class GenerativeContentEngine:
         self.models = [m.strip() for m in models.split(",") if m.strip()]
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
 
-    @staticmethod
-    def build_environmental_context() -> str:
-        now_utc = datetime.now(tz=timezone.utc)
-        return (
-            f"## Environmental Context\n"
-            f"Today is {now_utc.strftime('%A, %d %B %Y')}. "
-            f"Current UTC time: {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}. "
-            f"Current year: {now_utc.year}."
-        )
-
     def generate(
         self,
         messages: list[dict[str, str]],
@@ -57,7 +47,7 @@ class GenerativeContentEngine:
 
         config_kwargs: dict[str, Any] = {}
         if use_skills:
-            parts = [p for p in [self.build_environmental_context(), context, self.system_instruction] if p]
+            parts = [p for p in [self._build_environmental_context(), context, self.system_instruction] if p]
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
@@ -89,4 +79,13 @@ class GenerativeContentEngine:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="All generative content models are currently unavailable. Please try again later.",
+        )
+
+    def _build_environmental_context(self) -> str:
+        now_utc = datetime.now(tz=timezone.utc)
+        return (
+            f"## Environmental Context\n"
+            f"Today is {now_utc.strftime('%A, %d %B %Y')}. "
+            f"Current UTC time: {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}. "
+            f"Current year: {now_utc.year}."
         )
