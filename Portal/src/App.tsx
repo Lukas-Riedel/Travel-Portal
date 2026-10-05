@@ -16,6 +16,7 @@ import CandidateCategoryPage from "./pages/CandidateCategoryPage.jsx"
 import CandidateLabelPage from "./pages/CandidateLabelPage.jsx"
 import CategoryHighlightsPage from "./pages/CategoryHighlightsPage.jsx"
 import CategoryPage from "./pages/CategoryPage.jsx"
+import ChatPage from "./pages/ChatPage.tsx"
 import CountriesPage from "./pages/CountriesPage.jsx"
 import FlightsPage from "./pages/FlightsPage.jsx"
 import LabelHighlightsPage from "./pages/LabelHighlightsPage.jsx"
@@ -165,6 +166,7 @@ function AppContent() {
             <Route path="/plan/label/:labelId" element={<MainLayout><CandidateLabelPage /></MainLayout>} />
             <Route path="/plan/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/admin" element={<MainLayout><AdminPage /></MainLayout>} />
+            <Route path="/chat" element={<MainLayout><ChatPage /></MainLayout>} />
         </Routes>
     ) : (
         <MainLayout>

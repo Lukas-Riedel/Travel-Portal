@@ -8,8 +8,8 @@ import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
-    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+    Flight,     GenerativeContentResult, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
+Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
@@ -888,6 +888,16 @@ export const createYearHighlight = async (year: number, photoId: string): Promis
 
 export const removeYearHighlight = async (year: number, highlightId: string): Promise<void> =>
     coreClient.delete(`years/${year}/highlights/${highlightId}`)
+
+
+export const createGenerativeContent = async (prompt: string, conversationId?: string): Promise<GenerativeContentResult> =>
+    coreClient.post<GenerativeContentResult>("generativecontent",
+        {
+            prompt,
+            conversationId
+        }
+    ).then(extractData)
+
 
 export const refreshAccessToken = async (): Promise<string> => {
     const { refreshToken, setIamResponse } = useAuthStore.getState()

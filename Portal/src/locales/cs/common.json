@@ -458,7 +458,8 @@
             "statistics": "Statistiky",
             "plan": "Plán",
             "tracker": "Tracker",
-            "admin": "Admin"
+            "admin": "Admin",
+            "chat": "Chat"
         },
         "tab": {
             "label": {
@@ -1046,6 +1047,22 @@
                     "confirmed": "Kompozitní region byl úspěšně aktualizován",
                     "failed": "Nepodařilo se aktualizovat kompozitní region"
                 }
+            }
+        }
+    },
+    "chat": {
+        "label": {
+            "title": "Chat",
+            "new": "Nová konverzace"
+        },
+        "placeholder": {
+            "input": "Napiš zprávu..."
+        },
+        "prompt": {
+            "clear": {
+                "message": "Opravdu chceš začít novou konverzaci?",
+                "confirmed": "Konverzace byla smazána",
+                "failed": "Nepodařilo se smazat konverzaci"
             }
         }
     },

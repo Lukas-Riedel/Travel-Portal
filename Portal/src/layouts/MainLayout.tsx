@@ -15,8 +15,8 @@ import { type AirlineIdentifier, type AirportIdentifier, CategoryCategory, type 
 import type { Indexable } from "../types/Indexable.ts"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
-import { getTripFullName } from "../utils/tripUtils.ts"
 import { getPath } from "../utils/navigationUtils.ts"
+import { getTripFullName } from "../utils/tripUtils.ts"
 
 const SEARCHABLE_ENTITY_ICON_SELECTORS: Partial<Record<IndexableEntityType, (entity: Indexable) => typeof MapPin>> = {
     [IndexableEntityType.Category]: (entity: Indexable) => CATEGORY_CATEGORY_ICONS[(entity as CategoryIdentifier).category] ?? LocateFixed,
@@ -79,6 +79,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         { label: t("menu.label.places"), to: StaticNavigationTarget.Places, requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
         { label: t("menu.label.flights"), to: StaticNavigationTarget.Flights, requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
         { label: t("menu.label.statistics"), to: StaticNavigationTarget.Statistics, requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
+        { label: t("menu.label.chat"), to: StaticNavigationTarget.Chat, requiredRole: UserRole.GenerativecontentRead, allowedPrefixes: ["/chat"] },
         // TODO: Find a better required role.
         { label: t("menu.label.plan"), to: StaticNavigationTarget.Plan, requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
         { label: t("menu.label.tracker"), to: StaticNavigationTarget.Tracker, requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },

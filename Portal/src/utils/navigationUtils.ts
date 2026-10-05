@@ -1,12 +1,12 @@
-import { AppLinkTarget } from "../types/AppLinkTarget.ts"
-import type { AdminNavigationTarget } from "../types/AdminNavigationTarget.ts"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
+import type { AdminNavigationTarget } from "../types/AdminNavigationTarget.ts"
+import { AppLinkTarget } from "../types/AppLinkTarget.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
 import type { Airline, Airport, AirportIdentifier, Category, CategoryIdentifier, Flight, Label, Place, PlaceIdentifier, Trip, TripIdentifier, Year, YearIdentifier } from "../types/CoreSwaggerTypes.ts"
 import type { Navigable } from "../types/Navigable.ts"
 import type { PlaceAlbum } from "../types/PlaceAlbum.ts"
-import type { PlansNavigationTarget } from "../types/PlansNavigationTarget.ts"
 import { PlansMenuTabName } from "../types/PlansMenuTabName.ts"
+import type { PlansNavigationTarget } from "../types/PlansNavigationTarget.ts"
 import { StaticNavigationTarget } from "../types/StaticNavigationTarget.ts"
 import { formatTimestamp } from "./timeUtils.ts"
 
@@ -20,6 +20,7 @@ const TRIP_PAGE_PREFIX = "/trip"
 const ALBUM_PAGE_PREFIX = "/album"
 const LABEL_PAGE_PREFIX = "/label"
 const ADMIN_PAGE_PREFIX = "/admin"
+const CHAT_PAGE_PREFIX = "/chat"
 const HIGHLIGHT_PAGE_PREFIX = "/highlight"
 const TRACKER_PAGE_PREFIX = "/tracker"
 const FLIGHT_PAGE_PREFIX = "/flight"
@@ -110,6 +111,9 @@ export function getPath(to: Navigable, target: AppLinkTarget = AppLinkTarget.Def
         }
         else if (to === StaticNavigationTarget.Admin) {
             path = ADMIN_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Chat) {
+            path = CHAT_PAGE_PREFIX
         }
     }
 

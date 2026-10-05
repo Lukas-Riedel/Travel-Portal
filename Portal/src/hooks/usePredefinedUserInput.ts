@@ -70,6 +70,14 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("general.prompt.logout.failed")
         )
 
+    const showClearConversationToast = (clearConversation: () => Promise<void>) =>
+        showConfirmToast(
+            t("chat.prompt.clear.message"),
+            clearConversation,
+            t("chat.prompt.clear.confirmed"),
+            t("chat.prompt.clear.failed")
+        )
+
     const showUpdatePlaceLocationToast = (updatePlaceLocation: () => Promise<Place>) =>
         showConfirmToast(
             t("place.prompt.update.location.message"),
@@ -1400,7 +1408,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     type: "select",
                     label: t("task.label.notificationInterval"),
                     required: false,
-                    options: [3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({id: `${interval}`, name: formatDuration(interval)})),
+                    options: [3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({ id: `${interval}`, name: formatDuration(interval) })),
                 },
                 {
                     type: "checkbox",
@@ -1541,6 +1549,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showRemoveHighlightToast,
         showAssignLabelToast,
         showUnassignLabelToast,
-        showUpdateLabelToast
+        showUpdateLabelToast,
+        showClearConversationToast
     }
 }
