@@ -384,7 +384,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                 ])}
                             </div>
                         )}
-                        {isPlace(event) && event.notes && event.notes.length > 0 && (
+                        {isPlace(event) && event.notes && event.notes.length > 0 && getCurrentTimestamp() < event.end && (
                             <ul className="mt-3 text-xs text-gray-500 space-y-2 leading-5">
                                 {event.notes.map(note => (
                                     <li
@@ -392,11 +392,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                         className="clear-left flex items-center space-x-2">
                                         <NotebookPen className="w-4 h-4 shrink-0" />
                                         <div className="relative group inline-block flex-1 min-w-0 hover:cursor-help">
-                                            <span className="truncate block">
+                                            <div className="truncate [&>p]:inline [&>p]:truncate">
                                                 <ReactMarkdown>
                                                     {note.content}
                                                 </ReactMarkdown>
-                                            </span>
+                                            </div>
                                             <Tooltip>
                                                 <NotebookPen size={16} />
                                                 <ReactMarkdown>
@@ -419,11 +419,11 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                             className="clear-left flex items-center space-x-2">
                             <NotebookPen className="w-4 h-4 shrink-0" />
                             <div className="relative group inline-block flex-1 min-w-0 hover:cursor-help">
-                                <span className="truncate block">
+                                <div className="truncate [&>p]:inline [&>p]:truncate">
                                     <ReactMarkdown>
                                         {note.content}
                                     </ReactMarkdown>
-                                </span>
+                                </div>
                                 <Tooltip>
                                     <NotebookPen size={16} />
                                     <ReactMarkdown>
