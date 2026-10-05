@@ -1,19 +1,34 @@
+import importlib
+import inspect
+import pkgutil
 from typing import Any, Callable
+
+from src.core.logger import logger
 from src.service.core_api_client import CoreApiClient
-from src.tools.note_tools import NoteTools
-from src.tools.trip_tools import TripTools
 
 
 class ToolRegistry:
     def __init__(self, core_api_client: CoreApiClient):
         self.core_api_client = core_api_client
         self.tools: dict[str, Callable[..., Any]] = {}
+        self.auto_discover_and_register()
 
-        self.trip_tools = TripTools(core_api_client)
-        self.note_tools = NoteTools(core_api_client)
+    def auto_discover_and_register(self) -> None:
+        import src.tools as tools_package
 
-        self.register_module_tools(self.trip_tools.get_tools())
-        self.register_module_tools(self.note_tools.get_tools())
+        for module_info in pkgutil.iter_modules(tools_package.__path__):
+            module_name = f"{tools_package.__name__}.{module_info.name}"
+            module = importlib.import_module(module_name)
+
+            for _, cls in inspect.getmembers(module, inspect.isclass):
+                if cls.__module__ == module_name and hasattr(cls, "get_tools"):
+                    try:
+                        instance = cls(self.core_api_client)
+                        discovered_tools = instance.get_tools()
+                        self.register_module_tools(discovered_tools)
+                        logger.info(f"Automatically registered tools from '{cls.__name__}' ({len(discovered_tools)} tool(s)).")
+                    except Exception as exc:
+                        logger.error(f"Failed to initialize and register tools from class '{cls.__name__}': {exc}")
 
     def register_module_tools(self, tools: list[Callable[..., Any]]) -> None:
         for tool in tools:

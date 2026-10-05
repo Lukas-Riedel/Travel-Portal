@@ -1,7 +1,7 @@
 # Trip Skill
 
 ## Purpose
-Provides capabilities to query, search, and locate trips in Travel Portal.
+Provides capabilities to query, search, and locate trips in Travel Portal, as well as managing trip-associated entities such as notes.
 
 ## Trip Entity Structure
 A trip object contains:
@@ -27,3 +27,15 @@ A trip object contains:
 3. **Trip by Name or Destination**: When the user mentions a specific trip or country (e.g. "a trip to Vietnam"), call `find_trip_by_name(query="Vietnam")`. If empty, consider falling back to `get_upcoming_trip()` or ask for clarification.
 4. **All Trips**: To inspect or list trips manually, call `get_trips(year=None, trip_type="regular")`.
 5. **Extracting Trip ID**: Once the target trip is found, use its `id` for subsequent actions (like creating notes or expenses).
+
+## Note Creation Guidelines
+1. **Target Trip**: A valid `trip_id` is required. If not known, retrieve trips first using `get_trips`, `get_upcoming_trip`, `get_current_trip`, or `find_trip_by_name`. Never create notes for past trips unless explicitly confirmed by the user.
+2. **Content Formatting**:
+   - The note `content` must be well-structured in **Markdown**.
+   - Use headings (`#`, `##`), bullet points, bold text, and numbered lists where appropriate. Short notes don't have to have formatting.
+   - For travel recommendations or itineraries, structure by categories or days (e.g., Highlights, Food & Dining, Tips).
+   - Match the language requested or used by the user in the prompt.
+3. **Execution**:
+   - Call `create_trip_note(trip_id=trip_id, content=content)`.
+4. **Result Reporting**:
+   - Confirm to the user that the note was created for the specified trip with a short summary.

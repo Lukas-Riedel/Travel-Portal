@@ -1,16 +1,11 @@
-import os
 from pathlib import Path
+
 from src.core.logger import logger
 
 
 class SkillLoader:
-    def __init__(self, skills_dir: str | None = None) -> None:
-        if skills_dir is None:
-            # Default to Cortex/skills relative to this file
-            base_dir = Path(__file__).resolve().parent.parent.parent
-            self.skills_dir = base_dir / "skills"
-        else:
-            self.skills_dir = Path(skills_dir)
+    def __init__(self) -> None:
+        self.skills_dir = Path(__file__).resolve().parent.parent.parent / "skills"
 
     def load_skills(self) -> str:
         if not self.skills_dir.exists() or not self.skills_dir.is_dir():

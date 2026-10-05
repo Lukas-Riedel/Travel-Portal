@@ -15,12 +15,12 @@ class GenerativeContentEngine:
         self,
         api_key: str,
         models: str,
-        tool_registry: ToolRegistry | None = None,
-        skill_loader: SkillLoader | None = None,
+        tool_registry: ToolRegistry,
+        skill_loader: SkillLoader,
     ) -> None:
         self.client = genai.Client(api_key=api_key)
         self.tool_registry = tool_registry
-        self.skill_loader = skill_loader or SkillLoader()
+        self.skill_loader = skill_loader
         self.system_instruction = self.skill_loader.load_skills()
         self.models = [m.strip() for m in models.split(",") if m.strip()]
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
