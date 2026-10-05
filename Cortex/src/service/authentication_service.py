@@ -37,7 +37,7 @@ class AuthenticationService:
 
         try:
             response = requests.post(self.token_endpoint, json=payload, headers={"Content-Type": "application/json", "Request-Origin": "cortex"}, timeout=10)
-            if response.status_code != 200:
+            if response.status_code != 201:
                 raise RuntimeError(f"Could not fetch service token. Reason: {response.text}")
 
             data = response.json()
