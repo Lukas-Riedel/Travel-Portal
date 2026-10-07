@@ -11,25 +11,25 @@
 
     class RabbitMQEventListener extends AbstractEventListener {
 
-        private const SEND_HEARTBEAT_INTERVAL_SECONDS = 30;
-
         private readonly RabbitMQMessagingClient $messagingClient;
         private readonly LoggingContext $loggingContext;
         private readonly Logger $logger;
         
         private readonly string $workerQueueName;
         private readonly string $consumerTag;
+        private readonly int $sendHeartbeatIntervalSeconds;
 
         private bool $isRunning = true;
 
         public function __construct(RabbitMQMessagingClient $messagingClient, LoggingContext $loggingContext, Logger $logger,
-            ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName) {
+            ?OpenLineageEventManager $openLineageEventManager, array $listeners, string $workerQueueName, int $heartbeatSeconds) {
             parent::__construct($loggingContext, $logger, $openLineageEventManager, $listeners, $workerQueueName);
             $this->messagingClient = $messagingClient;
             $this->workerQueueName = $workerQueueName;
             $this->consumerTag = Uuid::uuid4()->toString();
             $this->loggingContext = $loggingContext;
             $this->logger = $logger;
+            $this->sendHeartbeatIntervalSeconds = round($heartbeatSeconds / 2);
         }
 
         public function listen() : void {
@@ -68,7 +68,7 @@
             while ($this->isRunning) {
                 try {
                     $this->messagingClient->heartbeat();
-                    $channel->wait(null, false, self::SEND_HEARTBEAT_INTERVAL_SECONDS);
+                    $channel->wait(null, false, $this->sendHeartbeatIntervalSeconds);
                 }
                 catch (AMQPTimeoutException $e) {
                     continue;

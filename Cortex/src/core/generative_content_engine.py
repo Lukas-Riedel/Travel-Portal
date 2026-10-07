@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Final
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
@@ -9,6 +9,8 @@ from google.genai import types
 from src.core.logger import logger
 from src.core.skill_loader import SkillLoader
 from src.tools.registry import ToolRegistry
+
+CHAT_TIMEOUT_MS: Final[int] = 10000
 
 
 class GenerativeContentEngine:
@@ -70,6 +72,7 @@ class GenerativeContentEngine:
                     model=model,
                     history=list(history) if history else None,
                     config=config,
+                    http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
                 )
                 response = chat.send_message(last_message)
                 logger.info(f"Generative content request succeeded with model '{model}'.")
