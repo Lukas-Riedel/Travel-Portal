@@ -10,7 +10,7 @@ from src.core.logger import logger
 from src.core.skill_loader import SkillLoader
 from src.tools.registry import ToolRegistry
 
-CHAT_TIMEOUT_MS: Final[int] = 10000
+CHAT_TIMEOUT_MS: Final[int] = 30000
 
 
 class GenerativeContentEngine:

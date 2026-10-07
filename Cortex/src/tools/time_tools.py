@@ -4,8 +4,10 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dateutil import parser
 
+from src.tools.base_tools import BaseTools
 
-class TimeTools:
+
+class TimeTools(BaseTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_current_time,

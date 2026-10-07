@@ -2,13 +2,10 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.service.core_api_client import CoreApiClient
+from src.tools.base_tools import CoreApiTools
 
 
-class StayTools:
-    def __init__(self, core_api_client: CoreApiClient):
-        self.core_api_client = core_api_client
-
+class StayTools(CoreApiTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_stays_for_trip,
@@ -96,11 +93,3 @@ class StayTools:
             "nights": (end_date - start_date).days,
         }
         
-    def _get_user_timezone(self) -> ZoneInfo:
-        config = self.core_api_client.get_configuration()
-        return ZoneInfo(config["homeLocation"]["timezone"])
-
-    def _epoch_to_date(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
-        if epoch is None:
-            return None
-        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%d")

@@ -3,13 +3,10 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.service.core_api_client import CoreApiClient
+from src.tools.base_tools import CoreApiTools
 
 
-class TripTools:
-    def __init__(self, core_api_client: CoreApiClient):
-        self.core_api_client = core_api_client
-
+class TripTools(CoreApiTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_upcoming_trip,
@@ -201,7 +198,7 @@ class TripTools:
 
         if trip.get("year") is not None:
             start_epoch = trip.get("start")
-            end_epoch = trip.get("end")
+            end_epoch = trip.get("end") - 1
 
             start_date = datetime.fromtimestamp(start_epoch, tz=user_tz).date()
             end_date = datetime.fromtimestamp(end_epoch, tz=user_tz).date()
@@ -213,11 +210,3 @@ class TripTools:
 
         return extracted_trip
         
-    def _get_user_timezone(self) -> ZoneInfo:
-        config = self.core_api_client.get_configuration()
-        return ZoneInfo(config["homeLocation"]["timezone"])
-
-    def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
-        if epoch is None:
-            return None
-        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")

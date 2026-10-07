@@ -1,14 +1,9 @@
-from datetime import datetime
 from typing import Any
-from zoneinfo import ZoneInfo
 
-from src.service.core_api_client import CoreApiClient
+from src.tools.base_tools import CoreApiTools
 
 
-class SubscriptionTools:
-    def __init__(self, core_api_client: CoreApiClient):
-        self.core_api_client = core_api_client
-
+class SubscriptionTools(CoreApiTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_subscription_descriptions,
@@ -94,10 +89,3 @@ class SubscriptionTools:
             "currency": subscription.get("currency"),
             "expiration": self._epoch_to_iso(subscription.get("expiration"), user_tz),
         }
-
-    def _get_user_timezone(self) -> ZoneInfo:
-        config = self.core_api_client.get_configuration()
-        return ZoneInfo(config["homeLocation"]["timezone"])
-
-    def _epoch_to_iso(self, epoch: int, user_tz: ZoneInfo) -> str:
-        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")

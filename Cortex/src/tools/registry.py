@@ -5,6 +5,7 @@ from typing import Any, Callable
 
 from src.core.logger import logger
 from src.service.core_api_client import CoreApiClient
+from src.tools.base_tools import BaseTools, CoreApiTools
 
 
 class ToolRegistry:
@@ -21,10 +22,9 @@ class ToolRegistry:
             module = importlib.import_module(module_name)
 
             for _, cls in inspect.getmembers(module, inspect.isclass):
-                if cls.__module__ == module_name and hasattr(cls, "get_tools"):
+                if cls.__module__ == module_name and issubclass(cls, BaseTools) and cls is not BaseTools and cls is not CoreApiTools:
                     try:
-                        init_params = inspect.signature(cls.__init__).parameters
-                        if len(init_params) > 1 and "core_api_client" in init_params:
+                        if issubclass(cls, CoreApiTools):
                             instance = cls(self.core_api_client)
                         else:
                             instance = cls()

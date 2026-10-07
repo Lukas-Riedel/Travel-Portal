@@ -1,14 +1,10 @@
-from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.service.core_api_client import CoreApiClient
+from src.tools.base_tools import CoreApiTools
 
 
-class VoucherTools:
-    def __init__(self, core_api_client: CoreApiClient):
-        self.core_api_client = core_api_client
-
+class VoucherTools(CoreApiTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_vouchers,
@@ -82,12 +78,3 @@ class VoucherTools:
             "currency": voucher.get("currency"),
             "expiration": self._epoch_to_iso(voucher.get("expiration"), user_tz),
         }
-
-    def _get_user_timezone(self) -> ZoneInfo:
-        config = self.core_api_client.get_configuration()
-        return ZoneInfo(config["homeLocation"]["timezone"])
-
-    def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
-        if epoch is None:
-            return None
-        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")
