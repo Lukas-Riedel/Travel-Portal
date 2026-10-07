@@ -63,6 +63,11 @@ class CoreApiClient:
 
         return self.request("GET", url)
 
+    def get_configuration(self) -> dict[str, Any]:
+        url = f"{self.base_url}/configuration"
+
+        return self.request("GET", url)
+
     def search(self, query: str, include: str | None = None, limit: int | None = None) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/search"
         params: dict[str, Any] = {"query": query}

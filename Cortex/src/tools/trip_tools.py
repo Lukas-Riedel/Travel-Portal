@@ -1,6 +1,7 @@
 import time
 from datetime import datetime, timezone
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from src.service.core_api_client import CoreApiClient
 
@@ -44,8 +45,9 @@ class TripTools:
 
         current_timestamp = int(time.time())
         for trip in trips:
-            if trip.get("start") > current_timestamp:
-                return self._extract_trip(trip)
+            if trip.get("start") > current_timestamp:                
+                user_tz = self._get_user_timezone()
+                return self._extract_trip(trip, user_tz)
         
         return None
 
@@ -76,7 +78,8 @@ class TripTools:
         current_timestamp = int(time.time())
         for trip in trips:
             if trip.get("start") > current_timestamp and trip.get("end") < current_timestamp:
-                return self._extract_trip(trip)
+                user_tz = self._get_user_timezone()
+                return self._extract_trip(trip, user_tz)
         
         return None   
 
@@ -112,14 +115,12 @@ class TripTools:
         if not trip_id:
             return None
 
-        trip = self.core_api_client.get_trip(
-            trip_id=trip_id, 
-            include="notes",
-        )
+        trip = self.core_api_client.get_trip(trip_id)
         if isinstance(trip, dict) and trip.get("message"):
             return trip
 
-        return self._extract_trip(trip)
+        user_tz = self._get_user_timezone()
+        return self._extract_trip(trip, user_tz)
 
     def get_regular_trips(self,
         year: int | None = None,
@@ -158,7 +159,8 @@ class TripTools:
         if isinstance(trips, dict) and trips.get("message"):
             return trips
         
-        return [self._extract_trip(t) for t in trips]
+        user_tz = self._get_user_timezone()
+        return [self._extract_trip(t, user_tz) for t in trips]
 
     def get_candidate_trips(self) -> list[dict[str, Any]] | None:
         """Retrieves a list of candidate trips from Travel Portal.
@@ -183,10 +185,12 @@ class TripTools:
         if isinstance(trips, dict) and trips.get("message"):
             return trips
         
-        return [self._extract_trip(t) for t in trips]
+        user_tz = self._get_user_timezone()
+        return [self._extract_trip(t, user_tz) for t in trips]
 
     def _extract_trip(self, 
-        trip: dict[str, Any]
+        trip: dict[str, Any],
+        user_tz: ZoneInfo,
     ) -> dict[str, Any]:
         extracted_trip = {
             "id": trip.get("id"),
@@ -196,17 +200,24 @@ class TripTools:
         }
 
         if trip.get("year") is not None:
-            start_date = datetime.fromtimestamp(trip.get("start"), tz=timezone.utc).date()
-            end_date = datetime.fromtimestamp(trip.get("end"), tz=timezone.utc).date()
+            start_epoch = trip.get("start")
+            end_epoch = trip.get("end")
+
+            start_date = datetime.fromtimestamp(start_epoch, tz=timezone.utc).date()
+            end_date = datetime.fromtimestamp(end_epoch, tz=timezone.utc).date()
 
             extracted_trip["year"] = trip.get("year")
             extracted_trip["days"] = (end_date - start_date).days + 1
-            extracted_trip["start"] = self._epoch_to_iso(trip.get("start"))
-            extracted_trip["end"] = self._epoch_to_iso(trip.get("end"))
+            extracted_trip["start"] = self._epoch_to_iso(start_epoch, user_tz)
+            extracted_trip["end"] = self._epoch_to_iso(end_epoch, user_tz)
 
         return extracted_trip
+        
+    def _get_user_timezone(self) -> ZoneInfo:
+        config = self.core_api_client.get_configuration()
+        return ZoneInfo(config["homeLocation"]["timezone"])
 
-    def _epoch_to_iso(self, epoch: int | None) -> str | None:
+    def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
         if epoch is None:
             return None
         return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

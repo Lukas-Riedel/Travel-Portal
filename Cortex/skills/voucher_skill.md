@@ -21,7 +21,7 @@ A voucher object contains:
      - `issuer`: Name of the issuer / company (e.g. FLIXBUS, Ryanair, Booking.com, Airbnb).
      - `value`: Monetary amount.
      - `currency`: 3-letter currency code (uppercase).
-     - `expiration`: Optional epoch timestamp if an expiration date is specified. Use `convert_datetime_to_epoch` to compute it, taking the current year (e.g. 2026) from the Environmental Context.
+     - `expiration`: Optional epoch timestamp if an expiration date is specified. Use `convert_datetime_to_epoch(date_str, time_str, tz_name)` to compute it, taking the current year (e.g. 2026) from the Environmental Context.
    - **NEVER create provisional or placeholder vouchers with "Unknown" as issuer.**
    - **NEVER create vouchers with expiration in the past.**
    - **NEVER guess or invent an issuer** (e.g. do not assume "Booking.com" if not explicitly mentioned).
