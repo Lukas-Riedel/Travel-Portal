@@ -11,7 +11,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: {{ max 0 (sub (int .Values.portal.replicas) 1) }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}

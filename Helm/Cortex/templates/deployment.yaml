@@ -9,6 +9,9 @@ spec:
   replicas: {{ .Values.cortex.replicas }}
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: {{ max 0 (sub (int .Values.cortex.replicas) 1) }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}

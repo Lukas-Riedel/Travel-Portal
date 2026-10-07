@@ -43,7 +43,7 @@ core:
       port: 
         management: 5671
     vhost: /
-    heartbeat: "120"
+    heartbeat: "180"
     prefetch: "1"
     queue:
       worker: WorkerQueue

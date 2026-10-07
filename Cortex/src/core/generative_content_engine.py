@@ -63,7 +63,10 @@ class GenerativeContentEngine:
             config_kwargs["response_mime_type"] = "application/json"
             config_kwargs["response_schema"] = schema
 
-        config = types.GenerateContentConfig(**config_kwargs)
+        config = types.GenerateContentConfig(
+            **config_kwargs,
+            http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
+        )
 
         for model in self.models:
             logger.debug(f"Attempting generative content request with model '{model}'...")
@@ -72,7 +75,6 @@ class GenerativeContentEngine:
                     model=model,
                     history=list(history) if history else None,
                     config=config,
-                    http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
                 )
                 response = chat.send_message(last_message)
                 logger.info(f"Generative content request succeeded with model '{model}'.")
