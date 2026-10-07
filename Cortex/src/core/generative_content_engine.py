@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
 from google import genai
@@ -31,6 +32,7 @@ class GenerativeContentEngine:
         schema: dict[str, Any] | None = None,
         use_skills: bool = True,
         context: str | None = None,
+        timezone_name: str | None = None,
     ) -> str:
         if not messages:
             return ""
@@ -47,7 +49,7 @@ class GenerativeContentEngine:
 
         config_kwargs: dict[str, Any] = {}
         if use_skills:
-            parts = [p for p in [self._build_environmental_context(), context, self.system_instruction] if p]
+            parts = [p for p in [self._build_environmental_context(timezone_name), context, self.system_instruction] if p]
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
@@ -81,11 +83,23 @@ class GenerativeContentEngine:
             detail="All generative content models are currently unavailable. Please try again later.",
         )
 
-    def _build_environmental_context(self) -> str:
+    def _build_environmental_context(self, timezone_name: str | None = None) -> str:
         now_utc = datetime.now(tz=timezone.utc)
-        return (
-            f"## Environmental Context\n"
-            f"Today is {now_utc.strftime('%A, %d %B %Y')}. "
-            f"Current UTC time: {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}. "
+        lines = [
+            "## Environmental Context",
+            f"Today is {now_utc.strftime('%A, %d %B %Y')}.",
+        ]
+
+        if timezone_name:
+            user_tz = ZoneInfo(timezone_name)
+            now_local = now_utc.astimezone(user_tz)
+            lines.append(
+                f"User's local time: {now_local.strftime('%Y-%m-%d %H:%M:%S')} (Timezone: {timezone_name}, UTC{now_local.strftime('%z')})."
+            )
+
+        lines.extend([
+            f"Current UTC time: {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}.",
             f"Current year: {now_utc.year}."
-        )
+        ])
+        
+        return "\n".join(lines)

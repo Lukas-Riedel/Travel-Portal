@@ -61,12 +61,17 @@ def generate_content(
         alias="useSkills",
         description="Whether to include skills and tools in the prompt context",
     ),
+    timezone: str | None = Query(
+        None,
+        description="Optional IANA timezone name of the client (e.g. 'Europe/Prague')",
+    ),
 ):
     text: str = req_obj.app.state.generative_content_engine.generate(
         [message.model_dump() for message in request.messages],
         request.schema,
         use_skills,
         request.context,
+        timezone,
     )
 
     if request.schema is not None:

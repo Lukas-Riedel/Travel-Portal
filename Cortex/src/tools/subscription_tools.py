@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from src.service.core_api_client import CoreApiClient
 
@@ -37,13 +38,14 @@ class SubscriptionTools:
             - description (string): Description/title of the subscription (e.g. 'Deutschland Ticket', 'Swiss Half Fare Pass').
             - value (number): Cost of the subscription.
             - currency (string): 3-letter currency code (e.g. 'EUR', 'USD', 'CZK').
-            - expiration (string): Expiration date in ISO 8601 UTC format (e.g. '2025-12-31T23:59:59Z').
+            - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
         subscriptions = self.core_api_client.get_subscriptions()
         if isinstance(subscriptions, dict) and subscriptions.get("message"):
             return subscriptions
         
-        return [self._extract_subscription(s) for s in subscriptions]
+        user_tz = self._get_user_timezone()
+        return [self._extract_subscription(s, user_tz) for s in subscriptions]
 
     def create_subscription(
         self,
@@ -67,7 +69,7 @@ class SubscriptionTools:
             - description (string): Description/title of the subscription (e.g. 'Deutschland Ticket', 'Swiss Half Fare Pass').
             - value (number): Cost of the subscription.
             - currency (string): 3-letter currency code (e.g. 'EUR', 'USD', 'CZK').
-            - expiration (string): Expiration date in ISO 8601 UTC format (e.g. '2025-12-31T23:59:59Z').
+            - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
         subscription = self.core_api_client.create_subscription(
             description=description,
@@ -78,16 +80,24 @@ class SubscriptionTools:
         if isinstance(subscription, dict) and subscription.get("message"):
             return subscription
             
-        return self._extract_subscription(subscription)
+        user_tz = self._get_user_timezone()
+        return self._extract_subscription(subscription, user_tz)
 
-    def _extract_subscription(self, subscription: dict[str, Any]) -> dict[str, Any]:
+    def _extract_subscription(self, 
+        subscription: dict[str, Any],
+        user_tz: str
+    ) -> dict[str, Any]:
         return {
             "id": subscription.get("id"),
             "description": subscription.get("description"),
             "value": subscription.get("value"),
             "currency": subscription.get("currency"),
-            "expiration": self._epoch_to_iso(subscription.get("expiration"))
+            "expiration": self._epoch_to_iso(subscription.get("expiration"), user_tz),
         }
 
-    def _epoch_to_iso(self, epoch: int) -> str:
-        return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    def _get_user_timezone(self) -> ZoneInfo:
+        config = self.core_api_client.get_configuration()
+        return ZoneInfo(config["homeLocation"]["timezone"])
+
+    def _epoch_to_iso(self, epoch: int, user_tz: ZoneInfo) -> str:
+        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")

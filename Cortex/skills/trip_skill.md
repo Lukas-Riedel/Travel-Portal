@@ -8,8 +8,8 @@ A trip object contains:
 - `id` (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
 - `name` (string): Title/name of the trip (e.g., "Southwestern United States").
 - `year` (integer): Year of the trip. Null for candidate trips.
-- `start` (string): Start date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`). Null for candidate trips.
-- `end` (string): End date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`). Null for candidate trips.
+- `start` (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`). Null for candidate trips.
+- `end` (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`). Null for candidate trips.
 - `days` (integer): Number of calendar days the trip spans (inclusive). Null for candidate trips.
 - `countries` (list of strings | null): Countries visited on the trip, excluding layovers. Empty if the trip doesn't have any itinerary yet.
 - `notes` (list of strings | null): Notes relevant for the trip.
@@ -22,7 +22,7 @@ A trip object contains:
    - When the user asks about available trips, call `get_regular_trips(year, sort)`:
       - `year`: The year of the trips to return. This parameter is optional. Provide it whenever appropriate to narrow the results.
       - `sort`: Supported sorting strategies: `oldest`, `-oldest`, `longest`, `-longest`.
-   - Present trip name, start and end dates, visited countries (if not clear from the name), and days to the user. Do not present notes in a structured way - they exist mainly to extend your internal context.
+   - Present trip name, formatted local start and end dates (e.g. "12. 5. 2025 – 20. 5. 2025"), visited countries (if not clear from the name), and days to the user. Do not present notes in a structured way - they exist mainly to extend your internal context.
 5. **Listing Candidate Trips**:
    - When the user asks about available trips, call `get_candidate_trips()`.
    - Present trip name, start and end dates, visited countries (if not clear from the name), and days to the user. Do not present notes in a structured way - they exist mainly to extend your internal context.

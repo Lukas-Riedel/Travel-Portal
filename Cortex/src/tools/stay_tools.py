@@ -34,11 +34,11 @@ class StayTools:
             - end (string): Check-out date in the user's local timezone (e.g. `"2026-10-12"`).
             - nights (integer): Number of nights spent at the accommodation.
         """
-        user_tz = self._get_user_timezone()
         trip = self.core_api_client.get_trip(trip_id)
         if isinstance(trip, dict) and trip.get("message"):
             return trip
 
+        user_tz = self._get_user_timezone()
         return [self._extract_stay(stay, trip, user_tz) for stay in trip.get("stays", [])]
 
     def get_all_stays(self, year: int | None = None) -> list[dict[str, Any]]:

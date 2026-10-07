@@ -890,11 +890,16 @@ export const removeYearHighlight = async (year: number, highlightId: string): Pr
     coreClient.delete(`years/${year}/highlights/${highlightId}`)
 
 
-export const createGenerativeContent = async (prompt: string, conversationId?: string): Promise<GenerativeContentResult> =>
+export const createGenerativeContent = async (
+    prompt: string,
+    conversationId?: string,
+    timezone?: string
+): Promise<GenerativeContentResult> =>
     coreClient.post<GenerativeContentResult>("generativecontent",
         {
             prompt,
-            conversationId
+            conversationId,
+            timezone: timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
         }
     ).then(extractData)
 

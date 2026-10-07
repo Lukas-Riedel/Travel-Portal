@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from src.service.core_api_client import CoreApiClient
 
@@ -25,13 +26,14 @@ class VoucherTools:
             - issuer (string): The issuer name.
             - value (number): Monetary value.
             - currency (string): Currency code.
-            - expiration (string | null): ISO 8601 UTC expiration datetime (if expiration was provided).
+            - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
         vouchers = self.core_api_client.get_vouchers()
         if isinstance(vouchers, dict) and vouchers.get("message"):
             return vouchers
         
-        return [self._extract_voucher(v) for v in vouchers]
+        user_tz = self._get_user_timezone()
+        return [self._extract_voucher(v, user_tz) for v in vouchers]
 
     def create_voucher(
         self,
@@ -57,7 +59,7 @@ class VoucherTools:
             - issuer (string): The issuer name.
             - value (number): Monetary value.
             - currency (string): Currency code.
-            - expiration (string | null): ISO 8601 UTC expiration datetime (if expiration was provided).
+            - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
         voucher = self.core_api_client.create_voucher(
             code=code,
@@ -69,18 +71,23 @@ class VoucherTools:
         if isinstance(voucher, dict) and voucher.get("message"):
             return voucher
 
-        return self._extract_voucher(voucher)
+        user_tz = self._get_user_timezone()
+        return self._extract_voucher(voucher, user_tz)
 
-    def _extract_voucher(self, voucher: dict[str, Any]) -> dict[str, Any]:
+    def _extract_voucher(self, voucher: dict[str, Any], user_tz: ZoneInfo) -> dict[str, Any]:
         return {
             "code": voucher.get("code"),
             "issuer": voucher.get("issuer"),
             "value": voucher.get("value"),
             "currency": voucher.get("currency"),
-            "expiration": self._epoch_to_iso(voucher.get("expiration"))
+            "expiration": self._epoch_to_iso(voucher.get("expiration"), user_tz),
         }
 
-    def _epoch_to_iso(self, epoch: int | None) -> str | None:
+    def _get_user_timezone(self) -> ZoneInfo:
+        config = self.core_api_client.get_configuration()
+        return ZoneInfo(config["homeLocation"]["timezone"])
+
+    def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
         if epoch is None:
             return None
-        return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")

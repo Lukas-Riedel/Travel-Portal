@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -29,8 +29,8 @@ class TripTools:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).            
-            - end (string): End date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).
+            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
+            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -61,8 +61,8 @@ class TripTools:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).            
-            - end (string): End date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).
+            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
+            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -97,8 +97,8 @@ class TripTools:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).            
-            - end (string): End date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).
+            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
+            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -144,8 +144,8 @@ class TripTools:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).            
-            - end (string): End date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).
+            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
+            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -172,8 +172,8 @@ class TripTools:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).            
-            - end (string): End date in ISO 8601 UTC format (e.g. `"2025-12-31T23:59:59Z"`).
+            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
+            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -203,8 +203,8 @@ class TripTools:
             start_epoch = trip.get("start")
             end_epoch = trip.get("end")
 
-            start_date = datetime.fromtimestamp(start_epoch, tz=timezone.utc).date()
-            end_date = datetime.fromtimestamp(end_epoch, tz=timezone.utc).date()
+            start_date = datetime.fromtimestamp(start_epoch, tz=user_tz).date()
+            end_date = datetime.fromtimestamp(end_epoch, tz=user_tz).date()
 
             extracted_trip["year"] = trip.get("year")
             extracted_trip["days"] = (end_date - start_date).days + 1
@@ -220,4 +220,4 @@ class TripTools:
     def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
         if epoch is None:
             return None
-        return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")

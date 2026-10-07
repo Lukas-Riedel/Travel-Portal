@@ -49,6 +49,12 @@
                             type: "string",
                             description: "The optional identifier of the existing conversation",
                             example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
+                        ),
+                        new OA\Property(
+                            property: "timezone",
+                            type: "string",
+                            description: "The optional IANA timezone of the client (e.g. 'Europe/Prague')",
+                            example: "Europe/Prague"
                         )
                     ]
                 )
@@ -105,8 +111,9 @@
 
             $prompt = $this->requireJsonBodyField($request, "prompt");
             $conversationId = $this->getJsonBodyField($request, "conversationId");
+            $timezone = $this->getJsonBodyField($request, "timezone");
 
-            return $this->generativeContentClient->getChatResponse($prompt, $conversationId);
+            return $this->generativeContentClient->getChatResponse($prompt, $conversationId, null, $timezone);
         }
     }
 ?>

@@ -11,11 +11,15 @@ class TimeTools:
             self.get_current_time,
             self.convert_datetime_to_epoch,
             self.convert_epoch_to_datetime,
+            self.convert_timezone,
         ]
 
-    def get_current_time(self) -> dict[str, Any]:
-        """Returns the current real-time UTC timestamp, human-readable ISO 8601 string, and current year/month/day.
+    def get_current_time(self, tz_name: str | None = None) -> dict[str, Any]:
+        """Returns the current real-time UTC timestamp, ISO 8601 string, and date/time components (optionally converted to specified timezone).
         Always call this tool whenever you need to compute deadlines, relative dates, durations, or verify current year.
+
+        Args:
+            tz_name (string, optional): Optional IANA timezone string (e.g. 'Europe/Prague', 'America/New_York').
 
         Returns:
             A dictionary containing:
@@ -23,15 +27,29 @@ class TimeTools:
             - current_iso (string): Current ISO 8601 datetime (UTC), e.g. "2026-03-31T20:15:00Z".
             - current_year (integer): Current year (e.g. 2026).
             - current_date (string): Current date in YYYY-MM-DD format (UTC).
+            - local_date (string, optional): Current date in YYYY-MM-DD format in specified timezone.
+            - local_time (string, optional): Current time in HH:MM:SS format in specified timezone.
+            - local_timezone (string, optional): Specified timezone name.
+            - utc_offset (string, optional): UTC offset (e.g. "+0200").
         """
-        now = datetime.now(tz=timezone.utc)
-        epoch = int(now.timestamp())
-        return {
+        now_utc = datetime.now(tz=timezone.utc)
+        epoch = int(now_utc.timestamp())
+        result: dict[str, Any] = {
             "current_epoch": epoch,
-            "current_iso": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "current_year": now.year,
-            "current_date": now.strftime("%Y-%m-%d"),
+            "current_iso": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "current_year": now_utc.year,
+            "current_date": now_utc.strftime("%Y-%m-%d"),
         }
+
+        if tz_name:
+            tz = ZoneInfo(tz_name)
+            now_local = now_utc.astimezone(tz)
+            result["local_date"] = now_local.strftime("%Y-%m-%d")
+            result["local_time"] = now_local.strftime("%H:%M:%S")
+            result["local_timezone"] = tz_name
+            result["utc_offset"] = now_local.strftime("%z")
+
+        return result
 
     def convert_datetime_to_epoch(
         self,
@@ -106,4 +124,59 @@ class TimeTools:
             "date": dt_with_tz.strftime("%Y-%m-%d"),
             "time": dt_with_tz.strftime("%H:%M:%S"),
             "utc_offset": dt_with_tz.strftime("%z"),
+        }
+
+    def convert_timezone(
+        self,
+        datetime_str: str,
+        target_tz: str,
+        source_tz: str | None = None,
+    ) -> dict[str, Any]:
+        """Converts a datetime string or ISO 8601 string from one timezone to another target timezone.
+        Use this tool whenever you receive timestamps/dates with offsets or from backend tools configured in home timezone and need to convert them to the user's current environment timezone or destination timezone.
+
+        Args:
+            datetime_str: Date/time string or ISO 8601 string (e.g. '2025-12-31T23:59:59+0200', '2026-04-15 14:30:00', '2026-04-15T12:30:00Z').
+            target_tz: Target IANA timezone string (e.g. 'America/New_York', 'Europe/Prague', 'UTC').
+            source_tz: Source IANA timezone if datetime_str does not contain an offset/timezone info. Default is None.
+
+        Returns:
+            A dictionary containing:
+            - iso (string): ISO 8601 representation in target timezone with offset (e.g. '2025-12-31T16:59:59-0500').
+            - date (string): YYYY-MM-DD in the target timezone.
+            - time (string): HH:MM:SS in the target timezone.
+            - target_timezone (string): Target timezone name.
+            - utc_offset (string): UTC offset string in target timezone (e.g. '-0500').
+            - epoch (integer): Unix timestamp in seconds.
+        """
+        try:
+            target_zone = ZoneInfo(target_tz)
+        except (ZoneInfoNotFoundError, ValueError):
+            return {"error": 400, "message": f"Invalid target timezone name '{target_tz}'."}
+
+        try:
+            dt = parser.parse(datetime_str, dayfirst=True)
+        except (ValueError, TypeError):
+            return {"error": 400, "message": f"Could not parse datetime '{datetime_str}'."}
+
+        if dt.tzinfo is None:
+            if source_tz:
+                try:
+                    source_zone = ZoneInfo(source_tz)
+                    dt = dt.replace(tzinfo=source_zone)
+                except (ZoneInfoNotFoundError, ValueError):
+                    return {"error": 400, "message": f"Invalid source timezone name '{source_tz}'."}
+            else:
+                dt = dt.replace(tzinfo=timezone.utc)
+
+        dt_target = dt.astimezone(target_zone)
+        epoch = int(dt_target.timestamp())
+
+        return {
+            "iso": dt_target.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "date": dt_target.strftime("%Y-%m-%d"),
+            "time": dt_target.strftime("%H:%M:%S"),
+            "target_timezone": target_tz,
+            "utc_offset": dt_target.strftime("%z"),
+            "epoch": epoch,
         }

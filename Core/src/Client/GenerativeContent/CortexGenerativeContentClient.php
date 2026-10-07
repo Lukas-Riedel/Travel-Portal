@@ -42,14 +42,14 @@
             return $this->doGetResponse(array(array("role" => "user", "text" => $this->createPrompt($query, $context))), $responseJsonSchema, false);
         }
 
-        public function getChatResponse(string $prompt, ?string $conversationId = null, ?array $responseJsonSchema = null) : ?GenerativeContentResult {
+        public function getChatResponse(string $prompt, ?string $conversationId = null, ?array $responseJsonSchema = null, ?string $timezone = null) : ?GenerativeContentResult {
             $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
             $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
 
             $messages[] = array("role" => "user", "text" => $prompt);
 
-            $response = $this->doGetResponse($messages, $responseJsonSchema, true);
+            $response = $this->doGetResponse($messages, $responseJsonSchema, true, $timezone);
             if ($response === null) {
                 return null;
             }
@@ -60,7 +60,7 @@
             return new GenerativeContentResult($response, $targetConversationId);
         }
 
-        private function doGetResponse(array $messages, ?array $responseJsonSchema, bool $useSkills) : ?string {
+        private function doGetResponse(array $messages, ?array $responseJsonSchema, bool $useSkills, ?string $timezone = null) : ?string {
             $payload = array("messages" => $messages);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
@@ -69,7 +69,7 @@
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"];
             }
 
-            $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");
+            $url = sprintf("%s%s?useSkills=%s&timezone=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false", $timezone ?? $this->configurationService->getConfigurationEntry("homeLocation")["timezone"]);
             $response = $this->httpClient->executeRequest(
                 HttpMethod::POST,
                 $url,
