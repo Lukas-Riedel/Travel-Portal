@@ -1053,7 +1053,7 @@
     "chat": {
         "label": {
             "title": "Chat",
-            "new": "Nová konverzace"
+            "assistant": "Asistent"
         },
         "placeholder": {
             "input": "Napiš zprávu..."
@@ -1063,6 +1063,11 @@
                 "message": "Opravdu chceš začít novou konverzaci?",
                 "confirmed": "Konverzace byla smazána",
                 "failed": "Nepodařilo se smazat konverzaci"
+            },
+            "copy": {
+                "message": "Text konverzace bude vložen do schránky. Přeješ si pokračovat?",
+                "confirmed": "Text konverzace byl úspěšně vložen do schránky",
+                "failed": "Nepodařilo se vložit text konverzace do schránky"
             }
         }
     },

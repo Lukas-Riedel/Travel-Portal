@@ -1,5 +1,5 @@
-import { AlertCircle, Bot, RotateCcw, Send, User2 } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { AlertCircle, Bot, ClipboardCopy, RotateCcw, Send, User2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
 
@@ -10,25 +10,20 @@ import { ChatMessageRole } from "../types/ChatMessageRole.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export default function ChatPage() {
-    const { hasRole } = useAuth()
+    const { hasRole, username } = useAuth()
     const { t } = useTranslation()
     const { messages, isLoading, sendMessage, clearConversation } = useChat()
-    const { showClearConversationToast } = usePredefinedUserInput()
+    const { showClearConversationToast, showCopyConversationToast } = usePredefinedUserInput()
 
     const [input, setInput] = useState("")
     const [height, setHeight] = useState(0)
-    const bottomRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        const onResize = () => setHeight(window.innerHeight - 340)
+        const onResize = () => setHeight(window.innerHeight - 300)
         onResize()
         window.addEventListener("resize", onResize)
         return () => window.removeEventListener("resize", onResize)
     }, [])
-
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-    }, [messages, isLoading])
 
     const handleMessageSent = async () => {
         const text = input.trim()
@@ -54,17 +49,34 @@ export default function ChatPage() {
         showClearConversationToast(async () => clearConversation())
     }
 
+    const handleConversationCopied = () => {
+        showCopyConversationToast(async () => {
+            const text = messages
+                .filter(m => m.role !== ChatMessageRole.Error)
+                .map(m => `${m.role === ChatMessageRole.User ? username : t("chat.label.assistant")}:\n${m.content}`)
+                .join("\n\n---\n\n")
+            await navigator.clipboard.writeText(text)
+        })
+    }
+
     return hasRole(UserRole.GenerativecontentEdit) && (
         <div className="flex flex-col" style={{ height }}>
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 flex-shrink-0 px-2 md:px-0">
                 <h1 className="text-base font-semibold text-gray-900">{t("chat.label.title")}</h1>
-                <button
-                    onClick={handleConversationCleared}
-                    disabled={messages.length === 0 && !isLoading}
-                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                    <RotateCcw size={13} />
-                    {t("chat.label.new")}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleConversationCopied}
+                        disabled={messages.length === 0}
+                        className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed text-gray-500">
+                        <ClipboardCopy size={16} />
+                    </button>
+                    <button
+                        onClick={handleConversationCleared}
+                        disabled={messages.length === 0 && !isLoading}
+                        className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed text-gray-500">
+                        <RotateCcw size={16} />
+                    </button>
+                </div>
             </div>
             <div className="flex-1 overflow-y-auto py-4 space-y-5 min-h-0">
                 {messages.map(message => (
@@ -81,7 +93,7 @@ export default function ChatPage() {
                                     prose-headings:mt-3 prose-headings:mb-1 prose-headings:font-semibold
                                     prose-ul:my-1 prose-ol:my-1 prose-li:my-0
                                     prose-pre:bg-gray-200 prose-pre:text-gray-800 prose-pre:text-xs prose-pre:rounded-lg
-                                    prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono
+                                    prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
                                     prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                                     prose-strong:font-semibold prose-blockquote:border-l-gray-300 prose-blockquote:text-gray-600">
                                     <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -104,9 +116,8 @@ export default function ChatPage() {
                         </div>
                     </div>
                 )}
-                <div ref={bottomRef} />
             </div>
-            <div className="flex-shrink-0 pt-4 border-t border-gray-200">
+            <div className="flex-shrink-0 pt-4 border-t border-gray-200 px-2 md:px-0">
                 <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-xl px-3 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-all">
                     <textarea
                         rows={1}
@@ -114,8 +125,7 @@ export default function ChatPage() {
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={t("chat.placeholder.input")}
-                        disabled={isLoading}
-                        className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-900 placeholder-gray-400 max-h-32 disabled:opacity-50 leading-relaxed py-0"
+                        className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-900 placeholder-gray-400 max-h-32 leading-relaxed py-0"
                         style={{ fieldSizing: "content" } as React.CSSProperties} />
                     <button
                         onClick={handleMessageSent}

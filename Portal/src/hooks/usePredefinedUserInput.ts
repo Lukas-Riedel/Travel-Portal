@@ -78,6 +78,14 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("chat.prompt.clear.failed")
         )
 
+    const showCopyConversationToast = (copyConversation: () => Promise<void>) =>
+        showConfirmToast(
+            t("chat.prompt.copy.message"),
+            copyConversation,
+            t("chat.prompt.copy.confirmed"),
+            t("chat.prompt.copy.failed")
+        )
+
     const showUpdatePlaceLocationToast = (updatePlaceLocation: () => Promise<Place>) =>
         showConfirmToast(
             t("place.prompt.update.location.message"),
@@ -1550,6 +1558,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showAssignLabelToast,
         showUnassignLabelToast,
         showUpdateLabelToast,
-        showClearConversationToast
+        showClearConversationToast,
+        showCopyConversationToast
     }
 }

@@ -84,4 +84,5 @@ export interface UsePredefinedUserInputResult {
     showUpdateTaskTitleAndDescriptionToast: (title: string, description: string | undefined, updateTaskTitle: (title: string, description?: string) => Promise<Task>) => Promise<boolean>
     showUpdateLabelToast: (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) => Promise<boolean>
     showClearConversationToast: (clearConversation: () => Promise<void>) => Promise<boolean>
+    showCopyConversationToast: (copyConversation: () => Promise<void>) => Promise<boolean>
 }
