@@ -1,5 +1,4 @@
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from src.tools.base_tools import CoreApiTools
 
@@ -28,8 +27,7 @@ class VoucherTools(CoreApiTools):
         if isinstance(vouchers, dict) and vouchers.get("message"):
             return vouchers
         
-        user_tz = self._get_user_timezone()
-        return [self._extract_voucher(v, user_tz) for v in vouchers]
+        return [self._extract_voucher(v) for v in vouchers]
 
     def create_voucher(
         self,
@@ -67,14 +65,13 @@ class VoucherTools(CoreApiTools):
         if isinstance(voucher, dict) and voucher.get("message"):
             return voucher
 
-        user_tz = self._get_user_timezone()
-        return self._extract_voucher(voucher, user_tz)
+        return self._extract_voucher(voucher)
 
-    def _extract_voucher(self, voucher: dict[str, Any], user_tz: ZoneInfo) -> dict[str, Any]:
+    def _extract_voucher(self,voucher: dict[str, Any]) -> dict[str, Any]:
         return {
             "code": voucher.get("code"),
             "issuer": voucher.get("issuer"),
             "value": voucher.get("value"),
             "currency": voucher.get("currency"),
-            "expiration": self._epoch_to_iso(voucher.get("expiration"), user_tz),
+            "expiration": self._epoch_to_iso(voucher.get("expiration"), self._get_user_timezone()),
         }

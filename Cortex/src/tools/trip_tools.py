@@ -26,8 +26,8 @@ class TripTools(CoreApiTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
-            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
+            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
+            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -43,8 +43,8 @@ class TripTools(CoreApiTools):
         current_timestamp = int(time.time())
         for trip in trips:
             if trip.get("start") > current_timestamp:                
-                user_tz = self._get_user_timezone()
-                return self._extract_trip(trip, user_tz)
+                system_tz = self._get_system_timezone()
+                return self._extract_trip(trip, system_tz)
         
         return None
 
@@ -58,8 +58,8 @@ class TripTools(CoreApiTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
-            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
+            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
+            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -74,9 +74,9 @@ class TripTools(CoreApiTools):
 
         current_timestamp = int(time.time())
         for trip in trips:
-            if trip.get("start") > current_timestamp and trip.get("end") < current_timestamp:
-                user_tz = self._get_user_timezone()
-                return self._extract_trip(trip, user_tz)
+            if trip.get("start") < current_timestamp and trip.get("end") > current_timestamp:
+                system_tz = self._get_system_timezone()
+                return self._extract_trip(trip, system_tz)
         
         return None   
 
@@ -94,8 +94,8 @@ class TripTools(CoreApiTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
-            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
+            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
+            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -116,8 +116,8 @@ class TripTools(CoreApiTools):
         if isinstance(trip, dict) and trip.get("message"):
             return trip
 
-        user_tz = self._get_user_timezone()
-        return self._extract_trip(trip, user_tz)
+        system_tz = self._get_system_timezone()
+        return self._extract_trip(trip, system_tz)
 
     def get_regular_trips(self,
         year: int | None = None,
@@ -141,8 +141,8 @@ class TripTools(CoreApiTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
-            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
+            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
+            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -156,8 +156,8 @@ class TripTools(CoreApiTools):
         if isinstance(trips, dict) and trips.get("message"):
             return trips
         
-        user_tz = self._get_user_timezone()
-        return [self._extract_trip(t, user_tz) for t in trips]
+        system_tz = self._get_system_timezone()
+        return [self._extract_trip(t, system_tz) for t in trips]
 
     def get_candidate_trips(self) -> list[dict[str, Any]] | None:
         """Retrieves a list of candidate trips from Travel Portal.
@@ -169,8 +169,8 @@ class TripTools(CoreApiTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).            
-            - end (string): End date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
+            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
+            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
@@ -182,12 +182,13 @@ class TripTools(CoreApiTools):
         if isinstance(trips, dict) and trips.get("message"):
             return trips
         
-        user_tz = self._get_user_timezone()
-        return [self._extract_trip(t, user_tz) for t in trips]
+        system_tz = self._get_system_timezone()
+        return [self._extract_trip(t, system_tz) for t in trips]
 
     def _extract_trip(self, 
         trip: dict[str, Any],
-        user_tz: ZoneInfo,
+        # All trips start and end in the the system timezone.
+        system_tz: ZoneInfo,
     ) -> dict[str, Any]:
         extracted_trip = {
             "id": trip.get("id"),
@@ -200,13 +201,13 @@ class TripTools(CoreApiTools):
             start_epoch = trip.get("start")
             end_epoch = trip.get("end") - 1
 
-            start_date = datetime.fromtimestamp(start_epoch, tz=user_tz).date()
-            end_date = datetime.fromtimestamp(end_epoch, tz=user_tz).date()
+            start_date = datetime.fromtimestamp(start_epoch, tz=system_tz).date()
+            end_date = datetime.fromtimestamp(end_epoch, tz=system_tz).date()
 
             extracted_trip["year"] = trip.get("year")
             extracted_trip["days"] = (end_date - start_date).days + 1
-            extracted_trip["start"] = self._epoch_to_iso(start_epoch, user_tz)
-            extracted_trip["end"] = self._epoch_to_iso(end_epoch, user_tz)
+            extracted_trip["start"] = self._epoch_to_date(start_epoch, system_tz)
+            extracted_trip["end"] = self._epoch_to_date(end_epoch, system_tz)
 
         return extracted_trip
         

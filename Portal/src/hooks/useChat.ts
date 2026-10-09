@@ -31,8 +31,12 @@ export const useChat = (): UseChatResult => {
         const timeoutController = new AbortController()
         const timeoutId = setTimeout(() => timeoutController.abort(), RESPONSE_TIMEOUT_MS)
 
+        const environment = {
+            "timezone": Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+
         try {
-            const result = await createGenerativeContent(trimmed, conversationId.current)
+            const result = await createGenerativeContent(trimmed, conversationId.current, environment)
             clearTimeout(timeoutId)
 
             if (!result.content) {

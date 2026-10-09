@@ -9,7 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.api.clustering_router import router as clustering_router
 from src.api.embeddings_router import router as embeddings_router
-from src.api.generativecontent_router import router as generativecontent_router
+from src.api.generative_content_router import router as generativecontent_router
 from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
 from src.core.clustering_engine import ClusteringEngine

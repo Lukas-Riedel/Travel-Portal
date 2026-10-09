@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
 from src.service.core_api_client import CoreApiClient
 
@@ -40,6 +41,14 @@ class CoreApiTools(BaseTools):
         self.core_api_client = core_api_client
 
     def _get_user_timezone(self) -> ZoneInfo:
+        env = generative_content_environment.get()
+        if env and env.get("timezone"):
+            return ZoneInfo(env["timezone"])
+        
+        # System timezone is never returned if the request comes from UI.
+        return self._get_system_timezone()
+
+    def _get_system_timezone(self) -> ZoneInfo:
         config = self.core_api_client.get_configuration()
         return ZoneInfo(config["homeLocation"]["timezone"])
 

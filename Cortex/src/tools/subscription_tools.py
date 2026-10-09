@@ -39,8 +39,7 @@ class SubscriptionTools(CoreApiTools):
         if isinstance(subscriptions, dict) and subscriptions.get("message"):
             return subscriptions
         
-        user_tz = self._get_user_timezone()
-        return [self._extract_subscription(s, user_tz) for s in subscriptions]
+        return [self._extract_subscription(s) for s in subscriptions]
 
     def create_subscription(
         self,
@@ -75,17 +74,15 @@ class SubscriptionTools(CoreApiTools):
         if isinstance(subscription, dict) and subscription.get("message"):
             return subscription
             
-        user_tz = self._get_user_timezone()
-        return self._extract_subscription(subscription, user_tz)
+        return self._extract_subscription(subscription)
 
-    def _extract_subscription(self, 
+    def _extract_subscription(self,
         subscription: dict[str, Any],
-        user_tz: str
     ) -> dict[str, Any]:
         return {
             "id": subscription.get("id"),
             "description": subscription.get("description"),
             "value": subscription.get("value"),
             "currency": subscription.get("currency"),
-            "expiration": self._epoch_to_iso(subscription.get("expiration"), user_tz),
+            "expiration": self._epoch_to_iso(subscription.get("expiration"), self._get_user_timezone()),
         }

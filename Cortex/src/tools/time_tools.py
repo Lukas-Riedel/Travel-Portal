@@ -10,48 +10,10 @@ from src.tools.base_tools import BaseTools
 class TimeTools(BaseTools):
     def get_tools(self) -> list[Any]:
         return [
-            self.get_current_time,
             self.convert_datetime_to_epoch,
             self.convert_epoch_to_datetime,
             self.convert_timezone,
         ]
-
-    def get_current_time(self, tz_name: str | None = None) -> dict[str, Any]:
-        """Returns the current real-time UTC timestamp, ISO 8601 string, and date/time components (optionally converted to specified timezone).
-        Always call this tool whenever you need to compute deadlines, relative dates, durations, or verify current year.
-
-        Args:
-            tz_name (string, optional): Optional IANA timezone string (e.g. 'Europe/Prague', 'America/New_York').
-
-        Returns:
-            A dictionary containing:
-            - current_epoch (integer): Current Unix timestamp in seconds (UTC).
-            - current_iso (string): Current ISO 8601 datetime (UTC), e.g. "2026-03-31T20:15:00Z".
-            - current_year (integer): Current year (e.g. 2026).
-            - current_date (string): Current date in YYYY-MM-DD format (UTC).
-            - local_date (string, optional): Current date in YYYY-MM-DD format in specified timezone.
-            - local_time (string, optional): Current time in HH:MM:SS format in specified timezone.
-            - local_timezone (string, optional): Specified timezone name.
-            - utc_offset (string, optional): UTC offset (e.g. "+0200").
-        """
-        now_utc = datetime.now(tz=timezone.utc)
-        epoch = int(now_utc.timestamp())
-        result: dict[str, Any] = {
-            "current_epoch": epoch,
-            "current_iso": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "current_year": now_utc.year,
-            "current_date": now_utc.strftime("%Y-%m-%d"),
-        }
-
-        if tz_name:
-            tz = ZoneInfo(tz_name)
-            now_local = now_utc.astimezone(tz)
-            result["local_date"] = now_local.strftime("%Y-%m-%d")
-            result["local_time"] = now_local.strftime("%H:%M:%S")
-            result["local_timezone"] = tz_name
-            result["utc_offset"] = now_local.strftime("%z")
-
-        return result
 
     def convert_datetime_to_epoch(
         self,

@@ -32,7 +32,7 @@
             return $response;
         }
 
-        public function getChatResponse(string $prompt, ?string $conversationId = null, ?array $responseJsonSchema = null, ?string $timezone = null) : ?GenerativeContentResult {
-            return $this->client->getChatResponse($prompt, $conversationId, $responseJsonSchema, $timezone);
+        public function getChatResponse(string $prompt, ?string $conversationId = null, ?array $responseJsonSchema = null, mixed $environment = null) : ?GenerativeContentResult {
+            return $this->client->getChatResponse($prompt, $conversationId, $responseJsonSchema, $environment);
         }
     }

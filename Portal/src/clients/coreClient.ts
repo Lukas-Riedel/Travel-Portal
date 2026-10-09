@@ -893,13 +893,13 @@ export const removeYearHighlight = async (year: number, highlightId: string): Pr
 export const createGenerativeContent = async (
     prompt: string,
     conversationId?: string,
-    timezone?: string
+    environment?: Record<string, unknown>
 ): Promise<GenerativeContentResult> =>
     coreClient.post<GenerativeContentResult>("generativecontent",
         {
             prompt,
             conversationId,
-            timezone: timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+            environment
         }
     ).then(extractData)
 

@@ -51,10 +51,10 @@
                             example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
                         ),
                         new OA\Property(
-                            property: "timezone",
-                            type: "string",
-                            description: "The optional IANA timezone of the client (e.g. 'Europe/Prague')",
-                            example: "Europe/Prague"
+                            property: "environment",
+                            type: "object",
+                            description: "Optional arbitrary JSON subtree with environment data passed to the generative engine (e.g. timezone)",
+                            example: ["timezone" => "Europe/Prague"]
                         )
                     ]
                 )
@@ -111,9 +111,9 @@
 
             $prompt = $this->requireJsonBodyField($request, "prompt");
             $conversationId = $this->getJsonBodyField($request, "conversationId");
-            $timezone = $this->getJsonBodyField($request, "timezone");
+            $environment = $this->getJsonBodyField($request, "environment");
 
-            return $this->generativeContentClient->getChatResponse($prompt, $conversationId, null, $timezone);
+            return $this->generativeContentClient->getChatResponse($prompt, $conversationId, null, $environment);
         }
     }
 ?>

@@ -27,16 +27,16 @@ class StayTools(CoreApiTools):
             - address (string | null): Physical address of the property. Null when the stay is a cruise.
             - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name of the parent trip.
-            - start (string): Check-in date in the user's local timezone (e.g. `"2026-10-08"`).
-            - end (string): Check-out date in the user's local timezone (e.g. `"2026-10-12"`).
+            - start (string): Check-in date in the local timezone (e.g. `"2026-10-08"`).
+            - end (string): Check-out date in the local timezone (e.g. `"2026-10-12"`).
             - nights (integer): Number of nights spent at the accommodation.
         """
         trip = self.core_api_client.get_trip(trip_id)
         if isinstance(trip, dict) and trip.get("message"):
             return trip
 
-        user_tz = self._get_user_timezone()
-        return [self._extract_stay(stay, trip, user_tz) for stay in trip.get("stays", [])]
+        system_tz = self._get_system_timezone()
+        return [self._extract_stay(stay, trip, system_tz) for stay in trip.get("stays", [])]
 
     def get_all_stays(self, year: int | None = None) -> list[dict[str, Any]]:
         """Retrieves all accommodation stays across all regular trips, optionally filtered by year.
@@ -53,8 +53,8 @@ class StayTools(CoreApiTools):
             - address (string | null): Physical address of the property. Null when the stay is a cruise.
             - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name of the parent trip.
-            - start (string): Check-in date in the user's local timezone (e.g. `"2026-10-08"`).
-            - end (string): Check-out date in the user's local timezone (e.g. `"2026-10-12"`).
+            - start (string): Check-in date in the local timezone (e.g. `"2026-10-08"`).
+            - end (string): Check-out date in the local timezone (e.g. `"2026-10-12"`).
             - nights (integer): Number of nights spent at the accommodation.
         """
         trips = self.core_api_client.get_trips(
@@ -65,9 +65,9 @@ class StayTools(CoreApiTools):
         if isinstance(trips, dict) and trips.get("message"):
             return trips
 
-        user_tz = self._get_user_timezone()
+        system_tz = self._get_system_timezone()
         return [
-            self._extract_stay(stay, trip, user_tz)
+            self._extract_stay(stay, trip, system_tz)
             for trip in trips
             for stay in trip.get("stays", [])
         ]
@@ -75,21 +75,22 @@ class StayTools(CoreApiTools):
     def _extract_stay(self,
         stay: dict[str, Any],
         trip: dict[str, Any],
-        user_tz: ZoneInfo
+        # Stays are full-day events normalized to the system timezone.
+        system_tz: ZoneInfo,
     ) -> dict[str, Any]:
         start_epoch = stay.get("start")
         end_epoch = stay.get("end") - 1
 
-        start_date = datetime.fromtimestamp(start_epoch, tz=user_tz).date()
-        end_date = datetime.fromtimestamp(end_epoch, tz=user_tz).date()
+        start_date = datetime.fromtimestamp(start_epoch, tz=system_tz).date()
+        end_date = datetime.fromtimestamp(end_epoch, tz=system_tz).date()
 
         return {
             "name": stay.get("name"),
             "address": stay.get("address"),
             "trip_id": trip.get("id"),
             "trip_name": trip.get("name"),
-            "start": self._epoch_to_date(start_epoch, user_tz),
-            "end": self._epoch_to_date(end_epoch, user_tz),
+            "start": self._epoch_to_date(start_epoch, system_tz),
+            "end": self._epoch_to_date(end_epoch, system_tz),
             "nights": (end_date - start_date).days,
         }
         

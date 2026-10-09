@@ -1,10 +1,12 @@
 import json
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.dependencies import require_backend_service_account
+from src.core.generative_content_context import generative_content_environment
 
 router = APIRouter(
     prefix="/generativecontent",
@@ -41,6 +43,10 @@ class GenerativeContentRequest(BaseModel):
         None,
         description="Optional personal context prepended to the system instruction",
     )
+    environment: dict[str, Any] | None = Field(
+        None,
+        description="Optional arbitrary JSON subtree with environment data passed to the generative engine",
+    )
 
 
 @router.post(
@@ -55,24 +61,23 @@ class GenerativeContentRequest(BaseModel):
 )
 def generate_content(
     request: GenerativeContentRequest,
-    req_obj: Request,
+    req_obj: Request,  # noqa: ARG001
     use_skills: bool = Query(
         True,
         alias="useSkills",
         description="Whether to include skills and tools in the prompt context",
     ),
-    timezone: str | None = Query(
-        None,
-        description="Optional IANA timezone name of the client (e.g. 'Europe/Prague')",
-    ),
 ):
-    text: str = req_obj.app.state.generative_content_engine.generate(
-        [message.model_dump() for message in request.messages],
-        request.schema,
-        use_skills,
-        request.context,
-        timezone,
-    )
+    token = generative_content_environment.set(request.environment)
+    try:
+        text: str = req_obj.app.state.generative_content_engine.generate(
+            [message.model_dump() for message in request.messages],
+            request.schema,
+            use_skills,
+            request.context,
+        )
+    finally:
+        generative_content_environment.reset(token)
 
     if request.schema is not None:
         return JSONResponse(content=json.loads(text))
