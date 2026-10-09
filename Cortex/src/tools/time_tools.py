@@ -41,9 +41,10 @@ class TimeTools(BaseTools):
             return {"error": 400, "message": f"Invalid timezone name '{tz_name}'."}
 
         combined = f"{date_str.strip()} {time_str.strip()}"
+        dayfirst = not date_str.strip()[:4].isdigit()
 
         try:
-            dt_naive = parser.parse(combined, dayfirst=True)
+            dt_naive = parser.parse(combined, dayfirst=dayfirst)
         except (ValueError, TypeError):
             return {"error": 400, "message": f"Could not parse date '{date_str}' and time '{time_str}'."}
 
@@ -118,8 +119,9 @@ class TimeTools(BaseTools):
         except (ZoneInfoNotFoundError, ValueError):
             return {"error": 400, "message": f"Invalid target timezone name '{target_tz}'."}
 
+        dayfirst = not datetime_str.strip()[:4].isdigit()
         try:
-            dt = parser.parse(datetime_str, dayfirst=True)
+            dt = parser.parse(datetime_str, dayfirst=dayfirst)
         except (ValueError, TypeError):
             return {"error": 400, "message": f"Could not parse datetime '{datetime_str}'."}
 

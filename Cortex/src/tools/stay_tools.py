@@ -36,7 +36,7 @@ class StayTools(CoreApiTools):
             return trip
 
         system_tz = self._get_system_timezone()
-        return [self._extract_stay(stay, trip, system_tz) for stay in trip.get("stays", [])]
+        return [s for stay in trip.get("stays", []) if (s := self._extract_stay(stay, trip, system_tz)) is not None]
 
     def get_all_stays(self, year: int | None = None) -> list[dict[str, Any]]:
         """Retrieves all accommodation stays across all regular trips, optionally filtered by year.
@@ -67,9 +67,10 @@ class StayTools(CoreApiTools):
 
         system_tz = self._get_system_timezone()
         return [
-            self._extract_stay(stay, trip, system_tz)
+            s
             for trip in trips
             for stay in trip.get("stays", [])
+            if (s := self._extract_stay(stay, trip, system_tz)) is not None
         ]
 
     def _extract_stay(self,
@@ -77,7 +78,10 @@ class StayTools(CoreApiTools):
         trip: dict[str, Any],
         # Stays are full-day events normalized to the system timezone.
         system_tz: ZoneInfo,
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
+        if self._get_maximum_timestamp() < trip.get("start", 0):
+            return None
+
         start_epoch = stay.get("start")
         end_epoch = stay.get("end") - 1
 

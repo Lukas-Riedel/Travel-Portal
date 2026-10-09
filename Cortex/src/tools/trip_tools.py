@@ -157,7 +157,7 @@ class TripTools(CoreApiTools):
             return trips
         
         system_tz = self._get_system_timezone()
-        return [self._extract_trip(t, system_tz) for t in trips]
+        return [t for trip in trips if (t := self._extract_trip(trip, system_tz)) is not None]
 
     def get_candidate_trips(self) -> list[dict[str, Any]] | None:
         """Retrieves a list of candidate trips from Travel Portal.
@@ -183,13 +183,13 @@ class TripTools(CoreApiTools):
             return trips
         
         system_tz = self._get_system_timezone()
-        return [self._extract_trip(t, system_tz) for t in trips]
+        return [t for trip in trips if (t := self._extract_trip(trip, system_tz)) is not None]
 
-    def _extract_trip(self, 
+    def _extract_trip(self,
         trip: dict[str, Any],
         # All trips start and end in the the system timezone.
         system_tz: ZoneInfo,
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         extracted_trip = {
             "id": trip.get("id"),
             "name": trip.get("name"),
@@ -199,6 +199,9 @@ class TripTools(CoreApiTools):
 
         if trip.get("year") is not None:
             start_epoch = trip.get("start")
+            if self._get_maximum_timestamp() < start_epoch:
+                return None
+            
             end_epoch = trip.get("end") - 1
 
             start_date = datetime.fromtimestamp(start_epoch, tz=system_tz).date()
@@ -208,6 +211,8 @@ class TripTools(CoreApiTools):
             extracted_trip["days"] = (end_date - start_date).days + 1
             extracted_trip["start"] = self._epoch_to_date(start_epoch, system_tz)
             extracted_trip["end"] = self._epoch_to_date(end_epoch, system_tz)
+        elif not self._can_read_future():
+            return None
 
         return extracted_trip
         

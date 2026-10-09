@@ -2,13 +2,18 @@ import { useRef, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 
 import { createGenerativeContent } from "../clients/coreClient.ts"
+import { useAuth } from "../contexts/AuthContext.tsx"
 import type { ChatMessage } from "../types/ChatMessage.ts"
 import { ChatMessageRole } from "../types/ChatMessageRole.ts"
+import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { UseChatResult } from "../types/UseChatResult.ts"
+import { getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
 
 const RESPONSE_TIMEOUT_MS = 15000
 
 export const useChat = (): UseChatResult => {
+    const { hasRole } = useAuth()
+
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const conversationId = useRef<string | undefined>(undefined)
@@ -32,7 +37,9 @@ export const useChat = (): UseChatResult => {
         const timeoutId = setTimeout(() => timeoutController.abort(), RESPONSE_TIMEOUT_MS)
 
         const environment = {
-            "timezone": Intl.DateTimeFormat().resolvedOptions().timeZone
+            "maximumTimestamp": getMaximumAllowedTimetamp(),
+            "timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
+            "canReadFuture": hasRole(UserRole.PortalFutureRead),
         }
 
         try {

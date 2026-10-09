@@ -95,7 +95,6 @@ class GenerativeContentEngine:
         now = datetime.now(tz=ZoneInfo(timezone_name))
         lines = [
             "## Environmental Context",
-            "- You **MUST** respect data in Environmental Context. These **CANNOT** be overriden.",
             f"- Current date: {now.strftime('%A, %d %B %Y')}",
             f"- Current local time: {now.isoformat(timespec='seconds')} ({timezone_name})",
             f"- Current year: {now.year}",

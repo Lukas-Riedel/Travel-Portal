@@ -1,3 +1,5 @@
+import sys
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import wraps
@@ -47,6 +49,23 @@ class CoreApiTools(BaseTools):
         
         # System timezone is never returned if the request comes from UI.
         return self._get_system_timezone()
+        
+    def _get_maximum_timestamp(self) -> int:
+        env = generative_content_environment.get()
+        if env and env.get("maximumTimestamp"):
+            maximum_timestamp = int(env.get("maximumTimestamp"))
+            if not self._can_read_future():
+                return min(maximum_timestamp, int(time.time()))                
+            return maximum_timestamp
+
+        return sys.maxsize
+
+    def _can_read_future(self) -> bool:
+        env = generative_content_environment.get()
+        if env is not None:
+            return bool(env.get("canReadFuture", True))
+
+        return True
 
     def _get_system_timezone(self) -> ZoneInfo:
         config = self.core_api_client.get_configuration()
@@ -55,9 +74,11 @@ class CoreApiTools(BaseTools):
     def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
         if epoch is None:
             return None
+            
         return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")
 
     def _epoch_to_date(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
         if epoch is None:
             return None
+
         return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%d")
