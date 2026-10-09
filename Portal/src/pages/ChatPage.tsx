@@ -1,5 +1,5 @@
 import { AlertCircle, Bot, ClipboardCopy, RotateCcw, Send, User2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
 
@@ -17,6 +17,7 @@ export default function ChatPage() {
 
     const [input, setInput] = useState("")
     const [height, setHeight] = useState(0)
+    const bottomRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const onResize = () => setHeight(window.innerHeight - 300)
@@ -24,6 +25,10 @@ export default function ChatPage() {
         window.addEventListener("resize", onResize)
         return () => window.removeEventListener("resize", onResize)
     }, [])
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, [messages, isLoading])
 
     const handleMessageSent = async () => {
         const text = input.trim()
@@ -116,6 +121,7 @@ export default function ChatPage() {
                         </div>
                     </div>
                 )}
+                <div ref={bottomRef} />
             </div>
             <div className="flex-shrink-0 pt-4 border-t border-gray-200 px-2 md:px-0">
                 <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-xl px-3 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-all">
