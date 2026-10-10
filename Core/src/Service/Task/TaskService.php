@@ -160,8 +160,8 @@
                     }
 
                     $tasks[] = new Task(null, $template["title"], $this->createText($template["text"], $candidate->getPlaceholders()),
-                                TaskPriority::from($template["priority"]), $candidate->getValidity() - $template["trigger"]["seconds"], $template["notificationInterval"] ?? null,
-                                $candidate->getUrl(), $template["actionable"] ?? false, true);
+                        TaskPriority::from($template["priority"]), $candidate->getValidity() - $template["trigger"]["seconds"], $template["notificationInterval"] ?? null,
+                        $candidate->getUrl(), $template["actionable"] ?? false, true);
                 }
             }
 

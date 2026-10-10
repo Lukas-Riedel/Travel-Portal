@@ -89,6 +89,7 @@
     use Core\Service\Task\TaskServiceListener;
     use Core\Service\TimeTracking\TimeTrackingService;
     use Core\Service\TimeTracking\TimeTrackingServiceListener;
+    use Core\Service\Trip\EndedTripEphemeralTaskProvider;
     use Core\Service\Trip\TripDataConsistencyMonitor;
     use Core\Service\Trip\TripIndexer;
     use Core\Service\Trip\TripService;
@@ -196,7 +197,8 @@
     $ephemeralTaskProviders = array(
         new ScheduledFlightEphemeralTaskProvider($flightService),
         new WatchedFlightEphemeralTaskProvider($tripService),
-        new WatchedStayEphemeralTaskProvider($tripService, $stayService)
+        new WatchedStayEphemeralTaskProvider($tripService, $stayService),
+        new EndedTripEphemeralTaskProvider($tripService)
     );
     $taskService->setEphemeralTaskProviders($ephemeralTaskProviders);
     $taskService->setTripService($tripService);
