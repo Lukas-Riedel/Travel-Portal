@@ -12,19 +12,24 @@
         private const PERSISTENT_NOTIFICATION_CACHE_KEY_FORMAT = "TaskService:Notification:%s";
         private const EPHEMERAL_NOTIFICATION_CACHE_KEY_FORMAT = "TaskService:Notification:%s:%s:%s";
 
+        private const EPHEMERAL_TASK_CANDIDATES_CACHE_KEY_FORMAT = "TaskService:EphemeralTaskCandidates:%s";
+        private const EPHEMERAL_TASK_CACHE_TTL = 60;
+
         private const KEY_PLACEHOLDER_FORMAT = "{%s}";
 
         private readonly TaskMapper $taskMapper;
         private readonly CacheClient $distributedCacheClient;
+        private readonly CacheClient $memoryCacheClient;
         private readonly ConfigurationService $configurationService;
         
         private ?TripService $tripService = null;
 
         private array $ephemeralTaskProviders = array();
 
-        public function __construct(DatabaseClient $databaseClient, CacheClient $distributedCacheClient, ConfigurationService $configurationService) {
+        public function __construct(DatabaseClient $databaseClient, CacheClient $distributedCacheClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService) {
             $this->taskMapper = new TaskMapper($databaseClient);
             $this->distributedCacheClient = $distributedCacheClient;
+            $this->memoryCacheClient = $memoryCacheClient;
             $this->configurationService = $configurationService;
         }
 
@@ -150,7 +155,15 @@
                     continue;
                 }
 
-                foreach ($providersBySource[$template["source"]]->getCandidates() as &$candidate) {
+                $cacheKey = sprintf(self::EPHEMERAL_TASK_CANDIDATES_CACHE_KEY_FORMAT, $template["source"]);
+                $candidates = $this->memoryCacheClient->get($cacheKey);
+                
+                if ($candidates === null) {
+                    $candidates = $providersBySource[$template["source"]]->getCandidates();
+                    $this->memoryCacheClient->set($cacheKey, $candidates, self::EPHEMERAL_TASK_CACHE_TTL);
+                }
+
+                foreach ($candidates as &$candidate) {
                     if ($tripId !== null && $candidate->getTripId() !== $tripId) {
                         continue;
                     }

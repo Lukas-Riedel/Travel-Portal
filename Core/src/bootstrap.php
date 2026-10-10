@@ -186,7 +186,7 @@
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $labelService->setPlaceService($placeService);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
-    $taskService = new TaskService($databaseClient, $distributedCacheClient, $configurationService);
+    $taskService = new TaskService($databaseClient, $distributedCacheClient, $memoryCacheClient, $configurationService);
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $geocodingService->setTripService($tripService);
