@@ -25,7 +25,7 @@
         private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
         
         private const USER_ROLES_CACHE_KEY_FORMAT = "AuthenticationService:UserRoles:%s";
-        private const USER_ROLES_CACHE_TTL = 60;
+        private const USER_ROLES_CACHE_TTL = 300;
 
         private readonly HttpClient $httpClient;
         private readonly CacheClient $distributedCacheClient;
