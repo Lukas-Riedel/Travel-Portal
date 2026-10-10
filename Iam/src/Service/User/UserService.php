@@ -10,6 +10,7 @@
 
         private const CLIENT_API_ENDPOINT_PATH_FORMAT = "/clients?clientId=%s";
         private const USERS_WITH_CLIENT_ROLE_API_ENDPOINT_PATH_FORMAT = "/clients/%s/roles/%s/users";
+        private const USER_CLIENT_ROLES_API_ENDPOINT_PATH_FORMAT = "/users/%s/role-mappings/clients/%s";
 
         private readonly TokenService $tokenService;
         private readonly HttpClient $httpClient;
@@ -46,6 +47,26 @@
             }
 
             return array_map(fn($user) => $user["id"], $response);
+        }
+
+        public function getUserRoles(string $userId) : array {
+            $accessToken = $this->tokenService->getIamResponseWithClientCredentials($this->iamBackendClientId, $this->iamBackendClientSecret)->getAccessToken();
+
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::CLIENT_API_ENDPOINT_PATH_FORMAT, $this->iamAppClientId),
+                array("Authorization: Bearer " . $accessToken));
+
+            if (!is_array($response) || count($response) !== 1 || !isset($response[0]["id"])) {
+                throw new \RuntimeException("There must be exactly one client with the specified identifier. Response: " . json_encode($response));
+            }
+
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->internalAdminIamBaseUrl . sprintf(self::USER_CLIENT_ROLES_API_ENDPOINT_PATH_FORMAT, $userId, $response[0]["id"]),
+                array("Authorization: Bearer " . $accessToken));
+
+            if (!is_array($response)) {
+                throw new \RuntimeException("The response with roles is not an array. Response: " . json_encode($response));
+            }
+
+            return array_map(fn($role) => $role["name"], $response);
         }
     }
 ?>
