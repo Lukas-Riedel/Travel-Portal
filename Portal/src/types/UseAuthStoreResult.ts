@@ -1,7 +1,9 @@
-import type { IamResponse } from "./CoreSwaggerTypes.ts"
+import type { UserRole } from "./CoreSwaggerTypes.ts"
+import type { AuthSession } from "./AuthSession.ts"
 
 export interface UseAuthStoreResult {
-    accessToken?: string
+    session?: AuthSession
     refreshToken?: string
-    setIamResponse: (iamResponse: IamResponse) => void
+    setSession: (accessToken: string, expiresIn: number, roles: UserRole[]) => void
+    setRefreshToken: (refreshToken: string, refreshExpiresIn: number) => void
 }

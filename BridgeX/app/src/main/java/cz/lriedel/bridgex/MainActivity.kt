@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         webView.addJavascriptInterface(AndroidBridge(AuthenticationService.getOrCreate(this), deviceInitializer, this), ANDROID_BRIDGE_JAVASCRIPT_OBJECT_NAME)
 
         loadWebViewUrl(savedInstanceState, intent.getStringExtra("url"), intent.getStringExtra("placeId"), intent.getStringExtra("tripId"), intent.getStringExtra("categoryId"),
-            intent.getStringExtra("year"), intent.getStringExtra("task"), intent.getStringExtra("issues")?.toIntOrNull() ?: intent.getIntExtra("issues", 0))
+            intent.getStringExtra("year"), intent.getStringExtra("issues")?.toIntOrNull() ?: intent.getIntExtra("issues", 0))
         CoroutineScope(Dispatchers.IO).launch {
             deviceInitializer.initialize()
         }
@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadWebViewUrl(savedInstanceState: Bundle?, url: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, task: String?, issues: Int) {
+    private fun loadWebViewUrl(savedInstanceState: Bundle?, url: String?, placeId: String?, tripId: String?, categoryId: String?, year: String?, issues: Int) {
         if (url != null) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

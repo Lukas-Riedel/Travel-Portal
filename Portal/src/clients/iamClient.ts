@@ -2,6 +2,7 @@ import type { AxiosInstance, AxiosResponse } from "axios"
 import axios from "axios"
 
 import type { IamResponse } from "../types/IamResponse.ts"
+import type { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 export const getIamResponseWithCredentials = async (username: string, password: string): Promise<IamResponse> =>
     iamClient.post<IamResponse>("token",
@@ -17,6 +18,15 @@ export const getIamResponseWithRefresh = async (refreshToken: string): Promise<I
             refreshToken
         }
     ).then(extractIamResponse)
+
+export const getUserRoles = async (userId: string, accessToken: string): Promise<UserRole[]> =>
+    iamClient.get<UserRole[]>(`users/${userId}/roles`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        }
+    ).then(response => response.data)
 
 const iamClient: AxiosInstance = axios.create({
     baseURL: window.env?.VITE_IAM_BASE_URL || import.meta.env.VITE_IAM_BASE_URL,

@@ -81,8 +81,6 @@ spec:
               value: "{{ .Values.cortex.iam.host }}"
             - name: IAM_PORT
               value: "{{ .Values.cortex.iam.port }}"
-            - name: IAM_APP_CLIENT_ID
-              value: "{{ .Values.cortex.iam.client.app.id }}"
             - name: IAM_BACKEND_CLIENT_ID
               value: "{{ .Values.cortex.iam.client.backend.id }}"
             - name: IAM_BACKEND_CLIENT_SECRET
