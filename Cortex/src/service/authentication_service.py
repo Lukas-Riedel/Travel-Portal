@@ -1,9 +1,12 @@
 import time
+from typing import Final
 
 import requests
 from fastapi import HTTPException, status
 from jose import jwk, jwt
 from jose.utils import base64url_decode
+
+JWKS_TTL: Final[int] = 86400
 
 
 class AuthenticationService:
@@ -20,8 +23,9 @@ class AuthenticationService:
         self.jwks_endpoint = f"{self.iam_base_url}/certificates/jwks"
         self.token_endpoint = f"{self.iam_base_url}/token"
         self.cached_keys = None
-        self.cached_service_token: str | None = None
-        self.service_token_expires_at: float = 0.0
+        self.keys_expires_at = 0.0
+        self.cached_service_token = None
+        self.service_token_expires_at = 0.0
 
     def get_service_access_token(self) -> str:
         current_time = time.time()
@@ -48,12 +52,14 @@ class AuthenticationService:
             raise
 
     def get_jwks_keys(self):
-        if self.cached_keys is None:
+        current_time = time.time()
+        if self.cached_keys is None or current_time >= self.keys_expires_at:
             response = requests.get(self.jwks_endpoint)
             if response.status_code != 200:
                 raise RuntimeError(f"Could not fetch JWKS. Reason: {response.text}")
 
             self.cached_keys = response.json()
+            self.keys_expires_at = current_time + JWKS_TTL
 
         return self.cached_keys
 
@@ -80,6 +86,10 @@ class AuthenticationService:
                 raise RuntimeError("The JWT token could not be verified.")
 
             claims = jwt.get_unverified_claims(token)
+
+            exp = claims.get("exp")
+            if exp is None or time.time() > exp:
+                raise RuntimeError("The JWT token has expired.")
 
             return {
                 "user_id": claims.get("sub"),
