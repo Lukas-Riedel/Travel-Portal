@@ -1,4 +1,5 @@
 import contextvars
+from contextvars import ContextVar
 import datetime
 import json
 import logging
@@ -9,8 +10,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-transaction_id = contextvars.ContextVar("transaction_id", default="")
-request_origin = contextvars.ContextVar("request_origin", default="")
+transaction_id: ContextVar[str] = contextvars.ContextVar("transaction_id", default="")
+request_origin: ContextVar[str] = contextvars.ContextVar("request_origin", default="")
+user_id: ContextVar[str | None] = contextvars.ContextVar("user_id", default=None)
 
 
 class TransactionFilter(logging.Filter):

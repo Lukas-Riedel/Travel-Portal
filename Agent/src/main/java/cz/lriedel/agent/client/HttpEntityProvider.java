@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
-import static cz.lriedel.agent.LoggingContext.REQUEST_ORIGIN_HEADER;
 import static cz.lriedel.agent.LoggingContext.TRANSACTION_ID_HEADER;
 
 @Component

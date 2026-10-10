@@ -2,7 +2,8 @@ from typing import Any
 
 import requests
 
-from src.core.logger import transaction_id
+from src.api.logging_middleware import REQUEST_ORIGIN_HEADER, TRANSACTION_ID_HEADER, USER_ID_HEADER
+from src.core.logger import transaction_id, user_id
 from src.service.authentication_service import AuthenticationService
 
 
@@ -30,12 +31,16 @@ class CoreApiClient:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Request-Origin": "cortex",
+            REQUEST_ORIGIN_HEADER: "cortex",
         }
 
         t_id = transaction_id.get()
         if t_id:
-            headers["Transaction-Id"] = t_id
+            headers[TRANSACTION_ID_HEADER] = t_id
+
+        u_id = user_id.get()
+        if u_id:
+            headers[USER_ID_HEADER] = u_id
 
         response = requests.request(method, url, headers=headers, timeout=15, **kwargs)
         return response.json()
