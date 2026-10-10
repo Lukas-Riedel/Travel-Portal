@@ -27,26 +27,26 @@
         }
 
         public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-            if ($request->getUri()->getPath() === ($this->basePath . "/") 
+            if ($request->getUri()->getPath() === ($this->basePath . "/")
                 || count(array_filter($this->whitelistedPaths, fn($path) => str_starts_with($request->getUri()->getPath(), $this->basePath . $path))) > 0) {
                 return $handler->handle($request);
             }
 
-            $userInfo = $this->tryExtractUserInfo($request, self::AUTHORIZATION_HEADER);
-            if ($userInfo === null) {
+            $authHeader = $request->getHeaderLine(self::AUTHORIZATION_HEADER);
+            if (!preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
                 throw new AuthenticationException("The access token was not provided.");
+            }
+
+            $accessToken = $matches[1];
+            $userInfo = $this->authenticationService->authenticate($accessToken);
+
+            $userId = $request->getHeaderLine(CommonConstants::USER_ID_HEADER) ?: null;
+            if ($userId !== null) {
+                $userInfo = new UserInfo($userId, $userInfo->getClient(), $this->authenticationService->getUserRoles($userId, $accessToken));
             }
 
             return $handler->handle($request->withAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY, $userInfo));
         }
 
-        private function tryExtractUserInfo(ServerRequestInterface $request, string $header) : ?UserInfo {
-            $authHeader = $request->getHeaderLine($header);
-            if (preg_match(self::BEARER_TOKEN_PATTERN, $authHeader, $matches)) {
-                return $this->authenticationService->authenticate($matches[1]);
-            }
-            
-            return null;
-        }
     }
 ?>

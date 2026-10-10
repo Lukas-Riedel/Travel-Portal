@@ -26,21 +26,14 @@
         }
 
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
-            if ($this->isBackendServiceAccount($request)) {
-                return true;
-            }
-            
             $userInfo = $this->getUserInfo($request);
-    
-            foreach ($userInfo->getRoles() as $assignedRoleValue) {
-                $assignedRole = UserRole::tryFrom($assignedRoleValue);
-                
-                if ($assignedRole && $assignedRole->implies($requiredRole)) {
-                    return true;
-                }
+
+            if ($this->isBackendServiceAccount($request)) {
+                $roles = $userInfo->getRoles();
+                return empty($roles) || $this->hasImpliedRoles($roles, $requiredRole);
             }
 
-            return false;
+            return $this->hasImpliedRoles($userInfo->getRoles(), $requiredRole);
         }
 
         public function requireBackendServiceAccount(Request $request) : void {          
@@ -106,6 +99,17 @@
         public function existsJsonBodyField(Request $request, string $field) : bool {
             $body = $this->requireJsonBody($request);
             return array_key_exists($field, $body);
+        }
+
+        private function hasImpliedRoles(array $roles, UserRole $requiredRole) : bool {
+            foreach ($roles as $assignedRoleValue) {
+                $assignedRole = UserRole::tryFrom($assignedRoleValue);
+                if ($assignedRole && $assignedRole->implies($requiredRole)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 ?>

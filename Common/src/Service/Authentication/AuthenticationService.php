@@ -10,9 +10,13 @@
     class AuthenticationService {
         
         private const JWKS_API_ENDPOINT_PATH = "/certificates/jwks";
-        
+        private const USER_ROLES_API_ENDPOINT_PATH_FORMAT = "/users/%s/roles";
+
         private const JWKS_KEYS_CACHE_KEY = "AuthenticationService:JwksKeys";
         private const JWKS_KEYS_CACHE_TTL = 24 * 3600;
+        
+        private const USER_ROLES_CACHE_KEY_FORMAT = "AuthenticationService:UserRoles:%s";
+        private const USER_ROLES_CACHE_TTL = 60;
 
         private readonly CacheClient $distributedCacheClient;
         private readonly HttpClient $httpClient;
@@ -39,6 +43,25 @@
             catch (\Throwable $e) {
                 throw new AuthenticationException("An error occurred when decoding JWT token. " . $e->getMessage() . ".");
             }
+        }
+
+        public function getUserRoles(string $userId, string $accessToken) : array {
+            $cacheKey = sprintf(self::USER_ROLES_CACHE_KEY_FORMAT, $userId);
+
+            $cachedRoles = $this->distributedCacheClient->get($cacheKey);
+            if ($cachedRoles !== null) {
+                return $cachedRoles;
+            }
+
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->getIamBaseUrl() . sprintf(self::USER_ROLES_API_ENDPOINT_PATH_FORMAT, $userId),
+                array("Authorization: Bearer " . $accessToken));
+
+            if (!is_array($response)) {
+                throw new \RuntimeException("The response with user roles is not an array. Response: " . json_encode($response));
+            }
+
+            $this->distributedCacheClient->set($cacheKey, $response, self::USER_ROLES_CACHE_TTL);
+            return $response;
         }
 
         private function getJwksKeys() : mixed {
