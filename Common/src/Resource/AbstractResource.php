@@ -12,6 +12,10 @@
         public function getUserInfo(Request $request) : UserInfo {
             return $request->getAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY);
         }
+        
+        public function getUserRoles(Request $request) : array {
+            return $request->getAttribute(CommonConstants::USER_ROLES_ATTRIBUTE_KEY) ?? array();
+        }
 
         public function isBackendServiceAccount(Request $request) : bool {
             $userInfo = $this->getUserInfo($request);
@@ -26,14 +30,13 @@
         }
 
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
-            $userInfo = $this->getUserInfo($request);
+            $roles = $this->getUserRoles($request);
 
             if ($this->isBackendServiceAccount($request)) {
-                $roles = $userInfo->getRoles();
                 return empty($roles) || $this->hasImpliedRoles($roles, $requiredRole);
             }
 
-            return $this->hasImpliedRoles($userInfo->getRoles(), $requiredRole);
+            return $this->hasImpliedRoles($roles, $requiredRole);
         }
 
         public function requireBackendServiceAccount(Request $request) : void {          

@@ -43,5 +43,5 @@
         getenv("FCM_CLIENT_ID"), getenv("GOOGLE_API_CLIENT_ID"), getenv("FCM_CLIENT_X509_CERTIFICATE_URL"), getenv("GOOGLE_API_CLIENT_SECRET"), getenv("IAM_BASE_URL"));
     $ibmCloudService = new IbmCloudService($httpClient, getenv("IBM_CLOUD_IAM_BASE_URL"), getenv("IBM_CLOUD_API_KEY"));
     $certificateService = new CertificateService($httpClient, getenv("INTERNAL_IAM_BASE_URL"));
-    $authenticationService = new AuthenticationService($distributedCacheClient, $httpClient, getenv("IAM_APP_CLIENT_ID"), "localhost", getenv("SERVICE_PORT")); 
+    $authenticationService = new AuthenticationService($distributedCacheClient, $httpClient, "localhost", getenv("SERVICE_PORT"));
 ?>

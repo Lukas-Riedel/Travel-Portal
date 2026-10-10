@@ -24,8 +24,6 @@ cortex:
     host: iam
     port: 8080
     client:
-      app:
-        id: travel-portal-app
       backend:
         id: admin-cli
   core:

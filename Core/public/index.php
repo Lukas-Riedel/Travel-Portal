@@ -1,7 +1,7 @@
 <?php
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
-    use Common\Routing\AuthMiddleware;
+    use Common\Routing\AuthenticationMiddleware;
     use Common\Routing\CorsMiddleware;
     use Slim\Factory\AppFactory;
     use Common\Routing\ErrorHandlingMiddleware;
@@ -9,17 +9,20 @@
     use Common\Routing\LoggingMiddleware;
     use Core\Routing\OpenLineageMiddleware;
     use Common\Routing\RequestError;
+    use Core\Routing\AuthorizationMiddleware;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/../src/bootstrap.php");
 
     $basePath = parse_url(getenv("CORE_BASE_URL"))["path"] ?? "";
+    $whitelistedPaths = array("/swagger", "/events/webhook", "/management/liveness", "/management/readiness");
 
     $app = AppFactory::create();
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthMiddleware($commonAuthenticationService, $basePath, array("/swagger", "/events/webhook", "/management/liveness", "/management/readiness")));
+    $app->add(new AuthenticationMiddleware($commonAuthenticationService, $basePath, $whitelistedPaths));
+    $app->add(new AuthorizationMiddleware($authenticationService, $basePath, $whitelistedPaths));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($loggingContext, $logger));
     $app->addBodyParsingMiddleware();

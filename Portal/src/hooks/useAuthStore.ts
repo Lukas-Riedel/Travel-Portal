@@ -1,23 +1,25 @@
 import { create } from "zustand"
 
-import type { IamResponse } from "../types/CoreSwaggerTypes.ts"
+import type { UserRole } from "../types/CoreSwaggerTypes.ts"
+import type { AuthSession } from "../types/AuthSession.ts"
 import type { UseAuthStoreResult } from "../types/UseAuthStoreResult.ts"
 import { useCache } from "./useCache.ts"
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
-const accessTokenCache = useCache<string>("useAuthStore:accessToken")
+const sessionCache = useCache<AuthSession>("useAuthStore:session")
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const refreshTokenCache = useCache<string>("useAuthStore:refreshToken")
 
 export const useAuthStore = create<UseAuthStoreResult>(set => ({
-    accessToken: accessTokenCache.get() ?? undefined,
+    session: sessionCache.get() ?? undefined,
     refreshToken: refreshTokenCache.get() ?? undefined,
-    setIamResponse: (iamResponse: IamResponse) => {
-        accessTokenCache.set(iamResponse.accessToken, iamResponse.expiresIn)
-        if (iamResponse.refreshToken != null && iamResponse.refreshExpiresIn != null) {
-            refreshTokenCache.set(iamResponse.refreshToken, iamResponse.refreshExpiresIn)
-        }
-
-        set(iamResponse)
-    }
+    setSession: (accessToken: string, expiresIn: number, roles: UserRole[]) => {
+        const session: AuthSession = { accessToken, roles }
+        sessionCache.set(session, expiresIn)
+        set({ session })
+    },
+    setRefreshToken: (refreshToken: string, refreshExpiresIn: number) => {
+        refreshTokenCache.set(refreshToken, refreshExpiresIn)
+        set({ refreshToken })
+    },
 }))

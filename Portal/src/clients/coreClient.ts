@@ -8,12 +8,15 @@ import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight,     GenerativeContentResult, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
-Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
-    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
+    Flight, GenerativeContentResult, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
+    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
+    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity
+} from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
-import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
+import { jwtDecode } from "jwt-decode"
+
+import { getIamResponseWithCredentials, getIamResponseWithRefresh, getUserRoles } from "./iamClient.ts"
 
 export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
     coreClient.post<Highlight[]>(createQueryPath(`places/${placeId}/highlights/refresh`,
@@ -903,26 +906,30 @@ export const createGenerativeContent = async (
         }
     ).then(extractData)
 
-
 export const refreshAccessToken = async (): Promise<string> => {
-    const { refreshToken, setIamResponse } = useAuthStore.getState()
+    const { refreshToken } = useAuthStore.getState()
     const { username: fallbackUsername, password: fallbackPassword } = GUEST_CREDENTIALS
 
+    const processIamResponse = async (iamResponse: { accessToken: string; expiresIn: number; refreshToken?: string; refreshExpiresIn?: number }): Promise<string> => {
+        const { setSession, setRefreshToken } = useAuthStore.getState()
+        const { sub } = jwtDecode(iamResponse.accessToken)
+        const roles = await getUserRoles(sub!, iamResponse.accessToken)
+        setSession(iamResponse.accessToken, iamResponse.expiresIn, roles)
+        if (iamResponse.refreshToken !== undefined && iamResponse.refreshExpiresIn !== undefined) {
+            setRefreshToken(iamResponse.refreshToken, iamResponse.refreshExpiresIn)
+        }
+        return iamResponse.accessToken
+    }
+
     if (!refreshToken) {
-        const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
-        setIamResponse(newIamResponse)
-        return Promise.resolve(newIamResponse.accessToken)
+        return processIamResponse(await getIamResponseWithCredentials(fallbackUsername, fallbackPassword))
     }
 
     try {
-        const newIamResponse = await getIamResponseWithRefresh(refreshToken)
-        setIamResponse(newIamResponse)
-        return Promise.resolve(newIamResponse.accessToken)
+        return processIamResponse(await getIamResponseWithRefresh(refreshToken))
     }
     catch (_) {
-        const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
-        setIamResponse(newIamResponse)
-        return Promise.resolve(newIamResponse.accessToken)
+        return processIamResponse(await getIamResponseWithCredentials(fallbackUsername, fallbackPassword))
     }
 }
 
@@ -954,7 +961,7 @@ const createAuthRefreshInterceptor = (authRefresh as any).default ?? (authRefres
 createAuthRefreshInterceptor(coreClient, doRefreshAccessToken)
 
 coreClient.interceptors.request.use(config => {
-    const accessToken = useAuthStore.getState().accessToken
+    const accessToken = useAuthStore.getState().session?.accessToken
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`
     }

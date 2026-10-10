@@ -15,13 +15,17 @@
         private const IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IbmCloudAccessToken";
 
         private const TOKEN_API_ENDPOINT_PATH = "/token";
+        private const USER_ROLES_API_ENDPOINT_PATH_FORMAT = "/users/%s/roles";
+        private const USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT = "/users?role=%s";
+
         private const IBM_CLOUD_TOKEN_API_ENDPOINT_PATH = "/ibmcloud/token";
         private const GOOGLE_API_TOKEN_API_ENDPOINT_PATH = "/google/token/api";
         private const GOOGLE_FCM_TOKEN_API_ENDPOINT_PATH = "/google/token/fcm";
 
-        private const USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT = "/users?role=%s";
-
         private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
+        
+        private const USER_ROLES_CACHE_KEY_FORMAT = "AuthenticationService:UserRoles:%s";
+        private const USER_ROLES_CACHE_TTL = 60;
 
         private readonly HttpClient $httpClient;
         private readonly CacheClient $distributedCacheClient;
@@ -48,6 +52,25 @@
                 throw new \RuntimeException("The response with user identifiers is not an array. Response: " . json_encode($response));
             }
 
+            return $response;
+        }
+
+        public function getUserRoles(string $userId, string $accessToken) : array {
+            $cacheKey = sprintf(self::USER_ROLES_CACHE_KEY_FORMAT, $userId);
+
+            $cachedRoles = $this->distributedCacheClient->get($cacheKey);
+            if ($cachedRoles !== null) {
+                return $cachedRoles;
+            }
+
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->getIamBaseUrl() . sprintf(self::USER_ROLES_API_ENDPOINT_PATH_FORMAT, $userId),
+                array("Authorization: Bearer " . $accessToken));
+
+            if (!is_array($response)) {
+                throw new \RuntimeException("The response with user roles is not an array. Response: " . json_encode($response));
+            }
+
+            $this->distributedCacheClient->set($cacheKey, $response, self::USER_ROLES_CACHE_TTL);
             return $response;
         }
 

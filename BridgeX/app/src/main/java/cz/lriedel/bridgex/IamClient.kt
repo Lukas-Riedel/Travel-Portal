@@ -11,11 +11,17 @@ import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.POST
 
 interface IamClient {
     @POST("token")
     suspend fun createToken(@Body tokenRequest: TokenRequest): IamResponse
+
+    @GET("users/{userId}/roles")
+    suspend fun getUserRoles(@Path("userId") userId: String, @Header("Authorization") authorization: String): List<String>
 
     companion object {
         @Volatile

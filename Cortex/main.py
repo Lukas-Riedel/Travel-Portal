@@ -34,7 +34,6 @@ async def lifespan(app: FastAPI):
     app.state.authentication_service = AuthenticationService(
         os.getenv("IAM_HOST"),
         int(os.getenv("IAM_PORT")),
-        os.getenv("IAM_APP_CLIENT_ID"),
         os.getenv("IAM_BACKEND_CLIENT_ID"),
         os.getenv("IAM_BACKEND_CLIENT_SECRET"),
     )

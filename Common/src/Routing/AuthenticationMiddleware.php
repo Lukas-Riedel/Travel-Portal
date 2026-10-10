@@ -4,13 +4,12 @@
     use Common\CommonConstants;
     use Common\Service\Authentication\AuthenticationException;
     use Common\Service\Authentication\AuthenticationService;
-    use Common\Service\Authentication\UserInfo;
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
     use Psr\Http\Server\MiddlewareInterface;
     use Psr\Http\Server\RequestHandlerInterface;
 
-    class AuthMiddleware implements MiddlewareInterface {
+    class AuthenticationMiddleware implements MiddlewareInterface {
 
         private const BEARER_TOKEN_PATTERN = "/Bearer\s+(.*)$/i";
         private const AUTHORIZATION_HEADER = "Authorization";
@@ -40,12 +39,8 @@
             $accessToken = $matches[1];
             $userInfo = $this->authenticationService->authenticate($accessToken);
 
-            $userId = $request->getHeaderLine(CommonConstants::USER_ID_HEADER) ?: null;
-            if ($userId !== null) {
-                $userInfo = new UserInfo($userId, $userInfo->getClient(), $this->authenticationService->getUserRoles($userId, $accessToken));
-            }
-
-            return $handler->handle($request->withAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY, $userInfo));
+            return $handler->handle($request->withAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY, $userInfo)
+                ->withAttribute(CommonConstants::ACCESS_TOKEN_ATTRIBUTE_KEY, $accessToken));
         }
 
     }

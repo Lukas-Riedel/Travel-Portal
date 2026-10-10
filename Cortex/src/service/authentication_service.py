@@ -11,12 +11,10 @@ class AuthenticationService:
         self,
         iam_host: str,
         iam_port: int,
-        iam_app_client_id: str,
         iam_backend_client_id: str,
         iam_backend_client_secret: str,
     ):
         self.iam_base_url = f"http://{iam_host}:{iam_port}"
-        self.iam_app_client_id = iam_app_client_id
         self.iam_backend_client_id = iam_backend_client_id
         self.iam_backend_client_secret = iam_backend_client_secret
         self.jwks_endpoint = f"{self.iam_base_url}/certificates/jwks"
@@ -86,7 +84,6 @@ class AuthenticationService:
             return {
                 "user_id": claims.get("sub"),
                 "client": claims.get("azp"),
-                "roles": claims.get("resource_access", {}).get(self.iam_app_client_id, {}).get("roles", [])
             }
         except Exception as e:
             raise HTTPException(
