@@ -113,7 +113,9 @@
             $conversationId = $this->getJsonBodyField($request, "conversationId");
             $environment = $this->getJsonBodyField($request, "environment");
 
-            return $this->generativeContentClient->getChatResponse($prompt, $conversationId, null, $environment);
+            $userInfo = $this->getUserInfo($request);
+
+            return $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $conversationId, null, $environment);
         }
     }
 ?>

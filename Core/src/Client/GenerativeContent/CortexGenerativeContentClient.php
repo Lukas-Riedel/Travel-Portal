@@ -4,7 +4,8 @@
     use Common\Client\Cache\CacheClient;
     use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
-    use Core\Common\CommonConstants;
+use Common\CommonConstants as CommonCommonConstants;
+use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;
     use Monolog\Logger;
@@ -39,17 +40,17 @@
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
-            return $this->doGetResponse(array(array("role" => "user", "text" => $this->createPrompt($query, $context))), $responseJsonSchema, false);
+            return $this->doGetResponse(array(array("role" => "user", "text" => $this->createPrompt($query, $context))), null, $responseJsonSchema, false, null);
         }
 
-        public function getChatResponse(string $prompt, ?string $conversationId = null, ?array $responseJsonSchema = null, mixed $environment = null) : ?GenerativeContentResult {
+        public function getChatResponse(string $prompt, string $userId, ?string $conversationId = null, ?array $responseJsonSchema = null, mixed $environment = null) : ?GenerativeContentResult {
             $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
             $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
 
             $messages[] = array("role" => "user", "text" => $prompt);
 
-            $response = $this->doGetResponse($messages, $responseJsonSchema, true, $environment);
+            $response = $this->doGetResponse($messages, $userId, $responseJsonSchema, true, $environment);
             if ($response === null) {
                 return null;
             }
@@ -60,7 +61,7 @@
             return new GenerativeContentResult($response, $targetConversationId);
         }
 
-        private function doGetResponse(array $messages, ?array $responseJsonSchema, bool $useSkills, mixed $environment = null) : ?string {
+        private function doGetResponse(array $messages, ?string $userId, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?string {
             $payload = array("messages" => $messages, "environment" => $environment);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
@@ -69,13 +70,13 @@
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"];
             }
 
+            $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json");
+            if ($userId !== null) {
+                $headers[] = CommonCommonConstants::USER_ID_HEADER . ": " . $userId;
+            }
+
             $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");
-            $response = $this->httpClient->executeRequest(
-                HttpMethod::POST,
-                $url,
-                array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"),
-                json_encode($payload)
-            );
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $url, $headers, json_encode($payload));
 
             // TODO: This is dangerous - the response schema can contain the 'message' field -> instead, check that if the response is array, then it matches the schema.
             if (is_array($response) && isset($response["message"])) {
