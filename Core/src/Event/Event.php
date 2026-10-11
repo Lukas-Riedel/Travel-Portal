@@ -297,6 +297,14 @@
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventVoucherExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("issuer" => $issuer, "value" => $value, "currency" => $currency, "expiration" => $expiration));
         }
 
+        public static function SubscriptionExpiring(string $description, int $expiration) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventSubscriptionExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("description" => $description, "expiration" => $expiration));
+        }
+
+        public static function DocumentExpiring(string $name, int $expiration) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDocumentExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "expiration" => $expiration));
+        }
+
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventNewDataConsistencyIssueDetectedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("count" => $count));
         }

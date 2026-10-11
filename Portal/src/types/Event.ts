@@ -29,6 +29,16 @@ interface VoucherExpiringEvent extends EventBase {
     args: { issuer: string; value: number; currency: string; expiration: number }
 }
 
+interface SubscriptionExpiringEvent extends EventBase {
+    name: EventType.SubscriptionExpiring
+    args: { description: string; expiration: number }
+}
+
+interface DocumentExpiringEvent extends EventBase {
+    name: EventType.DocumentExpiring
+    args: { name: string; expiration: number }
+}
+
 interface FlightLoggedEvent extends EventBase {
     name: EventType.FlightLogged
     args: { flight: string; to: string; actualArrival: number }
@@ -50,6 +60,8 @@ export type Event =
     | NewDataConsistencyIssuesDetectedEvent
     | TaskDeadlineReachedEvent
     | VoucherExpiringEvent
+    | SubscriptionExpiringEvent
+    | DocumentExpiringEvent
     | FlightLoggedEvent
     | AllAlbumsInvalidatedEvent
     | FolderSynchronizationRequestedEvent

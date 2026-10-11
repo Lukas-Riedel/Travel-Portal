@@ -169,7 +169,15 @@ core:
   voucher:
     expiring:
       notification:
-        threshold: "604800"
+        threshold: "2592000"
+  subscription:
+    expiring:
+      notification:
+        threshold: "2592000"
+  document:
+    expiring:
+      notification:
+        threshold: "2592000"
   timezone: Europe/Prague
   openlineage:
     producer:

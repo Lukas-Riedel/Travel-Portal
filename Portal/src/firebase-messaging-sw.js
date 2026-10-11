@@ -65,6 +65,36 @@ onBackgroundMessage(messaging, payload => {
         })
     }
 
+    if (payload.data.event === "SubscriptionExpiring") {
+        const args = JSON.parse(payload.data.args)
+        const formattedExpiration = new Intl.DateTimeFormat(undefined, {
+            day: "numeric",
+            month: "numeric",
+            year: "numeric"
+        }).format(new Date(args.expiration * 1000))
+
+        self.registration.showNotification("Blíží se expirace předplatného", {
+            body: `${args.description} expiruje dne ${formattedExpiration}`,
+            icon: "icon-192.png",
+            data: "/admin?tab=subscriptions"
+        })
+    }
+
+    if (payload.data.event === "DocumentExpiring") {
+        const args = JSON.parse(payload.data.args)
+        const formattedExpiration = new Intl.DateTimeFormat(undefined, {
+            day: "numeric",
+            month: "numeric",
+            year: "numeric"
+        }).format(new Date(args.expiration * 1000))
+
+        self.registration.showNotification("Blíží se expirace dokumentu", {
+            body: `${args.name} expiruje dne ${formattedExpiration}`,
+            icon: "icon-192.png",
+            data: "/admin?tab=documents"
+        })
+    }
+
     if (payload.data.event === "FlightLogged") {
         const args = JSON.parse(payload.data.args)
         const formattedActualArrival = new Intl.DateTimeFormat("cs-CZ", {

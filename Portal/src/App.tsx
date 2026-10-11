@@ -67,6 +67,24 @@ export default function App() {
         })
     }, [voucherExpiringEvents])
 
+    const { events: subscriptionExpiringEvents } = useEvents(EventType.SubscriptionExpiring)
+    useEffect(() => {
+        (subscriptionExpiringEvents ?? []).forEach(event => {
+            event.markAsRead()
+
+            toast.success(t("notification.subscriptionExpiring", { description: event.args.description, formattedExpiration: formatTimestamp(event.args.expiration, t("general.format.date.year.included")) }))
+        })
+    }, [subscriptionExpiringEvents])
+
+    const { events: documentExpiringEvents } = useEvents(EventType.DocumentExpiring)
+    useEffect(() => {
+        (documentExpiringEvents ?? []).forEach(event => {
+            event.markAsRead()
+
+            toast.success(t("notification.documentExpiring", { name: event.args.name, formattedExpiration: formatTimestamp(event.args.expiration, t("general.format.date.year.included")) }))
+        })
+    }, [documentExpiringEvents])
+
     const { events: flightLoggedEvents } = useEvents(EventType.FlightLogged)
     useEffect(() => {
         (flightLoggedEvents ?? []).forEach(event => {

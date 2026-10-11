@@ -146,6 +146,47 @@
                 });
         }
 
+        public function selectSubscriptionsForNotifications(int $threshold) : array {
+            $sql = <<<'SQL'
+                SELECT *,
+                    (
+                        SELECT COUNT(*)
+                        FROM expense
+                        WHERE subscription_id = expense_subscription.id
+                    ) AS occurrences
+                FROM expense_subscription
+                WHERE expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
+                    AND expiration - ROUND(EXTRACT(EPOCH FROM NOW())) <= ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($threshold)
+                ->getMappedResultSet(function($subscriptionRow) {
+                    return new Subscription($subscriptionRow["id"], $subscriptionRow["description"], $subscriptionRow["value"],
+                        ExpenseCurrency::from($subscriptionRow["currency"]), $subscriptionRow["exchange_rate"],
+                        $subscriptionRow["expiration"], $subscriptionRow["occurrences"]);
+                });
+        }
+
+        public function selectVouchersForNotifications(int $threshold) : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM expense_voucher
+                WHERE expiration IS NOT NULL
+                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
+                    AND expiration - ROUND(EXTRACT(EPOCH FROM NOW())) <= ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($threshold)
+                ->getMappedResultSet(function($voucherRow) {
+                    return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
+                        $voucherRow["value"], ExpenseCurrency::from($voucherRow["currency"]), $voucherRow["expiration"]);
+                });
+        }
+
         public function insertExpense(Expense $expense, string $tripId, ?string $subscriptionId) : bool {
             $sql = <<<'SQL'
                 INSERT INTO expense (
@@ -342,38 +383,6 @@
                 ->statementBuilder($sql)
                 ->withParameters($voucherId)
                 ->execute();
-        }
-
-        public function selectVouchersForNotifications(int $threshold) : array {
-            $sql = <<<'SQL'
-                SELECT *
-                FROM expense_voucher
-                WHERE expiration IS NOT NULL
-                    AND last_notification IS NULL
-                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
-                    AND expiration - ROUND(EXTRACT(EPOCH FROM NOW())) <= ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($threshold)
-                ->getMappedResultSet(function($voucherRow) {
-                    return new Voucher($voucherRow["id"], $this->encryptionClient->decrypt($voucherRow["code"]), $voucherRow["issuer"],
-                        $voucherRow["value"], ExpenseCurrency::from($voucherRow["currency"]), $voucherRow["expiration"]);
-                });
-        }
-
-        public function updateVoucherLastNotification(string $voucherId, int $lastNotification) : bool {
-            $sql = <<<'SQL'
-                UPDATE expense_voucher
-                SET last_notification = ?
-                WHERE id = ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($lastNotification, $voucherId)
-                ->execute() > 0;
         }
 
         public function deleteExpiredVouchers() : int {

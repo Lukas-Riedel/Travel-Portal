@@ -160,7 +160,9 @@
             "photosUploadingTriggered": "Nahrávání fotek pro místo {{placeName}} se nezdařilo",
             "photoReplacingTriggered": "Nahrazování fotky pro místo {{placeName}} se nezdařilo"
         },
-        "voucherExpiring": "Poukaz vydavatele {{issuer}} o hodnotě {{value}} {{currency}} expiruje dne {{formattedExpiration}}"
+        "voucherExpiring": "Poukaz vydavatele {{issuer}} o hodnotě {{value}} {{currency}} expiruje dne {{formattedExpiration}}",
+        "subscriptionExpiring": "{{description}} expiruje dne {{formattedExpiration}}",
+        "documentExpiring": "{{name}} expiruje dne {{formattedExpiration}}"
     },
     "search": {
         "label": {

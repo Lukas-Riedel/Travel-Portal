@@ -42,6 +42,7 @@
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
+    use Core\Service\Document\DocumentServiceListener;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseServiceListener;
     use Core\Service\Expense\ExpenseStatisticsProvider;
@@ -191,7 +192,7 @@
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $geocodingService->setTripService($tripService);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
-    $documentService = new DocumentService($databaseClient, $encryptionClient);
+    $documentService = new DocumentService($databaseClient, $encryptionClient, $distributedCacheClient);
 
     // Ephemeral task providers.
     $ephemeralTaskProviders = array(
@@ -276,7 +277,8 @@
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
         new TaskServiceListener($taskService, $eventPublisher, $scheduler),
-        new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
+        new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD")), intval(getenv("SUBSCRIPTION_EXPIRING_NOTIFICATION_THRESHOLD"))),
+        new DocumentServiceListener($documentService, $eventPublisher, $scheduler, intval(getenv("DOCUMENT_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );

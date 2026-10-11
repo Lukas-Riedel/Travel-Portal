@@ -9,5 +9,7 @@ export enum EventType {
     NewDataConsistencyIssuesDetected = "NewDataConsistencyIssuesDetected",
     TaskDeadlineReached = "TaskDeadlineReached",
     VoucherExpiring = "VoucherExpiring",
+    SubscriptionExpiring = "SubscriptionExpiring",
+    DocumentExpiring = "DocumentExpiring",
     FlightLogged = "FlightLogged",
 }

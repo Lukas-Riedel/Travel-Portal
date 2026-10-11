@@ -1136,12 +1136,12 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     }))
                 },
                 {
-                    type: "datetime-local",
+                    type: "date",
                     label: t("subscription.prompt.create.label.expiration"),
                     required: true
                 }
             ] as const,
-            (description: string, value: number, currency: ExpenseCurrency, expiration: string) => createSubscription(description, value, currency, new Date(expiration)),
+            (description: string, value: number, currency: ExpenseCurrency, expiration: string) => createSubscription(description, value, currency, new Date(`${expiration}T00:00:00`)),
             t("subscription.prompt.create.confirmed"),
             t("subscription.prompt.create.failed")
         )
@@ -1171,7 +1171,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration ? new Date(expiration) : undefined),
+            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration ? new Date(`${expiration}T00:00:00`) : undefined),
             t("document.prompt.create.confirmed"),
             t("document.prompt.create.failed")
         )
@@ -1211,7 +1211,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ] as const,
-            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration ? new Date(expiration) : undefined),
+            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration ? new Date(`${expiration}T00:00:00`) : undefined),
             t("voucher.prompt.create.confirmed"),
             t("voucher.prompt.create.failed")
         )

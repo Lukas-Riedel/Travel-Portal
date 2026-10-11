@@ -15,6 +15,9 @@
         
         private const EXCHANGE_RATE_CACHE_KEY = "ExpenseService:ExchangeRates";
         private const EXCHANGE_RATE_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
+        
+        private const VOUCHER_NOTIFICATION_CACHE_KEY_FORMAT = "ExpenseService:VoucherNotification:%s";
+        private const SUBSCRIPTION_NOTIFICATION_CACHE_KEY_FORMAT = "ExpenseService:SubscriptionNotification:%s";
 
         private readonly ExpenseMapper $expenseMapper;        
         private readonly ConfigurationService $configurationService;
@@ -65,12 +68,26 @@
             return $subscription;
         }
 
-        public function getVouchersForNotifications(int $threshold) : array {
-            return $this->expenseMapper->selectVouchersForNotifications($threshold);
+        public function getSubscriptionsForNotifications(int $threshold) : array {
+            $subscriptions = array();
+            foreach ($this->expenseMapper->selectSubscriptionsForNotifications($threshold) as &$subscription) {
+                $cacheKey = sprintf(self::SUBSCRIPTION_NOTIFICATION_CACHE_KEY_FORMAT, $subscription->getId());
+                if ($this->distributedCacheClient->trySet($cacheKey, true, $threshold)) {
+                    $subscriptions[] = $subscription;
+                }
+            }
+            return $subscriptions;
         }
 
-        public function resetVoucherLastNotification(string $voucherId) : bool {
-            return $this->expenseMapper->updateVoucherLastNotification($voucherId, time());
+        public function getVouchersForNotifications(int $threshold) : array {
+            $vouchers = array();
+            foreach ($this->expenseMapper->selectVouchersForNotifications($threshold) as &$voucher) {
+                $cacheKey = sprintf(self::VOUCHER_NOTIFICATION_CACHE_KEY_FORMAT, $voucher->getId());
+                if ($this->distributedCacheClient->trySet($cacheKey, true, $threshold)) {
+                    $vouchers[] = $voucher;
+                }
+            }
+            return $vouchers;
         }
 
         public function getAllVouchers() : array {

@@ -85,6 +85,8 @@
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
         case EventTaskDeadlineReachedRead = "event.taskdeadlinereached.read";
         case EventVoucherExpiringRead = "event.voucherexpiring.read";
+        case EventSubscriptionExpiringRead = "event.subscriptionexpiring.read";
+        case EventDocumentExpiringRead = "event.documentexpiring.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingFailedRead = "event.processingfailed.photoreplacingtriggered.read";
