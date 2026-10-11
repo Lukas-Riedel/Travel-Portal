@@ -2,8 +2,8 @@ from typing import Any
 
 import requests
 
-from src.api.logging_middleware import REQUEST_ORIGIN_HEADER, TRANSACTION_ID_HEADER, USER_ID_HEADER
-from src.core.logger import transaction_id, user_id
+from src.api.logging_middleware import REQUEST_ORIGIN_HEADER, TRANSACTION_ID_HEADER, USER_ID_HEADER, USERNAME_HEADER
+from src.core.logger import transaction_id, user_id, username
 from src.service.authentication_service import AuthenticationService
 
 
@@ -41,6 +41,10 @@ class CoreApiClient:
         u_id = user_id.get()
         if u_id:
             headers[USER_ID_HEADER] = u_id
+
+        u_name = username.get()
+        if u_name:
+            headers[USERNAME_HEADER] = u_name
 
         response = requests.request(method, url, headers=headers, timeout=15, **kwargs)
         return response.json()

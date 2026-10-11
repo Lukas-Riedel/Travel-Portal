@@ -22,7 +22,7 @@
     $app->setBasePath($basePath);
 
     $app->add(new AuthorizationMiddleware($authenticationService, $basePath, $whitelistedPaths));
-    $app->add(new AuthenticationMiddleware($commonAuthenticationService, $basePath, $whitelistedPaths));
+    $app->add(new AuthenticationMiddleware($commonAuthenticationService, $basePath, $whitelistedPaths, getenv("IAM_BACKEND_CLIENT_ID")));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($loggingContext, $logger));
     $app->addBodyParsingMiddleware();

@@ -32,7 +32,7 @@
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
             $roles = $this->getUserRoles($request);
 
-            if ($this->isBackendServiceAccount($request)) {
+            if ($this->isBackendServiceAccount($request) && !$this->getUserInfo($request)->isImpersonated()) {
                 return empty($roles) || $this->hasImpliedRoles($roles, $requiredRole);
             }
 

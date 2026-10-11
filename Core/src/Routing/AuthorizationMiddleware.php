@@ -29,8 +29,7 @@
 
             $accessToken = $request->getAttribute(CommonConstants::ACCESS_TOKEN_ATTRIBUTE_KEY);
             $userInfo = $request->getAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY);
-            $userId = $request->getHeaderLine(CommonConstants::USER_ID_HEADER) ?: $userInfo->getUserId();
-            $userRoles = $this->authenticationService->getUserRoles($userId, $accessToken);
+            $userRoles = $this->authenticationService->getUserRoles($userInfo->getUserId(), $accessToken);
 
             return $handler->handle($request->withAttribute(CommonConstants::USER_ROLES_ATTRIBUTE_KEY, $userRoles));
         }

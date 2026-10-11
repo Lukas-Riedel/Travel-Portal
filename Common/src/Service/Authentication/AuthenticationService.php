@@ -31,7 +31,7 @@
             try {
                 $keys = JWK::parseKeySet($this->getJwksKeys());
                 $decoded = JWT::decode($accessToken, $keys);
-                return new UserInfo($decoded->sub, $decoded->azp);
+                return new UserInfo($decoded->sub, $decoded->preferred_username ?? null, $decoded->azp);
             }
             catch (\Throwable $e) {
                 throw new AuthenticationException("An error occurred when decoding JWT token. " . $e->getMessage() . ".");

@@ -51,7 +51,7 @@ class GenerativeContentEngine:
 
         config_kwargs: dict[str, Any] = {}
         if use_skills:
-            parts = [p for p in [self._build_environmental_context(), context, self.system_instruction] if p]
+            parts = [p for p in [self._build_personal_context(context), self._build_environmental_context(), self.system_instruction] if p]
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
@@ -87,6 +87,17 @@ class GenerativeContentEngine:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="All generative content models are currently unavailable. Please try again later.",
         )
+
+    def _build_personal_context(self, context: str | None) -> str:
+        if not context:
+            return ""
+
+        lines = [
+            "## Personal Context",
+            context
+        ]
+
+        return "\n".join(lines)
 
     def _build_environmental_context(self) -> str:
         env = generative_content_environment.get()
