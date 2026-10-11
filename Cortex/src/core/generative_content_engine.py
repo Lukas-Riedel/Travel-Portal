@@ -93,7 +93,7 @@ class GenerativeContentEngine:
             return ""
 
         lines = [
-            "## Personal Context",
+            "## User Persona / Authenticated User",
             context
         ]
 
