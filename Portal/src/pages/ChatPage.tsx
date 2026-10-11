@@ -58,7 +58,7 @@ export default function ChatPage() {
         showCopyConversationToast(async () => {
             const text = messages
                 .filter(m => m.role !== ChatMessageRole.Error)
-                .map(m => `${m.role === ChatMessageRole.User ? username : t("chat.label.assistant")}:\n${m.content}`)
+                .map(m => `${m.role === ChatMessageRole.User ? (username ?? t("chat.label.user")) : t("chat.label.assistant")}:\n${m.content}`)
                 .join("\n\n---\n\n")
             await navigator.clipboard.writeText(text)
         })

@@ -1055,7 +1055,8 @@
     "chat": {
         "label": {
             "title": "Chat",
-            "assistant": "Asistent"
+            "assistant": "Asistent",
+            "user": "Uživatel"
         },
         "placeholder": {
             "input": "Napiš zprávu..."
