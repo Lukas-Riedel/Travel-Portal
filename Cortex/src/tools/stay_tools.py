@@ -31,7 +31,7 @@ class StayTools(CoreApiTools):
             - end (string): Check-out date in the local timezone (e.g. `"2026-10-12"`).
             - nights (integer): Number of nights spent at the accommodation.
         """
-        trip = self.core_api_client.get_trip(trip_id)
+        trip = self.core_client.get_trip(trip_id)
         if isinstance(trip, dict) and trip.get("message"):
             return trip
 
@@ -57,7 +57,7 @@ class StayTools(CoreApiTools):
             - end (string): Check-out date in the local timezone (e.g. `"2026-10-12"`).
             - nights (integer): Number of nights spent at the accommodation.
         """
-        trips = self.core_api_client.get_trips(
+        trips = self.core_client.get_trips(
             trip_type="regular",
             include="stays",
             year=year,

@@ -17,8 +17,8 @@ from src.core.embeddings_engine import EmbeddingsEngine
 from src.core.generative_content_engine import GenerativeContentEngine
 from src.core.logger import logger, transaction_id
 from src.core.skill_loader import SkillLoader
-from src.service.authentication_service import AuthenticationService
-from src.service.core_api_client import CoreApiClient
+from src.client.iam_client import IamClient
+from src.client.core_client import CoreClient
 from src.tools.registry import ToolRegistry
 
 load_dotenv()
@@ -31,19 +31,19 @@ async def lifespan(app: FastAPI):
         os.getenv("ENGINE_DEVICE"),
     )
     app.state.clustering_engine = ClusteringEngine()
-    app.state.authentication_service = AuthenticationService(
+    app.state.iam_client = IamClient(
         os.getenv("IAM_HOST"),
         int(os.getenv("IAM_PORT")),
         os.getenv("IAM_BACKEND_CLIENT_ID"),
         os.getenv("IAM_BACKEND_CLIENT_SECRET"),
     )
-    app.state.core_api_client = CoreApiClient(
+    app.state.core_client = CoreClient(
         os.getenv("CORE_HOST"),
         int(os.getenv("CORE_PORT")),
-        app.state.authentication_service,
+        app.state.iam_client,
     )
     app.state.tool_registry = ToolRegistry(
-        app.state.core_api_client,
+        app.state.core_client,
     )
     app.state.skill_loader = SkillLoader()
     app.state.generative_content_engine = GenerativeContentEngine(

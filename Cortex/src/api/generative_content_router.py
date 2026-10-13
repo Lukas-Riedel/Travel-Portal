@@ -61,7 +61,7 @@ class GenerativeContentRequest(BaseModel):
 )
 def generate_content(
     request: GenerativeContentRequest,
-    req_obj: Request,  # noqa: ARG001
+    req_obj: Request,
     use_skills: bool = Query(
         True,
         alias="useSkills",

@@ -9,7 +9,8 @@ from jose.utils import base64url_decode
 JWKS_TTL: Final[int] = 86400
 
 
-class AuthenticationService:
+# TODO: Extract service-layer functionality to AuthenticationService, and use IamClient only for calling IAM (similarly to Agent). Propagate Request-Origin and Transaction-Id correctly.
+class IamClient:
     def __init__(
         self,
         iam_host: str,
@@ -38,7 +39,7 @@ class AuthenticationService:
         }
 
         try:
-            response = requests.post(self.token_endpoint, json=payload, headers={"Content-Type": "application/json", "Request-Origin": "cortex"}, timeout=10)
+            response = requests.post(self.token_endpoint, json=payload, headers={"Content-Type": "application/json"}, timeout=10)
             if response.status_code != 201:
                 raise RuntimeError(f"Could not fetch service token. Reason: {response.text}")
 

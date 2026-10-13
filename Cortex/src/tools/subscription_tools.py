@@ -35,7 +35,7 @@ class SubscriptionTools(CoreApiTools):
             - currency (string): 3-letter currency code (e.g. 'EUR', 'USD', 'CZK').
             - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
-        subscriptions = self.core_api_client.get_subscriptions()
+        subscriptions = self.core_client.get_subscriptions()
         if isinstance(subscriptions, dict) and subscriptions.get("message"):
             return subscriptions
         
@@ -65,7 +65,7 @@ class SubscriptionTools(CoreApiTools):
             - currency (string): 3-letter currency code (e.g. 'EUR', 'USD', 'CZK').
             - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
-        subscription = self.core_api_client.create_subscription(
+        subscription = self.core_client.create_subscription(
             description=description,
             value=value,
             currency=currency.upper(),

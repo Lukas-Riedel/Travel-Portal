@@ -25,7 +25,7 @@ class VoucherTools(CoreApiTools):
             - currency (string): Currency code.
             - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
-        vouchers = self.core_api_client.get_vouchers()
+        vouchers = self.core_client.get_vouchers()
         if isinstance(vouchers, dict) and vouchers.get("message"):
             return vouchers
         
@@ -58,7 +58,7 @@ class VoucherTools(CoreApiTools):
             - currency (string): Currency code.
             - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
-        voucher = self.core_api_client.create_voucher(
+        voucher = self.core_client.create_voucher(
             code=code,
             issuer=issuer,
             value=value,
@@ -90,7 +90,7 @@ class VoucherTools(CoreApiTools):
             - currency (string): Currency code.
             - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
-        voucher = self.core_api_client.update_voucher(voucher_id=voucher_id, value=value)
+        voucher = self.core_client.update_voucher(voucher_id=voucher_id, value=value)
         if isinstance(voucher, dict) and voucher.get("message"):
             return voucher
 

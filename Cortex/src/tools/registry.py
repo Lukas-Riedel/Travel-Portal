@@ -4,13 +4,13 @@ import pkgutil
 from typing import Any, Callable
 
 from src.core.logger import logger
-from src.service.core_api_client import CoreApiClient
+from src.client.core_client import CoreClient
 from src.tools.base_tools import BaseTools, CoreApiTools
 
 
 class ToolRegistry:
-    def __init__(self, core_api_client: CoreApiClient):
-        self.core_api_client = core_api_client
+    def __init__(self, core_client: CoreClient):
+        self.core_client = core_client
         self.tools: dict[str, Callable[..., Any]] = {}
         self._auto_discover_and_register()
 
@@ -25,7 +25,7 @@ class ToolRegistry:
                 if cls.__module__ == module_name and issubclass(cls, BaseTools) and cls is not BaseTools and cls is not CoreApiTools:
                     try:
                         if issubclass(cls, CoreApiTools):
-                            instance = cls(self.core_api_client)
+                            instance = cls(self.core_client)
                         else:
                             instance = cls()
                         discovered_tools = instance.get_tools()

@@ -4,7 +4,7 @@ import requests
 
 from src.api.logging_middleware import REQUEST_ORIGIN_HEADER, TRANSACTION_ID_HEADER, USER_ID_HEADER, USERNAME_HEADER
 from src.core.logger import transaction_id, user_id, username
-from src.service.authentication_service import AuthenticationService
+from src.client.iam_client import IamClient
 
 
 # TODO: Deadlock risk — Core calls Cortex synchronously (blocking) and Cortex's agentic AI
@@ -20,12 +20,12 @@ from src.service.authentication_service import AuthenticationService
 #
 # Until that is implemented: every Core API call in this class MUST have an explicit timeout
 # set to prevent threads from blocking indefinitely and masking the deadlock.
-class CoreApiClient:
-    def __init__(self, core_host: str, core_port: int, authentication_service: AuthenticationService):
+class CoreClient:
+    def __init__(self, core_host: str, core_port: int, iam_client: IamClient):
         self.base_url = f"http://{core_host}:{core_port}"
-        self.auth_service = authentication_service
+        self.auth_service = iam_client
 
-    def request(self, method: str, url: str, **kwargs: Any) -> Any:
+    def _request(self, method: str, url: str, **kwargs: Any) -> Any:
         token = self.auth_service.get_service_access_token()
         headers = {
             "Authorization": f"Bearer {token}",
@@ -65,17 +65,17 @@ class CoreApiClient:
         if sort:
             params["sort"] = sort
 
-        return self.request("GET", url, params=params)
+        return self._request("GET", url, params=params)
 
     def get_trip(self, trip_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}"
 
-        return self.request("GET", url)
+        return self._request("GET", url)
 
     def get_configuration(self) -> dict[str, Any]:
         url = f"{self.base_url}/configuration"
 
-        return self.request("GET", url)
+        return self._request("GET", url)
 
     def search(self, query: str, include: str | None = None, limit: int | None = None) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/search"
@@ -85,13 +85,13 @@ class CoreApiClient:
         if limit is not None:
             params["limit"] = limit
 
-        return self.request("GET", url, params=params)
+        return self._request("GET", url, params=params)
 
     def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes"
         payload = {"content": content}
 
-        return self.request("POST", url, json=payload)
+        return self._request("POST", url, json=payload)
 
     def update_trip_note(self, trip_id: str, note_id: str, content: str | None = None) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes/{note_id}"
@@ -99,7 +99,7 @@ class CoreApiClient:
         if content is not None:
             payload["content"] = content
 
-        return self.request("PATCH", url, json=payload)
+        return self._request("PATCH", url, json=payload)
 
     def create_trip_expense(
         self,
@@ -120,7 +120,7 @@ class CoreApiClient:
         if subscription_id:
             payload["subscription"] = {"id": subscription_id}
 
-        return self.request("POST", url, json=payload)
+        return self._request("POST", url, json=payload)
 
     def create_trip_task(
         self,
@@ -145,7 +145,7 @@ class CoreApiClient:
         if notification_interval is not None:
             payload["notificationInterval"] = notification_interval
 
-        return self.request("POST", url, json=payload)
+        return self._request("POST", url, json=payload)
 
     def update_trip_task(
         self,
@@ -164,17 +164,17 @@ class CoreApiClient:
         if priority is not None:
             payload["priority"] = priority
 
-        return self.request("PATCH", url, json=payload)
+        return self._request("PATCH", url, json=payload)
 
     def get_vouchers(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/vouchers"
 
-        return self.request("GET", url)
+        return self._request("GET", url)
 
     def get_voucher(self, voucher_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/vouchers/{voucher_id}"
 
-        return self.request("GET", url)
+        return self._request("GET", url)
 
     def create_voucher(
         self,
@@ -194,7 +194,7 @@ class CoreApiClient:
         if expiration is not None:
             payload["expiration"] = expiration
 
-        return self.request("POST", url, json=payload)
+        return self._request("POST", url, json=payload)
 
     def update_voucher(self, voucher_id: str, value: float | None = None) -> dict[str, Any]:
         url = f"{self.base_url}/vouchers/{voucher_id}"
@@ -202,12 +202,12 @@ class CoreApiClient:
         if value is not None:
             payload["value"] = value
 
-        return self.request("PATCH", url, json=payload)
+        return self._request("PATCH", url, json=payload)
 
     def get_subscriptions(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/subscriptions"
 
-        return self.request("GET", url)
+        return self._request("GET", url)
 
     def create_subscription(
         self,
@@ -224,4 +224,4 @@ class CoreApiClient:
             "expiration": expiration,
         }
 
-        return self.request("POST", url, json=payload)
+        return self._request("POST", url, json=payload)

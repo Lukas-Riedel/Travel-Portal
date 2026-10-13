@@ -3,7 +3,7 @@ import os
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.service.authentication_service import AuthenticationService
+from src.client.iam_client import IamClient
 
 security = HTTPBearer()
 
@@ -11,11 +11,11 @@ security = HTTPBearer()
 def get_current_user(
     request: Request, token: HTTPAuthorizationCredentials = Depends(security)
 ):
-    authentication_service: AuthenticationService = (
-        request.app.state.authentication_service
+    iam_client: IamClient = (
+        request.app.state.iam_client
     )
 
-    return authentication_service.authenticate(token.credentials)
+    return iam_client.authenticate(token.credentials)
 
 
 def require_backend_service_account(

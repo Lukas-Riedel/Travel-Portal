@@ -32,7 +32,7 @@ class TripTools(CoreApiTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
         """
-        trips = self.core_api_client.get_trips(
+        trips = self.core_client.get_trips(
             trip_type="regular",
             include="notes",
             sort="oldest",
@@ -64,7 +64,7 @@ class TripTools(CoreApiTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
         """
-        trips = self.core_api_client.get_trips(
+        trips = self.core_client.get_trips(
             trip_type="regular",
             include="notes",
             sort="oldest",
@@ -100,7 +100,7 @@ class TripTools(CoreApiTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
         """
-        search_results = self.core_api_client.search(query=query, include="trip", limit=1)
+        search_results = self.core_client.search(query=query, include="trip", limit=1)
         if isinstance(search_results, dict) and search_results.get("message"):
             return search_results
 
@@ -112,7 +112,7 @@ class TripTools(CoreApiTools):
         if not trip_id:
             return None
 
-        trip = self.core_api_client.get_trip(trip_id)
+        trip = self.core_client.get_trip(trip_id)
         if isinstance(trip, dict) and trip.get("message"):
             return trip
 
@@ -147,7 +147,7 @@ class TripTools(CoreApiTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
         """
-        trips = self.core_api_client.get_trips(
+        trips = self.core_client.get_trips(
             trip_type="regular",
             include="notes",
             year=year,
@@ -175,7 +175,7 @@ class TripTools(CoreApiTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
             - notes (list of strings): Notes relevant for the trip.
         """
-        trips = self.core_api_client.get_trips(
+        trips = self.core_client.get_trips(
             trip_type="candidate",
             include="notes",
         )

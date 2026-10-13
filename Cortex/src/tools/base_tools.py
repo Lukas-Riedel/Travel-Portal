@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
-from src.service.core_api_client import CoreApiClient
+from src.client.core_client import CoreClient
 
 
 def _log_tool_call(fn):
@@ -39,8 +39,8 @@ class BaseTools(ABC):
 
 
 class CoreApiTools(BaseTools):
-    def __init__(self, core_api_client: CoreApiClient):
-        self.core_api_client = core_api_client
+    def __init__(self, core_client: CoreClient):
+        self.core_client = core_client
 
     def _get_user_timezone(self) -> ZoneInfo:
         env = generative_content_environment.get()
@@ -68,7 +68,7 @@ class CoreApiTools(BaseTools):
         return True
 
     def _get_system_timezone(self) -> ZoneInfo:
-        config = self.core_api_client.get_configuration()
+        config = self.core_client.get_configuration()
         return ZoneInfo(config["homeLocation"]["timezone"])
 
     def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
