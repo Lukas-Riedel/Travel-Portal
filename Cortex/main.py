@@ -51,6 +51,7 @@ async def lifespan(app: FastAPI):
         os.getenv("GEMINI_MODELS"),
         app.state.tool_registry,
         app.state.skill_loader,
+        app.state.core_client
     )
     yield
 

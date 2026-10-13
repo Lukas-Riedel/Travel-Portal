@@ -38,7 +38,7 @@ class BaseTools(ABC):
         pass
 
 
-class CoreApiTools(BaseTools):
+class CoreTools(BaseTools):
     def __init__(self, core_client: CoreClient):
         self.core_client = core_client
 
@@ -60,6 +60,7 @@ class CoreApiTools(BaseTools):
 
         return sys.maxsize
 
+    # TODO: Remove from the environment, obtain from the user's roles.
     def _can_read_future(self) -> bool:
         env = generative_content_environment.get()
         if env is not None:

@@ -49,6 +49,17 @@ class CoreClient:
         response = requests.request(method, url, headers=headers, timeout=15, **kwargs)
         return response.json()
 
+    def get_address(
+        self, 
+        latitude: float,
+        longitude: float,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/address"
+        params: dict[str, Any] = {"latitude": latitude, "longitude": longitude}
+
+        return self._request("GET", url, params=params)
+        
+
     def get_trips(
         self,
         year: int | None = None,

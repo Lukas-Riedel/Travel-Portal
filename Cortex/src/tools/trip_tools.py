@@ -3,10 +3,10 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.tools.base_tools import CoreApiTools
+from src.tools.base_tools import CoreTools
 
 
-class TripTools(CoreApiTools):
+class TripTools(CoreTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_upcoming_trip,

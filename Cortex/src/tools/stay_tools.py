@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.tools.base_tools import CoreApiTools
+from src.tools.base_tools import CoreTools
 
 
-class StayTools(CoreApiTools):
+class StayTools(CoreTools):
     def get_tools(self) -> list[Any]:
         return [
             self.get_stays_for_trip,

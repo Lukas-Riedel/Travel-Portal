@@ -10,6 +10,7 @@ from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
 from src.core.skill_loader import SkillLoader
 from src.tools.registry import ToolRegistry
+from src.client.core_client import CoreClient
 
 CHAT_TIMEOUT_MS: Final[int] = 30000
 
@@ -21,10 +22,12 @@ class GenerativeContentEngine:
         models: str,
         tool_registry: ToolRegistry,
         skill_loader: SkillLoader,
+        core_client: CoreClient,
     ) -> None:
         self.client = genai.Client(api_key=api_key)
         self.tool_registry = tool_registry
         self.skill_loader = skill_loader
+        self.core_client = core_client
         self.system_instruction = self.skill_loader.load_skills()
         self.models = [m.strip() for m in models.split(",") if m.strip()]
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
@@ -40,7 +43,7 @@ class GenerativeContentEngine:
             return ""
 
         # Previous messages form the history, last message is sent to chat
-        history: list[types.Content] = [
+        history = [
             types.Content(
                 role=msg["role"],
                 parts=[types.Part.from_text(text=msg["text"])],
@@ -101,7 +104,9 @@ class GenerativeContentEngine:
 
     def _build_environmental_context(self) -> str:
         env = generative_content_environment.get()
-        timezone_name: str = env.get("timezone") if env else "UTC"
+        
+        timezone_name = env.get("timezone") if env else "UTC"
+        latitude, longitude = env.get("latitude"), env.get("longitude")
 
         now = datetime.now(tz=ZoneInfo(timezone_name))
         lines = [
@@ -110,5 +115,12 @@ class GenerativeContentEngine:
             f"- Current local time: {now.isoformat(timespec='seconds')} ({timezone_name})",
             f"- Current year: {now.year}",
         ]
+
+        if latitude is not None and longitude is not None:
+            lines.append(f"- Current coordinates: {latitude}, {longitude}")
+
+            if resolved_address := self.core_client.get_address(latitude, longitude):
+                if (name := resolved_address.get("name")) and (address := resolved_address.get("address")):
+                    lines.append(f"- Current address: {name} ({address})")
 
         return "\n".join(lines)

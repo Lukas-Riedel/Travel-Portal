@@ -8,11 +8,13 @@ import { ChatMessageRole } from "../types/ChatMessageRole.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { UseChatResult } from "../types/UseChatResult.ts"
 import { getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
+import { useLocation } from "../contexts/LocationContext.tsx"
 
 const RESPONSE_TIMEOUT_MS = 15000
 
 export const useChat = (): UseChatResult => {
     const { hasRole } = useAuth()
+    const resolvedLocation = useLocation()
 
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [isLoading, setIsLoading] = useState(false)
@@ -40,6 +42,8 @@ export const useChat = (): UseChatResult => {
             "maximumTimestamp": getMaximumAllowedTimetamp(),
             "timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
             "canReadFuture": hasRole(UserRole.PortalFutureRead),
+            "latitude": resolvedLocation?.latitude,
+            "longitude": resolvedLocation?.longitude
         }
 
         try {
