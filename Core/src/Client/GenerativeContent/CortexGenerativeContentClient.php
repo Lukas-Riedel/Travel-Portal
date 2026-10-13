@@ -66,9 +66,8 @@
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
             }
-            if ($useSkills) {
-                $personalContext = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"];
-                $payload["context"] = $personalContext["users"][$username] ?? $personalContext["default"] ?? null;
+            if ($username !== null) {
+                $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"][$username] ?? null;
             }
 
             $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json");
