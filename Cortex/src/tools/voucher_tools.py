@@ -1,14 +1,28 @@
+from abc import ABC
 from typing import Any
 
-from src.tools.base_tools import CoreTools
+from src.tools.base_tools import BaseCoreTools
 
 
-class VoucherTools(CoreTools):
+class BaseVoucherTools(BaseCoreTools, ABC):
+    def _extract_voucher(self, voucher: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "id": voucher.get("id"),
+            "code": voucher.get("code"),
+            "issuer": voucher.get("issuer"),
+            "value": voucher.get("value"),
+            "currency": voucher.get("currency"),
+            "expiration": self._epoch_to_iso(voucher.get("expiration"), self._get_user_timezone()),
+        }
+
+
+class VoucherReadTools(BaseVoucherTools):
+    def get_supported_skill(self) -> str:
+        return "voucher.read"
+
     def get_tools(self) -> list[Any]:
         return [
             self.get_vouchers,
-            self.create_voucher,
-            self.update_voucher_value,
         ]
 
     def get_vouchers(self) -> list[dict[str, Any]]:
@@ -28,8 +42,19 @@ class VoucherTools(CoreTools):
         vouchers = self.core_client.get_vouchers()
         if isinstance(vouchers, dict) and vouchers.get("message"):
             return vouchers
-        
+
         return [self._extract_voucher(v) for v in vouchers]
+
+
+class VoucherEditTools(BaseVoucherTools):
+    def get_supported_skill(self) -> str:
+        return "voucher.edit"
+
+    def get_tools(self) -> list[Any]:
+        return [
+            self.create_voucher,
+            self.update_voucher_value,
+        ]
 
     def create_voucher(
         self,
@@ -95,13 +120,3 @@ class VoucherTools(CoreTools):
             return voucher
 
         return self._extract_voucher(voucher)
-
-    def _extract_voucher(self,voucher: dict[str, Any]) -> dict[str, Any]:
-        return {
-            "id": voucher.get("id"),
-            "code": voucher.get("code"),
-            "issuer": voucher.get("issuer"),
-            "value": voucher.get("value"),
-            "currency": voucher.get("currency"),
-            "expiration": self._epoch_to_iso(voucher.get("expiration"), self._get_user_timezone()),
-        }

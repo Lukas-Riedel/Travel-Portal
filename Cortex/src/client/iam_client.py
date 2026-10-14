@@ -64,6 +64,16 @@ class IamClient:
 
         return self.cached_keys
 
+    def get_user_roles(self, user_id: str) -> list:
+        url = f"{self.iam_base_url}/users/{user_id}/roles"
+        headers = {"Authorization": f"Bearer {self.get_service_access_token()}"}
+
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            raise RuntimeError(f"Could not fetch user roles. Reason: {response.text}")
+
+        return response.json()
+
     def authenticate(self, token: str):
         try:
             jwks = self.get_jwks_keys()

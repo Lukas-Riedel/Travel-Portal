@@ -8,6 +8,9 @@ from src.tools.base_tools import BaseTools
 
 
 class TimeTools(BaseTools):
+    def get_supported_skill(self) -> str | None:
+        return None
+
     def get_tools(self) -> list[Any]:
         return [
             self.convert_datetime_to_epoch,
@@ -110,7 +113,7 @@ class TimeTools(BaseTools):
             - iso (string): ISO 8601 representation in target timezone with offset (e.g. '2025-12-31T16:59:59-0500').
             - date (string): YYYY-MM-DD in the target timezone.
             - time (string): HH:MM:SS in the target timezone.
-            - target_timezone (string): Target timezone name.
+            - target_timezone: Target timezone name.
             - utc_offset (string): UTC offset string in target timezone (e.g. '-0500').
             - epoch (integer): Unix timestamp in seconds.
         """

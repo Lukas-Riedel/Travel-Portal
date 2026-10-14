@@ -2,10 +2,13 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.tools.base_tools import CoreTools
+from src.tools.base_tools import BaseCoreTools
 
 
-class StayTools(CoreTools):
+class StayReadTools(BaseCoreTools):
+    def get_supported_skill(self) -> str:
+        return "trip.stay.read"
+
     def get_tools(self) -> list[Any]:
         return [
             self.get_stays_for_trip,
@@ -97,4 +100,3 @@ class StayTools(CoreTools):
             "end": self._epoch_to_date(end_epoch, system_tz),
             "nights": (end_date - start_date).days,
         }
-        

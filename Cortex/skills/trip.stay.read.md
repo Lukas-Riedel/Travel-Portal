@@ -1,7 +1,8 @@
-# Stay Skill
+# Trip Stay Read Skill
 
-## Purpose
+## Purpose & Activation
 Provides capabilities to query and inspect accommodation stays across trips in Travel Portal.
+Activate and apply this skill when the user asks about accommodation, hotels, resorts, or cruises for a specific trip or across all trips.
 
 ## Stay Guidelines & Actions
 1. **Listing Stays for a Specific Trip**:

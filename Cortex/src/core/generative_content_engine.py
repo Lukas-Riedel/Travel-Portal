@@ -6,11 +6,11 @@ from fastapi import HTTPException, status
 from google import genai
 from google.genai import types
 
+from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
-from src.core.skill_loader import SkillLoader
+from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
-from src.client.core_client import CoreClient
 
 CHAT_TIMEOUT_MS: Final[int] = 30000
 
@@ -21,14 +21,13 @@ class GenerativeContentEngine:
         api_key: str,
         models: str,
         tool_registry: ToolRegistry,
-        skill_loader: SkillLoader,
+        skill_registry: SkillRegistry,
         core_client: CoreClient,
     ) -> None:
         self.client = genai.Client(api_key=api_key)
         self.tool_registry = tool_registry
-        self.skill_loader = skill_loader
+        self.skill_registry = skill_registry
         self.core_client = core_client
-        self.system_instruction = self.skill_loader.load_skills()
         self.models = [m.strip() for m in models.split(",") if m.strip()]
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
 
@@ -36,7 +35,7 @@ class GenerativeContentEngine:
         self,
         messages: list[dict[str, str]],
         schema: dict[str, Any] | None = None,
-        use_skills: bool = True,
+        enabled_skills: list[str] | None = None,
         context: str | None = None,
     ) -> str:
         if not messages:
@@ -53,12 +52,14 @@ class GenerativeContentEngine:
         last_message = messages[-1]["text"]
 
         config_kwargs: dict[str, Any] = {}
-        if use_skills:
-            parts = [p for p in [self._build_personal_context(context), self._build_environmental_context(), self.system_instruction] if p]
+
+        if enabled_skills is not None:
+            system_instruction = self.skill_registry.get_callable_skills(enabled_skills)
+            parts = [p for p in [system_instruction, self._build_environmental_context(), self._build_personal_context(context)] if p]
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
-            tools = self.tool_registry.get_callable_tools() if self.tool_registry else []
+            tools = self.tool_registry.get_callable_tools(enabled_skills)
             if tools:
                 config_kwargs["tools"] = tools
 
@@ -96,7 +97,7 @@ class GenerativeContentEngine:
             return ""
 
         lines = [
-            "## User Persona / Authenticated User",
+            "# Authenticated User",
             context
         ]
 
@@ -110,7 +111,7 @@ class GenerativeContentEngine:
 
         now = datetime.now(tz=ZoneInfo(timezone_name))
         lines = [
-            "## Environmental Context",
+            "# Environmental Context",
             f"- Current date: {now.strftime('%A, %d %B %Y')}",
             f"- Current local time: {now.isoformat(timespec='seconds')} ({timezone_name})",
             f"- Current year: {now.year}",

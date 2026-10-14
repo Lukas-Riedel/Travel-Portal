@@ -37,8 +37,12 @@ class BaseTools(ABC):
     def get_tools(self) -> list[Any]:
         pass
 
+    @abstractmethod
+    def get_supported_skill(self) -> str | None:
+        pass
 
-class CoreTools(BaseTools):
+
+class BaseCoreTools(BaseTools):
     def __init__(self, core_client: CoreClient):
         self.core_client = core_client
 

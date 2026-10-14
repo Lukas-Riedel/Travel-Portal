@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.dependencies import require_backend_service_account
 from src.core.generative_content_context import generative_content_environment
+from src.core.logger import user_id
 
 router = APIRouter(
     prefix="/generativecontent",
@@ -70,10 +71,13 @@ def generate_content(
 ):
     token = generative_content_environment.set(request.environment)
     try:
-        text: str = req_obj.app.state.generative_content_engine.generate(
+        u_id = user_id.get()
+        enabled_skills = req_obj.app.state.iam_client.get_user_roles(u_id) if use_skills and u_id else None
+
+        text = req_obj.app.state.generative_content_engine.generate(
             [message.model_dump() for message in request.messages],
             request.schema,
-            use_skills,
+            enabled_skills,
             request.context,
         )
     finally:

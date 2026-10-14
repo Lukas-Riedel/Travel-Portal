@@ -1,27 +1,31 @@
+from abc import ABC
 from typing import Any
 
-from src.tools.base_tools import CoreTools
+from src.tools.base_tools import BaseCoreTools
 
 
-class SubscriptionTools(CoreTools):
+class BaseSubscriptionTools(BaseCoreTools, ABC):
+    def _extract_subscription(
+        self,
+        subscription: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "id": subscription.get("id"),
+            "description": subscription.get("description"),
+            "value": subscription.get("value"),
+            "currency": subscription.get("currency"),
+            "expiration": self._epoch_to_iso(subscription.get("expiration"), self._get_user_timezone()),
+        }
+
+
+class SubscriptionReadTools(BaseSubscriptionTools):
+    def get_supported_skill(self) -> str:
+        return "subscription.read"
+
     def get_tools(self) -> list[Any]:
         return [
-            self.get_subscription_descriptions,
             self.get_subscriptions,
-            self.create_subscription,
         ]
-
-    def get_subscription_descriptions(self) -> list[str]:
-        """Retrieves descriptions of all active travel-related subscriptions in Travel Portal (e.g. public transport passes, rail cards, airline subscription clubs).
-
-        Returns:
-            A list of descriptions of active subscription objects.
-        """
-        subscriptions = self.get_subscriptions()
-        if isinstance(subscriptions, dict) and subscriptions.get("message"):
-            return subscriptions
-
-        return [s.get("description") for s in subscriptions]
 
     def get_subscriptions(self) -> list[dict[str, Any]]:
         """Retrieves all active travel-related subscriptions in Travel Portal (e.g. public transport passes, rail cards, airline subscription clubs).
@@ -38,8 +42,31 @@ class SubscriptionTools(CoreTools):
         subscriptions = self.core_client.get_subscriptions()
         if isinstance(subscriptions, dict) and subscriptions.get("message"):
             return subscriptions
-        
+
         return [self._extract_subscription(s) for s in subscriptions]
+
+
+class SubscriptionEditTools(BaseSubscriptionTools):
+    def get_supported_skill(self) -> str:
+        return "subscription.edit"
+
+    def get_tools(self) -> list[Any]:
+        return [
+            self.get_subscription_descriptions,
+            self.create_subscription,
+        ]
+
+    def get_subscription_descriptions(self) -> list[str]:
+        """Retrieves descriptions of all active travel-related subscriptions in Travel Portal (e.g. public transport passes, rail cards, airline subscription clubs).
+
+        Returns:
+            A list of descriptions of active subscription objects.
+        """
+        subscriptions = self.core_client.get_subscriptions()
+        if isinstance(subscriptions, dict) and subscriptions.get("message"):
+            return subscriptions
+
+        return [s.get("description") for s in subscriptions if s.get("description")]
 
     def create_subscription(
         self,
@@ -73,16 +100,5 @@ class SubscriptionTools(CoreTools):
         )
         if isinstance(subscription, dict) and subscription.get("message"):
             return subscription
-            
-        return self._extract_subscription(subscription)
 
-    def _extract_subscription(self,
-        subscription: dict[str, Any],
-    ) -> dict[str, Any]:
-        return {
-            "id": subscription.get("id"),
-            "description": subscription.get("description"),
-            "value": subscription.get("value"),
-            "currency": subscription.get("currency"),
-            "expiration": self._epoch_to_iso(subscription.get("expiration"), self._get_user_timezone()),
-        }
+        return self._extract_subscription(subscription)
