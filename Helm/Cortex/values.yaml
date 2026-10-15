@@ -16,7 +16,6 @@ cortex:
       - models/gemini-3.8-flash
       - models/gemini-2.5-flash-lite
       - models/gemini-2.5-flash
-      - models/gemini-3-flash
   engine: cpu
   iam:
     host: iam
