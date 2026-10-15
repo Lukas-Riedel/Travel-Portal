@@ -236,3 +236,69 @@ class CoreClient:
         }
 
         return self._request("POST", url, json=payload)
+
+    def get_places(
+        self,
+        place_type: str = "regular",
+        trip_id: str | None = None,
+        label_id: str | None = None,
+        category_id: str | None = None,
+        year: int | None = None,
+        country: str | None = None,
+        min_start: int | None = None,
+        max_end: int | None = None,
+        max_quality: float | None = None,
+        max_tier: str | None = None,
+        nearby_places: int | None = None,
+        include: str | None = None,
+        sort: str | None = None,
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/places"
+        params: dict[str, Any] = {"type": place_type}
+        if trip_id is not None:
+            params["tripId"] = trip_id
+        if label_id is not None:
+            params["labelId"] = label_id
+        if category_id is not None:
+            params["categoryId"] = category_id
+        if year is not None:
+            params["year"] = year
+        if country is not None:
+            params["country"] = country
+        if min_start is not None:
+            params["minStart"] = min_start
+        if max_end is not None:
+            params["maxEnd"] = max_end
+        if max_quality is not None:
+            params["maxQuality"] = max_quality
+        if max_tier is not None:
+            params["maxTier"] = max_tier
+        if nearby_places is not None:
+            params["nearbyPlaces"] = nearby_places
+        if include is not None:
+            params["include"] = include
+        if sort is not None:
+            params["sort"] = sort
+
+        return self._request("GET", url, params=params)
+
+    def get_place(self, place_id: str, nearby_places: int | None = None) -> dict[str, Any]:
+        url = f"{self.base_url}/places/{place_id}"
+        params: dict[str, Any] = {}
+        if nearby_places is not None:
+            params["nearbyPlaces"] = nearby_places
+
+        return self._request("GET", url, params=params)
+
+    def create_place(self, name: str, address: str, place_type: str) -> dict[str, Any]:
+        url = f"{self.base_url}/places"
+        params: dict[str, Any] = {"address": address, "type": place_type}
+        payload: dict[str, Any] = {"name": name}
+
+        return self._request("POST", url, params=params, json=payload)
+
+    def update_place_excerpt(self, place_id: str, excerpt: str | None) -> dict[str, Any]:
+        url = f"{self.base_url}/places/{place_id}"
+        payload: dict[str, Any] = {"excerpt": excerpt}
+
+        return self._request("PATCH", url, json=payload)
