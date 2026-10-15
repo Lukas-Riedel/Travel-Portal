@@ -3,7 +3,8 @@
 
     interface EmbeddingClient {
         public function getPhotoEmbedding(string $base64Data) : ?array;
-        public function getTextEmbedding(string $text) : ?array;
+        // TODO: Do not hardcode the source language here.
+        public function getTextEmbedding(string $text, string $sourceLanguage = "cs") : ?array;
         public function getEmbeddingSimilarity(array $a, array $b) : float;
     }
 ?>
