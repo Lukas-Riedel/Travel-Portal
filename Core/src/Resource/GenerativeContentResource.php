@@ -22,31 +22,7 @@
     #[OA\Tag(name: "Generative Content")]
     class GenerativeContentResource extends AbstractResource {
 
-        private const CHAT_RESPONSE_JSON_SCHEMA = array(
-            "type" => "object",
-            "properties" => array(
-                "text" => array(
-                    "type" => "string",
-                    "description" => "The full response text in Markdown. Named entities (trips, places, categories, …) are replaced by placeholder tokens of the form {{P_1}}, {{P_2}}, etc. that the frontend will expand into clickable links."
-                ),
-                "placeholders" => array(
-                    "type" => "array",
-                    "description" => "List of entity descriptors for placeholder tokens used in the text field. Only include entries for tokens that actually appear in the text.",
-                    "items" => array(
-                        "type" => "object",
-                        "properties" => array(
-                            "key" => array("type" => "string", "description" => "The placeholder key exactly as it appears in the text, without braces (e.g. \"P_1\")."),
-                            "entityType" => array("type" => "string", "description" => "The entity type as used in the Travel Portal URL (e.g. \"trip\", \"place\", \"category\", \"airport\", \"airline\", \"label\", \"year\")."),
-                            "entityId" => array("type" => "string", "description" => "The UUID of the entity exactly as returned by the tool that fetched it. Never invent an ID."),
-                            "label" => array("type" => "string", "description" => "The human-readable display name for the link text, in the language of the user's message.")
-                        ),
-                        "required" => array("key", "entityType", "entityId", "label")
-                    )
-                )
-            ),
-            "required" => array("text", "placeholders")
-        );
-
+        // TODO: Move this to the request, the UI should decide this.
         private const IMAGE_COUNT = 3;
 
         private readonly GenerativeContentClient $generativeContentClient;
@@ -167,7 +143,7 @@
             $environment = $this->getJsonBodyField($request, "environment");
             $userInfo = $this->getUserInfo($request);
 
-            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, self::CHAT_RESPONSE_JSON_SCHEMA, $environment);
+            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, null, $environment);
             if ($rawResult === null) {
                 return null;
             }
@@ -199,7 +175,7 @@
 
         private function resolveImageUrls(array $placeholders) : array {
             $placeholdersImageUrls = array();
-            
+
             foreach ($placeholders as &$placeholder) {
                 $entityType = $placeholder["entityType"] ?? null;
                 $entityId = $placeholder["entityId"] ?? null;
