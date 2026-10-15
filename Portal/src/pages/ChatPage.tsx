@@ -2,12 +2,23 @@ import { AlertCircle, Bot, ClipboardCopy, RotateCcw, Send, User2 } from "lucide-
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
+import { Link } from "react-router-dom"
 
 import { useAuth } from "../contexts/AuthContext.tsx"
 import { useChat } from "../hooks/useChat.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { ChatMessageRole } from "../types/ChatMessageRole.ts"
-import { UserRole } from "../types/CoreSwaggerTypes.ts"
+import { type GenerativeContentPlaceholder, UserRole } from "../types/CoreSwaggerTypes.ts"
+
+const MARKDOWN_COMPONENTS = {
+    a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+        <Link
+            to={href ?? "/"}
+            className="text-blue-600 no-underline hover:underline">
+            {children}
+        </Link>
+    )
+}
 
 export default function ChatPage() {
     const { hasRole, username } = useAuth()
@@ -64,6 +75,21 @@ export default function ChatPage() {
         })
     }
 
+    const expandPlaceholders = (content: string, placeholders: Record<string, GenerativeContentPlaceholder> | undefined): string => {
+        if (!placeholders) {
+            return content
+        }
+
+        return content.replace(/\{\{(P_\d+)\}\}/g, (match, key) => {
+            const entry = placeholders[key]
+            if (!entry) {
+                return match
+            }
+
+            return `[${entry.label}](/${entry.entityType}/${entry.entityId})`
+        })
+    }
+
     return hasRole(UserRole.GenerativecontentEdit) && (
         <div className="flex flex-col" style={{ height }}>
             <div className="flex items-center justify-between pb-3 border-b border-gray-200 flex-shrink-0 px-2 md:px-0">
@@ -93,16 +119,31 @@ export default function ChatPage() {
                         </div>
                         <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${message.role === ChatMessageRole.User ? "bg-blue-600 text-white rounded-br-sm" : message.role === ChatMessageRole.Error ? "bg-red-50 text-red-700 rounded-bl-sm" : "bg-gray-100 text-gray-900 rounded-bl-sm"}`}>
                             {message.role === ChatMessageRole.Assistant ? (
-                                <div className="prose prose-sm max-w-none
-                                    prose-p:my-1 prose-p:leading-relaxed
-                                    prose-headings:mt-3 prose-headings:mb-1 prose-headings:font-semibold
-                                    prose-ul:my-1 prose-ol:my-1 prose-li:my-0
-                                    prose-pre:bg-gray-200 prose-pre:text-gray-800 prose-pre:text-xs prose-pre:rounded-lg
-                                    prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-                                    prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                                    prose-strong:font-semibold prose-blockquote:border-l-gray-300 prose-blockquote:text-gray-600">
-                                    <ReactMarkdown>{message.content}</ReactMarkdown>
-                                </div>
+                                <>
+                                    <div className="prose prose-sm max-w-none
+                                        prose-p:my-1 prose-p:leading-relaxed
+                                        prose-headings:mt-3 prose-headings:mb-1 prose-headings:font-semibold
+                                        prose-ul:my-1 prose-ol:my-1 prose-li:my-0
+                                        prose-pre:bg-gray-200 prose-pre:text-gray-800 prose-pre:text-xs prose-pre:rounded-lg
+                                        prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+                                        prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                                        prose-strong:font-semibold prose-blockquote:border-l-gray-300 prose-blockquote:text-gray-600">
+                                        <ReactMarkdown components={MARKDOWN_COMPONENTS}>
+                                            {expandPlaceholders(message.content, message.placeholders)}
+                                        </ReactMarkdown>
+                                    </div>
+                                    {message.imageUrls && message.imageUrls.length > 0 && (
+                                        <div className="grid grid-cols-3 gap-2 mt-3">
+                                            {message.imageUrls.map((url, i) => (
+                                                <img
+                                                    key={i}
+                                                    src={url}
+                                                    className="rounded-lg aspect-[3/2] object-cover w-full"
+                                                    loading="lazy" />
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 <p className="whitespace-pre-wrap">{message.content}</p>
                             )}

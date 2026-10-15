@@ -65,7 +65,9 @@ export const useChat = (): UseChatResult => {
             setMessages(prev => [...prev, {
                 id: uuidv4(),
                 role: ChatMessageRole.Assistant,
-                content: result.content
+                content: result.content,
+                placeholders: result.placeholders,
+                imageUrls: result.imageUrls
             }])
 
             setIsLoading(false)
