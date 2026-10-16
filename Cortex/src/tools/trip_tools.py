@@ -7,10 +7,10 @@ from src.tools.base_tools import BaseCoreTools
 
 
 class TripReadTools(BaseCoreTools):
-    def get_supported_skill(self) -> str:
+    def _get_supported_skill(self) -> str:
         return "trip.read"
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.get_upcoming_trip,
             self.get_current_trip,

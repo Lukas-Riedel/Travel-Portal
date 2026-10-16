@@ -17,6 +17,8 @@
 
         private const KEY_PLACEHOLDER_FORMAT = "{%s}";
 
+        private const USER_ROLE = "user";
+
         private const CONVERSATION_CACHE_KEY_FORMAT = "CortexGenerativeContentClient:Conversation:%s";
         private const CONVERSATION_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
@@ -40,28 +42,34 @@
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
-            return $this->doGetResponse(array(array("role" => "user", "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, false, null);
-        }
-
-        public function getChatResponse(string $prompt, string $userId, ?string $username = null, ?string $conversationId = null, ?array $responseJsonSchema = null, mixed $environment = null) : ?GenerativeContentResult {
-            $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
-            $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
-            $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
-
-            $messages[] = array("role" => "user", "text" => $prompt);
-
-            $response = $this->doGetResponse($messages, $userId, $username, $responseJsonSchema, true, $environment);
+            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, false, null);
             if ($response === null) {
                 return null;
             }
 
-            $messages[] = array("role" => "model", "text" => $response);
-            $this->distributedCacheClient->set($cacheKey, $messages, self::CONVERSATION_CACHE_TTL);
-
-            return new GenerativeContentResult($response, $targetConversationId);
+            return $responseJsonSchema !== null ? json_encode($response["text"]) : $response["text"];
         }
 
-        private function doGetResponse(array $messages, ?string $userId, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?string {
+        public function getChatResponse(string $prompt, string $userId, ?string $username = null, ?string $conversationId = null, mixed $environment = null) : ?GenerativeContentResult {
+            $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
+            $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
+
+            $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
+            $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
+
+            $response = $this->doGetResponse($messages, $userId, $username, null, true, $environment);
+            if ($response === null) {
+                return null;
+            }
+
+            if (isset($response["history"])) {
+                $this->distributedCacheClient->set($cacheKey, $response["history"], self::CONVERSATION_CACHE_TTL);
+            }
+
+            return new GenerativeContentResult($response["text"], $targetConversationId);
+        }
+
+        private function doGetResponse(array $messages, ?string $userId, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?array {
             $payload = array("messages" => $messages, "environment" => $environment);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
@@ -81,17 +89,13 @@
             $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $url, $headers, json_encode($payload));
 
-            // TODO: This is dangerous - the response schema can contain the 'message' field -> instead, check that if the response is array, then it matches the schema.
             if (is_array($response) && isset($response["message"])) {
                 $this->logger->error("The generative content request was not successful. Reason: " . $response["message"]);
                 return null;
             }
 
-            // Deserialization must be handled by callers, the contract of the method is to always return string.
-            $convertedResponse = is_array($response) ? json_encode($response) : $response;
-
-            $this->logger->debug("The generative content request was successful. Prompt: '" . $messages[count($messages) - 1]["text"] . "' Response: '" . $convertedResponse . "'");
-            return $convertedResponse;
+            $this->logger->debug("The generative content request was successful. Prompt: '" . $messages[count($messages) - 1]["text"] . "' Response: '" . is_array($response["text"]) ? json_encode($response["text"]) : $response["text"] . "'");
+            return $response;
         }
 
         private function createPrompt(string $query, array $context) : string {

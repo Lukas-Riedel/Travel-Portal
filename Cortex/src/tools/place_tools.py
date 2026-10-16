@@ -65,10 +65,10 @@ class BasePlaceTools(BaseCoreTools, ABC):
         return place.get("excerpt")
 
 class PlaceReadTools(BasePlaceTools):
-    def get_supported_skill(self) -> str:
+    def _get_supported_skill(self) -> str:
         return "place.read"
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.get_places,
             self.get_candidate_places,
@@ -265,10 +265,10 @@ class PlaceReadTools(BasePlaceTools):
         return [d for raw in place.get("dates", []) if (d := self._extract_date(raw, place_tz)) is not None]
 
 class PlaceEditTools(BasePlaceTools):
-    def get_supported_skill(self) -> str:
+    def _get_supported_skill(self) -> str:
         return "place.edit"
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.get_place_excerpt,
             self.create_candidate_place,

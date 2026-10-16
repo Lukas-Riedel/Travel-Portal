@@ -34,8 +34,8 @@ class ToolRegistry:
                             instance = cls(self.core_client)
                         else:
                             instance = cls()
-                        discovered_tools = instance.get_tools()
-                        supported_skill = instance.get_supported_skill()
+                        discovered_tools = instance._get_tools()
+                        supported_skill = instance._get_supported_skill()
                         self._register_module_tools(discovered_tools, supported_skill)
                     except Exception as exc:
                         logger.error(f"Failed to initialize and register tools from class '{cls.__name__}': {exc}")

@@ -2,7 +2,7 @@ import json
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import JSONResponse, PlainTextResponse, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.dependencies import require_backend_service_account
@@ -16,27 +16,14 @@ router = APIRouter(
 )
 
 
-class MessageTurn(BaseModel):
-    role: str = Field(
-        ...,
-        description="The role of the message sender (e.g., 'user' or 'model')",
-        example="user",
-    )
-    text: str = Field(
-        ...,
-        description="The text content of the message turn",
-        example="What is the capital of France?",
-    )
-
-
 class GenerativeContentRequest(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    messages: list[MessageTurn] = Field(
+    messages: list[dict[str, Any]] = Field(
         ...,
-        description="The list of conversation message turns to send to the generative model",
+        description="Complete conversation history including response structures, tool calls, and a thought signature",
     )
-    schema: dict | None = Field(
+    schema: dict[str, Any] | None = Field(
         None,
         description="Optional JSON Schema for structured output",
     )
@@ -50,14 +37,25 @@ class GenerativeContentRequest(BaseModel):
     )
 
 
+class GenerativeContentResponse(BaseModel):
+    text: str | dict[str, Any] = Field(
+        ...,
+        description="Generated response",
+    )
+    history: list[dict[str, Any]] = Field(
+        ...,
+        description="New complete chat history",
+    )
+
+
 @router.post(
     "",
-    response_class=Response,
+    response_model=GenerativeContentResponse,
     responses={
-        400: {"description": "Bad Request", "model": None},
-        401: {"description": "Unauthorized", "model": None},
-        403: {"description": "Forbidden", "model": None},
-        503: {"description": "Service Unavailable", "model": None},
+        400: {"description": "Bad Request"},
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
+        503: {"description": "Service Unavailable"},
     },
 )
 def generate_content(
@@ -74,8 +72,8 @@ def generate_content(
         u_id = user_id.get()
         enabled_skills = req_obj.app.state.iam_client.get_user_roles(u_id) if use_skills and u_id else None
 
-        text = req_obj.app.state.generative_content_engine.generate(
-            [message.model_dump() for message in request.messages],
+        text, history = req_obj.app.state.generative_content_engine.generate(
+            request.messages,
             request.schema,
             enabled_skills,
             request.context,
@@ -83,7 +81,9 @@ def generate_content(
     finally:
         generative_content_environment.reset(token)
 
-    if request.schema is not None:
-        return JSONResponse(content=json.loads(text))
-
-    return PlainTextResponse(content=text)
+    return JSONResponse(
+        content={
+            "text": json.loads(text) if request.schema is not None else (text or ""),
+            "history": history,
+        }
+    )

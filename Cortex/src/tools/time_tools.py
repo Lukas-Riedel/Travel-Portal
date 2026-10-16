@@ -8,10 +8,10 @@ from src.tools.base_tools import BaseTools
 
 
 class TimeTools(BaseTools):
-    def get_supported_skill(self) -> str | None:
+    def _get_supported_skill(self) -> str | None:
         return None
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.convert_datetime_to_epoch,
             self.convert_epoch_to_datetime,

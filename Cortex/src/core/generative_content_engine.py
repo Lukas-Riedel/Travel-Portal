@@ -33,23 +33,22 @@ class GenerativeContentEngine:
 
     def generate(
         self,
-        messages: list[dict[str, str]],
+        messages: list[dict[str, Any]],
         schema: dict[str, Any] | None = None,
         enabled_skills: list[str] | None = None,
         context: str | None = None,
-    ) -> str:
+    ) -> tuple[str, list[dict[str, Any]]]:
         if not messages:
-            return ""
+            return "", []
 
-        # Previous messages form the history, last message is sent to chat
+        # Validate and reconstruct complete history (including SDK structures and thought signatures)
         history = [
-            types.Content(
-                role=msg["role"],
-                parts=[types.Part.from_text(text=msg["text"])],
-            )
+            types.Content.model_validate(msg)
             for msg in messages[:-1]
         ]
-        last_message = messages[-1]["text"]
+        
+        # The last message dictionary contains the new user turn/input
+        last_message = messages[-1].get("text", "")
 
         config_kwargs: dict[str, Any] = {}
 
@@ -81,8 +80,16 @@ class GenerativeContentEngine:
                     config=config,
                 )
                 response = chat.send_message(last_message)
+                
+                # Extract the complete updated history from the chat session.
+                updated_history = [
+                    content.model_dump(mode='json', exclude_none=True, by_alias=True)
+                    for content in chat.get_history()
+                ]
+
                 logger.info(f"Generative content request succeeded with model '{model}'.")
-                return response.text or ""
+                return response.text or "", updated_history
+
             except Exception as exc:
                 logger.warning(f"Model '{model}' is unavailable ({exc}). Trying next model...")
                 continue

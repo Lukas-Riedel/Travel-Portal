@@ -19,10 +19,10 @@ class BaseSubscriptionTools(BaseCoreTools, ABC):
 
 
 class SubscriptionReadTools(BaseSubscriptionTools):
-    def get_supported_skill(self) -> str:
+    def _get_supported_skill(self) -> str:
         return "subscription.read"
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.get_subscriptions,
         ]
@@ -47,10 +47,10 @@ class SubscriptionReadTools(BaseSubscriptionTools):
 
 
 class SubscriptionEditTools(BaseSubscriptionTools):
-    def get_supported_skill(self) -> str:
+    def _get_supported_skill(self) -> str:
         return "subscription.edit"
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.get_subscription_descriptions,
             self.create_subscription,

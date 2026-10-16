@@ -34,11 +34,11 @@ class BaseTools(ABC):
                 setattr(cls, attr_name, _log_tool_call(attr_value))
 
     @abstractmethod
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         pass
 
     @abstractmethod
-    def get_supported_skill(self) -> str | None:
+    def _get_supported_skill(self) -> str | None:
         pass
 
 

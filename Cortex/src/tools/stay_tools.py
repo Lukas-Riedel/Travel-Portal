@@ -6,7 +6,7 @@ from src.tools.base_tools import BaseCoreTools
 
 
 class StayReadTools(BaseCoreTools):
-    def get_supported_skill(self) -> str:
+    def _get_supported_skill(self) -> str:
         return "trip.stay.read"
 
     def get_tools(self) -> list[Any]:
