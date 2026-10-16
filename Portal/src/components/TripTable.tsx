@@ -41,9 +41,10 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
     const openingTimeOffHours = (Object.values(configuration?.timeTracking?.openingBalance ?? {}) as number[]).reduce((sum, value) => sum + (value ?? 0), 0)
 
     const daysOffset = timeTrackingEvents?.[TimeTrackingEventType.Overtime]?.some(event => isToday(event.timestamp)) ? 1 : 0
-    const days = getDaysFromTodayThrough(trips?.at(-1)?.end ?? 0, daysOffset)
+    const lastTripEnd = trips?.at(-1)?.end ?? 0
 
     const tripBalances = useMemo(() => {
+        const days = getDaysFromTodayThrough(lastTripEnd, daysOffset)
         const tripBalances: Record<string, { availableOvertimeHours: number, availableTimeOffHours: number, timeOffHoursNeeded?: number }> = {}
 
         const getEventTypeBalance = (eventType: TimeTrackingEventType) => timeTrackingEvents?.[eventType]?.[0]?.balance ?? 0
@@ -113,7 +114,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
         }
 
         return tripBalances
-    }, [timeTrackingEvents, trips, days, standardWorkingHoursPerWorkingDay, expectedOvertimeHoursPerDay, isFreeDay])
+    }, [timeTrackingEvents, trips, lastTripEnd, daysOffset, timezone, standardWorkingHoursPerWorkingDay, expectedOvertimeHoursPerDay, openingTimeOffHours, isFreeDay])
 
     return (!trips || trips.length > 0) && (
         <div className="w-full rounded-xl my-4">

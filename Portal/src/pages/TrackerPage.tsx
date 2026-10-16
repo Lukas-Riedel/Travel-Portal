@@ -7,11 +7,13 @@ import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents"
 import { TimeTrackingEventType, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { isFutureTrip } from "../utils/tripUtils.ts"
 
+const TRACKED_EVENT_TYPES = [TimeTrackingEventType.Overtime, TimeTrackingEventType.Vacation, TimeTrackingEventType.Selfcare, TimeTrackingEventType.Tenure, TimeTrackingEventType.PlannedWork]
+
 export default function TrackerPage() {
     const { hasRole } = useAuth()
 
     const { trips } = useRegularTrips({ include: [TripIncludedEntity.Flights] })
-    const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents([TimeTrackingEventType.Overtime, TimeTrackingEventType.Vacation, TimeTrackingEventType.Selfcare, TimeTrackingEventType.Tenure, TimeTrackingEventType.PlannedWork])
+    const { timeTrackingEvents, createTimeTrackingEvent, removeTimeTrackingEvent } = useTimeTrackingEvents(TRACKED_EVENT_TYPES)
 
     return hasRole(UserRole.TrackerRead) && (
         <>
