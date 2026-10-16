@@ -16,6 +16,7 @@ Activate and apply this skill when the user asks about visited places, destinati
      - Date interval → pass `min_start` and/or `max_end`. Use `convert_datetime_to_epoch` with the place's timezone to convert user-provided dates.
      - Maximum quality score → pass `max_quality`.
      - Maximum quality tier → pass `max_tier`.
+   - **Calling the tool without filters can potentially take a very long time. ALWAYS try to narrow down the expected result set if possible.**
    - Pass `sort` when the user asks for ordering.
    - Present each place by its name, the rest it depends on the context (e.g. the listing can contain the place country if ambiguous, as well as visited dates and/or times).
    - When asking about the trip itinerary, group the places by their dates, present also time slots.
@@ -26,6 +27,7 @@ Activate and apply this skill when the user asks about visited places, destinati
    - When the user asks when a specific place was visited (e.g. "when did I visit Prague?", "how many times have I been to Kyoto?"), call `get_place_dates`.
    - Dates include a `weather` field with forecast data — present it when the date is in the future or when the user asks about weather.
    - Present each date as a formatted interval (e.g. `12. 5. 2025 – 15. 5. 2025`) plus trip name if available.
+   - A date represents a timespan actively spent by sightseeing. If there are multiple dates for the same place close to each other, refer to it as a single visit of that place.
 4. **Finding a Place by Name**:
    - When you need a place ID from a user-provided name, call `get_place_by_name`.
    - If no match is found, ask the user for clarification.

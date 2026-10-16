@@ -16,6 +16,7 @@ Activate and apply this skill when the user asks about trips, itineraries, trave
 4. **Listing Regular Trips**:
    - When the user asks about available trips, call `get_regular_trips`.
    - Provide `year` whenever the user mentions a specific year to narrow the results.
+   - **Calling the tool without filters can potentially take a very long time. ALWAYS try to narrow down the expected result set if possible.**
    - Present trip name, formatted local start and end dates (e.g. "12. 5. 2025 – 20. 5. 2025"), visited countries (if not clear from the name), and days.
    - Do not present notes in a structured way — they exist mainly to extend your internal context.
 5. **Listing Candidate Trips**: When the user asks about unplanned or candidate trips, call `get_candidate_trips`.
