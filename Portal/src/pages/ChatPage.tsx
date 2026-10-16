@@ -83,7 +83,7 @@ export default function ChatPage() {
     }
 
     return hasRole(UserRole.GenerativecontentEdit) && (
-        <div className="flex flex-col md:h-[calc(100vh-300px)]">
+        <div className="flex flex-col min-h-[calc(100vh-300px)] md:h-[calc(100vh-300px)]">
             <div className="flex items-center justify-between pb-3 border-b border-gray-200 flex-shrink-0 px-2 md:px-0">
                 <h1 className="text-base font-semibold text-gray-900">{t("chat.label.title")}</h1>
                 <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export default function ChatPage() {
                     </button>
                 </div>
             </div>
-            <div className="md:flex-1 md:overflow-y-auto py-4 space-y-5 md:min-h-0">
+            <div className="flex-1 md:overflow-y-auto py-4 space-y-5 md:min-h-0">
                 {messages.map(message => (
                     <div
                         key={message.id}
