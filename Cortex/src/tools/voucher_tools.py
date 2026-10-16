@@ -62,7 +62,7 @@ class VoucherEditTools(BaseVoucherTools):
         issuer: str,
         value: float,
         currency: str,
-        expiration: int | None = None,
+        expiration: int | None,
     ) -> dict[str, Any]:
         """Creates and stores a new voucher / gift card / discount coupon in Travel Portal.
         Use this when the user asks to save, record, or store a voucher code or coupon.

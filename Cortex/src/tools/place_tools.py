@@ -64,7 +64,6 @@ class BasePlaceTools(BaseCoreTools, ABC):
 
         return place.get("excerpt")
 
-
 class PlaceReadTools(BasePlaceTools):
     def get_supported_skill(self) -> str:
         return "place.read"
@@ -80,16 +79,16 @@ class PlaceReadTools(BasePlaceTools):
 
     def get_places(
         self,
-        trip_id: str | None = None,
-        label_id: str | None = None,
-        category_id: str | None = None,
-        year: int | None = None,
-        country: str | None = None,
-        min_start: int | None = None,
-        max_end: int | None = None,
-        max_quality: float | None = None,
-        max_tier: str | None = None,
-        sort: str | None = None,
+        trip_id: str | None,
+        label_id: str | None,
+        category_id: str | None,
+        year: int | None,
+        country: str | None,
+        min_start: int | None,
+        max_end: int | None,
+        max_quality: float | None,
+        max_tier: str | None,
+        sort: str | None,
     ) -> list[dict[str, Any]] | dict[str, Any]:
         """Retrieves a list of regular (visited) places from Travel Portal with optional filters.
         Use this when the user wants to browse, list, or search visited places — for example
@@ -153,9 +152,9 @@ class PlaceReadTools(BasePlaceTools):
 
     def get_candidate_places(
         self,
-        trip_id: str | None = None,
-        label_id: str | None = None,
-        category_id: str | None = None,
+        trip_id: str | None,
+        label_id: str | None,
+        category_id: str | None,
     ) -> list[dict[str, Any]] | dict[str, Any]:
         """Retrieves a list of candidate (wishlist / unplanned) places from Travel Portal.
         Use this when the user asks about places they want to visit, unplanned destinations,

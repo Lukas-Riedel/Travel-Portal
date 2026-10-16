@@ -41,7 +41,7 @@ class StayReadTools(BaseCoreTools):
         system_tz = self._get_system_timezone()
         return [s for stay in trip.get("stays", []) if (s := self._extract_stay(stay, trip, system_tz)) is not None]
 
-    def get_all_stays(self, year: int | None = None) -> list[dict[str, Any]]:
+    def get_all_stays(self, year: int | None) -> list[dict[str, Any]]:
         """Retrieves all accommodation stays across all regular trips, optionally filtered by year.
         Call this when the user asks about accommodation across multiple trips — for example "where have I stayed this year?", "list all my hotels", or "show me every place I've slept on my travels".
         For stays on a single specific trip use get_stays_for_trip instead.

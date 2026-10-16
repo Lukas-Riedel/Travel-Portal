@@ -21,8 +21,8 @@ class TimeTools(BaseTools):
     def convert_datetime_to_epoch(
         self,
         date_str: str,
-        time_str: str = "00:00:00",
-        tz_name: str = "UTC",
+        time_str: str,
+        tz_name: str,
     ) -> dict[str, Any]:
         """Converts a given date (YYYY-MM-DD or DD.MM.YYYY) and time (HH:MM or HH:MM:SS) into a precise Unix epoch timestamp.
         Use this tool whenever creating tasks with deadlines, vouchers with expiration, or calculating precise timestamps.
@@ -64,7 +64,7 @@ class TimeTools(BaseTools):
     def convert_epoch_to_datetime(
         self, 
         epoch: int,
-        tz_name: str = "UTC",
+        tz_name: str,
     ) -> dict[str, Any]:
         """Converts a Unix epoch timestamp (seconds) into ISO 8601 and human-readable UTC components.
 
@@ -98,7 +98,7 @@ class TimeTools(BaseTools):
         self,
         datetime_str: str,
         target_tz: str,
-        source_tz: str | None = None,
+        source_tz: str | None,
     ) -> dict[str, Any]:
         """Converts a datetime string or ISO 8601 string from one timezone to another target timezone.
         Use this tool whenever you receive timestamps/dates with offsets or from backend tools configured in home timezone and need to convert them to the user's current environment timezone or destination timezone.

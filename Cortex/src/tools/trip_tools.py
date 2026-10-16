@@ -123,8 +123,8 @@ class TripReadTools(BaseCoreTools):
         return self._extract_trip(trip, system_tz)
 
     def get_regular_trips(self,
-        year: int | None = None,
-        sort: str | None = None
+        year: int | None,
+        sort: str | None
     ) -> list[dict[str, Any]] | None:
         """Retrieves a list of trips from Travel Portal.
         Use this tool when you need to browse, list, or inspect multiple trips at once — for example to answer questions like "how many trips did I take in 2024?" or "show me all my trips".
