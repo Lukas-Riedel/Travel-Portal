@@ -55,10 +55,10 @@
                 return null;
             }
 
-            $messages[] = array("role" => "model", "text" => $this->expandPlaceholdersToPlainText($response));
+            $messages[] = array("role" => "model", "text" => $response);
             $this->distributedCacheClient->set($cacheKey, $messages, self::CONVERSATION_CACHE_TTL);
 
-            return new GenerativeContentResult($response, $targetConversationId, array(), array());
+            return new GenerativeContentResult($response, $targetConversationId);
         }
 
         private function doGetResponse(array $messages, ?string $userId, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?string {
@@ -100,22 +100,6 @@
                 array_values($context),
                 $query
             );
-        }
-
-        private function expandPlaceholdersToPlainText(string $response) : string {
-            $decoded = json_decode($response, true);
-            if (!is_array($decoded) || !isset($decoded["text"])) {
-                return $response;
-            }
-
-            $text = $decoded["text"];
-            foreach ($decoded["placeholders"] ?? array() as $entry) {
-                if (isset($entry["key"], $entry["label"])) {
-                    $text = str_replace("{{" . $entry["key"] . "}}", $entry["label"], $text);
-                }
-            }
-
-            return $text;
         }
 
         private function getCortexBaseUrl() : string {

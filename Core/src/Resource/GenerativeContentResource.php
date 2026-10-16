@@ -4,16 +4,6 @@
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
     use Core\Client\GenerativeContent\GenerativeContentClient;
-    use Core\Client\GenerativeContent\GenerativeContentResult;
-    use Core\Service\Category\CategoryService;
-    use Core\Service\Highlight\HighlightService;
-    use Core\Service\Index\IndexService;
-    use Core\Service\Label\LabelService;
-    use Core\Service\Place\PlaceService;
-    use Core\Service\Trip\TripIncludedEntity;
-    use Core\Service\Trip\TripService;
-    use Core\Service\Trip\TripSortingStrategy;
-    use Core\Service\Year\YearService;
     use OpenApi\Attributes as OA;
     use Slim\App;
     use Slim\Psr7\Request;
@@ -22,33 +12,14 @@
     #[OA\Tag(name: "Generative Content")]
     class GenerativeContentResource extends AbstractResource {
 
-        // TODO: Move this to the request, the UI should decide this.
-        private const IMAGE_COUNT = 3;
-
         private readonly GenerativeContentClient $generativeContentClient;
-        private readonly IndexService $indexService;
-        private readonly HighlightService $highlightService;
-        private readonly TripService $tripService;
-        private readonly PlaceService $placeService;
-        private readonly CategoryService $categoryService;
-        private readonly LabelService $labelService;
-        private readonly YearService $yearService;
 
-        public function __construct(GenerativeContentClient $generativeContentClient, IndexService $indexService, HighlightService $highlightService,
-            TripService $tripService, PlaceService $placeService, CategoryService $categoryService, LabelService $labelService, YearService $yearService) {
+        public function __construct(GenerativeContentClient $generativeContentClient) {
             $this->generativeContentClient = $generativeContentClient;
-            $this->indexService = $indexService;
-            $this->highlightService = $highlightService;
-            $this->tripService = $tripService;
-            $this->placeService = $placeService;
-            $this->categoryService = $categoryService;
-            $this->labelService = $labelService;
-            $this->yearService = $yearService;
         }
 
-        public static function register(App $app, GenerativeContentClient $generativeContentClient, IndexService $indexService, HighlightService $highlightService,
-            TripService $tripService, PlaceService $placeService, CategoryService $categoryService, LabelService $labelService, YearService $yearService) : void {
-            $resource = new self($generativeContentClient, $indexService, $highlightService, $tripService, $placeService, $categoryService, $labelService, $yearService);
+        public static function register(App $app, GenerativeContentClient $generativeContentClient) : void {
+            $resource = new self($generativeContentClient);
 
             $app->group("/generativecontent", function($group) use($resource) {
                 $group->post("", [$resource, "createGenerativeContent"]);
@@ -143,184 +114,7 @@
             $environment = $this->getJsonBodyField($request, "environment");
             $userInfo = $this->getUserInfo($request);
 
-            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, null, $environment);
-            if ($rawResult === null) {
-                return null;
-            }
-
-            return $this->enrichResult($rawResult);
-        }
-
-        private function enrichResult(GenerativeContentResult $rawResult) : GenerativeContentResult {
-            $decoded = json_decode($rawResult->getContent(), true);
-
-            if (!is_array($decoded) || !isset($decoded["text"])) {
-                // Fallback: malformed JSON - return raw content with empty placeholders/imageUrls.
-                return new GenerativeContentResult($rawResult->getContent(), $rawResult->getConversationId(), array(), array());
-            }
-
-            $placeholders = array();
-            foreach (is_array($decoded["placeholders"]) ? $decoded["placeholders"] : array() as $entry) {
-                if (isset($entry["key"], $entry["entityType"], $entry["entityId"], $entry["label"])) {
-                    $placeholders[$entry["key"]] = array(
-                        "entityType" => $entry["entityType"],
-                        "entityId" => $entry["entityId"],
-                        "label" => $entry["label"],
-                    );
-                }
-            }
-
-            return new GenerativeContentResult($decoded["text"], $rawResult->getConversationId(), $placeholders, $this->resolveImageUrls($placeholders));
-        }
-
-        private function resolveImageUrls(array $placeholders) : array {
-            $placeholdersImageUrls = array();
-
-            foreach ($placeholders as &$placeholder) {
-                $entityType = $placeholder["entityType"] ?? null;
-                $entityId = $placeholder["entityId"] ?? null;
-                if ($entityType === null || $entityId === null || isset($placeholdersImageUrls[$entityId])) {
-                    continue;
-                }
-
-                $placeholdersImageUrls[$entityId] = match($entityType) {
-                    "trip" => $this->resolveTripImageUrls($entityId),
-                    "place" => $this->resolvePlaceImageUrls($entityId),
-                    "category" => $this->resolveCategoryImageUrls($entityId),
-                    "label" => $this->resolveLabelImageUrls($entityId),
-                    "year" => $this->resolveYearImageUrls($entityId),
-                    default => array()
-                };                
-            }
-            
-            $imageUrls = array();
-
-            for ($i = 0; $i < self::IMAGE_COUNT; ++$i) {
-                foreach ($placeholders as &$placeholder) {
-                    $entityId = $placeholder["entityId"] ?? null;
-                    $imageUrl = $placeholdersImageUrls[$entityId][$i] ?? null;
-
-                    if ($imageUrl !== null) {
-                        $imageUrls[] = $imageUrl;
-                    }
-
-                    if (count($imageUrls) >= self::IMAGE_COUNT) {
-                        break;
-                    }
-                }
-
-                if (count($imageUrls) >= self::IMAGE_COUNT) {
-                    break;
-                }
-            }
-
-            return $imageUrls;
-        }
-
-        private function resolveTripImageUrls(string $tripId) : array {
-            $trip = $this->tripService->getRegularTrip($tripId);
-            if ($trip === null) {
-                return array();
-            }
-
-            $highlightPhotoIds = array_map(fn($h) => $h->getPhoto()->getId(), $trip->getHighlights());
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip(
-                $tripId,
-                $trip->getName(),
-                count($highlightPhotoIds),
-                $trip->getMainHighlight()?->getPhoto()?->getId(),
-                $highlightPhotoIds
-            );
-
-            return $this->resolvePhotoIdThumbnails(array_intersect($selectedPhotoIds, $highlightPhotoIds));
-        }
-
-        private function resolvePlaceImageUrls(string $placeId) : array {
-            $place = $this->placeService->getRegularPlace($placeId);
-            if ($place === null) {
-                return array();
-            }
-
-            $highlightPhotoIds = array_map(fn($h) => $h->getPhoto()->getId(), $place->getHighlights());
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace(
-                $placeId,
-                $place->getName(),
-                count($highlightPhotoIds),
-                $place->getMainHighlight()?->getPhoto()?->getId()
-            );
-
-            return $this->resolvePhotoIdThumbnails(array_intersect($selectedPhotoIds, $highlightPhotoIds));
-        }
-
-        private function resolveCategoryImageUrls(string $categoryId) : array {
-            $category = $this->categoryService->getCategory($categoryId);
-            if ($category === null) {
-                return array();
-            }
-
-            $highlightPhotoIds = array_map(fn($h) => $h->getPhoto()->getId(), $category->getHighlights());
-            $placeIds = $this->categoryService->getPlaceIdsForCategoryId($categoryId);
-
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(
-                $placeIds,
-                $category->getName(),
-                count($highlightPhotoIds),
-                $category->getMainHighlight()?->getPhoto()?->getId(),
-                $highlightPhotoIds
-            );
-
-            return $this->resolvePhotoIdThumbnails(array_intersect($selectedPhotoIds, $highlightPhotoIds));
-        }
-
-        private function resolveLabelImageUrls(string $labelId) : array {
-            $label = $this->labelService->getLabel($labelId);
-            if ($label === null) {
-                return array();
-            }
-
-            $highlightPhotoIds = array_map(fn($h) => $h->getPhoto()->getId(), $label->getHighlights());
-            $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
-
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(
-                $placeIds,
-                count($highlightPhotoIds),
-                $label->getMainHighlight()?->getPhoto()?->getId(),
-                $highlightPhotoIds
-            );
-
-            return $this->resolvePhotoIdThumbnails(array_intersect($selectedPhotoIds, $highlightPhotoIds));
-        }
-
-        private function resolveYearImageUrls(string $yearId) : array {
-            $year = (int) $yearId;
-            $yearEntity = $this->yearService->getYear($year);
-            if ($yearEntity === null) {
-                return array();
-            }
-
-            $highlightPhotoIds = array_map(fn($h) => $h->getPhoto()->getId(), $yearEntity->getHighlights());
-            $trips = $this->tripService->getRegularTrips($year, null, null, array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
-            $tripMainHighlightPhotoIds = array_values(array_filter(array_map(
-                fn($t) => $t->getMainHighlight()?->getPhoto()?->getId(),
-                $trips
-            )));
-
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear(
-                $year,
-                $year,
-                count($highlightPhotoIds),
-                $yearEntity->getMainHighlight()?->getPhoto()?->getId(),
-                $tripMainHighlightPhotoIds
-            );
-
-            return $this->resolvePhotoIdThumbnails(array_intersect($selectedPhotoIds, $highlightPhotoIds));
-        }
-
-        private function resolvePhotoIdThumbnails(array $photoIds) : array {
-            return array_values(array_filter(array_map(
-                fn($h) => $h->getUrl()->getThumbnail(),
-                $this->highlightService->getHighlightsByPhotoIds(array_values($photoIds))
-            )));
+            return $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, null, $environment);
         }
     }
 ?>

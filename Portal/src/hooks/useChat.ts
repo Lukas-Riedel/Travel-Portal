@@ -3,12 +3,12 @@ import { v4 as uuidv4 } from "uuid"
 
 import { createGenerativeContent } from "../clients/coreClient.ts"
 import { useAuth } from "../contexts/AuthContext.tsx"
+import { useLocation } from "../contexts/LocationContext.tsx"
 import type { ChatMessage } from "../types/ChatMessage.ts"
 import { ChatMessageRole } from "../types/ChatMessageRole.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { UseChatResult } from "../types/UseChatResult.ts"
 import { getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
-import { useLocation } from "../contexts/LocationContext.tsx"
 
 const RESPONSE_TIMEOUT_MS = 15000
 
@@ -65,9 +65,7 @@ export const useChat = (): UseChatResult => {
             setMessages(prev => [...prev, {
                 id: uuidv4(),
                 role: ChatMessageRole.Assistant,
-                content: result.content,
-                placeholders: result.placeholders,
-                imageUrls: result.imageUrls
+                content: result.content
             }])
 
             setIsLoading(false)
