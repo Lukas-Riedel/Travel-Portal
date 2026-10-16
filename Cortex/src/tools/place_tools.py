@@ -34,14 +34,12 @@ class BasePlaceTools(BaseCoreTools, ABC):
             return None
 
         end_epoch = date.get("end")
-        end_epoch_inclusive = end_epoch - 1 if end_epoch is not None else None
-
         trip = date.get("trip")
 
         return {
             "date": self._epoch_to_date(start_epoch, place_tz),
             "start_time": self._epoch_to_time(start_epoch, place_tz),
-            "end_time": self._epoch_to_time(end_epoch_inclusive, place_tz),
+            "end_time": self._epoch_to_time(end_epoch, place_tz),
             "trip_name": f"{trip.get('name')} {trip.get('year')}" if trip else None,
             "weather": date.get("weather", []),
         }
