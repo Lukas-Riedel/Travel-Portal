@@ -461,7 +461,7 @@
             "plan": "Plán",
             "tracker": "Tracker",
             "admin": "Admin",
-            "chat": "Chat"
+            "chat": "Asistent"
         },
         "tab": {
             "label": {
@@ -1054,7 +1054,7 @@
     },
     "chat": {
         "label": {
-            "title": "Chat",
+            "title": "Asistent",
             "assistant": "Asistent",
             "user": "Uživatel"
         },
