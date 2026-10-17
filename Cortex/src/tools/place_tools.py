@@ -317,9 +317,7 @@ class PlaceEditTools(BasePlaceTools):
             self.update_place_excerpt,
         ]
 
-    def create_candidate_place(
-        self, name: str, address: str
-    ) -> dict[str, Any] | dict[str, Any] | None:
+    def create_candidate_place(self, name: str, address: str) -> dict[str, Any] | None:
         """Creates a new candidate (wishlist) place in Travel Portal.
         Use this when the user wants to add a place they wish to visit in the future . for example
         "add Petra to my wishlist", "create a candidate place for Machu Picchu".

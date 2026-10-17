@@ -98,12 +98,18 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
 
-        notification.image?.let { bitmap ->
-            builder.setLargeIcon(bitmap)
+        if (notification.image != null) {
+            builder.setLargeIcon(notification.image)
             builder.setStyle(
                 NotificationCompat.BigPictureStyle()
-                    .bigPicture(bitmap)
+                    .bigPicture(notification.image)
                     .bigLargeIcon(null as android.graphics.Bitmap?)
+            )
+        }
+        else {
+            builder.setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(notification.body)
             )
         }
 

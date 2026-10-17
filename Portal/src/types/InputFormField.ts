@@ -6,4 +6,5 @@ export interface InputFormField<T> extends BaseFormField<T, HTMLInputTypeAttribu
     placeholder?: T
     min?: number
     max?: number
+    maxLength?: number
 }

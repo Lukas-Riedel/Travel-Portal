@@ -56,6 +56,7 @@ export function useFormatters(): UseFormattersResult {
     const formatVisits = (v: number) => t("general.unit.visit", { count: v })
     const formatAirports = (v: number) => t("general.unit.airport", { count: v })
     const formatNights = (v: number) => t("general.unit.night", { count: v })
+    const formatChars = (v: number) => t("general.unit.char", { count: v })
 
     const formatLatitude = (value: number) => {
         const abs = Math.abs(value)
@@ -153,6 +154,7 @@ export function useFormatters(): UseFormattersResult {
         formatVisits,
         formatAirports,
         formatNights,
+        formatChars,
         formatLatitude,
         formatLongitude,
         formatTimeAgo,

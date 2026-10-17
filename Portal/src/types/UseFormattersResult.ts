@@ -17,6 +17,7 @@ export interface UseFormattersResult {
     formatVisits: (value: number) => string
     formatAirports: (value: number) => string
     formatNights: (value: number) => string
+    formatChars: (value: number) => string
     formatLatitude: (value: number) => string
     formatLongitude: (value: number) => string
     formatTimeAgo: (timestamp: number) => string

@@ -113,7 +113,10 @@
             "night_other": "{{count}} nocí",
             "week_one": "{{count}} týden",
             "week_few": "{{count}} týdny",
-            "week_other": "{{count}} týdnů"
+            "week_other": "{{count}} týdnů",
+            "char_one": "{{count}} znak",
+            "char_few": "{{count}} znaky",
+            "char_other": "{{count}} znaků"
         },
         "time": {
             "ago": {

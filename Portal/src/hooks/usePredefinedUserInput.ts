@@ -1391,12 +1391,14 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "text",
                     label: t("task.label.title"),
-                    required: true
+                    required: true,
+                    maxLength: 50
                 },
                 {
                     type: "text",
                     label: t("task.label.description"),
-                    required: false
+                    required: false,
+                    maxLength: 400
                 },
                 {
                     type: "select",
