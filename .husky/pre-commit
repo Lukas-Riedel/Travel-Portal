@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
 npx lint-staged --cwd Portal --config Portal/package.json --allow-empty
 
-STAGED_PY_FULL=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$")
+STAGED_PY_FULL=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$" || true)
 if [ -n "$STAGED_PY_FULL" ]; then
   echo "$STAGED_PY_FULL" | sed "s|^Cortex/||" | (cd Cortex && xargs python -m ruff check --fix)
   echo "$STAGED_PY_FULL" | xargs git add
 fi
 
 for PROJECT in Core Iam Common; do
-  STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^${PROJECT}/.*\.php$" | sed "s|^${PROJECT}/||")
+  STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^${PROJECT}/.*\.php$" | sed "s|^${PROJECT}/||" || true)
   if [ -n "$STAGED_PHP" ]; then
     php .tools/php-cs-fixer.phar fix --config="${PROJECT}/.php-cs-fixer.php" $( echo "$STAGED_PHP" | sed "s|^|${PROJECT}/|" )
     echo "$STAGED_PHP" | sed "s|^|${PROJECT}/|" | xargs git add
