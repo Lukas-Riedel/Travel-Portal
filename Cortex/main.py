@@ -1,4 +1,5 @@
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -12,12 +13,12 @@ from src.api.embeddings_router import router as embeddings_router
 from src.api.generative_content_router import router as generativecontent_router
 from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
+from src.client.core_client import CoreClient
+from src.client.iam_client import IamClient
 from src.core.clustering_engine import ClusteringEngine
 from src.core.embeddings_engine import EmbeddingsEngine
 from src.core.generative_content_engine import GenerativeContentEngine
 from src.core.logger import logger, transaction_id
-from src.client.core_client import CoreClient
-from src.client.iam_client import IamClient
 from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
 
@@ -25,33 +26,33 @@ load_dotenv()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.embeddings_engine = EmbeddingsEngine(
-        os.getenv("EMBEDDINGS_MODEL_NAME"),
-        os.getenv("ENGINE_DEVICE"),
+        model_name=os.getenv("EMBEDDINGS_MODEL_NAME"),
+        engine_device=os.getenv("ENGINE_DEVICE"),
     )
     app.state.clustering_engine = ClusteringEngine()
     app.state.iam_client = IamClient(
-        os.getenv("IAM_HOST"),
-        int(os.getenv("IAM_PORT")),
-        os.getenv("IAM_BACKEND_CLIENT_ID"),
-        os.getenv("IAM_BACKEND_CLIENT_SECRET"),
+        iam_host=os.getenv("IAM_HOST"),
+        iam_port=int(os.getenv("IAM_PORT")),
+        iam_backend_client_id=os.getenv("IAM_BACKEND_CLIENT_ID"),
+        iam_backend_client_secret=os.getenv("IAM_BACKEND_CLIENT_SECRET"),
     )
     app.state.core_client = CoreClient(
-        os.getenv("CORE_HOST"),
-        int(os.getenv("CORE_PORT")),
-        app.state.iam_client,
+        core_host=os.getenv("CORE_HOST"),
+        core_port=int(os.getenv("CORE_PORT")),
+        iam_client=app.state.iam_client,
     )
     app.state.tool_registry = ToolRegistry(
-        app.state.core_client,
+        core_client=app.state.core_client,
     )
     app.state.skill_registry = SkillRegistry()
     app.state.generative_content_engine = GenerativeContentEngine(
-        os.getenv("GEMINI_API_KEY"),
-        os.getenv("GEMINI_MODELS"),
-        app.state.tool_registry,
-        app.state.skill_registry,
-        app.state.core_client,
+        api_key=os.getenv("GEMINI_API_KEY"),
+        models=os.getenv("GEMINI_MODELS"),
+        tool_registry=app.state.tool_registry,
+        skill_registry=app.state.skill_registry,
+        core_client=app.state.core_client,
     )
     yield
 
@@ -67,22 +68,26 @@ app.add_middleware(LoggingMiddleware)
 
 
 @app.get("/", include_in_schema=False)
-async def redirect_to_swagger():
+async def redirect_to_swagger() -> RedirectResponse:
     return RedirectResponse(url="/swagger")
 
 
 @app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return await global_exception_handler(request, exc)
+async def http_exception_handler(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
+    return await global_exception_handler(request=request, exc=exc)
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return await global_exception_handler(request, exc)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    return await global_exception_handler(request=request, exc=exc)
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     status_code = 500
     error_type = exc.__class__.__name__
     message = str(exc)

@@ -26,9 +26,9 @@ from src.core.logger import transaction_id, user_id, username
 # Until that is implemented: every Core API call in this class MUST have an explicit timeout
 # set to prevent threads from blocking indefinitely and masking the deadlock.
 class CoreClient:
-    def __init__(self, core_host: str, core_port: int, iam_client: IamClient):
-        self.base_url = f"http://{core_host}:{core_port}"
-        self.auth_service = iam_client
+    def __init__(self, core_host: str, core_port: int, iam_client: IamClient) -> None:
+        self.base_url: str = f"http://{core_host}:{core_port}"
+        self.auth_service: IamClient = iam_client
 
     def _request(self, method: str, url: str, **kwargs: Any) -> Any:
         token = self.auth_service.get_service_access_token()
@@ -51,19 +51,20 @@ class CoreClient:
         if u_name:
             headers[USERNAME_HEADER] = u_name
 
-        response = requests.request(method, url, headers=headers, timeout=15, **kwargs)
+        response = requests.request(
+            method=method, url=url, headers=headers, timeout=15, **kwargs
+        )
         return response.json()
 
     def get_address(
-        self, 
+        self,
         latitude: float,
         longitude: float,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/address"
-        params: dict[str, Any] = {"latitude": latitude, "longitude": longitude}
+        params = {"latitude": latitude, "longitude": longitude}
 
-        return self._request("GET", url, params=params)
-        
+        return self._request(method="GET", url=url, params=params)
 
     def get_trips(
         self,
@@ -73,7 +74,7 @@ class CoreClient:
         sort: str | None = None,
     ) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/trips"
-        params: dict[str, Any] = {"type": trip_type}
+        params = {"type": trip_type}
         if year is not None:
             params["year"] = year
         if include:
@@ -81,41 +82,45 @@ class CoreClient:
         if sort:
             params["sort"] = sort
 
-        return self._request("GET", url, params=params)
+        return self._request(method="GET", url=url, params=params)
 
     def get_trip(self, trip_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}"
 
-        return self._request("GET", url)
+        return self._request(method="GET", url=url)
 
     def get_configuration(self) -> dict[str, Any]:
         url = f"{self.base_url}/configuration"
 
-        return self._request("GET", url)
+        return self._request(method="GET", url=url)
 
-    def search(self, query: str, include: str | None = None, limit: int | None = None) -> list[dict[str, Any]] | dict[str, Any]:
+    def search(
+        self, query: str, include: str | None = None, limit: int | None = None
+    ) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/search"
-        params: dict[str, Any] = {"query": query}
+        params = {"query": query}
         if include:
             params["include"] = include
         if limit is not None:
             params["limit"] = limit
 
-        return self._request("GET", url, params=params)
+        return self._request(method="GET", url=url, params=params)
 
     def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes"
         payload = {"content": content}
 
-        return self._request("POST", url, json=payload)
+        return self._request(method="POST", url=url, json=payload)
 
-    def update_trip_note(self, trip_id: str, note_id: str, content: str | None = None) -> dict[str, Any]:
+    def update_trip_note(
+        self, trip_id: str, note_id: str, content: str | None = None
+    ) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes/{note_id}"
-        payload: dict[str, Any] = {}
+        payload = {}
         if content is not None:
             payload["content"] = content
 
-        return self._request("PATCH", url, json=payload)
+        return self._request(method="PATCH", url=url, json=payload)
 
     def create_trip_expense(
         self,
@@ -127,7 +132,7 @@ class CoreClient:
         subscription_id: str | None = None,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/expenses"
-        payload: dict[str, Any] = {
+        payload = {
             "description": description,
             "value": value,
             "currency": currency,
@@ -136,7 +141,7 @@ class CoreClient:
         if subscription_id:
             payload["subscription"] = {"id": subscription_id}
 
-        return self._request("POST", url, json=payload)
+        return self._request(method="POST", url=url, json=payload)
 
     def create_trip_task(
         self,
@@ -146,10 +151,11 @@ class CoreClient:
         description: str | None = None,
         deadline: int | None = None,
         notification_interval: int | None = None,
+        *,
         auto_delete: bool = False,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/tasks"
-        payload: dict[str, Any] = {
+        payload = {
             "title": title,
             "priority": priority,
             "autoDelete": auto_delete,
@@ -161,7 +167,7 @@ class CoreClient:
         if notification_interval is not None:
             payload["notificationInterval"] = notification_interval
 
-        return self._request("POST", url, json=payload)
+        return self._request(method="POST", url=url, json=payload)
 
     def update_trip_task(
         self,
@@ -172,7 +178,7 @@ class CoreClient:
         priority: str | None = None,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/tasks/{task_id}"
-        payload: dict[str, Any] = {}
+        payload = {}
         if title is not None:
             payload["title"] = title
         if description is not None:
@@ -180,17 +186,17 @@ class CoreClient:
         if priority is not None:
             payload["priority"] = priority
 
-        return self._request("PATCH", url, json=payload)
+        return self._request(method="PATCH", url=url, json=payload)
 
     def get_vouchers(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/vouchers"
 
-        return self._request("GET", url)
+        return self._request(method="GET", url=url)
 
     def get_voucher(self, voucher_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/vouchers/{voucher_id}"
 
-        return self._request("GET", url)
+        return self._request(method="GET", url=url)
 
     def create_voucher(
         self,
@@ -201,7 +207,7 @@ class CoreClient:
         expiration: int | None = None,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/vouchers"
-        payload: dict[str, Any] = {
+        payload = {
             "code": code,
             "issuer": issuer,
             "value": value,
@@ -210,20 +216,22 @@ class CoreClient:
         if expiration is not None:
             payload["expiration"] = expiration
 
-        return self._request("POST", url, json=payload)
+        return self._request(method="POST", url=url, json=payload)
 
-    def update_voucher(self, voucher_id: str, value: float | None = None) -> dict[str, Any]:
+    def update_voucher(
+        self, voucher_id: str, value: float | None = None
+    ) -> dict[str, Any]:
         url = f"{self.base_url}/vouchers/{voucher_id}"
-        payload: dict[str, Any] = {}
+        payload = {}
         if value is not None:
             payload["value"] = value
 
-        return self._request("PATCH", url, json=payload)
+        return self._request(method="PATCH", url=url, json=payload)
 
     def get_subscriptions(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/subscriptions"
 
-        return self._request("GET", url)
+        return self._request(method="GET", url=url)
 
     def create_subscription(
         self,
@@ -233,14 +241,14 @@ class CoreClient:
         expiration: int,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/subscriptions"
-        payload: dict[str, Any] = {
+        payload = {
             "description": description,
             "value": value,
             "currency": currency,
             "expiration": expiration,
         }
 
-        return self._request("POST", url, json=payload)
+        return self._request(method="POST", url=url, json=payload)
 
     def get_places(
         self,
@@ -255,7 +263,7 @@ class CoreClient:
         sort: str | None = None,
     ) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/places"
-        params: dict[str, Any] = {"type": place_type}
+        params = {"type": place_type}
         if trip_id is not None:
             params["tripId"] = trip_id
         if label_id is not None:
@@ -273,22 +281,24 @@ class CoreClient:
         if sort is not None:
             params["sort"] = sort
 
-        return self._request("GET", url, params=params)
+        return self._request(method="GET", url=url, params=params)
 
     def get_place(self, place_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}"
 
-        return self._request("GET", url)
+        return self._request(method="GET", url=url)
 
     def create_place(self, name: str, address: str, place_type: str) -> dict[str, Any]:
         url = f"{self.base_url}/places"
-        params: dict[str, Any] = {"address": address, "type": place_type}
-        payload: dict[str, Any] = {"name": name}
+        params = {"address": address, "type": place_type}
+        payload = {"name": name}
 
-        return self._request("POST", url, params=params, json=payload)
+        return self._request(method="POST", url=url, params=params, json=payload)
 
-    def update_place_excerpt(self, place_id: str, excerpt: str | None) -> dict[str, Any]:
+    def update_place_excerpt(
+        self, place_id: str, excerpt: str | None
+    ) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}"
-        payload: dict[str, Any] = {"excerpt": excerpt}
+        payload = {"excerpt": excerpt}
 
-        return self._request("PATCH", url, json=payload)
+        return self._request(method="PATCH", url=url, json=payload)

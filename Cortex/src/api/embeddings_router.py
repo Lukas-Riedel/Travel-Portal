@@ -1,4 +1,4 @@
-from typing import Final, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
@@ -14,7 +14,7 @@ router = APIRouter(
 
 class TextEmbeddingRequest(BaseModel):
     data: str = Field(
-        ...,
+        default=...,
         description="The text to embed",
         example="This is the text that will be converted to an AI-generated vector.",
     )
@@ -22,25 +22,25 @@ class TextEmbeddingRequest(BaseModel):
 
 class PhotoEmbeddingRequest(BaseModel):
     data: str = Field(
-        ...,
+        default=...,
         description="The base64-encoded photo to embed",
         example="SGVsbG8gd29ybGQ=.",
     )
 
 
 class EmbeddingResponse(BaseModel):
-    embedding: List[float] = Field(
-        ..., description="The AI-generated vector", examples=[[0.1, 0.2, 0.3]]
+    embedding: list[float] = Field(
+        default=..., description="The AI-generated vector", examples=[[0.1, 0.2, 0.3]]
     )
     dimensions: int = Field(
-        ...,
+        default=...,
         description="The number of dimensions in the AI-generated vector",
         examples=[3],
     )
 
 
 @router.post(
-    "/text",
+    path="/text",
     response_model=EmbeddingResponse,
     responses={
         400: {"description": "Bad Request", "model": None},
@@ -52,14 +52,16 @@ class EmbeddingResponse(BaseModel):
 def get_text_embedding(
     request: TextEmbeddingRequest,
     req_obj: Request,
-):
-    embedding = req_obj.app.state.embeddings_engine.get_text_embedding(request.data).flatten()
+) -> dict[str, Any]:
+    embedding = req_obj.app.state.embeddings_engine.get_text_embedding(
+        request.data
+    ).flatten()
 
     return {"embedding": [float(x) for x in embedding], "dimensions": len(embedding)}
 
 
 @router.post(
-    "/photo",
+    path="/photo",
     response_model=EmbeddingResponse,
     responses={
         400: {"description": "Bad Request", "model": None},
@@ -68,7 +70,11 @@ def get_text_embedding(
         422: {"description": "Unprocessable Entity", "model": None},
     },
 )
-def get_photo_embedding(request: PhotoEmbeddingRequest, req_obj: Request):
-    embedding = req_obj.app.state.embeddings_engine.get_photo_embedding(request.data).flatten()
+def get_photo_embedding(
+    request: PhotoEmbeddingRequest, req_obj: Request
+) -> dict[str, Any]:
+    embedding = req_obj.app.state.embeddings_engine.get_photo_embedding(
+        request.data
+    ).flatten()
 
     return {"embedding": [float(x) for x in embedding], "dimensions": len(embedding)}

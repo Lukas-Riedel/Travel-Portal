@@ -1,5 +1,5 @@
 import time
-from typing import Final
+from typing import Any, Final
 
 import requests
 from fastapi import HTTPException, status
@@ -17,20 +17,23 @@ class IamClient:
         iam_port: int,
         iam_backend_client_id: str,
         iam_backend_client_secret: str,
-    ):
-        self.iam_base_url = f"http://{iam_host}:{iam_port}"
-        self.iam_backend_client_id = iam_backend_client_id
-        self.iam_backend_client_secret = iam_backend_client_secret
-        self.jwks_endpoint = f"{self.iam_base_url}/certificates/jwks"
-        self.token_endpoint = f"{self.iam_base_url}/token"
-        self.cached_keys = None
-        self.keys_expires_at = 0.0
-        self.cached_service_token = None
-        self.service_token_expires_at = 0.0
+    ) -> None:
+        self.iam_base_url: str = f"http://{iam_host}:{iam_port}"
+        self.iam_backend_client_id: str = iam_backend_client_id
+        self.iam_backend_client_secret: str = iam_backend_client_secret
+        self.jwks_endpoint: str = f"{self.iam_base_url}/certificates/jwks"
+        self.token_endpoint: str = f"{self.iam_base_url}/token"
+        self.cached_keys: dict[str, Any] | None = None
+        self.keys_expires_at: float = 0.0
+        self.cached_service_token: str | None = None
+        self.service_token_expires_at: float = 0.0
 
     def get_service_access_token(self) -> str:
         current_time = time.time()
-        if self.cached_service_token is not None and current_time < self.service_token_expires_at:
+        if (
+            self.cached_service_token is not None
+            and current_time < self.service_token_expires_at
+        ):
             return self.cached_service_token
 
         payload = {
@@ -39,9 +42,16 @@ class IamClient:
         }
 
         try:
-            response = requests.post(self.token_endpoint, json=payload, headers={"Content-Type": "application/json"}, timeout=10)
+            response = requests.post(
+                url=self.token_endpoint,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10,
+            )
             if response.status_code != 201:
-                raise RuntimeError(f"Could not fetch service token. Reason: {response.text}")
+                raise RuntimeError(
+                    f"Could not fetch service token. Reason: {response.text}"
+                )
 
             data = response.json()
 
@@ -52,7 +62,7 @@ class IamClient:
         except Exception as exc:
             raise
 
-    def get_jwks_keys(self):
+    def get_jwks_keys(self) -> dict[str, Any]:
         current_time = time.time()
         if self.cached_keys is None or current_time >= self.keys_expires_at:
             response = requests.get(self.jwks_endpoint)
@@ -64,7 +74,7 @@ class IamClient:
 
         return self.cached_keys
 
-    def get_user_roles(self, user_id: str) -> list:
+    def get_user_roles(self, user_id: str) -> list[str]:
         url = f"{self.iam_base_url}/users/{user_id}/roles"
         headers = {"Authorization": f"Bearer {self.get_service_access_token()}"}
 
@@ -74,7 +84,7 @@ class IamClient:
 
         return response.json()
 
-    def authenticate(self, token: str):
+    def authenticate(self, token: str) -> dict[str, Any]:
         try:
             jwks = self.get_jwks_keys()
             unverified_header = jwt.get_unverified_header(token)
@@ -109,5 +119,5 @@ class IamClient:
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"An error occurred when decoding JWT token. Reason: {str(e)}"
-            )
+                detail=f"An error occurred when decoding JWT token. Reason: {str(e)}",
+            ) from e

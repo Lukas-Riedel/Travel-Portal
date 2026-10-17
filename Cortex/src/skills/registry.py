@@ -24,7 +24,9 @@ class SkillRegistry:
             try:
                 self.master_skill = main_skill_file.read_text(encoding="utf-8").strip()
             except Exception as exc:
-                logger.error(f"Failed to read master skill file '{main_skill_file}': {exc}")
+                logger.error(
+                    f"Failed to read master skill file '{main_skill_file}': {exc}"
+                )
 
         for file_path in sorted(SKILLS_DIR.glob(SKILL_FILE_GLOB)):
             if file_path.name == MASTER_SKILL_FILENAME:
@@ -32,14 +34,16 @@ class SkillRegistry:
             if file_path.is_file():
                 skill_name = file_path.stem
                 try:
-                    self.skills[skill_name] = file_path.read_text(encoding="utf-8").strip()
+                    self.skills[skill_name] = file_path.read_text(
+                        encoding="utf-8"
+                    ).strip()
                 except Exception as exc:
                     logger.error(f"Failed to read skill file '{file_path}': {exc}")
 
         logger.info(f"Loaded {len(self.skills)} skill(s).")
 
     def get_callable_skills(self, enabled_skills: list[str] | None = None) -> str:
-        skill_contents: list[str] = []
+        skill_contents = []
 
         if self.master_skill:
             skill_contents.append(self.master_skill)

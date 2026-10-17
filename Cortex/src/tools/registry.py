@@ -1,16 +1,17 @@
 import importlib
 import inspect
 import pkgutil
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from src.client.core_client import CoreClient
 from src.core.logger import logger
-from src.tools.base_tools import BaseTools, BaseCoreTools
+from src.tools.base_tools import BaseCoreTools, BaseTools
 
 
 class ToolRegistry:
-    def __init__(self, core_client: CoreClient):
-        self.core_client = core_client
+    def __init__(self, core_client: CoreClient) -> None:
+        self.core_client: CoreClient = core_client
         self.tools: dict[str, tuple[Callable[..., Any], str | None]] = {}
         self._auto_discover_and_register()
 
@@ -31,22 +32,30 @@ class ToolRegistry:
                 ):
                     try:
                         if issubclass(cls, BaseCoreTools):
-                            instance = cls(self.core_client)
+                            instance = cls(core_client=self.core_client)
                         else:
                             instance = cls()
                         discovered_tools = instance._get_tools()
                         supported_skill = instance._get_supported_skill()
-                        self._register_module_tools(discovered_tools, supported_skill)
+                        self._register_module_tools(
+                            tools=discovered_tools, supported_skill=supported_skill
+                        )
                     except Exception as exc:
-                        logger.error(f"Failed to initialize and register tools from class '{cls.__name__}': {exc}")
+                        logger.error(
+                            f"Failed to initialize and register tools from class '{cls.__name__}': {exc}"
+                        )
 
         logger.info(f"Loaded {len(self.tools)} tool(s).")
 
-    def _register_module_tools(self, tools: list[Callable[..., Any]], supported_skill: str | None) -> None:
+    def _register_module_tools(
+        self, tools: list[Callable[..., Any]], supported_skill: str | None
+    ) -> None:
         for tool in tools:
             self.tools[tool.__name__] = (tool, supported_skill)
 
-    def get_callable_tools(self, enabled_skills: list[str] | None = None) -> list[Callable[..., Any]]:
+    def get_callable_tools(
+        self, enabled_skills: list[str] | None = None
+    ) -> list[Callable[..., Any]]:
         if enabled_skills is None:
             return [tool for tool, _ in self.tools.values()]
 

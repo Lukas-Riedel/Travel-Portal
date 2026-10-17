@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -47,14 +47,17 @@ class TimeTools(BaseTools):
         dayfirst = not date_str.strip()[:4].isdigit()
 
         try:
-            dt_naive = parser.parse(combined, dayfirst=dayfirst)
+            dt_naive = parser.parse(timestr=combined, dayfirst=dayfirst)
         except (ValueError, TypeError):
-            return {"error": 400, "message": f"Could not parse date '{date_str}' and time '{time_str}'."}
+            return {
+                "error": 400,
+                "message": f"Could not parse date '{date_str}' and time '{time_str}'.",
+            }
 
         dt_with_tz = dt_naive.replace(tzinfo=tz)
 
         epoch = int(dt_with_tz.timestamp())
-        iso = dt_with_tz.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        iso = dt_with_tz.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         return {
             "epoch": epoch,
@@ -62,7 +65,7 @@ class TimeTools(BaseTools):
         }
 
     def convert_epoch_to_datetime(
-        self, 
+        self,
         epoch: int,
         tz_name: str,
     ) -> dict[str, Any]:
@@ -83,8 +86,8 @@ class TimeTools(BaseTools):
             tz = ZoneInfo(tz_name)
         except (ZoneInfoNotFoundError, ValueError):
             return {"error": 400, "message": f"Invalid timezone name '{tz_name}'."}
-        
-        dt_utc = datetime.fromtimestamp(epoch, tz=timezone.utc)
+
+        dt_utc = datetime.fromtimestamp(epoch, tz=UTC)
         dt_with_tz = dt_utc.astimezone(tz)
 
         return {
@@ -120,13 +123,19 @@ class TimeTools(BaseTools):
         try:
             target_zone = ZoneInfo(target_tz)
         except (ZoneInfoNotFoundError, ValueError):
-            return {"error": 400, "message": f"Invalid target timezone name '{target_tz}'."}
+            return {
+                "error": 400,
+                "message": f"Invalid target timezone name '{target_tz}'.",
+            }
 
         dayfirst = not datetime_str.strip()[:4].isdigit()
         try:
-            dt = parser.parse(datetime_str, dayfirst=dayfirst)
+            dt = parser.parse(timestr=datetime_str, dayfirst=dayfirst)
         except (ValueError, TypeError):
-            return {"error": 400, "message": f"Could not parse datetime '{datetime_str}'."}
+            return {
+                "error": 400,
+                "message": f"Could not parse datetime '{datetime_str}'.",
+            }
 
         if dt.tzinfo is None:
             if source_tz:
@@ -134,9 +143,12 @@ class TimeTools(BaseTools):
                     source_zone = ZoneInfo(source_tz)
                     dt = dt.replace(tzinfo=source_zone)
                 except (ZoneInfoNotFoundError, ValueError):
-                    return {"error": 400, "message": f"Invalid source timezone name '{source_tz}'."}
+                    return {
+                        "error": 400,
+                        "message": f"Invalid source timezone name '{source_tz}'.",
+                    }
             else:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
 
         dt_target = dt.astimezone(target_zone)
         epoch = int(dt_target.timestamp())

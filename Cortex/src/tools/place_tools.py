@@ -8,7 +8,11 @@ from src.tools.base_tools import BaseCoreTools
 class BasePlaceTools(BaseCoreTools, ABC):
     def _extract_place(self, place: dict[str, Any]) -> dict[str, Any] | None:
         place_tz = ZoneInfo(place.get("timezone") or "UTC")
-        dates = [d for raw in place.get("dates", []) if (d := self._extract_date(raw, place_tz)) is not None]
+        dates = [
+            d
+            for raw in place.get("dates", [])
+            if (d := self._extract_date(date=raw, place_tz=place_tz)) is not None
+        ]
         if place.get("dates") and not dates:
             return None
 
@@ -21,28 +25,66 @@ class BasePlaceTools(BaseCoreTools, ABC):
             "dates": dates,
         }
 
-    def _extract_weather(self, weather: dict[str, Any] | None) -> dict[str, Any] | None:
-        if not weather or weather.get("clouds") is None:
+    def _aggregate_weather(
+        self, weather_list: list[dict[str, Any]]
+    ) -> dict[str, Any] | None:
+        if not weather_list:
             return None
 
-        clouds = weather["clouds"]
-        precipitation = weather.get("precipitation") or {}
+        temp_sum = 0.0
+        temp_count = 0
+        precip_probability = None
+        precip_total = 0.0
+        clouds_total_sum = clouds_low_sum = clouds_medium_sum = clouds_high_sum = 0.0
+        clouds_count = 0
+
+        for w in weather_list:
+            if (t := w.get("temperature")) is not None:
+                temp_sum += t
+                temp_count += 1
+
+            precip = w.get("precipitation") or {}
+            if (prob := precip.get("probability")) is not None:
+                precip_probability = (
+                    prob
+                    if precip_probability is None
+                    else max(precip_probability, prob)
+                )
+            if (total := precip.get("total")) is not None:
+                precip_total += total
+
+            clouds = w.get("clouds")
+            if clouds is not None:
+                if (ct := clouds.get("total")) is not None:
+                    clouds_total_sum += ct
+                    clouds_count += 1
+                if (cl := clouds.get("low")) is not None:
+                    clouds_low_sum += cl
+                if (cm := clouds.get("medium")) is not None:
+                    clouds_medium_sum += cm
+                if (ch := clouds.get("high")) is not None:
+                    clouds_high_sum += ch
+
+        if clouds_count == 0:
+            return None
 
         return {
-            "temperature": weather.get("temperature"),
+            "temperature": temp_sum / temp_count if temp_count > 0 else None,
             "precipitation": {
-                "total": precipitation.get("total"),
-                "probability": precipitation.get("probability"),
+                "total": precip_total,
+                "probability": precip_probability,
             },
             "clouds": {
-                "total": clouds.get("total"),
-                "low": clouds.get("low"),
-                "medium": clouds.get("medium"),
-                "high": clouds.get("high"),
+                "total": round(clouds_total_sum / clouds_count),
+                "low": round(clouds_low_sum / clouds_count),
+                "medium": round(clouds_medium_sum / clouds_count),
+                "high": round(clouds_high_sum / clouds_count),
             },
         }
 
-    def _extract_date(self, date: dict[str, Any], place_tz: ZoneInfo) -> dict[str, Any] | None:
+    def _extract_date(
+        self, date: dict[str, Any], place_tz: ZoneInfo
+    ) -> dict[str, Any] | None:
         start_epoch = date.get("start")
         if start_epoch is not None and self._get_maximum_timestamp() < start_epoch:
             return None
@@ -51,11 +93,11 @@ class BasePlaceTools(BaseCoreTools, ABC):
         trip = date.get("trip")
 
         return {
-            "date": self._epoch_to_date(start_epoch, place_tz),
-            "start_time": self._epoch_to_time(start_epoch, place_tz),
-            "end_time": self._epoch_to_time(end_epoch, place_tz),
+            "date": self._epoch_to_date(epoch=start_epoch, user_tz=place_tz),
+            "start_time": self._epoch_to_time(epoch=start_epoch, user_tz=place_tz),
+            "end_time": self._epoch_to_time(epoch=end_epoch, user_tz=place_tz),
             "trip_name": f"{trip.get('name')} {trip.get('year')}" if trip else None,
-            "weather_forecast": self._extract_weather(date.get("weather")),
+            "weather_forecast": self._aggregate_weather(date.get("weather") or []),
         }
 
     def get_place_excerpt(self, place_id: str) -> str | None | dict[str, Any]:
@@ -75,6 +117,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
             return place
 
         return place.get("excerpt")
+
 
 class PlaceReadTools(BasePlaceTools):
     def _get_supported_skill(self) -> str:
@@ -215,7 +258,9 @@ class PlaceReadTools(BasePlaceTools):
         if isinstance(search_results, dict) and search_results.get("message"):
             return search_results
 
-        place_result = next((r for r in search_results if r.get("type") == "place"), None)
+        place_result = next(
+            (r for r in search_results if r.get("type") == "place"), None
+        )
         if place_result is None:
             return None
 
@@ -229,7 +274,9 @@ class PlaceReadTools(BasePlaceTools):
 
         return self._extract_place(place)
 
-    def get_place_dates(self, place_id: str) -> list[dict[str, Any]] | dict[str, Any] | None:
+    def get_place_dates(
+        self, place_id: str
+    ) -> list[dict[str, Any]] | dict[str, Any] | None:
         """Retrieves all visit dates for a specific place, including weather forecast for future dates.
         Use this when the user asks when they visited a place, how many times they have been there,
         or what the weather will be like on an upcoming visit . for example "when did I visit Kyoto?",
@@ -252,7 +299,12 @@ class PlaceReadTools(BasePlaceTools):
             return place
 
         place_tz = ZoneInfo(place.get("timezone") or "UTC")
-        return [d for raw in place.get("dates", []) if (d := self._extract_date(raw, place_tz)) is not None]
+        return [
+            d
+            for raw in place.get("dates", [])
+            if (d := self._extract_date(date=raw, place_tz=place_tz)) is not None
+        ]
+
 
 class PlaceEditTools(BasePlaceTools):
     def _get_supported_skill(self) -> str:
@@ -265,7 +317,9 @@ class PlaceEditTools(BasePlaceTools):
             self.update_place_excerpt,
         ]
 
-    def create_candidate_place(self, name: str, address: str) -> dict[str, Any] | dict[str, Any] | None:
+    def create_candidate_place(
+        self, name: str, address: str
+    ) -> dict[str, Any] | dict[str, Any] | None:
         """Creates a new candidate (wishlist) place in Travel Portal.
         Use this when the user wants to add a place they wish to visit in the future . for example
         "add Petra to my wishlist", "create a candidate place for Machu Picchu".
@@ -290,13 +344,17 @@ class PlaceEditTools(BasePlaceTools):
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
                 - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
-        place = self.core_client.create_place(name=name, address=address, place_type="candidate")
+        place = self.core_client.create_place(
+            name=name, address=address, place_type="candidate"
+        )
         if isinstance(place, dict) and place.get("message"):
             return place
 
         return self._extract_place(place)
 
-    def update_place_excerpt(self, place_id: str, excerpt: str) -> dict[str, Any] | None:
+    def update_place_excerpt(
+        self, place_id: str, excerpt: str
+    ) -> dict[str, Any] | None:
         """Updates the descriptive excerpt of a place in Travel Portal.
         Use this when the user asks to change or rewrite a place description.
         The expected flow is: call get_place_excerpt first to show the current text, let the user
@@ -320,7 +378,9 @@ class PlaceEditTools(BasePlaceTools):
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
                 - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
-        place = self.core_client.update_place_excerpt(place_id=place_id, excerpt=excerpt)
+        place = self.core_client.update_place_excerpt(
+            place_id=place_id, excerpt=excerpt
+        )
         if isinstance(place, dict) and place.get("message"):
             return place
 

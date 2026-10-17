@@ -1,10 +1,10 @@
 import contextvars
-from contextvars import ContextVar
 import datetime
 import json
 import logging
 import os
 import sys
+from contextvars import ContextVar
 
 from dotenv import load_dotenv
 
@@ -43,17 +43,17 @@ class JsonFormatter(logging.Formatter):
         event = getattr(record, "event", None)
         if event:
             log_record["ctxt_name"] = event.get("name")
-            log_record["ctxt_args"] = json.dumps(event.get("args"), default=str)
+            log_record["ctxt_args"] = json.dumps(obj=event.get("args"), default=str)
 
-        return json.dumps(log_record, default=str)
+        return json.dumps(obj=log_record, default=str)
 
 
 class Logger:
     def __init__(
-            self,
-            app_name: str,
+        self,
+        app_name: str,
     ) -> None:
-        self.app_name = app_name
+        self.app_name: str = app_name
 
     def get_logger(self) -> logging.Logger:
         logger = logging.getLogger(self.app_name)

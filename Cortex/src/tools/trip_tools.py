@@ -45,10 +45,10 @@ class TripReadTools(BaseCoreTools):
 
         current_timestamp = int(time.time())
         for trip in trips:
-            if trip.get("start") > current_timestamp:                
+            if trip.get("start") > current_timestamp:
                 system_tz = self._get_system_timezone()
-                return self._extract_trip(trip, system_tz)
-        
+                return self._extract_trip(trip=trip, system_tz=system_tz)
+
         return None
 
     def get_current_trip(self) -> dict[str, Any] | None:
@@ -77,11 +77,14 @@ class TripReadTools(BaseCoreTools):
 
         current_timestamp = int(time.time())
         for trip in trips:
-            if trip.get("start") < current_timestamp and trip.get("end") > current_timestamp:
+            if (
+                trip.get("start") < current_timestamp
+                and trip.get("end") > current_timestamp
+            ):
                 system_tz = self._get_system_timezone()
-                return self._extract_trip(trip, system_tz)
-        
-        return None   
+                return self._extract_trip(trip=trip, system_tz=system_tz)
+
+        return None
 
     def get_trip_by_name(self, query: str) -> dict[str, Any] | None:
         """Finds a specific trip by searching the Travel Portal full-text search index for trips matching the given query, then fetches the full trip object for the best match.
@@ -120,11 +123,10 @@ class TripReadTools(BaseCoreTools):
             return trip
 
         system_tz = self._get_system_timezone()
-        return self._extract_trip(trip, system_tz)
+        return self._extract_trip(trip=trip, system_tz=system_tz)
 
-    def get_regular_trips(self,
-        year: int | None,
-        sort: str | None
+    def get_regular_trips(
+        self, year: int | None, sort: str | None
     ) -> list[dict[str, Any]] | None:
         """Retrieves a list of trips from Travel Portal.
         Use this tool when you need to browse, list, or inspect multiple trips at once - for example to answer questions like "how many trips did I take in 2024?" or "show me all my trips".
@@ -138,7 +140,7 @@ class TripReadTools(BaseCoreTools):
                 - '-oldest': Sort by start date descending (latest trips first).
                 - 'longest': Sort by duration descending (longest trips first).
                 - '-longest': Sort by duration ascending (shortest trips first).
-        
+
         Returns:
             A list of trip objects, where each object contains:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
@@ -158,15 +160,19 @@ class TripReadTools(BaseCoreTools):
         )
         if isinstance(trips, dict) and trips.get("message"):
             return trips
-        
+
         system_tz = self._get_system_timezone()
-        return [t for trip in trips if (t := self._extract_trip(trip, system_tz)) is not None]
+        return [
+            t
+            for trip in trips
+            if (t := self._extract_trip(trip=trip, system_tz=system_tz)) is not None
+        ]
 
     def get_candidate_trips(self) -> list[dict[str, Any]] | None:
         """Retrieves a list of candidate trips from Travel Portal.
         Use this tool when you need to browse, list, or inspect multiple candidate trips at once - for example to answer questions like "are there any unplanned trips?" or "show me all my candidate trips".
         For a single specific trip use get_current_trip, get_upcoming_trip, or get_trip_by_name instead.
-        
+
         Returns:
             A list of trip objects, where each object contains:
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
@@ -184,11 +190,16 @@ class TripReadTools(BaseCoreTools):
         )
         if isinstance(trips, dict) and trips.get("message"):
             return trips
-        
-        system_tz = self._get_system_timezone()
-        return [t for trip in trips if (t := self._extract_trip(trip, system_tz)) is not None]
 
-    def _extract_trip(self,
+        system_tz = self._get_system_timezone()
+        return [
+            t
+            for trip in trips
+            if (t := self._extract_trip(trip=trip, system_tz=system_tz)) is not None
+        ]
+
+    def _extract_trip(
+        self,
         trip: dict[str, Any],
         # All trips start and end in the the system timezone.
         system_tz: ZoneInfo,
@@ -204,7 +215,7 @@ class TripReadTools(BaseCoreTools):
             start_epoch = trip.get("start")
             if self._get_maximum_timestamp() < start_epoch:
                 return None
-            
+
             end_epoch = trip.get("end") - 1
 
             start_date = datetime.fromtimestamp(start_epoch, tz=system_tz).date()
@@ -212,8 +223,12 @@ class TripReadTools(BaseCoreTools):
 
             extracted_trip["year"] = trip.get("year")
             extracted_trip["days"] = (end_date - start_date).days + 1
-            extracted_trip["start"] = self._epoch_to_date(start_epoch, system_tz)
-            extracted_trip["end"] = self._epoch_to_date(end_epoch, system_tz)
+            extracted_trip["start"] = self._epoch_to_date(
+                epoch=start_epoch, user_tz=system_tz
+            )
+            extracted_trip["end"] = self._epoch_to_date(
+                epoch=end_epoch, user_tz=system_tz
+            )
         elif not self._can_read_future():
             return None
 

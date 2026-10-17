@@ -20,36 +20,36 @@ class GenerativeContentRequest(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     messages: list[dict[str, Any]] = Field(
-        ...,
+        default=...,
         description="Complete conversation history including response structures, tool calls, and a thought signature",
     )
     schema: dict[str, Any] | None = Field(
-        None,
+        default=None,
         description="Optional JSON Schema for structured output",
     )
     context: str | None = Field(
-        None,
+        default=None,
         description="Optional personal context prepended to the system instruction",
     )
     environment: dict[str, Any] | None = Field(
-        None,
+        default=None,
         description="Optional arbitrary JSON subtree with environment data passed to the generative engine",
     )
 
 
 class GenerativeContentResponse(BaseModel):
     text: str | dict[str, Any] = Field(
-        ...,
+        default=...,
         description="Generated response",
     )
     history: list[dict[str, Any]] = Field(
-        ...,
+        default=...,
         description="New complete chat history",
     )
 
 
 @router.post(
-    "",
+    path="",
     response_model=GenerativeContentResponse,
     responses={
         400: {"description": "Bad Request"},
@@ -61,22 +61,27 @@ class GenerativeContentResponse(BaseModel):
 def generate_content(
     request: GenerativeContentRequest,
     req_obj: Request,
+    *,
     use_skills: bool = Query(
-        True,
+        default=True,
         alias="useSkills",
         description="Whether to include skills and tools in the prompt context",
     ),
-):
+) -> JSONResponse:
     token = generative_content_environment.set(request.environment)
     try:
         u_id = user_id.get()
-        enabled_skills = req_obj.app.state.iam_client.get_user_roles(u_id) if use_skills and u_id else None
+        enabled_skills = (
+            req_obj.app.state.iam_client.get_user_roles(u_id)
+            if use_skills and u_id
+            else None
+        )
 
         text, history = req_obj.app.state.generative_content_engine.generate(
-            request.messages,
-            request.schema,
-            enabled_skills,
-            request.context,
+            messages=request.messages,
+            schema=request.schema,
+            enabled_skills=enabled_skills,
+            context=request.context,
         )
     finally:
         generative_content_environment.reset(token)

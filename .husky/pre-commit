@@ -9,7 +9,10 @@ if [ -n "$STAGED_PY_FULL" ]; then
   elif [ -f "Cortex/.venv/bin/python" ]; then
     PYTHON_BIN=".venv/bin/python"
   fi
-  echo "$STAGED_PY_FULL" | sed "s|^Cortex/||" | (cd Cortex && xargs "$PYTHON_BIN" -m ruff check --fix)
+  STAGED_PY=$(echo "$STAGED_PY_FULL" | sed "s|^Cortex/||")
+  (cd Cortex && echo "$STAGED_PY" | xargs "$PYTHON_BIN" -m ruff format) || exit 1
+  (cd Cortex && echo "$STAGED_PY" | xargs "$PYTHON_BIN" -m ruff check --fix) || exit 1
+  (cd Cortex && echo "$STAGED_PY" | xargs "$PYTHON_BIN" scripts/check_style.py) || exit 1
   echo "$STAGED_PY_FULL" | xargs git add
 fi
 

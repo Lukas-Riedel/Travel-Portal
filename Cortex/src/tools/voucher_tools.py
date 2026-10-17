@@ -12,7 +12,9 @@ class BaseVoucherTools(BaseCoreTools, ABC):
             "issuer": voucher.get("issuer"),
             "value": voucher.get("value"),
             "currency": voucher.get("currency"),
-            "expiration": self._epoch_to_iso(voucher.get("expiration"), self._get_user_timezone()),
+            "expiration": self._epoch_to_iso(
+                epoch=voucher.get("expiration"), user_tz=self._get_user_timezone()
+            ),
         }
 
 

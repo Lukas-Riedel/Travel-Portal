@@ -14,7 +14,10 @@ class BaseSubscriptionTools(BaseCoreTools, ABC):
             "description": subscription.get("description"),
             "value": subscription.get("value"),
             "currency": subscription.get("currency"),
-            "expiration": self._epoch_to_iso(subscription.get("expiration"), self._get_user_timezone()),
+            "expiration": self._epoch_to_iso(
+                epoch=subscription.get("expiration"),
+                user_tz=self._get_user_timezone(),
+            ),
         }
 
 

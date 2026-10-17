@@ -24,11 +24,11 @@ class GenerativeContentEngine:
         skill_registry: SkillRegistry,
         core_client: CoreClient,
     ) -> None:
-        self.client = genai.Client(api_key=api_key)
-        self.tool_registry = tool_registry
-        self.skill_registry = skill_registry
-        self.core_client = core_client
-        self.models = [m.strip() for m in models.split(",") if m.strip()]
+        self.client: genai.Client = genai.Client(api_key=api_key)
+        self.tool_registry: ToolRegistry = tool_registry
+        self.skill_registry: SkillRegistry = skill_registry
+        self.core_client: CoreClient = core_client
+        self.models: list[str] = [m.strip() for m in models.split(",") if m.strip()]
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
 
     def generate(
@@ -42,19 +42,24 @@ class GenerativeContentEngine:
             return "", []
 
         # Validate and reconstruct complete history (including SDK structures and thought signatures)
-        history = [
-            types.Content.model_validate(msg)
-            for msg in messages[:-1]
-        ]
-        
+        history = [types.Content.model_validate(msg) for msg in messages[:-1]]
+
         # The last message dictionary contains the new user turn/input
         last_message = messages[-1].get("text", "")
 
-        config_kwargs: dict[str, Any] = {}
+        config_kwargs = {}
 
         if enabled_skills is not None:
             system_instruction = self.skill_registry.get_callable_skills(enabled_skills)
-            parts = [p for p in [system_instruction, self._build_environmental_context(), self._build_personal_context(context)] if p]
+            parts = [
+                p
+                for p in [
+                    system_instruction,
+                    self._build_environmental_context(),
+                    self._build_personal_context(context),
+                ]
+                if p
+            ]
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
@@ -72,7 +77,9 @@ class GenerativeContentEngine:
         )
 
         for model in self.models:
-            logger.debug(f"Attempting generative content request with model '{model}'...")
+            logger.debug(
+                f"Attempting generative content request with model '{model}'..."
+            )
             try:
                 chat = self.client.chats.create(
                     model=model,
@@ -80,18 +87,22 @@ class GenerativeContentEngine:
                     config=config,
                 )
                 response = chat.send_message(last_message)
-                
+
                 # Extract the complete updated history from the chat session.
                 updated_history = [
-                    content.model_dump(mode='json', exclude_none=True, by_alias=True)
+                    content.model_dump(mode="json", exclude_none=True, by_alias=True)
                     for content in chat.get_history()
                 ]
 
-                logger.info(f"Generative content request succeeded with model '{model}'.")
+                logger.info(
+                    f"Generative content request succeeded with model '{model}'."
+                )
                 return response.text or "", updated_history
 
             except Exception as exc:
-                logger.warning(f"Model '{model}' is unavailable ({exc}). Trying next model...")
+                logger.warning(
+                    f"Model '{model}' is unavailable ({exc}). Trying next model..."
+                )
                 continue
 
         raise HTTPException(
@@ -103,16 +114,13 @@ class GenerativeContentEngine:
         if not context:
             return ""
 
-        lines = [
-            "# Authenticated User",
-            context
-        ]
+        lines = ["# Authenticated User", context]
 
         return "\n".join(lines)
 
     def _build_environmental_context(self) -> str:
         env = generative_content_environment.get()
-        
+
         timezone_name = env.get("timezone") if env else "UTC"
         latitude, longitude = env.get("latitude"), env.get("longitude")
 
@@ -127,8 +135,12 @@ class GenerativeContentEngine:
         if latitude is not None and longitude is not None:
             lines.append(f"- Current coordinates: {latitude}, {longitude}")
 
-            if resolved_address := self.core_client.get_address(latitude, longitude):
-                if (name := resolved_address.get("name")) and (address := resolved_address.get("address")):
+            if resolved_address := self.core_client.get_address(
+                latitude=latitude, longitude=longitude
+            ):
+                if (name := resolved_address.get("name")) and (
+                    address := resolved_address.get("address")
+                ):
                     lines.append(f"- Current address: {name} ({address})")
 
         return "\n".join(lines)

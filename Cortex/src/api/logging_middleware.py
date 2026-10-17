@@ -1,8 +1,9 @@
 import time
 import uuid
+from collections.abc import Awaitable, Callable
 from typing import Final
 
-from fastapi import Request
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.logger import logger, request_origin, transaction_id, user_id, username
@@ -15,7 +16,9 @@ USERNAME_HEADER: Final[str] = "Username"
 
 # TODO: Rename to something more generic, or create a new authentication middleware for setting User ID (and move the thread local variable from logger.py).
 class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         start_time = time.perf_counter()
 
         t_id = request.headers.get(TRANSACTION_ID_HEADER) or str(uuid.uuid4())

@@ -39,7 +39,12 @@ class StayReadTools(BaseCoreTools):
             return trip
 
         system_tz = self._get_system_timezone()
-        return [s for stay in trip.get("stays", []) if (s := self._extract_stay(stay, trip, system_tz)) is not None]
+        return [
+            s
+            for stay in trip.get("stays", [])
+            if (s := self._extract_stay(stay=stay, trip=trip, system_tz=system_tz))
+            is not None
+        ]
 
     def get_all_stays(self, year: int | None) -> list[dict[str, Any]]:
         """Retrieves all accommodation stays across all regular trips, optionally filtered by year.
@@ -73,10 +78,12 @@ class StayReadTools(BaseCoreTools):
             s
             for trip in trips
             for stay in trip.get("stays", [])
-            if (s := self._extract_stay(stay, trip, system_tz)) is not None
+            if (s := self._extract_stay(stay=stay, trip=trip, system_tz=system_tz))
+            is not None
         ]
 
-    def _extract_stay(self,
+    def _extract_stay(
+        self,
         stay: dict[str, Any],
         trip: dict[str, Any],
         # Stays are full-day events normalized to the system timezone.
@@ -96,7 +103,7 @@ class StayReadTools(BaseCoreTools):
             "address": stay.get("address"),
             "trip_id": trip.get("id"),
             "trip_name": trip.get("name"),
-            "start": self._epoch_to_date(start_epoch, system_tz),
-            "end": self._epoch_to_date(end_epoch, system_tz),
+            "start": self._epoch_to_date(epoch=start_epoch, user_tz=system_tz),
+            "end": self._epoch_to_date(epoch=end_epoch, user_tz=system_tz),
             "nights": (end_date - start_date).days,
         }
