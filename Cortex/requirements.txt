@@ -1,16 +1,16 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.7.1+cpu
+torch==2.12.1+cpu
 torchvision==0.22.1+cpu
 transformers==4.49.0
 sentence-transformers==3.4.1
-requests==2.32.4
-pillow==12.1.1
-python-dotenv==1.0.0
+requests==2.33.0
+pillow==12.3.0
+python-dotenv==1.2.2
 python-logging-loki==0.3.1
 numpy==1.26.2
 scikit-learn==1.6.1
 fastapi==0.115.0
 uvicorn==0.30.6
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.5.0
 google-genai==2.31.0
 python-dateutil>=2.8.2
