@@ -55,7 +55,7 @@
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
 
             $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
-            $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
+            $messages[] = array("role" => self::USER_ROLE, "parts" => array(array("text" => $prompt)));
 
             $response = $this->doGetResponse($messages, $userId, $username, null, true, $environment);
             if ($response === null) {
@@ -70,7 +70,7 @@
         }
 
         private function doGetResponse(array $messages, ?string $userId, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?array {
-            $payload = array("messages" => $messages, "environment" => $environment);
+            $payload = array("messages" => $this->sanitizeChatHistory($messages), "environment" => $environment);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
             }
@@ -99,15 +99,24 @@
         }
 
         private function createPrompt(string $query, array $context) : string {
-            return str_replace(
-                array_map(fn($key) => sprintf(self::KEY_PLACEHOLDER_FORMAT, $key), array_keys($context)),
-                array_values($context),
-                $query
-            );
+            return str_replace(array_map(fn($key) => sprintf(self::KEY_PLACEHOLDER_FORMAT, $key), array_keys($context)), array_values($context), $query);
         }
 
         private function getCortexBaseUrl() : string {
             return "http://" . $this->cortexHost . ":" . $this->cortexPort;
+        }
+
+        // TODO: This exists only because empty objects are de/serialized as array, which leads to a type mismatch on the Python side. The correct solution is to ensure that empty objects are de/serialized correctly (e.g., stdClass).
+        private function sanitizeChatHistory(mixed $data): mixed {
+            if (is_array($data)) {
+                if (isset($data["functionCall"]) && is_array($data["functionCall"])) {
+                    if (array_key_exists("args", $data["functionCall"]) && empty($data["functionCall"]["args"])) {
+                        $data["functionCall"]["args"] = new \stdClass();
+                    }
+                }
+                return array_map(array($this, "sanitizeChatHistory"), $data);
+            }
+            return $data;
         }
     }
 ?>
