@@ -9,23 +9,19 @@ Activate and apply this skill when the user asks about visited places, destinati
    - When the user asks to browse or list places, call `get_places`.
    - Apply filters based on what the user mentions:
      - Trip → resolve the trip ID first using trip tools, then pass `trip_id`. **Never ask the user for a UUID.**
-     - Label name → resolve the label ID first, then pass `label_id`. **Never ask the user for a UUID.**
-     - Category name → resolve the category ID first, then pass `category_id`. **Never ask the user for a UUID.**
+     - Label → resolve the label ID first using label tools, then pass `label_id`. **Never ask the user for a UUID.**
+     - Category (Country) → resolve the category ID first using category tools, then pass `category_id`. **Never ask the user for a UUID.**
      - Year → pass `year`.
-     - Country name → pass `country`.
-     - Date interval → pass `min_start` and/or `max_end`. Use `convert_datetime_to_epoch` with the place's timezone to convert user-provided dates.
-     - Maximum quality score → pass `max_quality`.
-     - Maximum quality tier → pass `max_tier`.
+     - Date interval → pass `min_start` and/or `max_end`. Use `convert_datetime_to_epoch` with the place's timezone to convert user-provided dates. The listing may contain future places if there is no upper bound.
    - **Calling the tool without filters can potentially take a very long time. ALWAYS try to narrow down the expected result set if possible.**
    - Pass `sort` when the user asks for ordering.
-   - Present each place by its name, the rest it depends on the context (e.g. the listing can contain the place country if ambiguous, as well as visited dates and/or times).
+   - Present each place by its name, the rest depends on the context (e.g. the listing can contain the place country if ambiguous, as well as visited dates and/or times).
    - When asking about the trip itinerary, group the places by their dates, present also time slots.
-   - Do not present quality, tier, nearby places, or notes unless the user explicitly asks for them — they extend your internal context only.
-   - The place quality and tier represent quality of photographs taken at the place. It is the author's indicator to quickly recognize which places have photographs of a high quality. They DOES NOT represent the importance of the place (i.e. the scenario where places like New York or Dubai have a very low quality but some small villages in Czechia have high quality is perfectly valid).
+   - Do not present notes unless the user explicitly asks for them - they extend your internal context only.
 2. **Listing Candidate Places**: When the user asks about unplanned, wishlist, or candidate places, call `get_candidate_places`. Present results the same way as regular places.
 3. **Listing Dates for a Place**:
    - When the user asks when a specific place was visited (e.g. "when did I visit Prague?", "how many times have I been to Kyoto?"), call `get_place_dates`.
-   - Dates include a `weather` field with forecast data — present it when the date is in the future or when the user asks about weather.
+   - Dates include a `weather_forecast` field with forecast data - present it when the date is in the future or when the user asks about weather. Forecast data are not available if the date is too distant in the future.
    - Present each date as a formatted interval (e.g. `12. 5. 2025 – 15. 5. 2025`) plus trip name if available.
    - A date represents a timespan actively spent by sightseeing. If there are multiple dates for the same place close to each other, refer to it as a single visit of that place.
 4. **Finding a Place by Name**:

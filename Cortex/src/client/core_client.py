@@ -2,12 +2,17 @@ from typing import Any
 
 import requests
 
-from src.api.logging_middleware import REQUEST_ORIGIN_HEADER, TRANSACTION_ID_HEADER, USER_ID_HEADER, USERNAME_HEADER
-from src.core.logger import transaction_id, user_id, username
+from src.api.logging_middleware import (
+    REQUEST_ORIGIN_HEADER,
+    TRANSACTION_ID_HEADER,
+    USER_ID_HEADER,
+    USERNAME_HEADER,
+)
 from src.client.iam_client import IamClient
+from src.core.logger import transaction_id, user_id, username
 
 
-# TODO: Deadlock risk — Core calls Cortex synchronously (blocking) and Cortex's agentic AI
+# TODO: Deadlock risk - Core calls Cortex synchronously (blocking) and Cortex's agentic AI
 # callback calls Core back to fetch data. If Core's thread pool is exhausted waiting for Cortex,
 # it cannot serve Cortex's callback request → deadlock.
 #
@@ -244,12 +249,8 @@ class CoreClient:
         label_id: str | None = None,
         category_id: str | None = None,
         year: int | None = None,
-        country: str | None = None,
         min_start: int | None = None,
         max_end: int | None = None,
-        max_quality: float | None = None,
-        max_tier: str | None = None,
-        nearby_places: int | None = None,
         include: str | None = None,
         sort: str | None = None,
     ) -> list[dict[str, Any]] | dict[str, Any]:
@@ -263,18 +264,10 @@ class CoreClient:
             params["categoryId"] = category_id
         if year is not None:
             params["year"] = year
-        if country is not None:
-            params["country"] = country
         if min_start is not None:
             params["minStart"] = min_start
         if max_end is not None:
             params["maxEnd"] = max_end
-        if max_quality is not None:
-            params["maxQuality"] = max_quality
-        if max_tier is not None:
-            params["maxTier"] = max_tier
-        if nearby_places is not None:
-            params["nearbyPlaces"] = nearby_places
         if include is not None:
             params["include"] = include
         if sort is not None:
@@ -282,13 +275,10 @@ class CoreClient:
 
         return self._request("GET", url, params=params)
 
-    def get_place(self, place_id: str, nearby_places: int | None = None) -> dict[str, Any]:
+    def get_place(self, place_id: str) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}"
-        params: dict[str, Any] = {}
-        if nearby_places is not None:
-            params["nearbyPlaces"] = nearby_places
 
-        return self._request("GET", url, params=params)
+        return self._request("GET", url)
 
     def create_place(self, name: str, address: str, place_type: str) -> dict[str, Any]:
         url = f"{self.base_url}/places"

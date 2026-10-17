@@ -3,7 +3,13 @@ npx lint-staged --cwd Portal --config Portal/package.json --allow-empty
 
 STAGED_PY_FULL=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^Cortex/.*\.py$" || true)
 if [ -n "$STAGED_PY_FULL" ]; then
-  echo "$STAGED_PY_FULL" | sed "s|^Cortex/||" | (cd Cortex && xargs python -m ruff check --fix)
+  PYTHON_BIN="python"
+  if [ -f "Cortex/.venv/Scripts/python.exe" ]; then
+    PYTHON_BIN=".venv/Scripts/python.exe"
+  elif [ -f "Cortex/.venv/bin/python" ]; then
+    PYTHON_BIN=".venv/bin/python"
+  fi
+  echo "$STAGED_PY_FULL" | sed "s|^Cortex/||" | (cd Cortex && xargs "$PYTHON_BIN" -m ruff check --fix)
   echo "$STAGED_PY_FULL" | xargs git add
 fi
 

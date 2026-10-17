@@ -20,7 +20,7 @@ class TripReadTools(BaseCoreTools):
         ]
 
     def get_upcoming_trip(self) -> dict[str, Any] | None:
-        """Retrieves the next trip that starts in the future — the one with the earliest start date that has not yet begun.
+        """Retrieves the next trip that starts in the future - the one with the earliest start date that has not yet begun.
         Call this when the user asks about "my next trip", "upcoming trip", or "when am I travelling next".
         Returns null if there are no future trips scheduled.
 
@@ -52,7 +52,7 @@ class TripReadTools(BaseCoreTools):
         return None
 
     def get_current_trip(self) -> dict[str, Any] | None:
-        """Retrieves the trip that is currently in progress — i.e. the trip whose start date is in the past and end date is in the future relative to right now.
+        """Retrieves the trip that is currently in progress - i.e. the trip whose start date is in the past and end date is in the future relative to right now.
         Call this when the user asks about "my current trip", "where am I right now", or "what trip am I on".
         Returns null if no trip is active at this moment; in that case consider calling  get_upcoming_trip to find what is coming next.
 
@@ -85,12 +85,12 @@ class TripReadTools(BaseCoreTools):
 
     def get_trip_by_name(self, query: str) -> dict[str, Any] | None:
         """Finds a specific trip by searching the Travel Portal full-text search index for trips matching the given query, then fetches the full trip object for the best match.
-        Use this when the user refers to a trip by destination or title — for example "my Egypt trip", "when did I go to Vietnam", or "the Sri Lanka journey".
+        Use this when the user refers to a trip by destination or title - for example "my Egypt trip", "when did I go to Vietnam", or "the Sri Lanka journey".
         The search is powered by OpenSearch and handles partial words, fuzzy matches, and multi-word queries well.
         If no match is found, consider falling back to get_upcoming_trip or ask the user to clarify.
 
         Args:
-            query: The search term to match against trip names and country names. Use a destination or keyword from the trip title, e.g. "Sri Lanka", "Egypt", "Grand Canyon", "Las Vegas". Do not pass a full sentence — use the key noun only.
+            query: The search term to match against trip names and country names. Use a destination or keyword from the trip title, e.g. "Sri Lanka", "Egypt", "Grand Canyon", "Las Vegas". Do not pass a full sentence - use the key noun only.
 
         Returns:
             Null if no such trip exists, or the trip object containing:
@@ -127,7 +127,7 @@ class TripReadTools(BaseCoreTools):
         sort: str | None
     ) -> list[dict[str, Any]] | None:
         """Retrieves a list of trips from Travel Portal.
-        Use this tool when you need to browse, list, or inspect multiple trips at once — for example to answer questions like "how many trips did I take in 2024?" or "show me all my trips".
+        Use this tool when you need to browse, list, or inspect multiple trips at once - for example to answer questions like "how many trips did I take in 2024?" or "show me all my trips".
         For a single specific trip use get_current_trip, get_upcoming_trip, or get_trip_by_name instead.
 
         Args:
@@ -164,7 +164,7 @@ class TripReadTools(BaseCoreTools):
 
     def get_candidate_trips(self) -> list[dict[str, Any]] | None:
         """Retrieves a list of candidate trips from Travel Portal.
-        Use this tool when you need to browse, list, or inspect multiple candidate trips at once — for example to answer questions like "are there any unplanned trips?" or "show me all my candidate trips".
+        Use this tool when you need to browse, list, or inspect multiple candidate trips at once - for example to answer questions like "are there any unplanned trips?" or "show me all my candidate trips".
         For a single specific trip use get_current_trip, get_upcoming_trip, or get_trip_by_name instead.
         
         Returns:

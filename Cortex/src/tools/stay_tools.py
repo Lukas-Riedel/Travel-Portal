@@ -17,8 +17,8 @@ class StayReadTools(BaseCoreTools):
 
     def get_stays_for_trip(self, trip_id: str) -> list[dict[str, Any]] | None:
         """Retrieves all accommodation stays for a specific trip.
-        Call this when the user asks about where they stayed on a particular trip — for example "where did I stay in Japan?", "what hotels did I book for my Egypt trip?", or "show me the accommodation for my upcoming trip".
-        Always resolve the trip ID first using trip tools (get_current_trip, get_upcoming_trip, or get_trip_by_name) before calling this function — never ask the user for a UUID.
+        Call this when the user asks about where they stayed on a particular trip - for example "where did I stay in Japan?", "what hotels did I book for my Egypt trip?", or "show me the accommodation for my upcoming trip".
+        Always resolve the trip ID first using trip tools (get_current_trip, get_upcoming_trip, or get_trip_by_name) before calling this function - never ask the user for a UUID.
         Returns an empty list if the trip has no stays recorded.
 
         Args:
@@ -43,7 +43,7 @@ class StayReadTools(BaseCoreTools):
 
     def get_all_stays(self, year: int | None) -> list[dict[str, Any]]:
         """Retrieves all accommodation stays across all regular trips, optionally filtered by year.
-        Call this when the user asks about accommodation across multiple trips — for example "where have I stayed this year?", "list all my hotels", or "show me every place I've slept on my travels".
+        Call this when the user asks about accommodation across multiple trips - for example "where have I stayed this year?", "list all my hotels", or "show me every place I've slept on my travels".
         For stays on a single specific trip use get_stays_for_trip instead.
         Returns an empty list if no stays are recorded across any trip.
 
