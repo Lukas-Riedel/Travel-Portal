@@ -67,6 +67,12 @@
                 items: new OA\Items(ref: "#/components/schemas/Stay")
             ),
             new OA\Property(
+                property: "carRentals",
+                description: "The car rentals of the trip",
+                type: "array",
+                items: new OA\Items(ref: "#/components/schemas/CarRental")
+            ),
+            new OA\Property(
                 property: "flights",
                 description: "The flights of the trip",
                 type: "array",
@@ -130,6 +136,7 @@
         private readonly array $countries;
         private array $expenses;
         private array $stays;
+        private array $carRentals;
         private array $flights;
         private array $watchedFlights;
         private array $fitness;
@@ -140,7 +147,7 @@
         private array $publicHolidays;
 
         public function __construct(string $id, string $name, ?int $year, ?Highlight $mainHighlight, ?int $start, ?int $end,
-            array $countries, array $expenses, array $stays, array $flights, array $watchedFlights, array $fitness, array $notes,
+            array $countries, array $expenses, array $stays, array $carRentals, array $flights, array $watchedFlights, array $fitness, array $notes,
             array $highlights, array $statistics, array $tasks, array $publicHolidays) {
             $this->id = $id;
             $this->name = $name;
@@ -151,6 +158,7 @@
             $this->countries = $countries;
             $this->expenses = $expenses;
             $this->stays = $stays;
+            $this->carRentals = $carRentals;
             $this->flights = $flights;
             $this->watchedFlights = $watchedFlights;
             $this->fitness = $fitness;
@@ -213,6 +221,14 @@
 
         public function resetStays() : void {
             $this->stays = array();
+        }
+
+        public function getCarRentals() : array {
+            return $this->carRentals;
+        }
+
+        public function resetCarRentals() : void {
+            $this->carRentals = array();
         }
 
         public function getFlights() : array {
@@ -281,7 +297,7 @@
 
         public function withOffset(int $offset) : Trip {
             return new Trip($this->id, $this->name, date(self::YEAR_FORMAT, $this->start + $offset), $this->mainHighlight,
-                $this->start + $offset, $this->end + $offset, $this->countries, $this->expenses, $this->stays, $this->flights,
+                $this->start + $offset, $this->end + $offset, $this->countries, $this->expenses, $this->stays, $this->carRentals, $this->flights,
                 $this->watchedFlights, $this->fitness, $this->notes, $this->highlights, $this->statistics, $this->tasks, $this->publicHolidays);
         }
 

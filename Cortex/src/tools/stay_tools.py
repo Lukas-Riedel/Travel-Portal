@@ -9,7 +9,7 @@ class StayReadTools(BaseCoreTools):
     def _get_supported_skill(self) -> str:
         return "trip.stay.read"
 
-    def get_tools(self) -> list[Any]:
+    def _get_tools(self) -> list[Any]:
         return [
             self.get_stays_for_trip,
             self.get_all_stays,
@@ -28,7 +28,6 @@ class StayReadTools(BaseCoreTools):
             An empty list if no stays exist for the trip, or a list of stay objects where each object contains:
             - name (string): Name of the accommodation (e.g. "Jumeirah Burj Al Arab", "MSC Grandiosa").
             - address (string | null): Physical address of the property. Null when the stay is a cruise.
-            - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name of the parent trip.
             - start (string): Check-in date in the local timezone (e.g. `"2026-10-08"`).
             - end (string): Check-out date in the local timezone (e.g. `"2026-10-12"`).
@@ -59,7 +58,6 @@ class StayReadTools(BaseCoreTools):
             An empty list if no stays exist, or a flat list of stay objects ordered by trip, where each object contains:
             - name (string): Name of the accommodation (e.g. "Jumeirah Burj Al Arab", "MSC Grandiosa").
             - address (string | null): Physical address of the property. Null when the stay is a cruise.
-            - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name of the parent trip.
             - start (string): Check-in date in the local timezone (e.g. `"2026-10-08"`).
             - end (string): Check-out date in the local timezone (e.g. `"2026-10-12"`).
@@ -101,8 +99,7 @@ class StayReadTools(BaseCoreTools):
         return {
             "name": stay.get("name"),
             "address": stay.get("address"),
-            "trip_id": trip.get("id"),
-            "trip_name": trip.get("name"),
+            "trip_name": f"{trip.get('name')} {trip.get('year')}",
             "start": self._epoch_to_date(epoch=start_epoch, user_tz=system_tz),
             "end": self._epoch_to_date(epoch=end_epoch, user_tz=system_tz),
             "nights": (end_date - start_date).days,

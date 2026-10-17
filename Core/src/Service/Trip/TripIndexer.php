@@ -18,7 +18,7 @@
             if ($indexType === IndexType::Composite && $entityType === IndexableEntityType::Trip) {
                 $trips = $entityId !== null
                     ? array($this->tripService->getRegularTrip($entityId))
-                    : $this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
+                    : $this->tripService->getRegularTrips(null, null, null, array(TripIncludedEntity::Flights->value, TripIncludedEntity::Stays->value, TripIncludedEntity::CarRentals->value), TripSortingStrategy::OldestAscending);
 
                 foreach ($trips as &$trip) {
                     $terms = array($trip->getFullName());
@@ -38,6 +38,10 @@
 
                     foreach ($trip->getStays() as &$stay) {
                         $terms[] = $stay->getName();
+                    }
+
+                    foreach ($trip->getCarRentals() as &$carRental) {
+                        $terms[] = $carRental->getModel();
                     }
 
                     $documentBuffer->add($trip->getId(), array_filter($terms), $trip->getStart() > time());

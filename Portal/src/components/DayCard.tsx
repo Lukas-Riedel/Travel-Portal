@@ -1,5 +1,5 @@
 import { format, isToday } from "date-fns"
-import { Bed, Copy, Footprints, ImagePlus, MapPin, NotebookPen, OctagonAlert, PartyPopper, Plane, PlaneTakeoff, Ship, Sunrise, Sunset, Trash2, Upload } from "lucide-react"
+import { Bed, Car, Copy, Footprints, ImagePlus, MapPin, NotebookPen, OctagonAlert, PartyPopper, Plane, PlaneTakeoff, Ship, Sunrise, Sunset, Trash2, Upload } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
@@ -9,7 +9,7 @@ import { useLocale } from "../hooks/useLocale.ts"
 import { useOnlineAgents } from "../hooks/useOnlineAgents.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { Coordinates } from "../types/Coordinates.ts"
-import { type Album, type Date as PlaceDate, type Fitness, type Flight, type Note, type Place, type PublicHoliday, type Stay, type TripIdentifier } from "../types/CoreSwaggerTypes.ts"
+import { type Album, type CarRental, type Date as PlaceDate, type Fitness, type Flight, type Note, type Place, type PublicHoliday, type Stay, type TripIdentifier } from "../types/CoreSwaggerTypes.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { getFlightLink, getMapLink, getSatelliteLink } from "../utils/navigationUtils.ts"
 import { getSunAltitude, getSunrise, getSunset } from "../utils/sunUtils.ts"
@@ -33,6 +33,7 @@ interface DayCardProps {
     day: globalThis.Date | null
     events: DayEvent[] | null
     stay?: Stay
+    carRentals?: CarRental[]
     fitness?: Fitness
     publicHoliday?: PublicHoliday
     timezone?: string
@@ -43,7 +44,7 @@ interface DayCardProps {
     onNoteAdded?: (content: string) => Promise<Note>
 }
 
-export default function DayCard({ day, events, stay, fitness, publicHoliday, timezone, displayWarnings, noteSelector, onPhotosAdded, onNoteRemoved, onNoteAdded }: DayCardProps) {
+export default function DayCard({ day, events, stay, carRentals, fitness, publicHoliday, timezone, displayWarnings, noteSelector, onPhotosAdded, onNoteRemoved, onNoteAdded }: DayCardProps) {
     const { t } = useTranslation()
     const locale = useLocale()
     const onlineAgents = useOnlineAgents()
@@ -189,7 +190,7 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
     }
 
     // TODO: Split to smaller components (like WeatherSummary)?
-    return (events.length > 0 || stay) && (
+    return (events.length > 0 || stay || (carRentals && carRentals.length > 0)) && (
         <Card className={`h-full flex flex-col ${day && isToday(day) && "bg-gray-100 border border-gray-400 text-gray-900 shadow-lg"}`}>
             <div className="mb-4">
                 <div className="flex justify-between items-start">
@@ -216,9 +217,9 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                             </div>
                         )}
                     </div>
-                    {stay && (
-                        <div className="flex flex-col items-end min-w-0 ml-4">
-                            {stay.address ? (
+                    {(stay || (carRentals && carRentals.length > 0)) && (
+                        <div className="flex flex-col items-end min-w-0 ml-4 space-y-1">
+                            {stay && (stay.address ? (
                                 <a
                                     href={getMapLink(stay.address)}
                                     className="text-amber-900 text-xs leading-tight text-right break-words hover:underline hover:text-amber-600 transition-colors duration-200"
@@ -244,7 +245,17 @@ export default function DayCard({ day, events, stay, fitness, publicHoliday, tim
                                     </span>
                                     {stay.name.split(" ").slice(1).join(" ")}
                                 </div>
-                            )}
+                            ))}
+                            {carRentals?.map((carRental, index) => (
+                                <div
+                                    key={index}
+                                    className="text-slate-600 text-xs leading-tight text-right break-words">
+                                    <Car
+                                        size={14}
+                                        className="inline mr-1 relative top-[-1px]" />
+                                    {carRental.model}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

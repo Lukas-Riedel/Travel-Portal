@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient"
 import ExpenseSummary from "../components/ExpenseSummary"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
@@ -18,10 +17,11 @@ import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 import { useEvents } from "../hooks/useEvents"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useTrip } from "../hooks/useTrip"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { type Airport, type Category, CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
-import { getTripFullName, isTripCandidate, isPastTrip } from "../utils/tripUtils.ts"
+import { getTripFullName, isPastTrip,isTripCandidate } from "../utils/tripUtils.ts"
 
 export default function TripPage() {
     const { tripId } = useParams()
@@ -99,7 +99,8 @@ export default function TripPage() {
                     expenses={trip ? (trip.expenses ?? []) : null}
                     expenseCandidates={trip && isPastTrip(trip) ? [] : [
                         ...(trip?.flights?.map(flight => ({ type: ExpenseType.Flight, description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
-                        ...(trip?.stays?.map(stay => ({ type: ExpenseType.Hotel, description: stay.name })) ?? [])
+                        ...(trip?.stays?.map(stay => ({ type: ExpenseType.Hotel, description: stay.name })) ?? []),
+                        ...(trip?.carRentals?.map(carRental => ({ type: ExpenseType.Car, description: carRental.model })) ?? [])
                     ]}
                     onExpenseCreated={hasRole(UserRole.TripExpenseEdit) ? createTripExpense : undefined}
                     onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) ? updateTripExpenseDescription : undefined}

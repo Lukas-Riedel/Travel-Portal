@@ -11,6 +11,7 @@
     enum TripIncludedEntity : string {
         case Expenses = "expenses";
         case Stays = "stays";
+        case CarRentals = "carRentals";
         case Flights = "flights";
         case WatchedFlights = "watchedFlights";
         case Fitness = "fitness";

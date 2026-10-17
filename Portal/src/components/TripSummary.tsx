@@ -18,7 +18,7 @@ import { getMapLink } from "../utils/navigationUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { getSunAltitude } from "../utils/sunUtils.ts"
 import { formatDateRange, formatTimestamp, getCurrentHour, getCurrentTimestamp, getTripDays, isTodayOrFutureDay, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
-import { getCalendarEvents, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
+import { getCalendarEvents, getTripCarRentals, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
 import DayCard from "./DayCard.tsx"
@@ -253,6 +253,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                     day={day}
                     events={(places && getCalendarEvents(day, trip?.flights, trip?.watchedFlights, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
                     stay={trip ? getTripStay(trip, day, configuration?.homeLocation?.timezone) : undefined}
+                    carRentals={trip ? getTripCarRentals(trip, day, configuration?.homeLocation?.timezone) : undefined}
                     fitness={trip?.fitness?.[(day.getTime() - startOfDay(fromUnixTime(trip?.start ?? 0)).getTime()) / (ONE_DAY_SECONDS * 1000)]}
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
                     publicHoliday={getTripPublicHoliday(trip, day)}

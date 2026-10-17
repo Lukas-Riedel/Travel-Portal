@@ -34,6 +34,8 @@
     use Core\OpenLineage\OpenLineageEventManagerListener;
     use Core\PlatformListener;
     use Core\Service\Authentication\AuthenticationService;
+    use Core\Service\CarRental\CarRentalService;
+    use Core\Service\CarRental\CarRentalServiceListener;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
@@ -172,6 +174,7 @@
     $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
+    $carRentalService = new CarRentalService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
     $photoService = new PhotoService($databaseClient, $embeddingClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $extendedHttpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
     $highlightService = new HighlightService($databaseClient, $photoService, $embeddingClient, $configurationService, $eventPublisher, $cloudStorageClient, $extendedHttpClient, $logger);
@@ -187,7 +190,7 @@
     $labelService->setPlaceService($placeService);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
     $taskService = new TaskService($databaseClient, $distributedCacheClient, $memoryCacheClient, $configurationService);
-    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
+    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $carRentalService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $geocodingService->setTripService($tripService);
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
@@ -267,9 +270,10 @@
         new PhotoServiceListener($photoService, $distributedCacheClient, $eventPublisher, $scheduler),
         new PlaceServiceListener($placeService, $tripService, $categoryService, $photoService, $calendarClient, $eventPublisher, getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER"), getenv("INDOOR_PHOTO_RATIO"), getenv("LOW_IMPRESSION_QUALITY_THRESHOLD"), getenv("LOW_COMPOSITION_QUALITY_THRESHOLD"), getenv("LOW_SHADOWS_QUALITY_THRESHOLD"), getenv("LOW_SKY_QUALITY_THRESHOLD")),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
+        new CarRentalServiceListener($carRentalService, $tripService, $calendarClient),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
-        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $flightService, $photoService, $highlightService, $calendarClient, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_TRIP_COUNT")),
+        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $carRentalService, $flightService, $photoService, $highlightService, $calendarClient, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_TRIP_COUNT")),
         new YearServiceListener($yearService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),

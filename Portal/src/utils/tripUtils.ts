@@ -1,7 +1,7 @@
 import { differenceInCalendarDays, endOfDay, format, fromUnixTime, isSameDay, startOfDay } from "date-fns"
 import { fromZonedTime } from "date-fns-tz"
 
-import type { Date, Flight, Place, PublicHoliday, Stay, Trip, TripIdentifier } from "../types/CoreSwaggerTypes"
+import type { CarRental, Date, Flight, Place, PublicHoliday, Stay, Trip, TripIdentifier } from "../types/CoreSwaggerTypes"
 import { getCurrentOrMaximumAllowedTimestamp, getEndOfTodayOrMaximumAllowedTimestamp, getMaximumAllowedTimetamp, getStartOfTodayOrMaximumAllowedTimestamp, getTimezoneOrDefault, getZonedDate, ONE_DAY_SECONDS } from "./timeUtils"
 
 const PUBLIC_HOLIDAY_DATE_FORMAT = "d.M.yyyy"
@@ -58,6 +58,11 @@ export function isEndDayOfTrip(trip: Trip, date: globalThis.Date): boolean {
 export function getTripStay(trip: Trip, date: globalThis.Date, timezone?: string): Stay | undefined {
     const timestamp = fromZonedTime(date, getTimezoneOrDefault(timezone)).getTime() / 1000
     return trip.stays?.findLast(stay => stay.start <= timestamp && (timestamp + ONE_DAY_SECONDS) < stay.end)
+}
+
+export function getTripCarRentals(trip: Trip, date: globalThis.Date, timezone?: string): CarRental[] {
+    const timestamp = fromZonedTime(date, getTimezoneOrDefault(timezone)).getTime() / 1000
+    return trip.carRentals?.filter(carRental => carRental.start <= timestamp && timestamp < carRental.end) ?? []
 }
 
 export function getTripPublicHoliday(trip: Trip, day: globalThis.Date): PublicHoliday | undefined {

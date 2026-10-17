@@ -68,6 +68,7 @@
         case TripTaskRead = "trip.task.read";
         case TripTaskEdit = "trip.task.edit";
         case TripStayRead = "trip.stay.read";
+        case TripCarRentalRead = "trip.carrental.read";
         case TripFlightRead = "trip.flight.read";
         case TripFitnessRead = "trip.fitness.read";
         case TripPublicHolidayRead = "trip.holiday.read";

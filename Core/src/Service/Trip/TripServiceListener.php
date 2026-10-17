@@ -9,6 +9,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\CarRental\CarRentalService;
     use Core\Service\Flight\FlightService;
     use Core\Service\Flight\FlightType;
     use Core\Service\Highlight\HighlightService;
@@ -26,6 +27,7 @@
         private readonly TripService $tripService;
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
+        private readonly CarRentalService $carRentalService;
         private readonly FlightService $flightService;
         private readonly PhotoService $photoService;
         private readonly HighlightService $highlightService;
@@ -37,11 +39,12 @@
         private readonly int $maxHighlightsPerTripCount;
 
         public function __construct(DatabaseClient $databaseClient, TripService $tripService, PlaceService $placeService, StayService $stayService,
-            FlightService $flightService, PhotoService $photoService, HighlightService $highlightService, CalendarClient $calendarClient,
-            EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerTripCount) {
+            CarRentalService $carRentalService, FlightService $flightService, PhotoService $photoService, HighlightService $highlightService,
+            CalendarClient $calendarClient, EventPublisher $eventPublisher, Scheduler $scheduler, int $maxHighlightsPerTripCount) {
             $this->tripService = $tripService;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
+            $this->carRentalService = $carRentalService;
             $this->flightService = $flightService;
             $this->photoService = $photoService;
             $this->highlightService = $highlightService;
@@ -59,6 +62,7 @@
                     $this->tripService->refreshCalendar();
                     $this->placeService->refreshCalendar($this->tripService);
                     $this->stayService->refreshCalendar(StayType::cases(), $this->tripService);
+                    $this->carRentalService->refreshCalendar($this->tripService);
                     $this->flightService->refreshCalendar(array_filter(FlightType::cases(), fn($type) => $type->getCalendar() !== null), $this->tripService);
                 });
             }

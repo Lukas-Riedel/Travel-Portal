@@ -164,6 +164,14 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
         }
 
+        public static function CarRentalEventCreated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function CarRentalEventUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
         public static function TripUpdated(string $tripId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
         }
@@ -229,6 +237,10 @@
         }
 
         public static function StayEventRemoved(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
+        }
+
+        public static function CarRentalEventRemoved(string $tripId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
         }
 

@@ -168,6 +168,7 @@
                     TripIncludedEntity::Tasks => UserRole::TripTaskRead,
                     TripIncludedEntity::Statistics => UserRole::TripStatisticsRead,
                     TripIncludedEntity::Stays => UserRole::TripStayRead,
+                    TripIncludedEntity::CarRentals => UserRole::TripCarRentalRead,
                     TripIncludedEntity::PublicHolidays => UserRole::TripPublicHolidayRead,
                     default => null
                 };
@@ -2024,6 +2025,9 @@
             }
             if (!$this->hasRole($request, UserRole::TripStayRead)) {
                 $trip->resetStays();
+            }
+            if (!$this->hasRole($request, UserRole::TripCarRentalRead)) {
+                $trip->resetCarRentals();
             }
             if (!$this->hasRole($request, UserRole::TripHighlightRead)) {
                 $trip->resetHighlights();

@@ -4,13 +4,13 @@ import { ArrowRightLeft, Calendar, Copy, Earth, House, Upload } from "lucide-rea
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { Place, Trip } from "../types/CoreSwaggerTypes.ts"
 import { useConfiguration } from "../contexts/ConfigContext"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Place, Trip } from "../types/CoreSwaggerTypes.ts"
 import type { Date as PlaceDate, Flight, Note } from "../types/CoreSwaggerTypes.ts"
 import { getGoogleCalendarLink } from "../utils/navigationUtils.ts"
 import { formatTimestamp, getTripDays, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
-import { getCalendarEvents, getTripPublicHoliday, getTripStay } from "../utils/tripUtils.ts"
+import { getCalendarEvents, getTripCarRentals, getTripPublicHoliday, getTripStay } from "../utils/tripUtils.ts"
 import CardGrid from "./CardGrid.tsx"
 import DayCard from "./DayCard.tsx"
 
@@ -51,12 +51,14 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
         const convertedPlaces = (places ?? []).flatMap(place => (place.dates ?? []).map(date => ({ text: `${place.name} (${formatTimestamp(date.start, t("general.format.datetime.year.excluded"), place.timezone)} - ${formatTimestamp(date.end, t("general.format.datetime.year.excluded"), place.timezone)})`, start: date.start }))).sort((a, b) => a.start - b.start).map(item => item.text)
         const convertedFlights = [...((trip?.flights ?? [])), ...((trip?.watchedFlights ?? []))].map(flight => `${flight.from.shortName} - ${flight.to.shortName} (${formatTimestamp(flight.start, t("general.format.datetime.year.excluded"), flight.from.timezone)} - ${formatTimestamp(flight.end, t("general.format.datetime.year.excluded"), flight.to.timezone)})`)
         const convertedStays = (trip?.stays ?? []).map(stay => `${stay.address} (${formatTimestamp(stay.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(stay.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
+        const convertedCarRentals = (trip?.carRentals ?? []).map(carRental => `${carRental.model} (${formatTimestamp(carRental.start, t("general.format.date.year.excluded"))} - ${formatTimestamp(carRental.end - ONE_DAY_SECONDS, t("general.format.date.year.excluded"))})`)
         const convertedNotes = (trip?.notes ?? []).map(note => note.content)
 
         const itineraryParts = [
             getItineraryPart(t("trip.itinerary.places"), convertedPlaces),
             getItineraryPart(t("trip.itinerary.flights"), convertedFlights),
             getItineraryPart(t("trip.itinerary.stays"), convertedStays),
+            getItineraryPart(t("trip.itinerary.carRentals"), convertedCarRentals),
             getItineraryPart(t("trip.itinerary.notes"), convertedNotes)
         ]
 
@@ -72,6 +74,7 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
                         day={day}
                         events={(places && getCalendarEvents(day, trip?.flights, trip?.watchedFlights, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
                         stay={trip ? getTripStay(trip, day, configuration?.homeLocation?.timezone) : undefined}
+                        carRentals={trip ? getTripCarRentals(trip, day, configuration?.homeLocation?.timezone) : undefined}
                         noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
                         fitness={trip?.fitness && trip.fitness[index] || undefined}
                         publicHoliday={trip ? getTripPublicHoliday(trip, day) : undefined}

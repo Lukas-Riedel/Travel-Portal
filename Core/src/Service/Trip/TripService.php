@@ -9,6 +9,7 @@
     use Core\Client\Google\GoogleClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Service\CarRental\CarRentalService;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
@@ -44,11 +45,11 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $cachingGenerativeContentClient,
-            ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,
+            ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, CarRentalService $carRentalService, FlightService $flightService, ExpenseService $expenseService,
             FitnessService $fitnessService, NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService,
             IndexService $indexService, TaskService $taskService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
-                $stayService, $flightService, $expenseService, $fitnessService, $noteService,
+                $stayService, $carRentalService, $flightService, $expenseService, $fitnessService, $noteService,
                 $highlightService, $statisticsService, $taskService);
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
@@ -222,7 +223,7 @@
                 foreach ($tripEvents as &$tripEvent) {
                     $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
                     $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(),
-                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
+                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
                     $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
                     

@@ -44,6 +44,7 @@
         description: "The calendar configuration",
         properties: [
             new OA\Property(property: "stays", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
+            new OA\Property(property: "carRentals", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
             new OA\Property(property: "trips", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
             new OA\Property(property: "places", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
             new OA\Property(property: "flights", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
