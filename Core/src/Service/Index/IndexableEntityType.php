@@ -21,7 +21,7 @@
         case Highlight = "highlight";
         
         public function getRequiredRole() : UserRole {
-            return match($this) {
+            return match ($this) {
                 self::Category => UserRole::CategoryRead,
                 self::Place => UserRole::PlaceRead,
                 self::Airport => UserRole::AirportRead,
@@ -35,7 +35,7 @@
         }
 
         public function getPriority() : int {
-            return match($this) {
+            return match ($this) {
                 self::Place => 10,
                 self::Trip => 8,
                 self::Category => 5,

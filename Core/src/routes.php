@@ -9,8 +9,8 @@
     use Core\Resource\EventResource;
     use Core\Resource\FitnessResource;
     use Core\Resource\FlightResource;
-    use Core\Resource\GeocodingResource;
     use Core\Resource\GenerativeContentResource;
+    use Core\Resource\GeocodingResource;
     use Core\Resource\HighlightResource;
     use Core\Resource\LabelResource;
     use Core\Resource\MonitoringResource;
@@ -51,7 +51,7 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         SearchResource::register($app, $indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService, $photoService, $highlightService);
-        GenerativeContentResource::register($app, $generativeContentClient);
+        GenerativeContentResource::register($app, $generativeContentClient, $tripService, $placeService, $categoryService, $labelService);
         SwaggerResource::register($app, $coreBaseUrl);
         ManagementResource::register($app, $appName, $versionTag, $healthCheckables);
     };

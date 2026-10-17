@@ -148,7 +148,7 @@
             return $searchResult->withReplacedParentAndEntity($this->mapSearchResult($request, $searchResult->getParent()), $mappedSerachResult);
         }
 
-        private function getEntity(IndexableEntityType $entityType, string $entityId) : mixed {            
+        private function getEntity(IndexableEntityType $entityType, string $entityId) : mixed {
             return match ($entityType) {
                 IndexableEntityType::Category => $this->categoryService->getCategoryIdentifierById($entityId),
                 IndexableEntityType::Place => $this->placeService->getPlaceIdentifierById($entityId),

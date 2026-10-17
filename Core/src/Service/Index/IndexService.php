@@ -165,14 +165,14 @@
         }
 
         private function getIndexDefinition(IndexType $indexType) : array {
-            return match($indexType) {
+            return match ($indexType) {
                 IndexType::Composite => $this->indexQueryDefinitionFactory->createCompositeIndexDefinition(),
                 IndexType::Photo => $this->indexQueryDefinitionFactory->createPhotoIndexDefinition()
             };
         }
 
         private function getIndexName(IndexType $indexType) : string {
-            return match($indexType) {
+            return match ($indexType) {
                 IndexType::Composite => $this->compositeIndexName,
                 IndexType::Photo => $this->photoIndexName
             };
@@ -230,7 +230,7 @@
                     "photoId" => $photoId,
                     "clusterLabel" => $clusterMetadata["label"],
                     "priority" => $entry->getScore() * ($clusterMetadata["size"] ** 2),
-                    "typeRank" => match(true) {
+                    "typeRank" => match (true) {
                         $photoId === $mainHighlightPhotoId => 0,
                         isset($prioritizedPhotoIdsMap[$photoId]) => 1,
                         default => 2

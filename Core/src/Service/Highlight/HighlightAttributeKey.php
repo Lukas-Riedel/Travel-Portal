@@ -16,7 +16,7 @@
         }
         
         public function extractValue(HighlightAttributes $highlightAttributes) : ?float {
-            return match($this) {
+            return match ($this) {
                 self::Composition => $highlightAttributes->getComposition(),
                 self::Sky => $highlightAttributes->getSky(),
                 self::Shadows => $highlightAttributes->getShadows(),

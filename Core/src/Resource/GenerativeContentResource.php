@@ -4,7 +4,13 @@
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
     use Core\Client\GenerativeContent\GenerativeContentClient;
+    use Core\Client\GenerativeContent\GenerativeContentResult;
+    use Core\Service\Category\CategoryService;
+    use Core\Service\Label\LabelService;
+    use Core\Service\Place\PlaceService;
+    use Core\Service\Trip\TripService;
     use OpenApi\Attributes as OA;
+    use Ramsey\Uuid\Uuid;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -12,14 +18,27 @@
     #[OA\Tag(name: "Generative Content")]
     class GenerativeContentResource extends AbstractResource {
 
-        private readonly GenerativeContentClient $generativeContentClient;
+        // TODO: Move this to the request, the UI should decide this.
+        private const IMAGE_COUNT = 3;
 
-        public function __construct(GenerativeContentClient $generativeContentClient) {
+        private readonly GenerativeContentClient $generativeContentClient;
+        private readonly TripService $tripService;
+        private readonly PlaceService $placeService;
+        private readonly CategoryService $categoryService;
+        private readonly LabelService $labelService;
+
+        public function __construct(GenerativeContentClient $generativeContentClient, TripService $tripService, PlaceService $placeService,
+            CategoryService $categoryService, LabelService $labelService) {
             $this->generativeContentClient = $generativeContentClient;
+            $this->tripService = $tripService;
+            $this->placeService = $placeService;
+            $this->categoryService = $categoryService;
+            $this->labelService = $labelService;
         }
 
-        public static function register(App $app, GenerativeContentClient $generativeContentClient) : void {
-            $resource = new self($generativeContentClient);
+        public static function register(App $app, GenerativeContentClient $generativeContentClient, TripService $tripService, PlaceService $placeService,
+            CategoryService $categoryService, LabelService $labelService) : void {
+            $resource = new self($generativeContentClient, $tripService, $placeService, $categoryService, $labelService);
 
             $app->group("/generativecontent", function($group) use($resource) {
                 $group->post("", [$resource, "createGenerativeContent"]);
@@ -114,7 +133,89 @@
             $environment = $this->getJsonBodyField($request, "environment");
             $userInfo = $this->getUserInfo($request);
 
-            return $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, $environment);
+            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, $environment);
+            if ($rawResult === null) {
+                return null;
+            }
+
+            return $this->enrichResult($rawResult);
+        }
+
+        private function enrichResult(GenerativeContentResult $result) : GenerativeContentResult {
+            $lastUserMessage = $this->getLastUserMessage($result->getConversationId());
+            if ($lastUserMessage === null) {
+                return $result;
+            }
+
+            $entityIdCandidates = $this->extractUuids($lastUserMessage);
+            if (count($entityIdCandidates) > self::IMAGE_COUNT) {
+                return $result;
+            }
+
+            $highlightsLists = array();
+            foreach ($entityIdCandidates as &$entityIdCandidate) {                
+                $resolvedEntity = $this->placeService->getRegularPlace($entityIdCandidate)
+                    ?? $this->tripService->getRegularTrip($entityIdCandidate)
+                    ?? $this->categoryService->getCategory($entityIdCandidate)
+                    ?? $this->labelService->getLabel($entityIdCandidate);
+
+                if ($resolvedEntity === null) {
+                    continue;
+                }
+
+                $highlights = $resolvedEntity->getHighlights();
+                if (!empty($highlights)) {
+                    shuffle($highlights);
+                    $highlightsLists[] = $highlights;
+                }           
+            }
+            shuffle($highlightsLists);
+
+            
+            $highlights = array();
+            for ($i = 0; $i < self::IMAGE_COUNT; ++$i) {
+                foreach ($highlightsLists as &$highlightsList) {
+                    if (isset($highlightsList[$i])) {
+                        $highlights[$highlightsList[$i]->getId()] = $highlightsList[$i];
+
+                        if (count($highlights) >= self::IMAGE_COUNT) {
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            // TODO: Currently, this doesn't respect roles for reading highlights.
+            return $result->withHighlights(array_values($highlights));
+        }
+
+        private function getLastUserMessage(string $conversationId) : mixed {
+            $messages = $this->generativeContentClient->getChatHistory($conversationId);
+
+            foreach (array_reverse($messages) as &$message) {
+                if (isset($message["role"]) && $message["role"] === "user") {
+                    return $message;
+                }
+            }
+            
+            return null;
+        }
+
+        private function extractUuids(mixed $data, bool $unique = true): array {
+            $uuids = array();
+
+            if (is_array($data)) {
+                foreach ($data as &$value) {
+                    if (is_array($value) || is_object($value)) {
+                        $uuids = array_merge($uuids, $this->extractUuids($value, false));
+                    }
+                    else if (is_string($value) && Uuid::isValid($value)) {
+                        $uuids[] = $value;
+                    }
+                }
+            }
+
+            return $unique ? array_values(array_unique($uuids)) : $uuids;
         }
     }
 ?>

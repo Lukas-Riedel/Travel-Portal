@@ -37,7 +37,7 @@
         }
 
         private function getDocument(string $id, mixed $content, bool $isEmpty) : array {
-            return match($this->indexType) {
+            return match ($this->indexType) {
                 IndexType::Composite => $this->getDocumentForCompositeIndex($id, $content, $isEmpty),
                 IndexType::Photo => $this->getDocumentForPhotoIndex($id, $content)
             };

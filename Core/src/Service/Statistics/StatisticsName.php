@@ -82,7 +82,7 @@
         case LongestTrips = "LONGEST_TRIPS";
 
         public function getRequiredRole() : UserRole {
-            return match($this) {
+            return match ($this) {
                 self::TotalVisitedCountriesCount,
                 self::TotalVisitedPlacesCount,
                 self::FurthestPlaces,

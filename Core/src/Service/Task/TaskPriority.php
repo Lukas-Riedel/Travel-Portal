@@ -20,7 +20,7 @@
         }
 
         public function toNumber() : int {
-            return match($this) {
+            return match ($this) {
                 self::Lowest => 0,
                 self::Low => 1,
                 self::Medium => 2,
@@ -30,7 +30,7 @@
         }
 
         public static function fromNumber(int $number) : TaskPriority {
-            return match($number) {
+            return match ($number) {
                 0 => self::Lowest,
                 1 => self::Low,
                 2 => self::Medium,

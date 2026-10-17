@@ -127,7 +127,7 @@
 
             $requestedIncludes = array_map(fn($entity) => CategoryIncludedEntity::from($entity), array_filter(explode(",", $include)));
             $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
-                $requiredRole = match($entity) {
+                $requiredRole = match ($entity) {
                     CategoryIncludedEntity::Statistics => UserRole::CategoryStatisticsRead,
                     CategoryIncludedEntity::Highlights => UserRole::CategoryHighlightRead,
                     default => null

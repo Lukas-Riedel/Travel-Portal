@@ -35,4 +35,8 @@
         public function getChatResponse(string $prompt, string $userId, ?string $username = null, ?string $conversationId = null, mixed $environment = null) : ?GenerativeContentResult {
             return $this->client->getChatResponse($prompt, $userId, $username, $conversationId, $environment);
         }
+
+        public function getChatHistory(string $conversationId) : mixed {
+            return $this->client->getChatHistory($conversationId);
+        }
     }

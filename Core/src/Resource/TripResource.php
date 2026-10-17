@@ -158,7 +158,7 @@
             
             $requestedIncludes = array_map(fn($entity) => TripIncludedEntity::from($entity), array_filter(explode(",", $include)));
             $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
-                $requiredRole = match($entity) {
+                $requiredRole = match ($entity) {
                     TripIncludedEntity::Expenses => UserRole::TripExpenseRead,
                     TripIncludedEntity::Fitness => UserRole::TripFitnessRead,
                     TripIncludedEntity::Flights => UserRole::TripFlightRead,

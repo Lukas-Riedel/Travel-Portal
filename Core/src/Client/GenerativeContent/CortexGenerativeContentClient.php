@@ -66,7 +66,11 @@
                 $this->distributedCacheClient->set($cacheKey, $response["history"], self::CONVERSATION_CACHE_TTL);
             }
 
-            return new GenerativeContentResult($response["text"], $targetConversationId);
+            return new GenerativeContentResult($response["text"], $targetConversationId, array());
+        }
+
+        public function getChatHistory(string $conversationId) : mixed {
+            return $this->distributedCacheClient->get(sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $conversationId)) ?? array();
         }
 
         private function doGetResponse(array $messages, ?string $userId, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?array {

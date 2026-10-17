@@ -85,18 +85,31 @@ export default function ChatPage() {
                         </div>
                         <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${message.role === ChatMessageRole.User ? "bg-blue-600 text-white rounded-br-sm" : message.role === ChatMessageRole.Error ? "bg-red-50 text-red-700 rounded-bl-sm" : "bg-gray-100 text-gray-900 rounded-bl-sm"}`}>
                             {message.role === ChatMessageRole.Assistant ? (
-                                <div className="prose prose-sm max-w-none
-                                    prose-p:my-1 prose-p:leading-relaxed
-                                    prose-headings:mt-3 prose-headings:mb-1 prose-headings:font-semibold
-                                    prose-ul:my-1 prose-ol:my-1 prose-li:my-0
-                                    prose-pre:bg-gray-200 prose-pre:text-gray-800 prose-pre:text-xs prose-pre:rounded-lg
-                                    prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-                                    prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                                    prose-strong:font-semibold prose-blockquote:border-l-gray-300 prose-blockquote:text-gray-600">
+                                <>
+                                    <div className="prose prose-sm max-w-none
+                                        prose-p:my-1 prose-p:leading-relaxed
+                                        prose-headings:mt-3 prose-headings:mb-1 prose-headings:font-semibold
+                                        prose-ul:my-1 prose-ol:my-1 prose-li:my-0
+                                        prose-pre:bg-gray-200 prose-pre:text-gray-800 prose-pre:text-xs prose-pre:rounded-lg
+                                        prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+                                        prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                                        prose-strong:font-semibold prose-blockquote:border-l-gray-300 prose-blockquote:text-gray-600">
                                     <ReactMarkdown>
                                         {message.content}
                                     </ReactMarkdown>
-                                </div>
+                                    </div>
+                                    {message.highlights && message.highlights.length > 0 && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+                                            {message.highlights.map(highlight => (
+                                                <img
+                                                    key={highlight.id}
+                                                    src={highlight.url.thumbnail}
+                                                    className="rounded-lg aspect-[3/2] object-cover w-full"
+                                                    loading="lazy" />
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 <p className="whitespace-pre-wrap">{message.content}</p>
                             )}

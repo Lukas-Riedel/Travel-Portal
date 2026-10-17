@@ -112,7 +112,7 @@
 
             $requestedIncludes = array_map(fn($entity) => LabelIncludedEntity::from($entity), array_filter(explode(",", $include)));
             $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
-                $requiredRole = match($entity) {
+                $requiredRole = match ($entity) {
                     LabelIncludedEntity::Highlights => UserRole::LabelHighlightRead,
                     default => null
                 };
