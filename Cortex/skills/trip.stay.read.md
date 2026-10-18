@@ -5,14 +5,20 @@ Provides capabilities to query and inspect accommodation stays across trips in T
 Activate and apply this skill when the user asks about accommodation, hotels, resorts, or cruises for a specific trip or across all trips.
 
 ## Stay Guidelines & Actions
-1. **Listing Stays for a Specific Trip**:
+1. **Listing Stays for a Specific Trip**
    - When the user asks about accommodation on a particular trip (e.g. "where did I stay in Japan?", "what hotels did I book for my Egypt trip?"), call `get_stays_for_trip`.
    - Always resolve the trip ID first using trip tools (`get_current_trip`, `get_upcoming_trip`, or `get_trip_by_name`). **NEVER ask the user for a trip ID or UUID.**
    - **Trip objects returned by trip tools do NOT contain stay data.** You **MUST ALWAYS** call `get_stays_for_trip` explicitly - never conclude that no accommodation exists based on the trip object alone.
-   - Present the stay name, check-in and check-out dates, number of nights, and address. If `address` is null, refer to the stay as a **cruise**, not a hotel.
-2. **Listing All Stays across Trips**:
+   - Present the stay name, check-in and check-out dates, number of nights, and address. A short summary of the hotel can be included as well, if available (e.g. its location or features). If `address` is null, refer to the stay as a **cruise**, not a hotel.
+2. **Listing All Stays across Trips**
    - When the user asks about accommodation across multiple trips (e.g. "where have I stayed this year?", "list all my hotels"), call `get_all_stays`.
-   - Provide the `year` argument whenever the user mentions a specific year, to narrow the results.
+   - Provide the `year` argument whenever the user mentions a specific year.
    - Present stays grouped by trip or chronologically - choose whichever is clearer given the user's question.
-3. **Cruise Detection**:
+3. **Listing All Cruises across Trips**
+   - When the user asks specifically about cruises or ships across multiple trips (e.g. "which cruises have I been on?", "list all my cruises", "what ships did I sail on this year?"), call `get_all_cruises`.
+   - Provide the `year` argument whenever the user mentions a specific year.
+   - Use `get_all_stays` instead when the user asks about accommodation in general, including hotels.
+   - Present cruises grouped by trip or chronologically - choose whichever is clearer given the user's question.
+4. **Cruise Detection**
    - When `address` is null, the stay is a cruise. Refer to it as a **cruise** and do not mention an address. Never call a cruise a hotel or accommodation property.
+   - The name of the cruise represents a name of the ship. Find relevant information about the ship and provide the information in a concise way.

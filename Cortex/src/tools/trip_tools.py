@@ -33,11 +33,9 @@ class TripReadTools(BaseCoreTools):
             - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
-            - notes (list of strings): Notes relevant for the trip.
         """
         trips = self.core_client.get_trips(
             trip_type="regular",
-            include="notes",
             sort="oldest",
         )
         if isinstance(trips, dict) and trips.get("message"):
@@ -65,11 +63,9 @@ class TripReadTools(BaseCoreTools):
             - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
-            - notes (list of strings): Notes relevant for the trip.
         """
         trips = self.core_client.get_trips(
             trip_type="regular",
-            include="notes",
             sort="oldest",
         )
         if isinstance(trips, dict) and trips.get("message"):
@@ -104,7 +100,6 @@ class TripReadTools(BaseCoreTools):
             - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
-            - notes (list of strings): Notes relevant for the trip.
         """
         search_results = self.core_client.search(query=query, include="trip", limit=1)
         if isinstance(search_results, dict) and search_results.get("message"):
@@ -150,11 +145,9 @@ class TripReadTools(BaseCoreTools):
             - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
-            - notes (list of strings): Notes relevant for the trip.
         """
         trips = self.core_client.get_trips(
             trip_type="regular",
-            include="notes",
             year=year,
             sort=sort,
         )
@@ -182,11 +175,9 @@ class TripReadTools(BaseCoreTools):
             - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
-            - notes (list of strings): Notes relevant for the trip.
         """
         trips = self.core_client.get_trips(
             trip_type="candidate",
-            include="notes",
         )
         if isinstance(trips, dict) and trips.get("message"):
             return trips
@@ -208,7 +199,6 @@ class TripReadTools(BaseCoreTools):
             "id": trip.get("id"),
             "name": trip.get("name"),
             "countries": trip.get("countries", []),
-            "notes": [note.get("content") for note in trip.get("notes", [])],
         }
 
         if trip.get("year") is not None:

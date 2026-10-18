@@ -13,6 +13,7 @@ class StayReadTools(BaseCoreTools):
         return [
             self.get_stays_for_trip,
             self.get_all_stays,
+            self.get_all_cruises,
         ]
 
     def get_stays_for_trip(self, trip_id: str) -> list[dict[str, Any]] | None:
@@ -77,6 +78,41 @@ class StayReadTools(BaseCoreTools):
             for trip in trips
             for stay in trip.get("stays", [])
             if (s := self._extract_stay(stay=stay, trip=trip, system_tz=system_tz))
+            is not None
+        ]
+
+    def get_all_cruises(self, year: int | None) -> list[dict[str, Any]]:
+        """Retrieves all cruises across all regular trips, optionally filtered by year.
+        Call this when the user asks specifically about cruises or ships across multiple trips - for example "which cruises have I been on?", "list all my cruises", or "what ships did I sail on this year?".
+        For all accommodation including hotels use get_all_stays instead. For stays on a single specific trip use get_stays_for_trip instead.
+        Returns an empty list if no cruises are recorded across any trip.
+
+        Args:
+            year: Filter cruises to a specific calendar year (e.g. 2024). Omit or pass None to retrieve cruises across all years.
+
+        Returns:
+            An empty list if no cruises exist, or a flat list of cruise objects ordered by trip, where each object contains:
+            - name (string): Name of the ship (e.g. "MSC Grandiosa").
+            - trip_name (string): Name of the parent trip.
+            - start (string): Embarkation date in the local timezone (e.g. `"2026-10-08"`).
+            - end (string): Disembarkation date in the local timezone (e.g. `"2026-10-12"`).
+            - nights (integer): Number of nights spent on the cruise.
+        """
+        trips = self.core_client.get_trips(
+            trip_type="regular",
+            include="stays",
+            year=year,
+        )
+        if isinstance(trips, dict) and trips.get("message"):
+            return trips
+
+        system_tz = self._get_system_timezone()
+        return [
+            {key: value for key, value in s.items() if key != "address"}
+            for trip in trips
+            for stay in trip.get("stays", [])
+            if stay.get("address") is None
+            and (s := self._extract_stay(stay=stay, trip=trip, system_tz=system_tz))
             is not None
         ]
 

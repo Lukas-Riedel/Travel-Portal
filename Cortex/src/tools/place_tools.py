@@ -1,3 +1,4 @@
+import time
 from abc import ABC
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -21,7 +22,6 @@ class BasePlaceTools(BaseCoreTools, ABC):
             "name": place.get("name"),
             "country": place.get("country"),
             "timezone": place.get("timezone"),
-            "notes": [note.get("content") for note in place.get("notes", [])],
             "dates": dates,
         }
 
@@ -107,10 +107,10 @@ class BasePlaceTools(BaseCoreTools, ABC):
         Resolve the place ID first using get_place_by_name if only a name is given.
 
         Args:
-            place_id: The unique identifier of the place. Resolve via get_place_by_name . never invent a UUID.
+            place_id: The unique identifier of the place. Resolve via get_place_by_name.
 
         Returns:
-            Null if the place has no excerpt, or the excerpt string.
+            The excerpt string.
         """
         place = self.core_client.get_place(place_id)
         if isinstance(place, dict) and place.get("message"):
@@ -126,6 +126,7 @@ class PlaceReadTools(BasePlaceTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.get_places,
+            self.get_recently_visited_places,
             self.get_candidate_places,
             self.get_place_by_name,
             self.get_place_dates,
@@ -147,9 +148,9 @@ class PlaceReadTools(BasePlaceTools):
         "show me all places I visited in Japan", or "list places from my Egypt trip".
 
         Args:
-            trip_id: Filter by trip. Resolve the trip ID first using trip tools . never ask the user for a UUID.
-            label_id: Filter by label identifier. Resolve the label ID first using label tools . never ask the user for a UUID.
-            category_id: Filter by category identifier. Resolve the category ID first using category tools . never ask the user for a UUID.
+            trip_id: Filter by trip. Resolve the trip ID first using trip tools. Never ask the user for a UUID.
+            label_id: Filter by label. Resolve the label ID first using label tools. Never ask the user for a UUID.
+            category_id: Filter by category. Resolve the category ID first using category tools. Never ask the user for a UUID.
             year: Filter to a specific calendar year (e.g. 2024).
             min_start: Filter to places visited on or after this Unix epoch timestamp.
             max_end: Filter to places visited on or before this Unix epoch timestamp.
@@ -162,9 +163,8 @@ class PlaceReadTools(BasePlaceTools):
             A list of place objects, where each object contains:
             - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
             - name (string): Name of the place.
-            - country (string | null): Country the place is located in.
+            - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
-            - notes (list of strings): Notes relevant to the place.
             - dates (list of objects): Visit dates, each containing:
                 - date (string): Date of the visit in YYYY-MM-DD format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
@@ -180,8 +180,52 @@ class PlaceReadTools(BasePlaceTools):
             year=year,
             min_start=min_start,
             max_end=max_end,
-            include="notes,dates",
+            include="dates"
+            if trip_id is not None
+            or label_id is not None
+            or category_id is not None
+            or year is not None
+            else None,
             sort=sort,
+        )
+        if isinstance(places, dict) and places.get("message"):
+            return places
+
+        return [p for place in places if (p := self._extract_place(place)) is not None]
+
+    def get_recently_visited_places(
+        self,
+        limit: int,
+        category_id: str | None,
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        """Retrieves the most recently visited regular places from Travel Portal, latest first.
+        Use this when the user asks about their latest or last visited places . for example
+        "where have I been recently?", "show me the last 5 places I visited".
+        Only places that have already been visited are returned (planned future visits are excluded).
+
+        Args:
+            limit: The maximum number of places to return (e.g. 5).
+            category_id: Filter by category. Resolve the category ID first using category tools. Never ask the user for a UUID.
+
+        Returns:
+            A list of place objects sorted by the visit date descending (latest first), where each object contains:
+            - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
+            - name (string): Name of the place.
+            - country (string): Country the place is located in.
+            - timezone (string): IANA timezone identifier of the place.
+            - dates (list of objects): Visit dates, each containing:
+                - date (string): Date of the visit in YYYY-MM-DD format.
+                - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
+                - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
+                - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
+        """
+        places = self.core_client.get_places(
+            place_type="regular",
+            category_id=category_id,
+            max_end=min(int(time.time()), self._get_maximum_timestamp()),
+            include="dates",
+            sort="-oldest",
+            limit=limit,
         )
         if isinstance(places, dict) and places.get("message"):
             return places
@@ -199,30 +243,28 @@ class PlaceReadTools(BasePlaceTools):
         or their travel wishlist . for example "show me my candidate places" or "what places am I considering?".
 
         Args:
-            trip_id: Filter by trip identifier. Resolve the trip ID first using trip tools . never ask the user for a UUID.
-            label_id: Filter by label identifier. Resolve the label ID first using label tools . never ask the user for a UUID.
-            category_id: Filter by category identifier. Resolve the category ID first using category tools . never ask the user for a UUID.
+            trip_id: Filter by trip. Resolve the trip ID first using trip tools. Never ask the user for a UUID.
+            label_id: Filter by label. Resolve the label ID first using label tools. Never ask the user for a UUID.
+            category_id: Filter by category. Resolve the category ID first using category tools. Never ask the user for a UUID.
 
         Returns:
             A list of place objects, where each object contains:
             - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
             - name (string): Name of the place.
-            - country (string | null): Country the place is located in.
+            - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
-            - notes (list of strings): Notes relevant to the place.
             - dates (list of objects): Visit dates, each containing:
                 - date (string): Date of the visit in YYYY-MM-DD format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
-                - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
-                - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
+                - trip_name (string | null): Name and year of the associated candidate trip (e.g. `"Egypt"`), if any.
         """
         places = self.core_client.get_places(
             place_type="candidate",
             trip_id=trip_id,
             label_id=label_id,
             category_id=category_id,
-            include="notes,dates",
+            include="dates" if trip_id is not None else None,
         )
         if isinstance(places, dict) and places.get("message"):
             return places
@@ -244,9 +286,8 @@ class PlaceReadTools(BasePlaceTools):
             Null if no such place exists, or a place object containing:
             - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
             - name (string): Name of the place.
-            - country (string | null): Country the place is located in.
+            - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
-            - notes (list of strings): Notes relevant to the place.
             - dates (list of objects): Visit dates, each containing:
                 - date (string): Date of the visit in YYYY-MM-DD format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
@@ -284,7 +325,7 @@ class PlaceReadTools(BasePlaceTools):
         Resolve the place ID first using get_place_by_name if only a name is given.
 
         Args:
-            place_id: The unique identifier of the place. Resolve via get_place_by_name . never invent a UUID.
+            place_id: The unique identifier of the place. Resolve via get_place_by_name.
 
         Returns:
             Null if the place does not exist, or a list of date objects each containing:
@@ -332,9 +373,8 @@ class PlaceEditTools(BasePlaceTools):
             The created place object containing:
             - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
             - name (string): Name of the place.
-            - country (string | null): Country the place is located in.
+            - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
-            - notes (list of strings): Notes relevant to the place.
             - dates (list of objects): Visit dates, each containing:
                 - date (string): Date of the visit in YYYY-MM-DD format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
@@ -359,16 +399,15 @@ class PlaceEditTools(BasePlaceTools):
         specify what to change, then call this tool with the fully rewritten excerpt.
 
         Args:
-            place_id: The unique identifier of the place. Resolve via get_place_by_name . never invent a UUID.
+            place_id: The unique identifier of the place. Resolve via get_place_by_name.
             excerpt: The complete new excerpt text (not a diff or partial update . always pass the full text).
 
         Returns:
             The updated place object containing:
             - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
             - name (string): Name of the place.
-            - country (string | null): Country the place is located in.
+            - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
-            - notes (list of strings): Notes relevant to the place.
             - dates (list of objects): Visit dates, each containing:
                 - date (string): Date of the visit in YYYY-MM-DD format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).

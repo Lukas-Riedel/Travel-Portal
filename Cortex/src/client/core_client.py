@@ -261,6 +261,7 @@ class CoreClient:
         max_end: int | None = None,
         include: str | None = None,
         sort: str | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/places"
         params = {"type": place_type}
@@ -280,6 +281,8 @@ class CoreClient:
             params["include"] = include
         if sort is not None:
             params["sort"] = sort
+        if limit is not None:
+            params["limit"] = limit
 
         return self._request(method="GET", url=url, params=params)
 
