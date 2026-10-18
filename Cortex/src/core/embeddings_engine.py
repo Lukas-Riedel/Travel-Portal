@@ -12,6 +12,9 @@ class EmbeddingsEngine:
         self.model: SentenceTransformer = SentenceTransformer(
             model_name_or_path=model_name, device=engine_device
         )
+        self.max_text_tokens: int = self.model[
+            0
+        ].model.config.text_config.max_position_embeddings
 
     def get_photo_embedding(self, base64_data: str) -> Tensor:
         image = self._get_thumbnail_image(base64_data)
@@ -26,9 +29,28 @@ class EmbeddingsEngine:
         with torch.no_grad():
             return self._post_process_embedding(
                 self.model.encode(
-                    [text], convert_to_tensor=True, normalize_embeddings=True
+                    [self._truncate_text(text)],
+                    convert_to_tensor=True,
+                    normalize_embeddings=True,
                 )
             )
+
+    def _truncate_text(self, text: str) -> str:
+        # TODO: This is only a workaround. CLIP's text encoder accepts at most
+        # `max_position_embeddings` tokens (77) and longer texts make it fail
+        # with a ValueError (older sentence-transformers versions don't truncate
+        # CLIP inputs on their own), so they get silently truncated here. The
+        # callers (Core) should be fixed so that they never send such long
+        # texts, e.g. the concatenated negative terms used when selecting
+        # highlights. For highlight selection, consider dropping the negative
+        # terms (or text inputs in general) altogether.
+        tokenizer = self.model.tokenizer.tokenizer
+        encoding = tokenizer(
+            text=text, truncation=True, max_length=self.max_text_tokens
+        )
+        return tokenizer.decode(
+            token_ids=encoding["input_ids"], skip_special_tokens=True
+        )
 
     def _post_process_embedding(self, embedding: Tensor) -> Tensor:
         if embedding.ndimension() == 1:
