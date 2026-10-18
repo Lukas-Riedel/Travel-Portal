@@ -63,10 +63,12 @@ core:
     client:
       app:
         id: travel-portal-app
-      backend:
-        id: admin-cli
+      core:
+        id: travel-portal-core
       agent:
         id: travel-portal-agent
+      allowed:
+        - travel-portal-cortex
   grafana:
     client:
       name: travel-portal-service

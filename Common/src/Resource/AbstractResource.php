@@ -17,30 +17,28 @@
             return $request->getAttribute(CommonConstants::USER_ROLES_ATTRIBUTE_KEY) ?? array();
         }
 
-        public function isBackendServiceAccount(Request $request) : bool {
-            $userInfo = $this->getUserInfo($request);
-            // TODO: Propagate Client ID to a field and use here.
-            return $userInfo->getClient() === getenv("IAM_BACKEND_CLIENT_ID");
+        public function isAllowlistedServiceAccount(Request $request) : bool {
+            return $this->getUserInfo($request)->isAllowlistedServiceAccount();
         }
 
         public function isAgentServiceAccount(Request $request) : bool {
             $userInfo = $this->getUserInfo($request);
-            // TODO: Propagate Client ID to a field and use here.
-            return $userInfo->getClient() === getenv("IAM_AGENT_CLIENT_ID");
+            // TODO: Propagate AGENT_CLIENT_ID to Request/UserInfo and use here.
+            return $userInfo->getClient() === getenv("AGENT_CLIENT_ID");
         }
 
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
             $roles = $this->getUserRoles($request);
 
-            if ($this->isBackendServiceAccount($request) && !$this->getUserInfo($request)->isImpersonated()) {
+            if ($this->isAllowlistedServiceAccount($request) && !$this->getUserInfo($request)->isImpersonated()) {
                 return empty($roles) || $this->hasImpliedRoles($roles, $requiredRole);
             }
 
             return $this->hasImpliedRoles($roles, $requiredRole);
         }
 
-        public function requireBackendServiceAccount(Request $request) : void {          
-            if (!$this->isBackendServiceAccount($request)) {
+        public function requireAllowlistedServiceAccount(Request $request) : void {
+            if (!$this->isAllowlistedServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }

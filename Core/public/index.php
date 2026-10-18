@@ -1,15 +1,15 @@
 <?php
-    use Psr\Http\Message\ResponseInterface;
-    use Psr\Http\Message\ServerRequestInterface;
     use Common\Routing\AuthenticationMiddleware;
     use Common\Routing\CorsMiddleware;
-    use Slim\Factory\AppFactory;
     use Common\Routing\ErrorHandlingMiddleware;
     use Common\Routing\JsonInvocationStrategy;
     use Common\Routing\LoggingMiddleware;
-    use Core\Routing\OpenLineageMiddleware;
     use Common\Routing\RequestError;
     use Core\Routing\AuthorizationMiddleware;
+    use Core\Routing\OpenLineageMiddleware;
+    use Psr\Http\Message\ResponseInterface;
+    use Psr\Http\Message\ServerRequestInterface;
+    use Slim\Factory\AppFactory;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/../src/bootstrap.php");
@@ -22,7 +22,7 @@
     $app->setBasePath($basePath);
 
     $app->add(new AuthorizationMiddleware($authenticationService, $basePath, $whitelistedPaths));
-    $app->add(new AuthenticationMiddleware($commonAuthenticationService, $basePath, $whitelistedPaths, getenv("IAM_BACKEND_CLIENT_ID")));
+    $app->add(new AuthenticationMiddleware($commonAuthenticationService, $basePath, $whitelistedPaths));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($loggingContext, $logger));
     $app->addBodyParsingMiddleware();

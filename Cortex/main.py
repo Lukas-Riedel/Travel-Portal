@@ -35,8 +35,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.iam_client = IamClient(
         iam_host=os.getenv("IAM_HOST"),
         iam_port=int(os.getenv("IAM_PORT")),
-        iam_backend_client_id=os.getenv("IAM_BACKEND_CLIENT_ID"),
-        iam_backend_client_secret=os.getenv("IAM_BACKEND_CLIENT_SECRET"),
+        cortex_client_id=os.getenv("CORTEX_CLIENT_ID"),
+        cortex_client_secret=os.getenv("CORTEX_CLIENT_SECRET"),
     )
     app.state.core_client = CoreClient(
         core_host=os.getenv("CORE_HOST"),

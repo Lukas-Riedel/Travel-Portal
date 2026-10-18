@@ -21,8 +21,10 @@ cortex:
     host: iam
     port: 8080
     client:
-      backend:
-        id: admin-cli
+      cortex:
+        id: travel-portal-cortex
+      allowed:
+        - travel-portal-core
   core:
     host: core
     port: 8080

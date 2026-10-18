@@ -15,12 +15,12 @@ class IamClient:
         self,
         iam_host: str,
         iam_port: int,
-        iam_backend_client_id: str,
-        iam_backend_client_secret: str,
+        cortex_client_id: str,
+        cortex_client_secret: str,
     ) -> None:
         self.iam_base_url: str = f"http://{iam_host}:{iam_port}"
-        self.iam_backend_client_id: str = iam_backend_client_id
-        self.iam_backend_client_secret: str = iam_backend_client_secret
+        self.cortex_client_id: str = cortex_client_id
+        self.cortex_client_secret: str = cortex_client_secret
         self.jwks_endpoint: str = f"{self.iam_base_url}/certificates/jwks"
         self.token_endpoint: str = f"{self.iam_base_url}/token"
         self.cached_keys: dict[str, Any] | None = None
@@ -37,8 +37,8 @@ class IamClient:
             return self.cached_service_token
 
         payload = {
-            "clientId": self.iam_backend_client_id,
-            "clientSecret": self.iam_backend_client_secret,
+            "clientId": self.cortex_client_id,
+            "clientSecret": self.cortex_client_secret,
         }
 
         try:
@@ -56,7 +56,9 @@ class IamClient:
             data = response.json()
 
             self.cached_service_token = data.get("accessToken")
-            self.service_token_expires_at = current_time + (data.get("expiresIn") * 0.8)
+            self.service_token_expires_at = current_time + (
+                data.get("expiresIn") * 0.95
+            )
 
             return data.get("accessToken")
         except Exception as exc:

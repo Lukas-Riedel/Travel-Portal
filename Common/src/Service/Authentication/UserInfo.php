@@ -7,12 +7,14 @@
         private readonly ?string $username;
         private readonly string $client;
         private readonly bool $impersonated;
+        private readonly bool $allowlistedServiceAccount;
 
-        public function __construct(string $userId, ?string $username, string $client, bool $impersonated = false) {
+        public function __construct(string $userId, ?string $username, string $client, bool $impersonated, bool $allowlistedServiceAccount) {
             $this->userId = $userId;
             $this->username = $username;
             $this->client = $client;
             $this->impersonated = $impersonated;
+            $this->allowlistedServiceAccount = $allowlistedServiceAccount;
         }
 
         public function getUserId() : string {
@@ -29,6 +31,14 @@
 
         public function isImpersonated() : bool {
             return $this->impersonated;
+        }
+
+        public function isAllowlistedServiceAccount() : bool {
+            return $this->allowlistedServiceAccount;
+        }
+
+        public function impersonate(string $userId, ?string $username) : UserInfo {
+            return new UserInfo($userId, $username, $this->client, $userId !== $this->userId, $this->allowlistedServiceAccount);
         }
 
         #[\ReturnTypeWillChange]

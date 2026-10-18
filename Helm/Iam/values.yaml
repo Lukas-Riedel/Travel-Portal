@@ -12,6 +12,9 @@ iam:
       id: travel-portal-app
     backend:
       id: admin-cli
+    allowed:
+      - travel-portal-core
+      - travel-portal-cortex
   url:
     base: https://iam.lriedel.cz
   redis:

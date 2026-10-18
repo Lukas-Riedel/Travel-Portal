@@ -97,6 +97,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secret
                   key: backend-client-secret
+            - name: ALLOWLISTED_SERVICE_CLIENTS
+              value: "{{ join "," .Values.iam.client.allowed }}"
             - name: IAM_BASE_URL
               value: "{{ .Values.iam.url.base }}"
             - name: INTERNAL_IAM_BASE_URL

@@ -27,7 +27,7 @@
         }
         
         public function listUsers(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireBackendServiceAccount($request);
+            $this->requireAllowlistedServiceAccount($request);
             
             $role = $this->requireQueryParameter($request, "role");
 
@@ -38,7 +38,7 @@
             $userId = $this->requirePathArgument($routeArguments, "userId");
 
             $userInfo = $this->getUserInfo($request);
-            if (!$this->isBackendServiceAccount($request) && $userInfo->getUserId() !== $userId) {
+            if (!$this->isAllowlistedServiceAccount($request) && $userInfo->getUserId() !== $userId) {
                 throw new AuthorizationException($userInfo);
             }
 

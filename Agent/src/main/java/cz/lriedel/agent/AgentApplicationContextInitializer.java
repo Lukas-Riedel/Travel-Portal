@@ -29,8 +29,8 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
 
     private static final String SERVICE_IAM_URL_PROPERTY_PLACEHOLDER = "service.iam.url";
     private static final String SERVICE_CORE_URL_PROPERTY_PLACEHOLDER = "service.core.url";
-    private static final String SERVICE_IAM_CLIENT_ID_PROPERTY_PLACEHOLDER = "service.iam.client.id";
-    private static final String SERVICE_IAM_CLIENT_SECRET_PROPERTY_PLACEHOLDER = "service.iam.client.secret";
+    private static final String AGENT_CLIENT_ID_PROPERTY_PLACEHOLDER = "agent.client.id";
+    private static final String AGENT_CLIENT_SECRET_PROPERTY_PLACEHOLDER = "agent.client.secret";
 
     // TODO: Do not hardcode this.
     private static final String DEFAULT_USERNAME = "guest";
@@ -49,9 +49,9 @@ public class AgentApplicationContextInitializer implements ApplicationContextIni
         String coreUrl = Objects.requireNonNull(environment.getProperty(SERVICE_CORE_URL_PROPERTY_PLACEHOLDER), "The Core URL cannot be null.");
         String iamUrl = Objects.requireNonNull(environment.getProperty(SERVICE_IAM_URL_PROPERTY_PLACEHOLDER), "The IAM URL cannot be null.");
 
-        String agentClientId = Objects.requireNonNull(environment.getProperty(SERVICE_IAM_CLIENT_ID_PROPERTY_PLACEHOLDER),
+        String agentClientId = Objects.requireNonNull(environment.getProperty(AGENT_CLIENT_ID_PROPERTY_PLACEHOLDER),
                 "The Agent Client ID cannot be null.");
-        String agentClientSecret = Objects.requireNonNull(environment.getProperty(SERVICE_IAM_CLIENT_SECRET_PROPERTY_PLACEHOLDER),
+        String agentClientSecret = Objects.requireNonNull(environment.getProperty(AGENT_CLIENT_SECRET_PROPERTY_PLACEHOLDER),
                 "The Agent Client Secret cannot be null.");
 
         RestTemplate iamRestTemplate = new RestTemplateBuilder().rootUri(iamUrl)

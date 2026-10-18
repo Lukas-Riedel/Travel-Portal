@@ -142,8 +142,8 @@
     );
 
     // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_HOST"), getenv("IAM_PORT"));
-    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_HOST"), getenv("IAM_PORT"), array_filter(explode(",", getenv("ALLOWLISTED_SERVICE_CLIENTS"))));
+    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("CORE_CLIENT_ID"), getenv("CORE_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
 
     // Authenticated clients.
     $cloudMessagingClient = new FirebaseCloudMessagingClient($authenticationService, getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);

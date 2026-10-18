@@ -19,19 +19,21 @@
 
         private readonly string $iamHost;
         private readonly string $iamPort;
+        private readonly array $allowedServiceClients;
 
-        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, string $iamHost, string $iamPort) {
+        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, string $iamHost, string $iamPort, array $allowedServiceClients) {
             $this->distributedCacheClient = $distributedCacheClient;
             $this->httpClient = $httpClient;
             $this->iamHost = $iamHost;
             $this->iamPort = $iamPort;
+            $this->allowedServiceClients = $allowedServiceClients;
         }
         
         public function authenticate(string $accessToken) : UserInfo {
             try {
                 $keys = JWK::parseKeySet($this->getJwksKeys());
                 $decoded = JWT::decode($accessToken, $keys);
-                return new UserInfo($decoded->sub, $decoded->preferred_username ?? null, $decoded->azp);
+                return new UserInfo($decoded->sub, $decoded->preferred_username ?? null, $decoded->azp, false, in_array($decoded->azp, $this->allowedServiceClients, true));
             }
             catch (\Throwable $e) {
                 throw new AuthenticationException("An error occurred when decoding JWT token. " . $e->getMessage() . ".");

@@ -1,13 +1,13 @@
 <?php
     use Common\Routing\AuthenticationMiddleware;
-    use Psr\Http\Message\ResponseInterface;
-    use Psr\Http\Message\ServerRequestInterface;
     use Common\Routing\CorsMiddleware;
-    use Slim\Factory\AppFactory;
     use Common\Routing\ErrorHandlingMiddleware;
     use Common\Routing\JsonInvocationStrategy;
     use Common\Routing\LoggingMiddleware;
     use Common\Routing\RequestError;
+    use Psr\Http\Message\ResponseInterface;
+    use Psr\Http\Message\ServerRequestInterface;
+    use Slim\Factory\AppFactory;
     use Slim\Handlers\Strategies\RequestResponse;
 
     require_once(__DIR__ . "/../src/bootstrap.php");
@@ -18,7 +18,7 @@
     $app->getRouteCollector()->setDefaultInvocationStrategy(new JsonInvocationStrategy());
     $app->setBasePath($basePath);
 
-    $app->add(new AuthenticationMiddleware($authenticationService, $basePath, array("/token", "/certificates", "/google/auth", "/management/liveness", "/management/readiness"), getenv("IAM_BACKEND_CLIENT_ID")));
+    $app->add(new AuthenticationMiddleware($authenticationService, $basePath, array("/token", "/certificates", "/google/auth", "/management/liveness", "/management/readiness")));
     $app->addRoutingMiddleware();
     $app->add(new LoggingMiddleware($loggingContext, $logger));
     $app->addBodyParsingMiddleware();

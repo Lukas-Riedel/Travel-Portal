@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
-from src.api.dependencies import require_backend_service_account
+from src.api.dependencies import require_allowlisted_service_account
 
 router = APIRouter(
     prefix="/clustering",
     tags=["Clustering"],
-    dependencies=[Depends(require_backend_service_account)],
+    dependencies=[Depends(require_allowlisted_service_account)],
 )
 
 

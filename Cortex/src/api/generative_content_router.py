@@ -5,14 +5,14 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.api.dependencies import require_backend_service_account
+from src.api.dependencies import require_allowlisted_service_account
 from src.core.generative_content_context import generative_content_environment
 from src.core.logger import user_id
 
 router = APIRouter(
     prefix="/generativecontent",
     tags=["Generative Content"],
-    dependencies=[Depends(require_backend_service_account)],
+    dependencies=[Depends(require_allowlisted_service_account)],
 )
 
 
