@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.lriedel.agent.client.CoreClient;
 import cz.lriedel.agent.client.HttpEntityProvider;
 import cz.lriedel.agent.client.IamClient;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;

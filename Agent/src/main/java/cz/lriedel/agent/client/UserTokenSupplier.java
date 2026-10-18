@@ -6,7 +6,7 @@ import cz.lriedel.agent.persistance.ConfigurationRepository;
 import lombok.Synchronized;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 import static cz.lriedel.agent.persistance.ConfigurationRepository.REFRESH_TOKEN_CONFIGURATION_KEY;

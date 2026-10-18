@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-17-alpine AS builder
+FROM maven:3-eclipse-temurin-25-alpine AS builder
 WORKDIR /build
 ARG SERVICE_CORE_URL
 ARG USERNAME
@@ -7,7 +7,7 @@ COPY Agent/pom.xml .
 RUN mvn dependency:go-offline -B
 COPY Agent/src ./src
 RUN mvn clean package -DskipTests
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 RUN apt-get update && apt-get install -y \
     libjpeg-turbo-progs \
