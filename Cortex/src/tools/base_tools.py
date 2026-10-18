@@ -35,6 +35,9 @@ class BaseTools(ABC):
             if callable(attr_value) and not attr_name.startswith("_"):
                 setattr(cls, attr_name, _log_tool_call(attr_value))
 
+    def _is_error_response(self, obj: Any) -> bool:
+        return isinstance(obj, dict) and bool(obj.get("message"))
+
     @abstractmethod
     def _get_tools(self) -> list[Any]:
         pass

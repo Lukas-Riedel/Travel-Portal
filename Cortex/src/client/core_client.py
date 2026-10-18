@@ -54,6 +54,8 @@ class CoreClient:
         response = requests.request(
             method=method, url=url, headers=headers, timeout=15, **kwargs
         )
+        if response.status_code == 204 or not response.content:
+            return None
         return response.json()
 
     def get_address(
@@ -121,6 +123,11 @@ class CoreClient:
             payload["content"] = content
 
         return self._request(method="PATCH", url=url, json=payload)
+
+    def delete_trip_note(self, trip_id: str, note_id: str) -> dict[str, Any] | None:
+        url = f"{self.base_url}/trips/{trip_id}/notes/{note_id}"
+
+        return self._request(method="DELETE", url=url)
 
     def create_trip_expense(
         self,
@@ -305,3 +312,24 @@ class CoreClient:
         payload = {"excerpt": excerpt}
 
         return self._request(method="PATCH", url=url, json=payload)
+
+    def create_place_note(self, place_id: str, content: str) -> dict[str, Any]:
+        url = f"{self.base_url}/places/{place_id}/notes"
+        payload = {"content": content}
+
+        return self._request(method="POST", url=url, json=payload)
+
+    def update_place_note(
+        self, place_id: str, note_id: str, content: str | None = None
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/places/{place_id}/notes/{note_id}"
+        payload = {}
+        if content is not None:
+            payload["content"] = content
+
+        return self._request(method="PATCH", url=url, json=payload)
+
+    def delete_place_note(self, place_id: str, note_id: str) -> dict[str, Any] | None:
+        url = f"{self.base_url}/places/{place_id}/notes/{note_id}"
+
+        return self._request(method="DELETE", url=url)

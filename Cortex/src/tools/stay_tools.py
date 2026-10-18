@@ -35,7 +35,7 @@ class StayReadTools(BaseCoreTools):
             - nights (integer): Number of nights spent at the accommodation.
         """
         trip = self.core_client.get_trip(trip_id)
-        if isinstance(trip, dict) and trip.get("message"):
+        if self._is_error_response(trip):
             return trip
 
         system_tz = self._get_system_timezone()
@@ -69,7 +69,7 @@ class StayReadTools(BaseCoreTools):
             include="stays",
             year=year,
         )
-        if isinstance(trips, dict) and trips.get("message"):
+        if self._is_error_response(trips):
             return trips
 
         system_tz = self._get_system_timezone()
@@ -103,7 +103,7 @@ class StayReadTools(BaseCoreTools):
             include="stays",
             year=year,
         )
-        if isinstance(trips, dict) and trips.get("message"):
+        if self._is_error_response(trips):
             return trips
 
         system_tz = self._get_system_timezone()

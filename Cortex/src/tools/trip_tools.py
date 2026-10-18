@@ -38,7 +38,7 @@ class TripReadTools(BaseCoreTools):
             trip_type="regular",
             sort="oldest",
         )
-        if isinstance(trips, dict) and trips.get("message"):
+        if self._is_error_response(trips):
             return trips
 
         current_timestamp = int(time.time())
@@ -68,7 +68,7 @@ class TripReadTools(BaseCoreTools):
             trip_type="regular",
             sort="oldest",
         )
-        if isinstance(trips, dict) and trips.get("message"):
+        if self._is_error_response(trips):
             return trips
 
         current_timestamp = int(time.time())
@@ -102,7 +102,7 @@ class TripReadTools(BaseCoreTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """
         search_results = self.core_client.search(query=query, include="trip", limit=1)
-        if isinstance(search_results, dict) and search_results.get("message"):
+        if self._is_error_response(search_results):
             return search_results
 
         trip_result = next((r for r in search_results if r.get("type") == "trip"), None)
@@ -114,7 +114,7 @@ class TripReadTools(BaseCoreTools):
             return None
 
         trip = self.core_client.get_trip(trip_id)
-        if isinstance(trip, dict) and trip.get("message"):
+        if self._is_error_response(trip):
             return trip
 
         system_tz = self._get_system_timezone()
@@ -151,7 +151,7 @@ class TripReadTools(BaseCoreTools):
             year=year,
             sort=sort,
         )
-        if isinstance(trips, dict) and trips.get("message"):
+        if self._is_error_response(trips):
             return trips
 
         system_tz = self._get_system_timezone()
@@ -179,7 +179,7 @@ class TripReadTools(BaseCoreTools):
         trips = self.core_client.get_trips(
             trip_type="candidate",
         )
-        if isinstance(trips, dict) and trips.get("message"):
+        if self._is_error_response(trips):
             return trips
 
         system_tz = self._get_system_timezone()

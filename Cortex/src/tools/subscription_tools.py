@@ -43,7 +43,7 @@ class SubscriptionReadTools(BaseSubscriptionTools):
             - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
         subscriptions = self.core_client.get_subscriptions()
-        if isinstance(subscriptions, dict) and subscriptions.get("message"):
+        if self._is_error_response(subscriptions):
             return subscriptions
 
         return [self._extract_subscription(s) for s in subscriptions]
@@ -66,7 +66,7 @@ class SubscriptionEditTools(BaseSubscriptionTools):
             A list of descriptions of active subscription objects.
         """
         subscriptions = self.core_client.get_subscriptions()
-        if isinstance(subscriptions, dict) and subscriptions.get("message"):
+        if self._is_error_response(subscriptions):
             return subscriptions
 
         return [s.get("description") for s in subscriptions if s.get("description")]
@@ -101,7 +101,7 @@ class SubscriptionEditTools(BaseSubscriptionTools):
             currency=currency.upper(),
             expiration=expiration,
         )
-        if isinstance(subscription, dict) and subscription.get("message"):
+        if self._is_error_response(subscription):
             return subscription
 
         return self._extract_subscription(subscription)

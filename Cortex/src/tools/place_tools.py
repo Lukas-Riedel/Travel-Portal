@@ -100,7 +100,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
             "weather_forecast": self._aggregate_weather(date.get("weather") or []),
         }
 
-    def get_place_excerpt(self, place_id: str) -> str | None | dict[str, Any]:
+    def get_place_excerpt(self, place_id: str) -> str | None:
         """Retrieves the descriptive excerpt (AI-generated summary paragraph) for a specific place.
         Use this when the user asks for a description or summary of a place . for example
         "describe Prague", "tell me about Angkor Wat", or "give me an overview of the Eiffel Tower".
@@ -113,7 +113,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
             The excerpt string.
         """
         place = self.core_client.get_place(place_id)
-        if isinstance(place, dict) and place.get("message"):
+        if self._is_error_response(place):
             return place
 
         return place.get("excerpt")
@@ -142,7 +142,7 @@ class PlaceReadTools(BasePlaceTools):
         min_start: int | None,
         max_end: int | None,
         sort: str | None,
-    ) -> list[dict[str, Any]] | dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """Retrieves a list of regular (visited) places from Travel Portal with optional filters.
         Use this when the user wants to browse, list, or search visited places . for example
         "show me all places I visited in Japan", or "list places from my Egypt trip".
@@ -188,7 +188,7 @@ class PlaceReadTools(BasePlaceTools):
             else None,
             sort=sort,
         )
-        if isinstance(places, dict) and places.get("message"):
+        if self._is_error_response(places):
             return places
 
         return [p for place in places if (p := self._extract_place(place)) is not None]
@@ -197,7 +197,7 @@ class PlaceReadTools(BasePlaceTools):
         self,
         limit: int,
         category_id: str | None,
-    ) -> list[dict[str, Any]] | dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """Retrieves the most recently visited regular places from Travel Portal, latest first.
         Use this when the user asks about their latest or last visited places . for example
         "where have I been recently?", "show me the last 5 places I visited".
@@ -227,7 +227,7 @@ class PlaceReadTools(BasePlaceTools):
             sort="-oldest",
             limit=limit,
         )
-        if isinstance(places, dict) and places.get("message"):
+        if self._is_error_response(places):
             return places
 
         return [p for place in places if (p := self._extract_place(place)) is not None]
@@ -237,7 +237,7 @@ class PlaceReadTools(BasePlaceTools):
         trip_id: str | None,
         label_id: str | None,
         category_id: str | None,
-    ) -> list[dict[str, Any]] | dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """Retrieves a list of candidate (wishlist / unplanned) places from Travel Portal.
         Use this when the user asks about places they want to visit, unplanned destinations,
         or their travel wishlist . for example "show me my candidate places" or "what places am I considering?".
@@ -266,7 +266,7 @@ class PlaceReadTools(BasePlaceTools):
             category_id=category_id,
             include="dates" if trip_id is not None else None,
         )
-        if isinstance(places, dict) and places.get("message"):
+        if self._is_error_response(places):
             return places
 
         return [p for place in places if (p := self._extract_place(place)) is not None]
@@ -296,7 +296,7 @@ class PlaceReadTools(BasePlaceTools):
                 - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
         search_results = self.core_client.search(query=query, include="place", limit=1)
-        if isinstance(search_results, dict) and search_results.get("message"):
+        if self._is_error_response(search_results):
             return search_results
 
         place_result = next(
@@ -310,14 +310,12 @@ class PlaceReadTools(BasePlaceTools):
             return None
 
         place = self.core_client.get_place(place_id)
-        if isinstance(place, dict) and place.get("message"):
+        if self._is_error_response(place):
             return place
 
         return self._extract_place(place)
 
-    def get_place_dates(
-        self, place_id: str
-    ) -> list[dict[str, Any]] | dict[str, Any] | None:
+    def get_place_dates(self, place_id: str) -> list[dict[str, Any]] | None:
         """Retrieves all visit dates for a specific place, including weather forecast for future dates.
         Use this when the user asks when they visited a place, how many times they have been there,
         or what the weather will be like on an upcoming visit . for example "when did I visit Kyoto?",
@@ -336,7 +334,7 @@ class PlaceReadTools(BasePlaceTools):
             - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
         place = self.core_client.get_place(place_id)
-        if isinstance(place, dict) and place.get("message"):
+        if self._is_error_response(place):
             return place
 
         place_tz = ZoneInfo(place.get("timezone") or "UTC")
@@ -385,7 +383,7 @@ class PlaceEditTools(BasePlaceTools):
         place = self.core_client.create_place(
             name=name, address=address, place_type="candidate"
         )
-        if isinstance(place, dict) and place.get("message"):
+        if self._is_error_response(place):
             return place
 
         return self._extract_place(place)
@@ -418,7 +416,7 @@ class PlaceEditTools(BasePlaceTools):
         place = self.core_client.update_place_excerpt(
             place_id=place_id, excerpt=excerpt
         )
-        if isinstance(place, dict) and place.get("message"):
+        if self._is_error_response(place):
             return place
 
         return self._extract_place(place)

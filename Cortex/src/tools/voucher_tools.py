@@ -42,7 +42,7 @@ class VoucherReadTools(BaseVoucherTools):
             - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
         vouchers = self.core_client.get_vouchers()
-        if isinstance(vouchers, dict) and vouchers.get("message"):
+        if self._is_error_response(vouchers):
             return vouchers
 
         return [self._extract_voucher(v) for v in vouchers]
@@ -92,7 +92,7 @@ class VoucherEditTools(BaseVoucherTools):
             currency=currency.upper(),
             expiration=expiration,
         )
-        if isinstance(voucher, dict) and voucher.get("message"):
+        if self._is_error_response(voucher):
             return voucher
 
         return self._extract_voucher(voucher)
@@ -118,7 +118,7 @@ class VoucherEditTools(BaseVoucherTools):
             - expiration (string | null): ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`) (if expiration was provided).
         """
         voucher = self.core_client.update_voucher(voucher_id=voucher_id, value=value)
-        if isinstance(voucher, dict) and voucher.get("message"):
+        if self._is_error_response(voucher):
             return voucher
 
         return self._extract_voucher(voucher)
