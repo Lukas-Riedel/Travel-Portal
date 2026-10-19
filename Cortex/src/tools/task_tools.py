@@ -73,6 +73,9 @@ class TaskReadTools(BaseTaskTools):
 
         result = []
         for trip in trips:
+            if not self._is_trip_visible(trip):
+                continue
+
             for task in trip.get("tasks", []):
                 if not task.get("actionable"):
                     continue

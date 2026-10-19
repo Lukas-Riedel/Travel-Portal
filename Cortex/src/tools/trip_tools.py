@@ -44,6 +44,9 @@ class TripReadTools(BaseCoreTools):
         current_timestamp = int(time.time())
         for trip in trips:
             if trip.get("start") > current_timestamp:
+                if not self._is_trip_visible(trip):
+                    return None
+
                 system_tz = self._get_system_timezone()
                 return self._extract_trip(trip=trip, system_tz=system_tz)
 
@@ -77,6 +80,9 @@ class TripReadTools(BaseCoreTools):
                 trip.get("start") < current_timestamp
                 and trip.get("end") > current_timestamp
             ):
+                if not self._is_trip_visible(trip):
+                    return None
+
                 system_tz = self._get_system_timezone()
                 return self._extract_trip(trip=trip, system_tz=system_tz)
 
@@ -117,12 +123,15 @@ class TripReadTools(BaseCoreTools):
         if self._is_error_response(trip):
             return trip
 
+        if not self._is_trip_visible(trip):
+            return None
+
         system_tz = self._get_system_timezone()
         return self._extract_trip(trip=trip, system_tz=system_tz)
 
     def get_regular_trips(
         self, year: int | None, sort: str | None
-    ) -> list[dict[str, Any]] | None:
+    ) -> list[dict[str, Any]]:
         """Retrieves a list of trips from Travel Portal.
         Use this tool when you need to browse, list, or inspect multiple trips at once - for example to answer questions like "how many trips did I take in 2024?" or "show me all my trips".
         For a single specific trip use get_current_trip, get_upcoming_trip, or get_trip_by_name instead.
@@ -156,12 +165,12 @@ class TripReadTools(BaseCoreTools):
 
         system_tz = self._get_system_timezone()
         return [
-            t
+            self._extract_trip(trip=trip, system_tz=system_tz)
             for trip in trips
-            if (t := self._extract_trip(trip=trip, system_tz=system_tz)) is not None
+            if self._is_trip_visible(trip)
         ]
 
-    def get_candidate_trips(self) -> list[dict[str, Any]] | None:
+    def get_candidate_trips(self) -> list[dict[str, Any]]:
         """Retrieves a list of candidate trips from Travel Portal.
         Use this tool when you need to browse, list, or inspect multiple candidate trips at once - for example to answer questions like "are there any unplanned trips?" or "show me all my candidate trips".
         For a single specific trip use get_current_trip, get_upcoming_trip, or get_trip_by_name instead.
@@ -184,9 +193,9 @@ class TripReadTools(BaseCoreTools):
 
         system_tz = self._get_system_timezone()
         return [
-            t
+            self._extract_trip(trip=trip, system_tz=system_tz)
             for trip in trips
-            if (t := self._extract_trip(trip=trip, system_tz=system_tz)) is not None
+            if self._is_trip_visible(trip)
         ]
 
     def _extract_trip(
@@ -194,7 +203,7 @@ class TripReadTools(BaseCoreTools):
         trip: dict[str, Any],
         # All trips start and end in the the system timezone.
         system_tz: ZoneInfo,
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         extracted_trip = {
             "id": trip.get("id"),
             "name": trip.get("name"),
@@ -203,9 +212,6 @@ class TripReadTools(BaseCoreTools):
 
         if trip.get("year") is not None:
             start_epoch = trip.get("start")
-            if self._get_maximum_timestamp() < start_epoch:
-                return None
-
             end_epoch = trip.get("end") - 1
 
             start_date = datetime.fromtimestamp(start_epoch, tz=system_tz).date()
@@ -219,7 +225,5 @@ class TripReadTools(BaseCoreTools):
             extracted_trip["end"] = self._epoch_to_date(
                 epoch=end_epoch, user_tz=system_tz
             )
-        elif not self._can_read_future():
-            return None
 
         return extracted_trip

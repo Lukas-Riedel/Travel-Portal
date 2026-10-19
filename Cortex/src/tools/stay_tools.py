@@ -52,11 +52,10 @@ class StayReadTools(BaseCoreTools):
 
         system_tz = self._get_system_timezone()
         return [
-            s
+            self._extract_stay(stay=stay, trip=trip, system_tz=system_tz)
             for trip in trips
+            if self._is_trip_visible(trip)
             for stay in trip.get("stays", [])
-            if (s := self._extract_stay(stay=stay, trip=trip, system_tz=system_tz))
-            is not None
         ]
 
     def get_cruises(
@@ -98,12 +97,17 @@ class StayReadTools(BaseCoreTools):
 
         system_tz = self._get_system_timezone()
         return [
-            {key: value for key, value in s.items() if key != "address"}
+            {
+                key: value
+                for key, value in self._extract_stay(
+                    stay=stay, trip=trip, system_tz=system_tz
+                ).items()
+                if key != "address"
+            }
             for trip in trips
+            if self._is_trip_visible(trip)
             for stay in trip.get("stays", [])
             if stay.get("address") is None
-            and (s := self._extract_stay(stay=stay, trip=trip, system_tz=system_tz))
-            is not None
         ]
 
     def _extract_stay(
@@ -111,10 +115,7 @@ class StayReadTools(BaseCoreTools):
         stay: dict[str, Any],
         trip: dict[str, Any],
         system_tz: ZoneInfo,
-    ) -> dict[str, Any] | None:
-        if self._get_maximum_timestamp() < trip.get("start", 0):
-            return None
-
+    ) -> dict[str, Any]:
         start_epoch = stay.get("start")
         end_epoch = stay.get("end") - 1
 

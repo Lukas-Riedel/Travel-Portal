@@ -52,15 +52,12 @@ class CarRentalReadTools(BaseCoreTools):
 
         system_tz = self._get_system_timezone()
         return [
-            r
-            for trip in trips
-            for car_rental in trip.get("carRentals", [])
-            if (
-                r := self._extract_car_rental(
-                    car_rental=car_rental, trip=trip, system_tz=system_tz
-                )
+            self._extract_car_rental(
+                car_rental=car_rental, trip=trip, system_tz=system_tz
             )
-            is not None
+            for trip in trips
+            if self._is_trip_visible(trip)
+            for car_rental in trip.get("carRentals", [])
         ]
 
     def _extract_car_rental(
@@ -68,10 +65,7 @@ class CarRentalReadTools(BaseCoreTools):
         car_rental: dict[str, Any],
         trip: dict[str, Any],
         system_tz: ZoneInfo,
-    ) -> dict[str, Any] | None:
-        if self._get_maximum_timestamp() < trip.get("start", 0):
-            return None
-
+    ) -> dict[str, Any]:
         start_epoch = car_rental.get("start")
         end_epoch = car_rental.get("end") - 1
 

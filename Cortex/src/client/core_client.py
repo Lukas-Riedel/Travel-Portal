@@ -150,6 +150,25 @@ class CoreClient:
 
         return self._request(method="POST", url=url, json=payload)
 
+    def update_trip_expense(
+        self,
+        trip_id: str,
+        expense_id: str,
+        description: str | None = None,
+        value: float | None = None,
+        currency: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/trips/{trip_id}/expenses/{expense_id}"
+        payload = {}
+        if description is not None:
+            payload["description"] = description
+        if value is not None:
+            payload["value"] = value
+        if currency is not None:
+            payload["currency"] = currency
+
+        return self._request(method="PATCH", url=url, json=payload)
+
     def create_trip_task(
         self,
         trip_id: str,

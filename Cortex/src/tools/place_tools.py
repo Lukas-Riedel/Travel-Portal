@@ -7,15 +7,35 @@ from src.tools.base_tools import BaseCoreTools
 
 
 class BasePlaceTools(BaseCoreTools, ABC):
-    def _extract_place(self, place: dict[str, Any]) -> dict[str, Any] | None:
+    def _filter_visible_dates(
+        self, dates: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        maximum_timestamp = self._get_maximum_timestamp()
+        return [
+            d
+            for d in dates
+            if d.get("start") is None or d["start"] <= maximum_timestamp
+        ]
+
+    def _with_visible_dates(self, place: dict[str, Any]) -> dict[str, Any]:
+        return {**place, "dates": self._filter_visible_dates(place.get("dates", []))}
+
+    def _filter_visible_places(
+        self, places: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        return [
+            visible
+            for place in places
+            if (visible := self._with_visible_dates(place))["dates"]
+            or not place.get("dates")
+        ]
+
+    def _extract_place(self, place: dict[str, Any]) -> dict[str, Any]:
         place_tz = ZoneInfo(place.get("timezone") or "UTC")
         dates = [
-            d
+            self._extract_date(date=raw, place_tz=place_tz)
             for raw in place.get("dates", [])
-            if (d := self._extract_date(date=raw, place_tz=place_tz)) is not None
         ]
-        if place.get("dates") and not dates:
-            return None
 
         return {
             "id": place.get("id"),
@@ -82,13 +102,8 @@ class BasePlaceTools(BaseCoreTools, ABC):
             },
         }
 
-    def _extract_date(
-        self, date: dict[str, Any], place_tz: ZoneInfo
-    ) -> dict[str, Any] | None:
+    def _extract_date(self, date: dict[str, Any], place_tz: ZoneInfo) -> dict[str, Any]:
         start_epoch = date.get("start")
-        if start_epoch is not None and self._get_maximum_timestamp() < start_epoch:
-            return None
-
         end_epoch = date.get("end")
         trip = date.get("trip")
 
@@ -191,7 +206,7 @@ class PlaceReadTools(BasePlaceTools):
         if self._is_error_response(places):
             return places
 
-        return [p for place in places if (p := self._extract_place(place)) is not None]
+        return [self._extract_place(p) for p in self._filter_visible_places(places)]
 
     def get_recently_visited_places(
         self,
@@ -230,7 +245,7 @@ class PlaceReadTools(BasePlaceTools):
         if self._is_error_response(places):
             return places
 
-        return [p for place in places if (p := self._extract_place(place)) is not None]
+        return [self._extract_place(p) for p in self._filter_visible_places(places)]
 
     def get_candidate_places(
         self,
@@ -269,7 +284,7 @@ class PlaceReadTools(BasePlaceTools):
         if self._is_error_response(places):
             return places
 
-        return [p for place in places if (p := self._extract_place(place)) is not None]
+        return [self._extract_place(p) for p in self._filter_visible_places(places)]
 
     def get_place_by_name(self, query: str) -> dict[str, Any] | None:
         """Finds a specific place by searching the Travel Portal full-text search index for places
@@ -313,9 +328,13 @@ class PlaceReadTools(BasePlaceTools):
         if self._is_error_response(place):
             return place
 
-        return self._extract_place(place)
+        visible_places = self._filter_visible_places([place])
+        if not visible_places:
+            return None
 
-    def get_place_dates(self, place_id: str) -> list[dict[str, Any]] | None:
+        return self._extract_place(visible_places[0])
+
+    def get_place_dates(self, place_id: str) -> list[dict[str, Any]]:
         """Retrieves all visit dates for a specific place, including weather forecast for future dates.
         Use this when the user asks when they visited a place, how many times they have been there,
         or what the weather will be like on an upcoming visit - for example "when did I visit Kyoto?",
@@ -326,7 +345,7 @@ class PlaceReadTools(BasePlaceTools):
             place_id: The unique identifier of the place. Resolve via get_place_by_name.
 
         Returns:
-            Null if the place does not exist, or a list of date objects each containing:
+            An empty list if the place has no visit dates, or a list of date objects each containing:
             - date (string): Date of the visit in YYYY-MM-DD format.
             - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
             - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
@@ -339,9 +358,8 @@ class PlaceReadTools(BasePlaceTools):
 
         place_tz = ZoneInfo(place.get("timezone") or "UTC")
         return [
-            d
-            for raw in place.get("dates", [])
-            if (d := self._extract_date(date=raw, place_tz=place_tz)) is not None
+            self._extract_date(date=raw, place_tz=place_tz)
+            for raw in self._filter_visible_dates(place.get("dates", []))
         ]
 
 
@@ -356,7 +374,7 @@ class PlaceEditTools(BasePlaceTools):
             self.update_place_excerpt,
         ]
 
-    def create_candidate_place(self, name: str, address: str) -> dict[str, Any] | None:
+    def create_candidate_place(self, name: str, address: str) -> dict[str, Any]:
         """Creates a new candidate (wishlist) place in Travel Portal.
         Use this when the user wants to add a place they wish to visit in the future - for example
         "add Petra to my wishlist", "create a candidate place for Machu Picchu".
@@ -386,11 +404,9 @@ class PlaceEditTools(BasePlaceTools):
         if self._is_error_response(place):
             return place
 
-        return self._extract_place(place)
+        return self._extract_place(self._with_visible_dates(place))
 
-    def update_place_excerpt(
-        self, place_id: str, excerpt: str
-    ) -> dict[str, Any] | None:
+    def update_place_excerpt(self, place_id: str, excerpt: str) -> dict[str, Any]:
         """Updates the descriptive excerpt of a place in Travel Portal.
         Use this when the user asks to change or rewrite a place description.
         The expected flow is: call get_place_excerpt first to show the current text, let the user
@@ -419,4 +435,4 @@ class PlaceEditTools(BasePlaceTools):
         if self._is_error_response(place):
             return place
 
-        return self._extract_place(place)
+        return self._extract_place(self._with_visible_dates(place))

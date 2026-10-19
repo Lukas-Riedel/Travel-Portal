@@ -8,7 +8,7 @@ class BaseNoteTools(BaseCoreTools, ABC):
     def _extract_note(
         self,
         note: dict[str, Any],
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         return {
             "id": note.get("id"),
             "content": note.get("content"),
@@ -42,11 +42,7 @@ class TripNoteReadTools(BaseNoteTools):
         if self._is_error_response(trip):
             return trip
 
-        return [
-            n
-            for note in trip.get("notes", [])
-            if (n := self._extract_note(note)) is not None
-        ]
+        return [self._extract_note(note) for note in trip.get("notes", [])]
 
 
 class TripNoteEditTools(BaseNoteTools):
@@ -60,7 +56,7 @@ class TripNoteEditTools(BaseNoteTools):
             self.delete_trip_note,
         ]
 
-    def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any] | None:
+    def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any]:
         """Creates a new note for a specific trip in Travel Portal.
         Call this when the user asks to add, record, save, or write a note, memo, reminder, or observation for a trip (e.g. "add a note to my Japan trip: remember to buy JR pass", "note down for Egypt that museum is closed on Mondays").
         Always resolve the trip ID first using trip tools - never ask the user for a UUID.
@@ -85,7 +81,7 @@ class TripNoteEditTools(BaseNoteTools):
 
     def update_trip_note(
         self, trip_id: str, note_id: str, content: str
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """Updates the content of an existing trip note in Travel Portal.
         Call this when the user asks to modify, rewrite, append to, or edit an existing note for a trip (e.g. "update the note in Japan to add room number 402", "change my note about tickets").
         Always resolve the trip ID first and find the note ID via get_notes_for_trip - never ask the user for a UUID.
@@ -110,7 +106,7 @@ class TripNoteEditTools(BaseNoteTools):
 
         return self._extract_note(note)
 
-    def delete_trip_note(self, trip_id: str, note_id: str) -> dict[str, Any] | None:
+    def delete_trip_note(self, trip_id: str, note_id: str) -> dict[str, Any]:
         """Deletes an existing note from a trip in Travel Portal.
         Call this when the user asks to delete, remove, or discard a note from a trip (e.g. "delete the note about car rental in Iceland", "remove my note on packing list from the Egypt trip").
         Always resolve the trip ID first and find the note ID via get_notes_for_trip - never ask the user for a UUID.
@@ -161,11 +157,7 @@ class PlaceNoteReadTools(BaseNoteTools):
         if self._is_error_response(place):
             return place
 
-        return [
-            n
-            for note in place.get("notes", [])
-            if (n := self._extract_note(note)) is not None
-        ]
+        return [self._extract_note(note) for note in place.get("notes", [])]
 
 
 class PlaceNoteEditTools(BaseNoteTools):
@@ -179,7 +171,7 @@ class PlaceNoteEditTools(BaseNoteTools):
             self.delete_place_note,
         ]
 
-    def create_place_note(self, place_id: str, content: str) -> dict[str, Any] | None:
+    def create_place_note(self, place_id: str, content: str) -> dict[str, Any]:
         """Creates a new note for a specific place in Travel Portal.
         Call this when the user asks to add, record, save, or write a note, memo, reminder, or tip for a place (e.g. "add a note to Prague: visit the library at Strahov", "note down for Angkor Wat to buy tickets online").
         Always resolve the place ID first using place tools - never ask the user for a UUID.
@@ -204,7 +196,7 @@ class PlaceNoteEditTools(BaseNoteTools):
 
     def update_place_note(
         self, place_id: str, note_id: str, content: str
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """Updates the content of an existing place note in Travel Portal.
         Call this when the user asks to modify, rewrite, append to, or edit an existing note for a place (e.g. "update the note for Prague to add open hours", "change my note about tickets for Angkor Wat").
         Always resolve the place ID first and find the note ID via get_notes_for_place - never ask the user for a UUID.
@@ -229,7 +221,7 @@ class PlaceNoteEditTools(BaseNoteTools):
 
         return self._extract_note(note)
 
-    def delete_place_note(self, place_id: str, note_id: str) -> dict[str, Any] | None:
+    def delete_place_note(self, place_id: str, note_id: str) -> dict[str, Any]:
         """Deletes an existing note from a place in Travel Portal.
         Call this when the user asks to delete, remove, or discard a note from a place (e.g. "delete the note about parking in Vienna", "remove my note on ticket booking from the Prague place").
         Always resolve the place ID first and find the note ID via get_notes_for_place - never ask the user for a UUID.

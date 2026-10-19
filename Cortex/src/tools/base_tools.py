@@ -56,7 +56,6 @@ class BaseCoreTools(BaseTools):
         if env and env.get("timezone"):
             return ZoneInfo(env["timezone"])
 
-        # System timezone is never returned if the request comes from UI.
         return self._get_system_timezone()
 
     def _get_maximum_timestamp(self) -> int:
@@ -76,6 +75,12 @@ class BaseCoreTools(BaseTools):
             return bool(env.get("canReadFuture", True))
 
         return True
+
+    def _is_trip_visible(self, trip: dict[str, Any]) -> bool:
+        if trip.get("year") is None:
+            return self._can_read_future()
+
+        return self._get_maximum_timestamp() >= trip.get("start", 0)
 
     def _get_system_timezone(self) -> ZoneInfo:
         config = self.core_client.get_configuration()

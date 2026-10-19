@@ -1,0 +1,27 @@
+# Trip Expense Edit Skill
+
+## Purpose & Activation
+Provides capabilities to create and update expenses for trips in Travel Portal.
+Activate and apply this skill when the user asks to add, record, modify, or correct an expense for a trip (e.g. "add 30 EUR for the museum tickets to my Turkey trip", "I paid 120 CZK for the bus", "change the hotel expense to 250 USD", "rename the taxi expense").
+
+## Expense Guidelines & Actions
+1. **Creating a Trip Expense**
+   - When the user asks to add, create, or record an expense for a trip, call `create_trip_expense`.
+   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a UUID.**
+   - The `value` and `currency` are required. **NEVER invent them** - ask the user when missing.
+   - The `expense_type` must be one of the types defined in the **Expense Types** section of the trip expense read skill (`flight`, `transport`, `car`, `hotel`, `attraction`, `organizedTour`, `visa`, `other`). Choose the type whose definition best matches the user's request. Ask the user when the type is unclear between two types.
+   - The type `other` is reserved for truly unique expenses that fit none of the other types. **NEVER assign `other` without the user's explicit confirmation.** When no other type fits, **ASK THE USER** to confirm `other` (mention the expense and the closest alternative type, if any) and only proceed with `get_expense_descriptions` and `create_trip_expense` after the user confirms. If the user suggests a different type, use it instead. This does not apply when the user explicitly asked for the type `other` in their request.
+   - **MUST ALWAYS** call `get_expense_descriptions` with the chosen `expense_type` before creating the expense, and derive the `description` from the returned examples:
+      - Follow the naming style, level of detail, and language of the examples.
+      - Do not copy an example verbatim unless it denotes the very same item.
+      - If no examples are returned, use a short natural name based on what the user said.
+      - Use the user's own wording for the specific item (e.g. the name of the museum) whenever they provide it.
+   - The `subscription_id` is optional. Provide it only when the user says the expense is covered by or tied to a travel subscription or pass - resolve it using subscription tools. **NEVER invent a fake UUID.**
+   - After creating the expense, confirm with a concise summary stating the trip, description, type, and the value with its currency.
+2. **Updating a Trip Expense**
+   - When the user asks to rename an expense or change its value or currency, call `update_trip_expense`.
+   - Always resolve the trip ID first using trip tools, then call `get_expenses` with that `trip_id` to find the target expense and its `id`. **NEVER ask the user for a UUID and NEVER invent one.**
+   - If multiple expenses match the user's description, **ASK THE USER** to clarify which expense to update.
+   - Pass only the fields the user wants to change. The type and the subscription of an expense cannot be changed.
+   - When the user changes only the currency, ask whether the value stays the same, unless it is obvious from the request.
+   - After updating the expense, confirm with a concise summary of the changes.
