@@ -207,6 +207,10 @@ export default function AdminPage() {
                 return Promise.reject("Deadline must be in the future.")
             }
 
+            if (notificationInterval && autoDelete) {
+                return Promise.reject("Notification interval cannot be set for auto-deletable tasks.")
+            }
+
             return createTripTask(tripId, title, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined, description, autoDelete)
         })
     }
