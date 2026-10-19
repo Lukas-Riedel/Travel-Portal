@@ -9,9 +9,9 @@ Activate and apply this skill when the user asks about visited places, destinati
    - When the user asks to browse or list places, call `get_places`.
    - Apply filters based on what the user mentions:
       - Provide `year` whenever the user mentions a specific year.
-      - Provide `trip_id` whenever the user mentions a specific trip (e.g. "show me the itinerary of the trip to Taiwan"), resolve the trip ID first using trip tools. **Never ask the user for a UUID.**
-      - Provide `label_id` whenever the user mentions a specific label or feature (e.g. "show me the list of caves that I visited"), resolve label ID first using label tools. **Never ask the user for a UUID.**
-      - Provide `category_id` whenever the user mentions a specific region (e.g. "show me the list of places that I visited in the state of Oregon"), resolve label category ID first using category tools. **Never ask the user for a UUID.**
+      - Provide `trip_id` whenever the user mentions a specific trip (e.g. "show me the itinerary of the trip to Taiwan"), resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**
+      - Provide `label_id` whenever the user mentions a specific label or feature (e.g. "show me the list of caves that I visited"), resolve label ID first using label tools. **NEVER ask the user for a label ID or UUID.**
+      - Provide `category_id` whenever the user mentions a specific region (e.g. "show me the list of places that I visited in the state of Oregon"), resolve label category ID first using category tools. **NEVER ask the user for a category ID or UUID.**
       - Provide `min_start` and/or `max_start` whenever the user mentions a specific timespan (e.g. "show me the list of places that I visited between September and November"). Use `convert_datetime_to_epoch` to convert user-provided dates. **If the request does not define `max_start`, the listing may contain places that are planned to be visited in the near future. Consider this fact when crafting a final response.**
    - Calling the tool without filters can potentially take a very long time. Try to narrow down the expected result set using available filters, if possible.
    - Present each place by its name, the rest of displayed fields depends on the context (e.g. the listing can contain the place country if ambiguous, as well as visited dates and/or times).
@@ -22,7 +22,7 @@ Activate and apply this skill when the user asks about visited places, destinati
 3. **Listing Recently Visited Places**
    - When the user asks about their latest or last visited places (e.g. "where have I been recently?", "show me the last 5 places I visited"), call `get_recently_visited_places` instead of `get_places`.
    - Set `limit` to the number of places the user asks for. If the number is not specified, use a sensible default based on the context (e.g. 10).
-   - Provide `category_id` whenever the user mentions a specific region (e.g. "the last places I visited in Hungary"), resolve the category ID first using category tools. **Never ask the user for a UUID.**
+   - Provide `category_id` whenever the user mentions a specific region (e.g. "the last places I visited in Hungary"), resolve the category ID first using category tools. **NEVER ask the user for a category ID or UUID.**
    - Places are returned latest first, including their visit dates. Use the sequence of the dates to reconstruct an itinerary and provide a broader context.
 4. **Listing Dates for a Place**
    - When the user asks when a specific place was visited (e.g. "when did I visit Prague?", "how many times have I been to Kyoto?"), call `get_place_dates`.

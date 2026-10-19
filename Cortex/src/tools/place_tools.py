@@ -102,7 +102,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
 
     def get_place_excerpt(self, place_id: str) -> str | None:
         """Retrieves the descriptive excerpt (AI-generated summary paragraph) for a specific place.
-        Use this when the user asks for a description or summary of a place . for example
+        Use this when the user asks for a description or summary of a place - for example
         "describe Prague", "tell me about Angkor Wat", or "give me an overview of the Eiffel Tower".
         Resolve the place ID first using get_place_by_name if only a name is given.
 
@@ -144,7 +144,7 @@ class PlaceReadTools(BasePlaceTools):
         sort: str | None,
     ) -> list[dict[str, Any]]:
         """Retrieves a list of regular (visited) places from Travel Portal with optional filters.
-        Use this when the user wants to browse, list, or search visited places . for example
+        Use this when the user wants to browse, list, or search visited places - for example
         "show me all places I visited in Japan", or "list places from my Egypt trip".
 
         Args:
@@ -199,7 +199,7 @@ class PlaceReadTools(BasePlaceTools):
         category_id: str | None,
     ) -> list[dict[str, Any]]:
         """Retrieves the most recently visited regular places from Travel Portal, latest first.
-        Use this when the user asks about their latest or last visited places . for example
+        Use this when the user asks about their latest or last visited places - for example
         "where have I been recently?", "show me the last 5 places I visited".
         Only places that have already been visited are returned (planned future visits are excluded).
 
@@ -240,7 +240,7 @@ class PlaceReadTools(BasePlaceTools):
     ) -> list[dict[str, Any]]:
         """Retrieves a list of candidate (wishlist / unplanned) places from Travel Portal.
         Use this when the user asks about places they want to visit, unplanned destinations,
-        or their travel wishlist . for example "show me my candidate places" or "what places am I considering?".
+        or their travel wishlist - for example "show me my candidate places" or "what places am I considering?".
 
         Args:
             trip_id: Filter by trip. Resolve the trip ID first using trip tools. Never ask the user for a UUID.
@@ -275,7 +275,7 @@ class PlaceReadTools(BasePlaceTools):
         """Finds a specific place by searching the Travel Portal full-text search index for places
         matching the given query, then fetches the full place object for the best match.
         Use this when you need a place ID from a user-provided name, or when the user refers to a
-        specific place . for example "tell me about Prague", "find Angkor Wat".
+        specific place - for example "tell me about Prague", "find Angkor Wat".
         If no match is found, or if the result is unsound, ask the user for clarification.
 
         Args:
@@ -318,7 +318,7 @@ class PlaceReadTools(BasePlaceTools):
     def get_place_dates(self, place_id: str) -> list[dict[str, Any]] | None:
         """Retrieves all visit dates for a specific place, including weather forecast for future dates.
         Use this when the user asks when they visited a place, how many times they have been there,
-        or what the weather will be like on an upcoming visit . for example "when did I visit Kyoto?",
+        or what the weather will be like on an upcoming visit - for example "when did I visit Kyoto?",
         "how many times have I been to Paris?", or "what's the weather like at my next stop?".
         Resolve the place ID first using get_place_by_name if only a name is given.
 
@@ -358,7 +358,7 @@ class PlaceEditTools(BasePlaceTools):
 
     def create_candidate_place(self, name: str, address: str) -> dict[str, Any] | None:
         """Creates a new candidate (wishlist) place in Travel Portal.
-        Use this when the user wants to add a place they wish to visit in the future . for example
+        Use this when the user wants to add a place they wish to visit in the future - for example
         "add Petra to my wishlist", "create a candidate place for Machu Picchu".
         Always ask the user for both the place name and address before calling this tool.
 

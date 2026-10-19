@@ -904,7 +904,7 @@
                 throw new NotFoundException($expenseId);
             }
 
-            return $expenseId;
+            return $expense;
         }
 
         #[OA\Delete(

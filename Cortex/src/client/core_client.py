@@ -195,6 +195,11 @@ class CoreClient:
 
         return self._request(method="PATCH", url=url, json=payload)
 
+    def delete_trip_task(self, trip_id: str, task_id: str) -> dict[str, Any] | None:
+        url = f"{self.base_url}/trips/{trip_id}/tasks/{task_id}"
+
+        return self._request(method="DELETE", url=url)
+
     def get_vouchers(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/vouchers"
 

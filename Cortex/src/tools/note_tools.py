@@ -24,10 +24,10 @@ class TripNoteReadTools(BaseNoteTools):
             self.get_notes_for_trip,
         ]
 
-    def get_notes_for_trip(self, trip_id: str) -> list[dict[str, Any]] | None:
+    def get_notes_for_trip(self, trip_id: str) -> list[dict[str, Any]]:
         """Retrieves all notes for a specific trip.
         Call this when the user asks about notes, memos, or observations recorded on a particular trip - for example "what notes did I take in Japan?", "show me notes for my Egypt trip", or "did I write anything down for my upcoming trip?".
-        Always resolve the trip ID first using trip tools (get_current_trip, get_upcoming_trip, or get_trip_by_name) before calling this function - never ask the user for a UUID.
+        Always resolve the trip ID first using trip tools before calling this function - never ask the user for a UUID.
         Returns an empty list if the trip has no notes recorded.
 
         Args:
@@ -63,7 +63,7 @@ class TripNoteEditTools(BaseNoteTools):
     def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any] | None:
         """Creates a new note for a specific trip in Travel Portal.
         Call this when the user asks to add, record, save, or write a note, memo, reminder, or observation for a trip (e.g. "add a note to my Japan trip: remember to buy JR pass", "note down for Egypt that museum is closed on Mondays").
-        Always resolve the trip ID first using trip tools (get_current_trip, get_upcoming_trip, or get_trip_by_name) - never ask the user for a UUID.
+        Always resolve the trip ID first using trip tools - never ask the user for a UUID.
 
         Args:
             trip_id: The unique identifier of the trip to which the note should be added.
@@ -143,10 +143,10 @@ class PlaceNoteReadTools(BaseNoteTools):
             self.get_notes_for_place,
         ]
 
-    def get_notes_for_place(self, place_id: str) -> list[dict[str, Any]] | None:
+    def get_notes_for_place(self, place_id: str) -> list[dict[str, Any]]:
         """Retrieves all notes for a specific place.
         Call this when the user asks about notes, memos, tips, or observations recorded on a particular place - for example "what notes do I have for Prague?", "show me notes for Angkor Wat", or "did I write any tips for Eiffel Tower?".
-        Always resolve the place ID first using place tools (get_place_by_name) before calling this function - never ask the user for a UUID.
+        Always resolve the place ID first using place tools before calling this function - never ask the user for a UUID.
         Returns an empty list if the place has no notes recorded.
 
         Args:
@@ -182,7 +182,7 @@ class PlaceNoteEditTools(BaseNoteTools):
     def create_place_note(self, place_id: str, content: str) -> dict[str, Any] | None:
         """Creates a new note for a specific place in Travel Portal.
         Call this when the user asks to add, record, save, or write a note, memo, reminder, or tip for a place (e.g. "add a note to Prague: visit the library at Strahov", "note down for Angkor Wat to buy tickets online").
-        Always resolve the place ID first using place tools (get_place_by_name) - never ask the user for a UUID.
+        Always resolve the place ID first using place tools - never ask the user for a UUID.
 
         Args:
             place_id: The unique identifier of the place to which the note should be added.

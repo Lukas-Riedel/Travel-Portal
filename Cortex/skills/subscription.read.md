@@ -8,5 +8,5 @@ Activate and apply this skill when the user asks about active travel subscriptio
 1. **Listing Subscriptions**
    - When the user asks about active travel subscriptions, memberships, or transit passes, call `get_subscriptions`.
    - Present description, price/currency, and expiration date clearly to the user (e.g. "31. 12. 2025").
-2. **Connecting with Trip Expenses**
-   - Subscriptions can be linked to trip expenses via `subscription_id` in `create_trip_expense` if a trip expense is covered or discounted by an existing subscription.
+2. **Extracting Subscription ID**
+   - Once the target subscription is found, use its `id` for subsequent actions. **NEVER invent a fake UUID.**
