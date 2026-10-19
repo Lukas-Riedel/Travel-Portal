@@ -356,6 +356,48 @@ class CoreClient:
 
         return self._request(method="DELETE", url=url)
 
+    def get_airlines(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/airlines"
+
+        return self._request(method="GET", url=url)
+
+    def create_airline(
+        self,
+        name: str,
+        logo: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/airlines"
+        payload = {"name": name}
+        if logo is not None:
+            payload["logo"] = logo
+
+        return self._request(method="POST", url=url, json=payload)
+
+    def update_airline(
+        self,
+        airline_id: str,
+        name: str | None = None,
+        logo: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/airlines/{airline_id}"
+        payload = {}
+        if name is not None:
+            payload["name"] = name
+        if logo is not None:
+            payload["logo"] = logo
+
+        return self._request(method="PATCH", url=url, json=payload)
+
+    def create_airline_code(
+        self,
+        airline_id: str,
+        code: str,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/airlines/{airline_id}/codes"
+        payload = {"code": code}
+
+        return self._request(method="POST", url=url, json=payload)
+
     def get_airports(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/airports"
 

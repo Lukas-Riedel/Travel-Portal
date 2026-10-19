@@ -102,7 +102,7 @@ class VoucherEditTools(BaseVoucherTools):
         Use this when the user says a voucher was (partially) used or its balance changed
         (e.g. "I used 20 EUR from my Flixbus voucher", "the Ryanair voucher now has 15 left").
         Only the value can be changed - code, issuer, currency and expiration cannot be edited.
-        Always resolve the voucher first using get_vouchers - never ask the user for a UUID.
+        Always resolve the voucher first using get_vouchers. Never ask the user for a UUID.
 
         Args:
             voucher_id: The `id` of the voucher as returned by get_vouchers.

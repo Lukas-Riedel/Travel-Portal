@@ -55,7 +55,7 @@ class AirportEditTools(BaseAirportTools):
         """Updates the full official name of an existing airport in Travel Portal.
         Use this when the user asks to rename an airport or correct its full name
         (e.g. "rename PRG to Václav Havel Prague Airport", "fix the name of Dubai airport").
-        Always resolve the airport first using get_airports - never ask the user for a UUID.
+        Always resolve the airport first using get_airports. Never ask the user for a UUID.
 
         Args:
             airport_id: The `id` of the airport as returned by get_airports.
