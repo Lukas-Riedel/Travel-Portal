@@ -36,7 +36,7 @@ class TimeTools(BaseTools):
         Returns:
             A dictionary containing:
             - epoch (integer): The computed Unix timestamp in seconds.
-            - iso (string): ISO 8601 UTC representation of the timestamp (e.g. "2026-04-15T23:55:00Z").
+            - iso (string): ISO 8601 UTC representation of the timestamp (e.g. `"2026-04-15T23:55:00Z"`).
         """
         try:
             tz = ZoneInfo(tz_name)
@@ -77,10 +77,10 @@ class TimeTools(BaseTools):
 
         Returns:
             A dictionary containing:
-            - iso (string): ISO 8601 UTC representation (e.g. "2026-04-15T23:55:00Z").
+            - iso (string): ISO 8601 UTC representation (e.g. `"2026-04-15T23:55:00Z"`).
             - date (string): YYYY-MM-DD (in the specified timezone).
             - time (string): HH:MM:SS (in the specified timezone).
-            - utc_offset (string): UTC offset string (e.g. "+0200").
+            - utc_offset (string): UTC offset string (e.g. `"+0200"`).
         """
         try:
             tz = ZoneInfo(tz_name)
@@ -113,11 +113,11 @@ class TimeTools(BaseTools):
 
         Returns:
             A dictionary containing:
-            - iso (string): ISO 8601 representation in target timezone with offset (e.g. '2025-12-31T16:59:59-0500').
+            - iso (string): ISO 8601 representation in target timezone with offset (e.g. `"2025-12-31T16:59:59-0500"`).
             - date (string): YYYY-MM-DD in the target timezone.
             - time (string): HH:MM:SS in the target timezone.
             - target_timezone: Target timezone name.
-            - utc_offset (string): UTC offset string in target timezone (e.g. '-0500').
+            - utc_offset (string): UTC offset string in target timezone (e.g. `"-0500"`).
             - epoch (integer): Unix timestamp in seconds.
         """
         try:

@@ -28,7 +28,7 @@ class StayReadTools(BaseCoreTools):
 
         Returns:
             An empty list if no stays exist, or a list of stay objects where each object contains:
-            - name (string): Name of the accommodation (e.g. "Jumeirah Burj Al Arab", "MSC Grandiosa").
+            - name (string): Name of the accommodation (e.g. `"Jumeirah Burj Al Arab"`, `"MSC Grandiosa"`).
             - address (string | null): Physical address of the property. Null when the stay is a cruise.
             - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name and year of the parent trip.
@@ -74,7 +74,7 @@ class StayReadTools(BaseCoreTools):
 
         Returns:
             An empty list if no cruises exist, or a list of cruise objects where each object contains:
-            - name (string): Name of the ship (e.g. "MSC Grandiosa").
+            - name (string): Name of the ship (e.g. `"MSC Grandiosa"`).
             - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name and year of the parent trip.
             - start (string): Embarkation date in the local timezone (e.g. `"2026-10-08"`).

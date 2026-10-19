@@ -37,9 +37,9 @@ class SubscriptionReadTools(BaseSubscriptionTools):
         Returns:
             A list of active subscription objects, where each object contains:
             - id (string): Unique subscription identifier. You only need it to reference the subscription when creating a new expense.
-            - description (string): Description/title of the subscription (e.g. 'Deutschland Ticket', 'Swiss Half Fare Pass').
+            - description (string): Description/title of the subscription (e.g. `"Deutschland Ticket"`, `"Swiss Half Fare Pass"`).
             - value (number): Cost of the subscription.
-            - currency (string): 3-letter currency code (e.g. 'EUR', 'USD', 'CZK').
+            - currency (string): 3-letter currency code (e.g. `"EUR"`, `"USD"`, `"CZK"`).
             - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
         subscriptions = self.core_client.get_subscriptions()
@@ -90,9 +90,9 @@ class SubscriptionEditTools(BaseSubscriptionTools):
         Returns:
             The created subscription object containing:
             - id (string): Unique subscription identifier. You only need it to reference the subscription when creating a new expense.
-            - description (string): Description/title of the subscription (e.g. 'Deutschland Ticket', 'Swiss Half Fare Pass').
+            - description (string): Description/title of the subscription (e.g. `"Deutschland Ticket"`, `"Swiss Half Fare Pass"`).
             - value (number): Cost of the subscription.
-            - currency (string): 3-letter currency code (e.g. 'EUR', 'USD', 'CZK').
+            - currency (string): 3-letter currency code (e.g. `"EUR"`, `"USD"`, `"CZK"`).
             - expiration (string): Expiration date in ISO 8601 format with timezone offset (e.g. `"2025-12-31T23:59:59+0200"`).
         """
         subscription = self.core_client.create_subscription(

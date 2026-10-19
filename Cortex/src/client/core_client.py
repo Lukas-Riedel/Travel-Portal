@@ -329,9 +329,7 @@ class CoreClient:
 
         return self._request(method="POST", url=url, params=params, json=payload)
 
-    def update_place_excerpt(
-        self, place_id: str, excerpt: str | None
-    ) -> dict[str, Any]:
+    def update_place(self, place_id: str, excerpt: str | None) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}"
         payload = {"excerpt": excerpt}
 
@@ -357,3 +355,20 @@ class CoreClient:
         url = f"{self.base_url}/places/{place_id}/notes/{note_id}"
 
         return self._request(method="DELETE", url=url)
+
+    def get_airports(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/airports"
+
+        return self._request(method="GET", url=url)
+
+    def update_airport(
+        self,
+        airport_id: str,
+        long_name: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/airports/{airport_id}"
+        payload = {}
+        if long_name is not None:
+            payload["longName"] = long_name
+
+        return self._request(method="PATCH", url=url, json=payload)

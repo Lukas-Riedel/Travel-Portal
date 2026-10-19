@@ -429,9 +429,7 @@ class PlaceEditTools(BasePlaceTools):
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
                 - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
-        place = self.core_client.update_place_excerpt(
-            place_id=place_id, excerpt=excerpt
-        )
+        place = self.core_client.update_place(place_id=place_id, excerpt=excerpt)
         if self._is_error_response(place):
             return place
 

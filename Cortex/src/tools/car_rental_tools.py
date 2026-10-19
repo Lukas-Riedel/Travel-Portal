@@ -29,7 +29,7 @@ class CarRentalReadTools(BaseCoreTools):
 
         Returns:
             An empty list if no car rentals exist, or a list of car rental objects where each object contains:
-            - model (string): Model of the rented car (e.g. "Toyota Yaris", "Skoda Octavia").
+            - model (string): Model of the rented car (e.g. `"Toyota Yaris"`, `"Skoda Octavia"`).
             - trip_id (string): Unique identifier of the parent trip.
             - trip_name (string): Name and year of the parent trip.
             - start (string): First day of the rental in the local timezone (e.g. `"2026-10-08"`).
