@@ -121,6 +121,15 @@ class IamClient:
 
             claims = jwt.get_unverified_claims(token)
 
+            audiences = claims.get("aud", [])
+            if isinstance(audiences, str):
+                audiences = [audiences]
+            if (
+                not isinstance(audiences, list)
+                or self.cortex_client_id not in audiences
+            ):
+                raise RuntimeError("The access token is not intended for this service.")
+
             exp = claims.get("exp")
             if exp is None or time.time() > exp:
                 raise RuntimeError("The JWT token has expired.")

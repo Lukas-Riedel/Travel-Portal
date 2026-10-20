@@ -6,15 +6,13 @@
         private readonly string $userId;
         private readonly ?string $username;
         private readonly string $client;
-        private readonly bool $impersonated;
-        private readonly bool $allowlistedServiceAccount;
+        private readonly bool $trustedServiceAccount;
 
-        public function __construct(string $userId, ?string $username, string $client, bool $impersonated, bool $allowlistedServiceAccount) {
+        public function __construct(string $userId, ?string $username, string $client, bool $trustedServiceAccount) {
             $this->userId = $userId;
             $this->username = $username;
             $this->client = $client;
-            $this->impersonated = $impersonated;
-            $this->allowlistedServiceAccount = $allowlistedServiceAccount;
+            $this->trustedServiceAccount = $trustedServiceAccount;
         }
 
         public function getUserId() : string {
@@ -29,12 +27,8 @@
             return $this->client;
         }
 
-        public function isImpersonated() : bool {
-            return $this->impersonated;
-        }
-
-        public function isAllowlistedServiceAccount() : bool {
-            return $this->allowlistedServiceAccount;
+        public function isTrustedServiceAccount() : bool {
+            return $this->trustedServiceAccount;
         }
 
         #[\ReturnTypeWillChange]

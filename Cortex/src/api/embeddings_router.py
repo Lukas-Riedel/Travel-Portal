@@ -3,12 +3,12 @@ from typing import Any
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
-from src.api.dependencies import require_allowlisted_service_account
+from src.api.dependencies import require_trusted_service_account
 
 router = APIRouter(
     prefix="/embeddings",
     tags=["Embeddings"],
-    dependencies=[Depends(require_allowlisted_service_account)],
+    dependencies=[Depends(require_trusted_service_account)],
 )
 
 

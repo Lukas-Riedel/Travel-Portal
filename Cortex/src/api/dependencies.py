@@ -15,7 +15,7 @@ def get_current_user(
     return iam_client.authenticate(token=token.credentials)
 
 
-def require_allowlisted_service_account(
+def require_trusted_service_account(
     request: Request, user_info: dict[str, Any] = Depends(get_current_user)
 ) -> None:
     allowed_clients = [

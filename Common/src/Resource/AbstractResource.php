@@ -21,8 +21,8 @@
             return $request->getAttribute(CommonConstants::USER_ROLES_ATTRIBUTE_KEY) ?? array();
         }
 
-        public function isAllowlistedServiceAccount(Request $request) : bool {
-            return $this->getUserInfo($request)->isAllowlistedServiceAccount();
+        public function isTrustedServiceAccount(Request $request) : bool {
+            return $this->getUserInfo($request)->isTrustedServiceAccount();
         }
 
         public function isAgentServiceAccount(Request $request) : bool {
@@ -32,17 +32,15 @@
         }
 
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
-            $roles = $this->getUserRoles($request);
-
-            if ($this->isAllowlistedServiceAccount($request) && !$this->getUserInfo($request)->isImpersonated()) {
-                return empty($roles) || $this->hasImpliedRoles($roles, $requiredRole);
+            if ($this->isTrustedServiceAccount($request)) {
+                return true;
             }
 
-            return $this->hasImpliedRoles($roles, $requiredRole);
+            return $this->hasImpliedRole($request, $requiredRole);
         }
 
-        public function requireAllowlistedServiceAccount(Request $request) : void {
-            if (!$this->isAllowlistedServiceAccount($request)) {
+        public function requireTrustedServiceAccount(Request $request) : void {
+            if (!$this->isTrustedServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }
@@ -106,8 +104,8 @@
             return array_key_exists($field, $body);
         }
 
-        private function hasImpliedRoles(array $roles, UserRole $requiredRole) : bool {
-            foreach ($roles as $assignedRoleValue) {
+        private function hasImpliedRole(Request $request, UserRole $requiredRole) : bool {
+            foreach ($this->getUserRoles($request) as &$assignedRoleValue) {
                 $assignedRole = UserRole::tryFrom($assignedRoleValue);
                 if ($assignedRole && $assignedRole->implies($requiredRole)) {
                     return true;

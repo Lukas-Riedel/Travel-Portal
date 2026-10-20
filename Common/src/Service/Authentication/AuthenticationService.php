@@ -8,6 +8,8 @@
     use Firebase\JWT\JWT;
 
     class AuthenticationService {
+
+        private const SERVICE_ACCOUNT_USERNAME_FORMAT = "service-account-%s";
         
         private const JWKS_API_ENDPOINT_PATH = "/certificates/jwks";
 
@@ -19,13 +21,15 @@
 
         private readonly string $iamHost;
         private readonly string $iamPort;
+        private readonly string $serviceClientId;
         private readonly array $allowedServiceClients;
 
-        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, string $iamHost, string $iamPort, array $allowedServiceClients) {
+        public function __construct(CacheClient $distributedCacheClient, HttpClient $httpClient, string $iamHost, string $iamPort, string $serviceClientId, array $allowedServiceClients) {
             $this->distributedCacheClient = $distributedCacheClient;
             $this->httpClient = $httpClient;
             $this->iamHost = $iamHost;
             $this->iamPort = $iamPort;
+            $this->serviceClientId = $serviceClientId;
             $this->allowedServiceClients = $allowedServiceClients;
         }
         
@@ -33,7 +37,18 @@
             try {
                 $keys = JWK::parseKeySet($this->getJwksKeys());
                 $decoded = JWT::decode($accessToken, $keys);
-                return new UserInfo($decoded->sub, $decoded->preferred_username ?? null, $decoded->azp, false, in_array($decoded->azp, $this->allowedServiceClients, true));
+                $audiences = $decoded->aud ?? array();
+                
+                if (is_string($audiences)) {
+                    $audiences = array($audiences);
+                }
+
+                if (!is_array($audiences) || !in_array($this->serviceClientId, $audiences, true)) {
+                    throw new AuthenticationException("The access token is not intended for this service");
+                }
+
+                return new UserInfo($decoded->sub, $decoded->preferred_username ?? null, $decoded->azp,
+                    ($decoded->preferred_username ?? null) === sprintf(self::SERVICE_ACCOUNT_USERNAME_FORMAT, $decoded->azp) && in_array($decoded->azp, $this->allowedServiceClients, true));
             }
             catch (\Throwable $e) {
                 throw new AuthenticationException("An error occurred when decoding JWT token. " . $e->getMessage() . ".");

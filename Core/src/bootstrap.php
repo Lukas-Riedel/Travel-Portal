@@ -142,7 +142,7 @@
     );
 
     // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_HOST"), getenv("IAM_PORT"), array_filter(explode(",", getenv("ALLOWLISTED_SERVICE_CLIENTS"))));
+    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_HOST"), getenv("IAM_PORT"), getenv("CORE_CLIENT_ID"), array_filter(explode(",", getenv("ALLOWLISTED_SERVICE_CLIENTS"))));
     $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("CORE_CLIENT_ID"), getenv("CORE_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
 
     // Authenticated clients.

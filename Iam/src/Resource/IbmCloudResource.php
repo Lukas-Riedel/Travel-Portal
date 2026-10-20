@@ -23,7 +23,7 @@
             });
         }
         public function createToken(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireAllowlistedServiceAccount($request);
+            $this->requireTrustedServiceAccount($request);
             
             return $this->ibmcloudService->getIbmCloudAccessToken();
         }

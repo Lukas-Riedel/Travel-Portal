@@ -55,6 +55,7 @@
             return $this->getIamResponse($payload);
         }
 
+        // TODO: Require audience in the request and remove it from default Keycloak mappers.
         public function getIamResponseWithClientCredentials(string $clientId, string $clientSecret, ?string $scope = null, ?string $subjectToken = null) : IamResponse {
             $payload = array(
                 "grant_type" => $subjectToken === null ? self::IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE : self::IAM_SERVICE_TOKEN_EXCHANGE_GRANT_TYPE,
