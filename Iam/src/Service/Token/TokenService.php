@@ -12,6 +12,8 @@
         private const IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE = "client_credentials";
         private const IAM_SERVICE_REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
         private const IAM_SERVICE_CREDENTIALS_GRANT_TYPE = "password";
+        private const IAM_SERVICE_TOKEN_EXCHANGE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:token-exchange";
+        private const IAM_SERVICE_SUBJECT_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:access_token";
 
         private readonly HttpClient $httpClient;
 
@@ -53,15 +55,20 @@
             return $this->getIamResponse($payload);
         }
 
-        public function getIamResponseWithClientCredentials(string $clientId, string $clientSecret, ?string $scope = null) : IamResponse {
+        public function getIamResponseWithClientCredentials(string $clientId, string $clientSecret, ?string $scope = null, ?string $subjectToken = null) : IamResponse {
             $payload = array(
-                "grant_type" => self::IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE,
+                "grant_type" => $subjectToken === null ? self::IAM_SERVICE_ACCESS_TOKEN_GRANT_TYPE : self::IAM_SERVICE_TOKEN_EXCHANGE_GRANT_TYPE,
                 "client_id" => $clientId,
                 "client_secret" => $clientSecret
             );
 
             if ($scope !== null) {
                 $payload["scope"] = $scope;
+            }
+
+            if ($subjectToken !== null) {
+                $payload["subject_token"] = $subjectToken;
+                $payload["subject_token_type"] = self::IAM_SERVICE_SUBJECT_TOKEN_TYPE;
             }
 
             return $this->getIamResponse($payload);

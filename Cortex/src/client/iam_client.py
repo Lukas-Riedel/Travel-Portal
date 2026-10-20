@@ -1,3 +1,4 @@
+import hashlib
 import time
 from typing import Any, Final
 
@@ -27,42 +28,52 @@ class IamClient:
         self.keys_expires_at: float = 0.0
         self.cached_service_token: str | None = None
         self.service_token_expires_at: float = 0.0
+        self.cached_exchanged_tokens: dict[str, tuple[str, float]] = {}
 
-    def get_service_access_token(self) -> str:
+    def get_service_access_token(self, subject_token: str | None = None) -> str:
         current_time = time.time()
-        if (
-            self.cached_service_token is not None
-            and current_time < self.service_token_expires_at
-        ):
-            return self.cached_service_token
+        cache_key = None
+        if subject_token is None:
+            if (
+                self.cached_service_token is not None
+                and current_time < self.service_token_expires_at
+            ):
+                return self.cached_service_token
+        else:
+            cache_key = hashlib.sha256(
+                f"{self.cortex_client_id}:{subject_token}".encode()
+            ).hexdigest()
+            cached_token = self.cached_exchanged_tokens.get(cache_key)
+            if cached_token is not None and current_time < cached_token[1]:
+                return cached_token[0]
 
         payload = {
             "clientId": self.cortex_client_id,
             "clientSecret": self.cortex_client_secret,
         }
+        if subject_token is not None:
+            payload["subjectToken"] = subject_token
 
-        try:
-            response = requests.post(
-                url=self.token_endpoint,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=10,
-            )
-            if response.status_code != 201:
-                raise RuntimeError(
-                    f"Could not fetch service token. Reason: {response.text}"
-                )
-
-            data = response.json()
-
-            self.cached_service_token = data.get("accessToken")
-            self.service_token_expires_at = current_time + (
-                data.get("expiresIn") * 0.95
+        response = requests.post(
+            url=self.token_endpoint,
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=10,
+        )
+        if response.status_code != 201:
+            raise RuntimeError(
+                f"Could not fetch service token. Reason: {response.text}"
             )
 
-            return data.get("accessToken")
-        except Exception as exc:
-            raise
+        data = response.json()
+        access_token = data.get("accessToken")
+        expires_at = time.time() + (data.get("expiresIn") * 0.95)
+
+        if subject_token is None:
+            self.cached_service_token = access_token
+            self.service_token_expires_at = expires_at
+
+        return access_token
 
     def get_jwks_keys(self) -> dict[str, Any]:
         current_time = time.time()

@@ -9,7 +9,7 @@
 
     class AuthenticationService {
         
-        private const SERVICE_ACCESS_TOKEN_CACHE_KEY_FORMAT = "AuthenticationService:ServiceToken:%s";
+        private const SERVICE_ACCESS_TOKEN_CACHE_KEY_FORMAT = "AuthenticationService:ServiceToken:%s:%s";
         private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleApiAccessToken";
         private const GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleFcmAccessToken";
         private const IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IbmCloudAccessToken";
@@ -125,8 +125,9 @@
             return $response["accessToken"];
         }
 
-        public function getServiceAccessToken() : string {
-            $cacheKey = sprintf(self::SERVICE_ACCESS_TOKEN_CACHE_KEY_FORMAT, $this->coreClientId);
+        public function getServiceAccessToken(?string $subjectToken = null) : string {
+            $cacheKey = sprintf(self::SERVICE_ACCESS_TOKEN_CACHE_KEY_FORMAT, $this->coreClientId, hash("sha256", $subjectToken ?? "NULL"));
+
             $cachedServiceAccessToken = $this->distributedCacheClient->get($cacheKey);
             if ($cachedServiceAccessToken !== null) {
                 return $cachedServiceAccessToken;
@@ -136,6 +137,10 @@
                 "clientId" => $this->coreClientId,
                 "clientSecret" => $this->coreClientSecret
             );
+
+            if ($subjectToken !== null) {
+                $payload["subjectToken"] = $subjectToken;
+            }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getIamBaseUrl() . self::TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/json"), json_encode($payload));

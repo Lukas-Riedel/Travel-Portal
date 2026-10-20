@@ -5,11 +5,10 @@ import requests
 from src.api.logging_middleware import (
     REQUEST_ORIGIN_HEADER,
     TRANSACTION_ID_HEADER,
-    USER_ID_HEADER,
-    USERNAME_HEADER,
 )
 from src.client.iam_client import IamClient
-from src.core.logger import transaction_id, user_id, username
+from src.core.authentication_context import subject_token
+from src.core.logger import transaction_id
 
 
 # TODO: Deadlock risk - Core calls Cortex synchronously (blocking) and Cortex's agentic AI
@@ -31,7 +30,7 @@ class CoreClient:
         self.auth_service: IamClient = iam_client
 
     def _request(self, method: str, url: str, **kwargs: Any) -> Any:
-        token = self.auth_service.get_service_access_token()
+        token = self.auth_service.get_service_access_token(subject_token.get())
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
@@ -42,14 +41,6 @@ class CoreClient:
         t_id = transaction_id.get()
         if t_id:
             headers[TRANSACTION_ID_HEADER] = t_id
-
-        u_id = user_id.get()
-        if u_id:
-            headers[USER_ID_HEADER] = u_id
-
-        u_name = username.get()
-        if u_name:
-            headers[USERNAME_HEADER] = u_name
 
         response = requests.request(
             method=method, url=url, headers=headers, timeout=15, **kwargs

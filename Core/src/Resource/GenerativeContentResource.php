@@ -131,9 +131,8 @@
             $prompt = $this->requireJsonBodyField($request, "prompt");
             $conversationId = $this->getJsonBodyField($request, "conversationId");
             $environment = $this->getJsonBodyField($request, "environment");
-            $userInfo = $this->getUserInfo($request);
 
-            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $userInfo->getUserId(), $userInfo->getUsername(), $conversationId, $environment);
+            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $this->getAccessToken($request), $this->getUserInfo($request)->getUsername(), $conversationId, $environment);
             if ($rawResult === null) {
                 return null;
             }

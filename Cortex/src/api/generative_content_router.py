@@ -5,9 +5,8 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.api.dependencies import require_allowlisted_service_account
+from src.api.dependencies import get_current_user, require_allowlisted_service_account
 from src.core.generative_content_context import generative_content_environment
-from src.core.logger import user_id
 
 router = APIRouter(
     prefix="/generativecontent",
@@ -61,6 +60,7 @@ class GenerativeContentResponse(BaseModel):
 def generate_content(
     request: GenerativeContentRequest,
     req_obj: Request,
+    current_user: dict[str, Any] = Depends(get_current_user),
     *,
     use_skills: bool = Query(
         default=True,
@@ -70,7 +70,7 @@ def generate_content(
 ) -> JSONResponse:
     token = generative_content_environment.set(request.environment)
     try:
-        u_id = user_id.get()
+        u_id = current_user.get("user_id")
         enabled_skills = (
             req_obj.app.state.iam_client.get_user_roles(u_id)
             if use_skills and u_id

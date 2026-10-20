@@ -39,13 +39,6 @@
             $accessToken = $matches[1];
             $userInfo = $this->authenticationService->authenticate($accessToken);
 
-            if ($userInfo->isAllowlistedServiceAccount()) {
-                $userId = $request->getHeaderLine(CommonConstants::USER_ID_HEADER) ?: $userInfo->getUserId();
-                $username = $request->getHeaderLine(CommonConstants::USERNAME_HEADER) ?: $userInfo->getUsername();
-
-                $userInfo = $userInfo->impersonate($userId, $username);
-            }
-
             return $handler->handle($request->withAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY, $userInfo)
                 ->withAttribute(CommonConstants::ACCESS_TOKEN_ATTRIBUTE_KEY, $accessToken));
         }

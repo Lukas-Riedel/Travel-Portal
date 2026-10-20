@@ -37,10 +37,6 @@
             return $this->allowlistedServiceAccount;
         }
 
-        public function impersonate(string $userId, ?string $username) : UserInfo {
-            return new UserInfo($userId, $username, $this->client, $userId !== $this->userId, $this->allowlistedServiceAccount);
-        }
-
         #[\ReturnTypeWillChange]
         public function jsonSerialize() : mixed {
             return get_object_vars($this);

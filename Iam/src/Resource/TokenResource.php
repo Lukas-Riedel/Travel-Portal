@@ -28,8 +28,10 @@
             
             $clientId = $this->getJsonBodyField($request, "clientId");            
             $clientSecret = $this->getJsonBodyField($request, "clientSecret");
+
             if ($clientId !== null && $clientSecret !== null) {
-                return $this->tokenService->getIamResponseWithClientCredentials($clientId, $clientSecret, $scope);
+                $subjectToken = $this->getJsonBodyField($request, "subjectToken");
+                return $this->tokenService->getIamResponseWithClientCredentials($clientId, $clientSecret, $scope, $subjectToken);
             }
 
             $refreshToken = $this->getJsonBodyField($request, "refreshToken");

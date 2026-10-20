@@ -12,8 +12,6 @@ load_dotenv()
 
 transaction_id: ContextVar[str] = contextvars.ContextVar("transaction_id", default="")
 request_origin: ContextVar[str] = contextvars.ContextVar("request_origin", default="")
-user_id: ContextVar[str | None] = contextvars.ContextVar("user_id", default=None)
-username: ContextVar[str | None] = contextvars.ContextVar("username", default=None)
 
 
 class TransactionFilter(logging.Filter):

@@ -4,7 +4,6 @@
     use Common\Client\Cache\CacheClient;
     use Common\Client\Http\HttpClient;
     use Common\Client\Http\HttpMethod;
-    use Common\CommonConstants as CommonCommonConstants;
     use Core\Common\CommonConstants;
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\Configuration\ConfigurationService;
@@ -50,14 +49,14 @@
             return $responseJsonSchema !== null ? json_encode($response["text"]) : $response["text"];
         }
 
-        public function getChatResponse(string $prompt, string $userId, ?string $username = null, ?string $conversationId = null, mixed $environment = null) : ?GenerativeContentResult {
+        public function getChatResponse(string $prompt, string $accessToken, ?string $username = null, ?string $conversationId = null, mixed $environment = null) : ?GenerativeContentResult {
             $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
 
             $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
             $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
 
-            $response = $this->doGetResponse($messages, $userId, $username, null, true, $environment);
+            $response = $this->doGetResponse($messages, $accessToken, $username, null, true, $environment);
             if ($response === null) {
                 return null;
             }
@@ -73,7 +72,7 @@
             return $this->distributedCacheClient->get(sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $conversationId)) ?? array();
         }
 
-        private function doGetResponse(array $messages, ?string $userId, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?array {
+        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?array {
             $payload = array("messages" => $this->sanitizeChatHistory($messages), "environment" => $environment);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
@@ -82,14 +81,7 @@
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"][$username] ?? null;
             }
 
-            $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json");
-            if ($userId !== null) {
-                $headers[] = CommonCommonConstants::USER_ID_HEADER . ": " . $userId;
-            }
-            if ($username !== null) {
-                $headers[] = CommonCommonConstants::USERNAME_HEADER . ": " . $username;
-            }
-
+            $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken($accessToken), "Content-Type: application/json");
             $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $url, $headers, json_encode($payload));
 

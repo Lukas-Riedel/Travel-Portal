@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from src.api.authentication_middleware import AuthenticationContextMiddleware
 from src.api.clustering_router import router as clustering_router
 from src.api.embeddings_router import router as embeddings_router
 from src.api.generative_content_router import router as generativecontent_router
@@ -64,6 +65,7 @@ app.include_router(management_router)
 app.include_router(embeddings_router)
 app.include_router(clustering_router)
 app.include_router(generativecontent_router)
+app.add_middleware(AuthenticationContextMiddleware)
 app.add_middleware(LoggingMiddleware)
 
 

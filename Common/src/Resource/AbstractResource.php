@@ -9,6 +9,10 @@
     
     abstract class AbstractResource {
 
+        public function getAccessToken(Request $request) : ?string {
+            return $request->getAttribute(CommonConstants::ACCESS_TOKEN_ATTRIBUTE_KEY);
+        }
+
         public function getUserInfo(Request $request) : UserInfo {
             return $request->getAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY);
         }
