@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Final
-from zoneinfo import ZoneInfo
 
+import pytz
 from fastapi import HTTPException, status
 from google import genai
 from google.genai import types
@@ -124,7 +124,7 @@ class GenerativeContentEngine:
         timezone_name = env.get("timezone") if env else "UTC"
         latitude, longitude = env.get("latitude"), env.get("longitude")
 
-        now = datetime.now(tz=ZoneInfo(timezone_name))
+        now = datetime.now(tz=pytz.timezone(timezone_name))
         lines = [
             "# Environmental Context",
             f"- Current date: {now.strftime('%A, %d %B %Y')}",

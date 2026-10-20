@@ -1,7 +1,9 @@
 import time
 from abc import ABC
+from datetime import tzinfo
 from typing import Any
-from zoneinfo import ZoneInfo
+
+import pytz
 
 from src.tools.base_tools import BaseCoreTools
 
@@ -31,7 +33,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
         ]
 
     def _extract_place(self, place: dict[str, Any]) -> dict[str, Any]:
-        place_tz = ZoneInfo(place.get("timezone") or "UTC")
+        place_tz = pytz.timezone(place.get("timezone"))
         dates = [
             self._extract_date(date=raw, place_tz=place_tz)
             for raw in place.get("dates", [])
@@ -102,7 +104,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
             },
         }
 
-    def _extract_date(self, date: dict[str, Any], place_tz: ZoneInfo) -> dict[str, Any]:
+    def _extract_date(self, date: dict[str, Any], place_tz: tzinfo) -> dict[str, Any]:
         start_epoch = date.get("start")
         end_epoch = date.get("end")
         trip = date.get("trip")
@@ -356,7 +358,7 @@ class PlaceReadTools(BasePlaceTools):
         if self._is_error_response(place):
             return place
 
-        place_tz = ZoneInfo(place.get("timezone") or "UTC")
+        place_tz = pytz.timezone(place.get("timezone"))
         return [
             self._extract_date(date=raw, place_tz=place_tz)
             for raw in self._filter_visible_dates(place.get("dates", []))

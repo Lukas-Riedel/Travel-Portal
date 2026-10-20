@@ -28,7 +28,6 @@ EXEMPT_NAMES = {
     "filter",
     "getenv",
     "wraps",
-    "ZoneInfo",
     "ContextVar",  # the name is a positional-only parameter
 }
 EXEMPT_ATTRIBUTES = {

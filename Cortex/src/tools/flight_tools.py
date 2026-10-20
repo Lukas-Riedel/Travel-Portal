@@ -1,11 +1,19 @@
 from abc import ABC
+from datetime import tzinfo
 from typing import Any
-from zoneinfo import ZoneInfo
+
+import pytz
 
 from src.tools.base_tools import BaseCoreTools
 
 
 class BaseFlightTools(BaseCoreTools, ABC):
+    def _get_airport_timezone(self, timezone_name: str | None) -> tzinfo:
+        if not timezone_name:
+            return pytz.UTC
+
+        return pytz.timezone(timezone_name)
+
     def _extract_flight(
         self,
         flight: dict[str, Any],
@@ -15,11 +23,8 @@ class BaseFlightTools(BaseCoreTools, ABC):
         to_airport = flight.get("to")
         airline = flight.get("airline") or {}
 
-        from_tz_str = from_airport.get("timezone")
-        from_tz = ZoneInfo(from_tz_str) if from_tz_str else ZoneInfo("UTC")
-
-        to_tz_str = to_airport.get("timezone")
-        to_tz = ZoneInfo(to_tz_str) if to_tz_str else ZoneInfo("UTC")
+        from_tz = self._get_airport_timezone(from_airport.get("timezone"))
+        to_tz = self._get_airport_timezone(to_airport.get("timezone"))
 
         start = flight.get("start")
         end = flight.get("end")
@@ -69,11 +74,8 @@ class BaseFlightTools(BaseCoreTools, ABC):
         from_airport = flight.get("from")
         to_airport = flight.get("to")
 
-        from_tz_str = from_airport.get("timezone")
-        from_tz = ZoneInfo(from_tz_str) if from_tz_str else ZoneInfo("UTC")
-
-        to_tz_str = to_airport.get("timezone")
-        to_tz = ZoneInfo(to_tz_str) if to_tz_str else ZoneInfo("UTC")
+        from_tz = self._get_airport_timezone(from_airport.get("timezone"))
+        to_tz = self._get_airport_timezone(to_airport.get("timezone"))
 
         start = flight.get("start")
         end = flight.get("end")

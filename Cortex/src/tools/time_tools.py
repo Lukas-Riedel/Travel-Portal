@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+import pytz
 from dateutil import parser
 
 from src.tools.base_tools import BaseTools
@@ -62,8 +62,8 @@ class TimeTools(BaseTools):
             - iso (string): ISO 8601 UTC representation of the timestamp (e.g. `"2026-04-15T23:55:00Z"`).
         """
         try:
-            tz = ZoneInfo(tz_name)
-        except (ZoneInfoNotFoundError, ValueError):
+            tz = pytz.timezone(tz_name)
+        except (pytz.UnknownTimeZoneError, ValueError):
             return {"error": 400, "message": f"Invalid timezone name '{tz_name}'."}
 
         combined = f"{date_str.strip()} {time_str.strip()}"
@@ -77,7 +77,7 @@ class TimeTools(BaseTools):
                 "message": f"Could not parse date '{date_str}' and time '{time_str}'.",
             }
 
-        dt_with_tz = dt_naive.replace(tzinfo=tz)
+        dt_with_tz = tz.localize(dt_naive)
 
         return {
             "epoch": int(dt_with_tz.timestamp()),
@@ -103,8 +103,8 @@ class TimeTools(BaseTools):
             - utc_offset (string): UTC offset string (e.g. `"+0200"`).
         """
         try:
-            tz = ZoneInfo(tz_name)
-        except (ZoneInfoNotFoundError, ValueError):
+            tz = pytz.timezone(tz_name)
+        except (pytz.UnknownTimeZoneError, ValueError):
             return {"error": 400, "message": f"Invalid timezone name '{tz_name}'."}
 
         dt_utc = datetime.fromtimestamp(epoch, tz=UTC)
@@ -141,8 +141,8 @@ class TimeTools(BaseTools):
             - epoch (integer): Unix timestamp in seconds.
         """
         try:
-            target_zone = ZoneInfo(target_tz)
-        except (ZoneInfoNotFoundError, ValueError):
+            target_zone = pytz.timezone(target_tz)
+        except (pytz.UnknownTimeZoneError, ValueError):
             return {
                 "error": 400,
                 "message": f"Invalid target timezone name '{target_tz}'.",
@@ -160,9 +160,9 @@ class TimeTools(BaseTools):
         if dt.tzinfo is None:
             if source_tz:
                 try:
-                    source_zone = ZoneInfo(source_tz)
-                    dt = dt.replace(tzinfo=source_zone)
-                except (ZoneInfoNotFoundError, ValueError):
+                    source_zone = pytz.timezone(source_tz)
+                    dt = source_zone.localize(dt)
+                except (pytz.UnknownTimeZoneError, ValueError):
                     return {
                         "error": 400,
                         "message": f"Invalid source timezone name '{source_tz}'.",

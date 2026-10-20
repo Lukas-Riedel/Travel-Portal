@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import datetime, tzinfo
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from src.tools.base_tools import BaseCoreTools
 
@@ -114,7 +113,7 @@ class StayReadTools(BaseCoreTools):
         self,
         stay: dict[str, Any],
         trip: dict[str, Any],
-        system_tz: ZoneInfo,
+        system_tz: tzinfo,
     ) -> dict[str, Any]:
         start_epoch = stay.get("start")
         end_epoch = stay.get("end") - 1

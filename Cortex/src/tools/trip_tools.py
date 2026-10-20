@@ -1,7 +1,6 @@
 import time
-from datetime import datetime
+from datetime import datetime, tzinfo
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from src.tools.base_tools import BaseCoreTools
 
@@ -201,8 +200,7 @@ class TripReadTools(BaseCoreTools):
     def _extract_trip(
         self,
         trip: dict[str, Any],
-        # All trips start and end in the the system timezone.
-        system_tz: ZoneInfo,
+        system_tz: tzinfo,
     ) -> dict[str, Any]:
         extracted_trip = {
             "id": trip.get("id"),

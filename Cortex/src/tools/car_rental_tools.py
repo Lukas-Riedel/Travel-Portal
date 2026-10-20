@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import datetime, tzinfo
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from src.tools.base_tools import BaseCoreTools
 
@@ -64,7 +63,7 @@ class CarRentalReadTools(BaseCoreTools):
         self,
         car_rental: dict[str, Any],
         trip: dict[str, Any],
-        system_tz: ZoneInfo,
+        system_tz: tzinfo,
     ) -> dict[str, Any]:
         start_epoch = car_rental.get("start")
         end_epoch = car_rental.get("end") - 1

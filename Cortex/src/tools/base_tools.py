@@ -2,10 +2,11 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, tzinfo
 from functools import wraps
 from typing import Any
-from zoneinfo import ZoneInfo
+
+import pytz
 
 from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
@@ -51,10 +52,10 @@ class BaseCoreTools(BaseTools):
     def __init__(self, core_client: CoreClient) -> None:
         self.core_client: CoreClient = core_client
 
-    def _get_user_timezone(self) -> ZoneInfo:
+    def _get_user_timezone(self) -> tzinfo:
         env = generative_content_environment.get()
         if env and env.get("timezone"):
-            return ZoneInfo(env["timezone"])
+            return pytz.timezone(env["timezone"])
 
         return self._get_system_timezone()
 
@@ -82,23 +83,23 @@ class BaseCoreTools(BaseTools):
 
         return self._get_maximum_timestamp() >= trip.get("start", 0)
 
-    def _get_system_timezone(self) -> ZoneInfo:
+    def _get_system_timezone(self) -> tzinfo:
         config = self.core_client.get_configuration()
-        return ZoneInfo(config["homeLocation"]["timezone"])
+        return pytz.timezone(config["homeLocation"]["timezone"])
 
-    def _epoch_to_iso(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
+    def _epoch_to_iso(self, epoch: int | None, user_tz: tzinfo) -> str | None:
         if epoch is None:
             return None
 
         return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%dT%H:%M:%S%z")
 
-    def _epoch_to_date(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
+    def _epoch_to_date(self, epoch: int | None, user_tz: tzinfo) -> str | None:
         if epoch is None:
             return None
 
         return datetime.fromtimestamp(epoch, tz=user_tz).strftime("DD.MM.YYY")
 
-    def _epoch_to_time(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
+    def _epoch_to_time(self, epoch: int | None, user_tz: tzinfo) -> str | None:
         if epoch is None:
             return None
 
