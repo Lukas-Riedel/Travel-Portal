@@ -96,7 +96,7 @@ class BaseCoreTools(BaseTools):
         if epoch is None:
             return None
 
-        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%Y-%m-%d")
+        return datetime.fromtimestamp(epoch, tz=user_tz).strftime("DD.MM.YYY")
 
     def _epoch_to_time(self, epoch: int | None, user_tz: ZoneInfo) -> str | None:
         if epoch is None:

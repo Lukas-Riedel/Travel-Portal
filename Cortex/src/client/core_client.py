@@ -68,6 +68,15 @@ class CoreClient:
 
         return self._request(method="GET", url=url, params=params)
 
+    def get_coordinates(
+        self,
+        address: str,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/coordinates"
+        params = {"address": address}
+
+        return self._request(method="GET", url=url, params=params)
+
     def get_trips(
         self,
         year: int | None = None,
@@ -414,3 +423,24 @@ class CoreClient:
             payload["longName"] = long_name
 
         return self._request(method="PATCH", url=url, json=payload)
+
+    def create_flight(
+        self,
+        flight_type: str,
+        flight: str,
+        origin_airport_name: str,
+        destination_airport_name: str,
+        scheduled_departure: int,
+        scheduled_arrival: int,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/flights"
+        params = {"type": flight_type}
+        payload = {
+            "flight": flight,
+            "from": {"name": origin_airport_name},
+            "to": {"name": destination_airport_name},
+            "scheduledDeparture": scheduled_departure,
+            "scheduledArrival": scheduled_arrival,
+        }
+
+        return self._request(method="POST", url=url, params=params, json=payload)

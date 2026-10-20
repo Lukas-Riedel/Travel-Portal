@@ -74,7 +74,7 @@ class VoucherEditTools(BaseVoucherTools):
             issuer: The issuer or service name (e.g. "FLIXBUS", "Airbnb", "Ryanair", "Booking.com").
             value: The monetary amount or value of the voucher (e.g. 50.0).
             currency: 3-letter currency code (e.g. "EUR", "USD", "CZK", "GBP").
-            expiration: Optional expiration timestamp in Unix epoch seconds. Omit or pass None if no expiry.
+            expiration: Optional expiration timestamp in Unix epoch seconds. Pass None if no expiry.
 
         Returns:
             The created voucher object containing:

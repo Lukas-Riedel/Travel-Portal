@@ -7,7 +7,7 @@ Activate and apply this skill when the user asks to save, register, or log a new
 ## Voucher Guidelines & Actions
 1. **Creating Vouchers**
    - When the user asks to save, store, or log a voucher from raw text, emails, or messages, call `create_voucher`.
-   - For `expiration`, use `convert_datetime_to_epoch` with the user's current timezone from Environmental Context as `tz_name`. If no expiry, omit the argument.
+   - Expiration is optional. If the user provides an expiration date, use `convert_datetime_to_epoch` with the user's current timezone from Environmental Context to convert it. If there is no expiration date, pass null.
    - **NEVER create vouchers with expiration in the past.**
    - **NEVER guess or invent an issuer** (e.g. do not assume "Booking.com" if not explicitly mentioned).
    - If the issuer is missing or uncertain, **ASK THE USER FIRST** before calling `create_voucher`.

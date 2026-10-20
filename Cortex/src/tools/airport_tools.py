@@ -8,7 +8,7 @@ class BaseAirportTools(BaseCoreTools, ABC):
     def _extract_airport(self, airport: dict[str, Any]) -> dict[str, Any]:
         return {
             "id": airport.get("id"),
-            "name": airport.get("longName"),
+            "name": airport.get("longName") or airport.get("shortName"),
             "code": airport.get("code"),
             "country": airport.get("country"),
         }

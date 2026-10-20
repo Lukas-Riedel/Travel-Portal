@@ -2,7 +2,7 @@
 
 ## Purpose & Activation
 Provides capabilities to query and view airports stored in Travel Portal.
-Activate and apply this skill when the user asks about airports, their names, IATA codes, countries, or timezones (e.g. "what airport have I visited?", "show me all airports", "what is the full name of PRG?", "which country is DXB in?").
+Activate and apply this skill when the user asks about airports, their names, IATA codes, or countries (e.g. "what airport have I visited?", "show me all airports", "what is the full name of PRG?", "which country is DXB in?").
 
 ## Airport Guidelines & Actions
 1. **Listing Airports**

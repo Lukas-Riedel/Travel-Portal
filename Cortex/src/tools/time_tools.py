@@ -15,8 +15,31 @@ class TimeTools(BaseTools):
         return [
             self.convert_datetime_to_epoch,
             self.convert_epoch_to_datetime,
+            self.convert_seconds_to_duration,
             self.convert_timezone,
         ]
+
+    def convert_seconds_to_duration(self, seconds: int) -> dict[str, Any]:
+        """Converts a duration in seconds into hours, minutes, and seconds.
+        Use this whenever presenting a duration that is provided in seconds.
+
+        Args:
+            seconds: Non-negative duration in seconds (e.g. 28800).
+
+        Returns:
+            A duration object containing:
+            - hours (integer): Whole hours in the duration (e.g. 8).
+            - minutes (integer): Remaining minutes after whole hours (e.g. 0).
+            - seconds (integer): Remaining seconds after whole minutes (e.g. 0).
+        """
+        if seconds < 0:
+            return {"error": 400, "message": "Duration in seconds cannot be negative."}
+
+        return {
+            "hours": seconds // 3600,
+            "minutes": (seconds % 3600) // 60,
+            "seconds": seconds % 60,
+        }
 
     def convert_datetime_to_epoch(
         self,
@@ -56,12 +79,9 @@ class TimeTools(BaseTools):
 
         dt_with_tz = dt_naive.replace(tzinfo=tz)
 
-        epoch = int(dt_with_tz.timestamp())
-        iso = dt_with_tz.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
         return {
-            "epoch": epoch,
-            "iso": iso,
+            "epoch": int(dt_with_tz.timestamp()),
+            "iso": dt_with_tz.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
 
     def convert_epoch_to_datetime(
@@ -78,7 +98,7 @@ class TimeTools(BaseTools):
         Returns:
             A dictionary containing:
             - iso (string): ISO 8601 UTC representation (e.g. `"2026-04-15T23:55:00Z"`).
-            - date (string): YYYY-MM-DD (in the specified timezone).
+            - date (string): DD.MM.YYY (in the specified timezone).
             - time (string): HH:MM:SS (in the specified timezone).
             - utc_offset (string): UTC offset string (e.g. `"+0200"`).
         """
@@ -92,7 +112,7 @@ class TimeTools(BaseTools):
 
         return {
             "iso": dt_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "date": dt_with_tz.strftime("%Y-%m-%d"),
+            "date": dt_with_tz.strftime("%d.%m.%Y"),
             "time": dt_with_tz.strftime("%H:%M:%S"),
             "utc_offset": dt_with_tz.strftime("%z"),
         }
@@ -114,7 +134,7 @@ class TimeTools(BaseTools):
         Returns:
             A dictionary containing:
             - iso (string): ISO 8601 representation in target timezone with offset (e.g. `"2025-12-31T16:59:59-0500"`).
-            - date (string): YYYY-MM-DD in the target timezone.
+            - date (string): DD.MM.YYY in the target timezone.
             - time (string): HH:MM:SS in the target timezone.
             - target_timezone: Target timezone name.
             - utc_offset (string): UTC offset string in target timezone (e.g. `"-0500"`).
@@ -155,7 +175,7 @@ class TimeTools(BaseTools):
 
         return {
             "iso": dt_target.strftime("%Y-%m-%dT%H:%M:%S%z"),
-            "date": dt_target.strftime("%Y-%m-%d"),
+            "date": dt_target.strftime("%d.%m.%Y"),
             "time": dt_target.strftime("%H:%M:%S"),
             "target_timezone": target_tz,
             "utc_offset": dt_target.strftime("%z"),
