@@ -98,7 +98,7 @@ class TimeTools(BaseTools):
         Returns:
             A dictionary containing:
             - iso (string): ISO 8601 UTC representation (e.g. `"2026-04-15T23:55:00Z"`).
-            - date (string): DD.MM.YYY (in the specified timezone).
+            - date (string): DD.MM.YYYY (in the specified timezone).
             - time (string): HH:MM:SS (in the specified timezone).
             - utc_offset (string): UTC offset string (e.g. `"+0200"`).
         """
@@ -134,7 +134,7 @@ class TimeTools(BaseTools):
         Returns:
             A dictionary containing:
             - iso (string): ISO 8601 representation in target timezone with offset (e.g. `"2025-12-31T16:59:59-0500"`).
-            - date (string): DD.MM.YYY in the target timezone.
+            - date (string): DD.MM.YYYY in the target timezone.
             - time (string): HH:MM:SS in the target timezone.
             - target_timezone: Target timezone name.
             - utc_offset (string): UTC offset string in target timezone (e.g. `"-0500"`).

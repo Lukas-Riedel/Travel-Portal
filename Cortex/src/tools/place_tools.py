@@ -183,7 +183,7 @@ class PlaceReadTools(BasePlaceTools):
             - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
             - dates (list of objects): Visit dates, each containing:
-                - date (string): Date of the visit in YYYY-MM-DD format.
+                - date (string): Visit date in DD.MM.YYYY format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
@@ -231,7 +231,7 @@ class PlaceReadTools(BasePlaceTools):
             - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
             - dates (list of objects): Visit dates, each containing:
-                - date (string): Date of the visit in YYYY-MM-DD format.
+                - date (string): Visit date in DD.MM.YYYY format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
@@ -271,7 +271,7 @@ class PlaceReadTools(BasePlaceTools):
             - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
             - dates (list of objects): Visit dates, each containing:
-                - date (string): Date of the visit in YYYY-MM-DD format.
+                - date (string): Visit date in DD.MM.YYYY format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated candidate trip (e.g. `"Egypt"`), if any.
@@ -306,7 +306,7 @@ class PlaceReadTools(BasePlaceTools):
             - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
             - dates (list of objects): Visit dates, each containing:
-                - date (string): Date of the visit in YYYY-MM-DD format.
+                - date (string): Visit date in DD.MM.YYYY format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
@@ -348,7 +348,7 @@ class PlaceReadTools(BasePlaceTools):
 
         Returns:
             An empty list if the place has no visit dates, or a list of date objects each containing:
-            - date (string): Date of the visit in YYYY-MM-DD format.
+            - date (string): Visit date in DD.MM.YYYY format.
             - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
             - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
             - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
@@ -394,7 +394,7 @@ class PlaceEditTools(BasePlaceTools):
             - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
             - dates (list of objects): Visit dates, each containing:
-                - date (string): Date of the visit in YYYY-MM-DD format.
+                - date (string): Visit date in DD.MM.YYYY format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.
@@ -425,7 +425,7 @@ class PlaceEditTools(BasePlaceTools):
             - country (string): Country the place is located in.
             - timezone (string): IANA timezone identifier of the place.
             - dates (list of objects): Visit dates, each containing:
-                - date (string): Date of the visit in YYYY-MM-DD format.
+                - date (string): Visit date in DD.MM.YYYY format.
                 - start_time (string): Start time of the visit in HH:MM format (in the place's local timezone).
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated trip (e.g. `"Egypt 2024"`), if any.

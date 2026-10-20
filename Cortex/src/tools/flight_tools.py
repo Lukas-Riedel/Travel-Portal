@@ -156,9 +156,9 @@ class FlightReadTools(BaseFlightTools):
                 - name (string): Name of the arrival airport (e.g. `"Dubai International Airport"`).
                 - code (string | null): IATA code of the arrival airport (e.g. `"DXB"`).
                 - country (string | null): Country of the arrival airport (e.g. `"United Arab Emirates"`).
-            - start_date (string): Scheduled departure date in the origin airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-05"`).
+            - start_date (string): Scheduled departure date in the origin airport's local timezone, in DD.MM.YYYY format (e.g. `"05.07.2025"`).
             - start_time (string): Scheduled departure time in the origin airport's local timezone, in HH:MM format (e.g. `"14:00"`).
-            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-06"`).
+            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in DD.MM.YYYY format (e.g. `"06.07.2025"`).
             - end_time (string): Scheduled arrival time in the destination airport's local timezone, in HH:MM format (e.g. `"06:00"`).
             - distance (number | null): Flight distance in kilometers (e.g. `4450.5`).
             - duration (integer): Duration of the flight in seconds (e.g. `28800`).
@@ -270,9 +270,9 @@ class FlightReadTools(BaseFlightTools):
                 - name (string | null): City of the departure airport (e.g. `"Prague"`).
             - to (object): Arrival airport details, containing:
                 - name (string | null): City of the arrival airport (e.g. `"Dubai"`).
-            - start_date (string): Scheduled departure date in the origin airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-05"`).
+            - start_date (string): Scheduled departure date in the origin airport's local timezone, in DD.MM.YYYY format (e.g. `"05.07.2025"`).
             - start_time (string): Scheduled departure time in the origin airport's local timezone, in HH:MM format (e.g. `"14:00"`).
-            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-06"`).
+            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in DD.MM.YYYY format (e.g. `"06.07.2025"`).
             - end_time (string): Scheduled arrival time in the destination airport's local timezone, in HH:MM format (e.g. `"06:00"`).
             - duration (integer): Duration of the flight in seconds (e.g. `28800`).
         """
@@ -343,9 +343,9 @@ class FlightEditTools(BaseFlightTools):
                 - name (string): City of the departure airport (e.g. `"Václav Havel Prague Airport"`).
             - to (object): Arrival airport details, containing:
                 - name (string): City of the arrival airport (e.g. `"Dubai International Airport"`).
-            - start_date (string): Scheduled departure date in the origin airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-05"`).
+            - start_date (string): Scheduled departure date in the origin airport's local timezone, in DD.MM.YYYY format (e.g. `"05.07.2025"`).
             - start_time (string): Scheduled departure time in the origin airport's local timezone, in HH:MM format (e.g. `"14:00"`).
-            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-06"`).
+            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in DD.MM.YYYY format (e.g. `"06.07.2025"`).
             - end_time (string): Scheduled arrival time in the destination airport's local timezone, in HH:MM format (e.g. `"06:00"`).
             - duration (integer): Duration of the flight in seconds (e.g. `28800`).
         """
@@ -390,9 +390,9 @@ class FlightEditTools(BaseFlightTools):
                 - name (string): City of the departure airport (e.g. `"Václav Havel Prague Airport"`).
             - to (object): Arrival airport details, containing:
                 - name (string): City of the arrival airport (e.g. `"Dubai International Airport"`).
-            - start_date (string): Scheduled departure date in the origin airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-05"`).
+            - start_date (string): Scheduled departure date in the origin airport's local timezone, in DD.MM.YYYY format (e.g. `"05.07.2025"`).
             - start_time (string): Scheduled departure time in the origin airport's local timezone, in HH:MM format (e.g. `"14:00"`).
-            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in YYYY-MM-DD format (e.g. `"2025-07-06"`).
+            - end_date (string): Scheduled arrival date in the destination airport's local timezone, in DD.MM.YYYY format (e.g. `"06.07.2025"`).
             - end_time (string): Scheduled arrival time in the destination airport's local timezone, in HH:MM format (e.g. `"06:00"`).
             - duration (integer): Duration of the flight in seconds (e.g. `28800`).
         """
