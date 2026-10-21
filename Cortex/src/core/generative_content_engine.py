@@ -48,7 +48,6 @@ class GenerativeContentEngine:
         last_message = messages[-1].get("text", "")
 
         config_kwargs = {}
-        tools = []
 
         if enabled_skills is not None:
             parts = [
@@ -63,20 +62,13 @@ class GenerativeContentEngine:
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
-            tools = [
-                *(self.tool_registry.get_callable_tools(enabled_skills)),
-                types.Tool(code_execution=types.ToolCodeExecution()),
-                types.Tool(google_maps={}),
-            ]
+            tools = self.tool_registry.get_callable_tools(enabled_skills)
+            if tools:
+                config_kwargs["tools"] = tools
 
         if schema is not None:
             config_kwargs["response_mime_type"] = "application/json"
             config_kwargs["response_schema"] = schema
-        else:
-            tools.append(types.Tool(google_search={}))
-
-        if tools:
-            config_kwargs["tools"] = tools
 
         config = types.GenerateContentConfig(
             **config_kwargs,
