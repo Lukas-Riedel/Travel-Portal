@@ -28,16 +28,14 @@
         }
 
         public function getTimeTrackingEvents(?TimeTrackingEventType $type = null) : array {
+            $this->timeTrackingMapper->deleteStalePlannedWorkEvents();
+            $this->timeTrackingMapper->deleteUsedOvertimeEvents();
+            
             return $this->timeTrackingMapper->selectTimeTrackingEvents($type);
         }
 
         public function removeTimeTrackingEvent(string $eventId) : bool {
             return $this->timeTrackingMapper->deleteTimeTrackingEvent($eventId) > 0;
-        }
-
-        public function executeTimeTrackingEventsAudit() : void {
-            $this->timeTrackingMapper->deleteStalePlannedWorkEvents();
-            $this->timeTrackingMapper->deleteUsedOvertimeEvents();
         }
 
         public function resetOpeningBalances(int $beginningOfYearTimestamp) : void {
