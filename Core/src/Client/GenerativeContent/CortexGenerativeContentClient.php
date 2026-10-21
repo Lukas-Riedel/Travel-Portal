@@ -103,14 +103,19 @@
         }
 
         // TODO: This exists only because empty objects are de/serialized as array, which leads to a type mismatch on the Python side. The correct solution is to ensure that empty objects are de/serialized correctly (e.g., stdClass).
-        private function sanitizeChatHistory(mixed $data): mixed {
+        private function sanitizeChatHistory(array $messages): array {
+            $messages = array_filter($messages, fn($message) => $message !== array());
+            return array_values(array_map(fn($message) => $this->sanitizeChatMessage($message), $messages));
+        }
+
+        private function sanitizeChatMessage(mixed $data): mixed {
             if (is_array($data)) {
                 if (isset($data["functionCall"]) && is_array($data["functionCall"])) {
                     if (array_key_exists("args", $data["functionCall"]) && empty($data["functionCall"]["args"])) {
                         $data["functionCall"]["args"] = new \stdClass();
                     }
                 }
-                return array_map(array($this, "sanitizeChatHistory"), $data);
+                return array_map(array($this, "sanitizeChatMessage"), $data);
             }
             return $data;
         }
