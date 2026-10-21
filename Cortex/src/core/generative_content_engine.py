@@ -48,13 +48,13 @@ class GenerativeContentEngine:
         last_message = messages[-1].get("text", "")
 
         config_kwargs = {}
+        tools = []
 
         if enabled_skills is not None:
-            system_instruction = self.skill_registry.get_callable_skills(enabled_skills)
             parts = [
                 p
                 for p in [
-                    system_instruction,
+                    self.skill_registry.get_callable_skills(enabled_skills),
                     self._build_environmental_context(),
                     self._build_personal_context(context),
                 ]
@@ -63,13 +63,20 @@ class GenerativeContentEngine:
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
-            tools = self.tool_registry.get_callable_tools(enabled_skills)
-            if tools:
-                config_kwargs["tools"] = tools
+            tools = [
+                *(self.tool_registry.get_callable_tools(enabled_skills)),
+                types.Tool(code_execution=types.ToolCodeExecution()),
+                types.Tool(google_maps={}),
+            ]
 
         if schema is not None:
             config_kwargs["response_mime_type"] = "application/json"
             config_kwargs["response_schema"] = schema
+        else:
+            tools.append(types.Tool(google_search={}))
+
+        if tools:
+            config_kwargs["tools"] = tools
 
         config = types.GenerateContentConfig(
             **config_kwargs,
@@ -110,9 +117,9 @@ class GenerativeContentEngine:
             detail="All generative content models are currently unavailable. Please try again later.",
         )
 
-    def _build_personal_context(self, context: str | None) -> str:
+    def _build_personal_context(self, context: str | None) -> str | None:
         if not context:
-            return ""
+            return None
 
         lines = ["# Authenticated User", context]
 
