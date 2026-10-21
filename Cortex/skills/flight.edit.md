@@ -20,7 +20,7 @@ Activate and apply this skill when the user asks to add, record, watch, or sched
       - For date/time values from an email, preserve the date and time shown for each airport. Account for any stated timezone or UTC offset when converting. Ask the user if the timezone or date/time is unclear. **NEVER assume the departure and arrival use the same timezone or calendar date**.
    - For airport names (`origin_airport_name` and `destination_airport_name`):
       - Pass the airport city or name as mentioned by the user (e.g. "Prague", "Dubai").
-   - After creating a flight, **confirm** with a concise summary stating the flight number, departure and arrival airports, and departure and arrival dates and times.
+   - After creating a flight, confirm with a concise summary stating the flight number, departure and arrival airports, and departure and arrival dates and times.
 3. **Creating Watched Flights**
    - When the user asks to watch, monitor, or track a flight (e.g. "track flight BA854 from London to Prague", "watch flight LH1234 from Munich to Frankfurt"), call `create_watched_flight`.
    - For timestamps (`scheduled_departure` and `scheduled_arrival`):
@@ -29,4 +29,4 @@ Activate and apply this skill when the user asks to add, record, watch, or sched
       - For date/time values from an email, preserve the date and time shown for each airport. Account for any stated timezone or UTC offset when converting. Ask the user if the timezone or date/time is unclear. **NEVER assume the departure and arrival use the same timezone or calendar date**.
    - For airport names (`origin_airport_name` and `destination_airport_name`):
       - Pass the airport city or name as mentioned by the user (e.g. "London", "Prague").
-   - After creating a watched flight, **confirm** with a concise summary stating the flight number, departure and arrival airports, dates and times, and that the flight is now being watched.
+   - After creating a watched flight, confirm with a concise summary stating the flight number, departure and arrival airports, dates and times, and that the flight is now being watched.

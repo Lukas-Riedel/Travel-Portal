@@ -108,6 +108,43 @@ class CoreClient:
 
         return self._request(method="GET", url=url, params=params)
 
+    def get_categories(
+        self,
+        country: str | None = None,
+        categories: str | None = None,
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/categories"
+        params = {"include": ""}
+        if country is not None:
+            params["country"] = country
+        if categories is not None:
+            params["categories"] = categories
+
+        return self._request(method="GET", url=url, params=params)
+
+    def get_category(self, category_id: str) -> dict[str, Any]:
+        url = f"{self.base_url}/categories/{category_id}"
+
+        return self._request(method="GET", url=url)
+
+    def update_category(
+        self,
+        category_id: str,
+        color: str | None = None,
+        public_holidays_calendar: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/categories/{category_id}"
+        payload = {}
+        metadata = {}
+        if color is not None:
+            metadata["color"] = color
+        if public_holidays_calendar is not None:
+            metadata["publicHolidaysCalendar"] = public_holidays_calendar
+        if metadata:
+            payload["metadata"] = metadata
+
+        return self._request(method="PATCH", url=url, json=payload)
+
     def create_trip_note(self, trip_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/notes"
         payload = {"content": content}
