@@ -372,11 +372,22 @@ class CoreClient:
 
         return self._request(method="PATCH", url=url, json=payload)
 
+    def create_place_label(self, place_id: str, name: str) -> dict[str, Any]:
+        url = f"{self.base_url}/places/{place_id}/labels"
+        payload = {"name": name}
+
+        return self._request(method="POST", url=url, json=payload)
+
     def create_place_note(self, place_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}/notes"
         payload = {"content": content}
 
         return self._request(method="POST", url=url, json=payload)
+
+    def get_labels(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/labels"
+
+        return self._request(method="GET", url=url)
 
     def update_place_note(
         self, place_id: str, note_id: str, content: str | None = None
