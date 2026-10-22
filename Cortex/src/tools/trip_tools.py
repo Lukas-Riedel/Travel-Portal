@@ -28,8 +28,8 @@ class TripReadTools(BaseCoreTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
-            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
+            - start (string): Start date in DD.MM.YYYY format (e.g. `"27.12.2025"`).
+            - end (string): End date in DD.MM.YYYY format (e.g. `"31.12.2025"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """
@@ -61,8 +61,8 @@ class TripReadTools(BaseCoreTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
-            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
+            - start (string): Start date in DD.MM.YYYY format (e.g. `"27.12.2025"`).
+            - end (string): End date in DD.MM.YYYY format (e.g. `"31.12.2025"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """
@@ -101,8 +101,8 @@ class TripReadTools(BaseCoreTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
-            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
+            - start (string): Start date in DD.MM.YYYY format (e.g. `"27.12.2025"`).
+            - end (string): End date in DD.MM.YYYY format (e.g. `"31.12.2025"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """
@@ -149,8 +149,8 @@ class TripReadTools(BaseCoreTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
-            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
+            - start (string): Start date in DD.MM.YYYY format (e.g. `"27.12.2025"`).
+            - end (string): End date in DD.MM.YYYY format (e.g. `"31.12.2025"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """
@@ -179,8 +179,8 @@ class TripReadTools(BaseCoreTools):
             - id (string): Unique identifier of the trip. Use it when looking up stays, flights, public holidays and others.
             - name (string): Title/name of the trip.
             - year (integer): Year of the trip.
-            - start (string): Start date in YYYY-MM-DD format (e.g. `"2025-12-27"`).
-            - end (string): End date in YYYY-MM-DD format (e.g. `"2025-12-31"`).
+            - start (string): Start date in DD.MM.YYYY format (e.g. `"27.12.2025"`).
+            - end (string): End date in DD.MM.YYYY format (e.g. `"31.12.2025"`).
             - days (integer): Number of calendar days the trip spans (inclusive).
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """

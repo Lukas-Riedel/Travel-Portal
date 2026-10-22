@@ -34,7 +34,7 @@ class CategoryPublicHolidayReadTools(BaseCoreTools):
             A chronologically ordered list of public holidays, each containing:
             - name (string): Holiday name.
             - category (string): Category name associated with the calendar.
-            - date (string): Holiday date in YYYY-MM-DD format.
+            - date (string): Holiday date in DD.MM.YYYY format (e.g. `"24.12.2026"`).
         """
         category = self.core_client.get_category(category_id=category_id)
         if self._is_error_response(category):
@@ -83,7 +83,13 @@ class CategoryPublicHolidayReadTools(BaseCoreTools):
                 )
             )
 
-        return sorted(holidays, key=lambda holiday: holiday["date"])
+        return sorted(
+            holidays,
+            key=lambda holiday: datetime.strptime(
+                date_string=holiday["date"],
+                format="%d.%m.%Y",
+            ),
+        )
 
     def _extract_event_occurrences(
         self, event: Any, year: int, category: str
@@ -160,8 +166,15 @@ class CategoryPublicHolidayReadTools(BaseCoreTools):
         occurrence: datetime,
         category: str,
     ) -> dict[str, Any]:
+        user_tz = self._get_user_timezone()
+        if occurrence.tzinfo is None:
+            occurrence = user_tz.localize(occurrence)
+
         return {
             "name": unescape(event.get("summary", "")),
             "category": category,
-            "date": self._epoch_to_date(occurrence.timestamp()),
+            "date": self._epoch_to_date(
+                epoch=int(occurrence.timestamp()),
+                user_tz=user_tz,
+            ),
         }
