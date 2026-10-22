@@ -131,6 +131,8 @@
                     $this->eventPublisher->publish(Event::CategoryUpdated($categoryId));
                 }
             });
+
+            $this->categoryMapper->deleteStaleCategoryIdentifiers();
         }
 
         public function getCategoryIdentifier(string $name) : ?CategoryIdentifier { 
