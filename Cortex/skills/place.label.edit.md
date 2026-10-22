@@ -1,10 +1,5 @@
 # Place Label Edit Skill
 
-## Purpose & Activation
-Provides capabilities to assign existing labels to places and create new labels after user confirmation.
-Activate and apply this skill when the user asks to label a place, assign an existing label, or create a new label for a place (e.g. "label Prague as a city", "add the City label to Bangkok", "create a new label called UNESCO Site for Angkor Wat").
-
-## Place Label Guidelines & Actions
 1. **Assigning a Label to a Place**
    - Resolve the place first using place tools. **NEVER ask the user for a place ID or UUID.**
    - **MUST ALWAYS** inspect the full list of available labels before choosing one. Select a label only when one available label clearly matches the user's request.

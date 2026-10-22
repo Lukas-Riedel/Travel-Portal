@@ -42,14 +42,14 @@ class SkillRegistry:
 
         logger.info(f"Loaded {len(self.skills)} skill(s).")
 
-    def get_callable_skills(self, enabled_skills: list[str] | None = None) -> str:
+    def get_callable_skills(self, allowed_skills: list[str] | None = None) -> str:
         skill_contents = []
 
         if self.master_skill:
             skill_contents.append(self.master_skill)
 
-        if enabled_skills:
-            for skill_name in sorted(set(enabled_skills)):
+        if allowed_skills:
+            for skill_name in sorted(set(allowed_skills)):
                 if content := self.skills.get(skill_name):
                     skill_contents.append(content)
 

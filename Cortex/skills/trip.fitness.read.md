@@ -1,10 +1,5 @@
 # Trip Fitness Read Skill
 
-## Purpose & Activation
-Provides capabilities to query and summarize daily fitness records for trips in Travel Portal.
-Activate and apply this skill when the user asks about steps, activity duration, or walking distance during a trip or across trips (e.g. "how many steps did I take in Japan?", "how far did I walk in 2024?", "show my daily walking distance on my Iceland trip").
-
-## Trip Fitness Guidelines & Actions
 1. **Summarizing Fitness Across Trips**
    - When the user asks for trip fitness totals or a summary by trip, call `get_trip_fitness_summaries`.
    - Provide `trip_id` whenever the user mentions a specific trip. Resolve it first using trip tools. **NEVER ask the user for a trip ID or UUID.**

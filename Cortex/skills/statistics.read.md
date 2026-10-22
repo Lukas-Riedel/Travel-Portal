@@ -1,10 +1,5 @@
 # Overall Statistics Read Skill
 
-## Purpose & Activation
-Provides capabilities to query statistics and discover interesting facts about the user's travel data overall.
-Activate and apply this skill when the user asks what is known about their travels overall, asks for an interesting fact, or asks a general open-ended question about their travel history (e.g. "what do you know about my travels overall?", "tell me an interesting fact about my trips", "what stands out about my travel history?").
-
-## Overall Statistics Guidelines & Actions
 1. **Retrieving Overall Statistics**
    - For open-ended questions about the user's travel history overall, call `get_statistics`, even if the question may be answerable from other available details.
    - Also call this tool when a general question asks for a detail or interesting fact that may be present in overall statistics. Combine relevant statistics with other information when useful. Do not present irrelevant statistics just because they were returned.

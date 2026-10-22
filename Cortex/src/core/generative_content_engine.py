@@ -35,6 +35,7 @@ class GenerativeContentEngine:
         self,
         messages: list[dict[str, Any]],
         schema: dict[str, Any] | None = None,
+        allowed_skills: list[str] | None = None,
         enabled_skills: list[str] | None = None,
         context: str | None = None,
     ) -> tuple[str, list[dict[str, Any]]]:
@@ -49,11 +50,32 @@ class GenerativeContentEngine:
 
         config_kwargs = {}
 
-        if enabled_skills is not None:
+        if allowed_skills is not None:
+            allowed_set = set(allowed_skills)
+            enabled_skills_by_default = (
+                self.tool_registry.get_enabled_by_default_skills(allowed_skills)
+            )
+            all_enabled_skills = list(
+                dict.fromkeys(
+                    skill
+                    for skill in [
+                        *enabled_skills_by_default,
+                        *(enabled_skills or []),
+                    ]
+                    if skill in allowed_set
+                )
+            )
+
             parts = [
                 p
                 for p in [
-                    self.skill_registry.get_callable_skills(enabled_skills),
+                    self.skill_registry.get_callable_skills(all_enabled_skills),
+                    self._build_disabled_skills(
+                        self.tool_registry.get_disabled_skills(
+                            enabled_skills=all_enabled_skills,
+                            allowed_skills=allowed_skills,
+                        )
+                    ),
                     self._build_environmental_context(),
                     self._build_personal_context(context),
                 ]
@@ -62,7 +84,7 @@ class GenerativeContentEngine:
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
-            tools = self.tool_registry.get_callable_tools(enabled_skills)
+            tools = self.tool_registry.get_callable_tools(all_enabled_skills)
             if tools:
                 config_kwargs["tools"] = tools
 
@@ -114,6 +136,20 @@ class GenerativeContentEngine:
             return None
 
         lines = ["# Authenticated User", context]
+
+        return "\n".join(lines)
+
+    def _build_disabled_skills(
+        self, disabled_skills: list[str] | None = None
+    ) -> str | None:
+        if not disabled_skills:
+            return None
+
+        lines = ["# Disabled Skills"]
+        for disabled_skill in disabled_skills:
+            lines.append(
+                f"- {disabled_skill}: {self.tool_registry.get_skill_description(disabled_skill)}"
+            )
 
         return "\n".join(lines)
 

@@ -1,10 +1,5 @@
 # Category Edit Skill
 
-## Purpose & Activation
-Provides capabilities to update category colors and public-holiday calendar URLs in Travel Portal.
-Activate and apply this skill when the user asks to change a category's color or public holidays calendar (e.g. "set the color of Europe to #012169", "set the Czech Republic public holidays calendar to URL").
-
-## Category Guidelines & Actions
 1. **Updating a Category Color**
    - When the user asks to set or change a category's color (e.g. "set the color of Europe to #012169"), call `update_category_color`.
    - Always resolve the category ID first using `get_category_by_name` or other tools. **NEVER ask the user for a category ID or UUID.**

@@ -13,6 +13,8 @@ class ToolRegistry:
     def __init__(self, core_client: CoreClient) -> None:
         self.core_client: CoreClient = core_client
         self.tools: dict[str, tuple[Callable[..., Any], str | None]] = {}
+        self.enabled_by_default_skills: list[str] = []
+        self.skill_descriptions: dict[str, str] = {}
         self._auto_discover_and_register()
 
     def _auto_discover_and_register(self) -> None:
@@ -35,10 +37,12 @@ class ToolRegistry:
                             instance = cls(core_client=self.core_client)
                         else:
                             instance = cls()
-                        discovered_tools = instance._get_tools()
-                        supported_skill = instance._get_supported_skill()
+
                         self._register_module_tools(
-                            tools=discovered_tools, supported_skill=supported_skill
+                            tools=instance._get_tools(),
+                            supported_skill=instance._get_supported_skill(),
+                            enabled_by_default=instance._is_enabled_by_default(),
+                            description=instance._get_description(),
                         )
                     except Exception as exc:
                         logger.error(
@@ -48,20 +52,69 @@ class ToolRegistry:
         logger.info(f"Loaded {len(self.tools)} tool(s).")
 
     def _register_module_tools(
-        self, tools: list[Callable[..., Any]], supported_skill: str | None
+        self,
+        tools: list[Callable[..., Any]],
+        supported_skill: str | None,
+        *,
+        enabled_by_default: bool = False,
+        description: str | None = None,
     ) -> None:
+        if (
+            enabled_by_default
+            and supported_skill is not None
+            and supported_skill not in self.enabled_by_default_skills
+        ):
+            self.enabled_by_default_skills.append(supported_skill)
+
+        if description:
+            self.skill_descriptions[supported_skill] = description
+
         for tool in tools:
             self.tools[tool.__name__] = (tool, supported_skill)
 
     def get_callable_tools(
-        self, enabled_skills: list[str] | None = None
+        self, allowed_skills: list[str] | None = None
     ) -> list[Callable[..., Any]]:
-        if enabled_skills is None:
-            return [tool for tool, _ in self.tools.values()]
-
-        enabled_set = set(enabled_skills)
+        allowed_set = set(allowed_skills or [])
         return [
             tool
             for tool, skill in self.tools.values()
-            if skill is None or skill in enabled_set
+            if skill is None or skill in allowed_set
         ]
+
+    def get_disabled_skills(
+        self,
+        enabled_skills: list[str] | None = None,
+        allowed_skills: list[str] | None = None,
+    ) -> list[str]:
+        enabled_set = set(enabled_skills or [])
+        allowed_set = set(allowed_skills or [])
+        disabled_skills = []
+        seen_skills = set()
+
+        for _, skill in self.tools.values():
+            if (
+                skill is None
+                or skill in enabled_set
+                or skill not in allowed_set
+                or skill in seen_skills
+            ):
+                continue
+
+            disabled_skills.append(skill)
+            seen_skills.add(skill)
+
+        return disabled_skills
+
+    def get_enabled_by_default_skills(
+        self, allowed_skills: list[str] | None = None
+    ) -> list[str]:
+        allowed_set = set(allowed_skills or [])
+        return [
+            skill
+            for skill in self.enabled_by_default_skills
+            if skill is None or skill in allowed_set
+        ]
+
+    def get_skill_description(self, skill: str) -> str:
+        return self.skill_descriptions[skill]

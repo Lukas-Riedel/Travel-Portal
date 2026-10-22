@@ -16,6 +16,12 @@ class BaseCategoryTools(BaseCoreTools, ABC):
 
 
 class CategoryReadTools(BaseCategoryTools):
+    def _get_description(self) -> str | None:
+        return 'Provides capabilities to list and find categories in Travel Portal. Activate and apply this skill when the user asks about categories, their types, or a category by name (e.g. "show me all island categories", "list administrative regions in Czechia", "find the category Europe").'
+
+    def _is_enabled_by_default(self) -> bool:
+        return False
+
     def _get_supported_skill(self) -> str:
         return "category.read"
 
@@ -94,6 +100,12 @@ class CategoryReadTools(BaseCategoryTools):
 
 
 class PlaceCategoryReadTools(BaseCategoryTools):
+    def _get_description(self) -> str | None:
+        return 'Provides capabilities to query categories associated with places in Travel Portal. Activate and apply this skill when the user asks which categories or regions a specific place belongs to (e.g. "which regions does Prague belong to?", "what categories are associated with Angkor Wat?").'
+
+    def _is_enabled_by_default(self) -> bool:
+        return True
+
     def _get_supported_skill(self) -> str:
         return "place.category.read"
 
@@ -132,6 +144,12 @@ class PlaceCategoryReadTools(BaseCategoryTools):
 
 
 class CategoryEditTools(BaseCategoryTools):
+    def _get_description(self) -> str | None:
+        return 'Provides capabilities to update category colors and public-holiday calendar URLs in Travel Portal. Activate and apply this skill when the user asks to change a category\'s color or public holidays calendar (e.g. "set the color of Europe to #012169", "set the Czech Republic public holidays calendar to URL").'
+
+    def _is_enabled_by_default(self) -> bool:
+        return False
+
     def _get_supported_skill(self) -> str:
         return "category.edit"
 

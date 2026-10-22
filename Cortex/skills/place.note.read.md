@@ -1,10 +1,5 @@
 # Place Note Read Skill
 
-## Purpose & Activation
-Provides capabilities to query and inspect notes, memos, reminders, and observations recorded for places in Travel Portal.
-Activate and apply this skill when the user asks about place notes, memos, or information written down for a specific place (e.g. "what notes do I have for Prague?", "show me notes for Angkor Wat", "did I write any tips for Eiffel Tower?").
-
-## Note Guidelines & Actions
 1. **Listing Notes for a Specific Place**
    - When the user asks about notes or observations on a particular place (e.g. "what notes do I have for Prague?", "show me the notes for Eiffel Tower"), call `get_notes_for_place`.
    - Always resolve the place ID first using place tools. **NEVER ask the user for a place ID or UUID.**

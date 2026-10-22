@@ -1,10 +1,5 @@
 # Subscription Edit Skill
 
-## Purpose & Activation
-Provides capabilities to record and create active travel subscriptions and transit passes in Travel Portal.
-Activate and apply this skill when the user asks to save, register, or create a travel subscription or period transit pass.
-
-## Subscription Guidelines & Actions
 1. **Creating Subscriptions**
    - When the user asks to save or register a subscription, call `create_subscription`.
    - **MUST ALWAYS** call `get_subscription_descriptions` to discover existing subscription descriptions and propose an appropriate name. If unsure, confirm with the user.

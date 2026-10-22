@@ -1,10 +1,5 @@
 # Trip Expense Read Skill
 
-## Purpose & Activation
-Provides capabilities to query and view expenses recorded for trips in Travel Portal.
-Activate and apply this skill when the user asks about their spending, costs, or expenses (e.g. "how much did I spend in Japan?", "what did I pay for hotels this year?", "list my flight expenses").
-
-## Expense Guidelines & Actions
 1. **Listing Expenses**
    - When the user asks about expenses, costs, or spending, call `get_expenses`.
    - Apply filters based on what the user mentions:

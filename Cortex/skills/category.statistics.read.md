@@ -1,10 +1,5 @@
 # Category Statistics Read Skill
 
-## Purpose & Activation
-Provides capabilities to query statistics and discover interesting facts about categories in Travel Portal.
-Activate and apply this skill when the user asks what is known about a specific category, asks for an interesting fact, or asks a general open-ended question about a category (e.g. "what do you know about Japan?", "tell me an interesting fact about California", "what stands out about the Balkans?").
-
-## Category Statistics Guidelines & Actions
 1. **Retrieving Category Statistics**
    - For open-ended questions about a specific category, resolve the category ID first using category tools and call `get_category_statistics`, even if the question may be answerable from basic category details. **NEVER ask the user for a category ID or UUID.**
    - Also call this tool when a specific-category question asks for a detail or interesting fact that may be present in statistics. Combine relevant statistics with other category details when useful. Do not present irrelevant statistics just because they were returned.

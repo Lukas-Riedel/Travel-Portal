@@ -47,6 +47,14 @@ class BaseTools(ABC):
     def _get_supported_skill(self) -> str | None:
         pass
 
+    @abstractmethod
+    def _is_enabled_by_default(self) -> bool:
+        pass
+
+    @abstractmethod
+    def _get_description(self) -> str | None:
+        pass
+
 
 class BaseCoreTools(BaseTools):
     def __init__(self, core_client: CoreClient) -> None:

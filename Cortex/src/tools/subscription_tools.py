@@ -22,6 +22,12 @@ class BaseSubscriptionTools(BaseCoreTools, ABC):
 
 
 class SubscriptionReadTools(BaseSubscriptionTools):
+    def _get_description(self) -> str | None:
+        return 'Provides capabilities to query and view active travel subscriptions and transit passes in Travel Portal. Activate and apply this skill when the user asks about active travel subscriptions, transit passes, rail cards, or memberships (e.g. "what subscriptions do I have?", "do I have a Deutschland ticket?").'
+
+    def _is_enabled_by_default(self) -> bool:
+        return False
+
     def _get_supported_skill(self) -> str:
         return "subscription.read"
 
@@ -50,6 +56,12 @@ class SubscriptionReadTools(BaseSubscriptionTools):
 
 
 class SubscriptionEditTools(BaseSubscriptionTools):
+    def _get_description(self) -> str | None:
+        return "Provides capabilities to record and create active travel subscriptions and transit passes in Travel Portal. Activate and apply this skill when the user asks to save, register, or create a travel subscription or period transit pass."
+
+    def _is_enabled_by_default(self) -> bool:
+        return False
+
     def _get_supported_skill(self) -> str:
         return "subscription.edit"
 

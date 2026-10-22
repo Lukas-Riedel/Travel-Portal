@@ -1,10 +1,5 @@
 # Trip Read Skill
 
-## Purpose & Activation
-Provides capabilities to query, search, and locate trips in Travel Portal.
-Activate and apply this skill when the user asks about trips, itineraries, travel history, upcoming trips, or searches for trips by name/destination.
-
-## Trip Guidelines & Actions
 1. **Obtaining Upcoming Trip**
    - When the user refers to the next or upcoming trip, call `get_upcoming_trip`.
 2. **Obtaining Current Trip**

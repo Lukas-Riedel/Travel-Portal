@@ -1,10 +1,5 @@
 # Trip Task Edit Skill
 
-## Purpose & Activation
-Provides capabilities to create, update, and delete tasks and to-do items for trips in Travel Portal.
-Activate and apply this skill when the user asks to add, create, modify, edit, or delete a task for a trip (e.g. "add a task to my Japan trip", "mark task as done", "delete the packing task", "change priority of the visa task to high").
-
-## Task Guidelines & Actions
 1. **Creating a Trip Task**
    - When the user asks to add, create, or record a task for a trip, call `create_trip_task`.
    - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**

@@ -1,10 +1,5 @@
 # Place Read Skill
 
-## Purpose & Activation
-Provides capabilities to query, search, and inspect places in Travel Portal.
-Activate and apply this skill when the user asks about visited places, destinations, locations, points of interest, candidate places, or wants to know when a specific place was visited.
-
-## Place Guidelines & Actions
 1. **Listing Places**
    - When the user asks to browse or list places, call `get_places`.
    - Apply filters based on what the user mentions:

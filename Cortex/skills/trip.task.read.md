@@ -1,10 +1,5 @@
 # Trip Task Read Skill
 
-## Purpose & Activation
-Provides capabilities to query and view actionable tasks and to-do items recorded for trips in Travel Portal.
-Activate and apply this skill when the user asks about their tasks, to-do items, or reminders (e.g. "what tasks do I have?", "show me high-priority tasks", "what do I need to do before my Japan trip?").
-
-## Task Guidelines & Actions
 1. **Listing Tasks**
    - When the user asks about tasks or to-do items, call `get_tasks`.
    - Apply filters based on what the user mentions:

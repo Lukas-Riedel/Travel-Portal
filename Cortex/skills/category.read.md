@@ -1,10 +1,5 @@
 # Category Read Skill
 
-## Purpose & Activation
-Provides capabilities to list and find categories in Travel Portal.
-Activate and apply this skill when the user asks about categories, their types, or a category by name (e.g. "show me all island categories", "list administrative regions in Czechia", "find the category Europe").
-
-## Category Guidelines & Actions
 1. **Listing Categories**
    - When the user asks to browse or list categories (e.g. "what categories do I have?", "show me all the seas"), call `get_categories`.
    - Provide `category_type` whenever the user mentions a particular type (e.g. "show me all island categories"). The tool filters by type after retrieving categories.

@@ -1,10 +1,5 @@
 # Trip Expense Edit Skill
 
-## Purpose & Activation
-Provides capabilities to create and update expenses for trips in Travel Portal.
-Activate and apply this skill when the user asks to add, record, modify, or correct an expense for a trip (e.g. "add 30 EUR for the museum tickets to my Turkey trip", "I paid 120 CZK for the bus", "change the hotel expense to 250 USD", "rename the taxi expense").
-
-## Expense Guidelines & Actions
 1. **Creating a Trip Expense**
    - When the user asks to add, create, or record an expense for a trip, call `create_trip_expense`.
    - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**

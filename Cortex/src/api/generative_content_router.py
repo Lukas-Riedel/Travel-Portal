@@ -71,7 +71,7 @@ def generate_content(
     token = generative_content_environment.set(request.environment)
     try:
         u_id = current_user.get("user_id")
-        enabled_skills = (
+        allowed_skills = (
             req_obj.app.state.iam_client.get_user_roles(u_id)
             if use_skills and u_id
             else None
@@ -80,7 +80,7 @@ def generate_content(
         text, history = req_obj.app.state.generative_content_engine.generate(
             messages=request.messages,
             schema=request.schema,
-            enabled_skills=enabled_skills,
+            allowed_skills=allowed_skills,
             context=request.context,
         )
     finally:

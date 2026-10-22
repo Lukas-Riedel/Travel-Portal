@@ -1,10 +1,5 @@
 # Voucher Edit Skill
 
-## Purpose & Activation
-Provides capabilities to create, record, and update vouchers, discount coupons, and gift cards in Travel Portal.
-Activate and apply this skill when the user asks to save, register, or log a new voucher, or when the user mentions that a voucher balance changed / was used.
-
-## Voucher Guidelines & Actions
 1. **Creating Vouchers**
    - When the user asks to save, store, or log a voucher from raw text, emails, or messages, call `create_voucher`.
    - Expiration is optional. If the user provides an expiration date, use `convert_datetime_to_epoch` with the user's current timezone from Environmental Context to convert it. If there is no expiration date, pass null.

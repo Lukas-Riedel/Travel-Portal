@@ -27,6 +27,9 @@ class BasePublicHolidayTools(BaseCoreTools, ABC):
 
 
 class TripPublicHolidayReadTools(BasePublicHolidayTools):
+    def _is_enabled_by_default(self) -> bool:
+        return False
+
     def _get_supported_skill(self) -> str:
         return "trip.read"
 
@@ -65,6 +68,9 @@ class TripPublicHolidayReadTools(BasePublicHolidayTools):
 
 
 class CategoryPublicHolidayReadTools(BasePublicHolidayTools):
+    def _is_enabled_by_default(self) -> bool:
+        return False
+
     def _get_supported_skill(self) -> str:
         return "category.read"
 

@@ -1,10 +1,5 @@
 # Flight Edit Skill
 
-## Purpose & Activation
-Provides capabilities to create scheduled and watched flights in Travel Portal.
-Activate and apply this skill when the user asks to add, record, watch, or schedule a flight.
-
-## Flight Edit Guidelines & Actions
 1. **Preparing Flight Details**
    - When the user pastes a booking confirmation or other flight information and asks to add the flight, extract the flight number, origin airport, destination airport, departure date and local time, and arrival date and local time from the provided text. Use the confirmation as the source of truth. **NEVER invent missing flight details**.
    - If the user explicitly asks to watch, monitor, or track a flight, prepare it as a watched flight. Otherwise, a request to add or record a booked flight means a scheduled flight.

@@ -1,10 +1,5 @@
 # Trip Note Read Skill
 
-## Purpose & Activation
-Provides capabilities to query and inspect notes, memos, reminders, and observations recorded for a specific trip in Travel Portal.
-Activate and apply this skill when the user asks about notes, memos, or information written down for a specific trip (e.g. "what notes did I take during my Japan trip?", "show me notes for Egypt", "what did I note down during my Japan trip?").
-
-## Note Guidelines & Actions
 1. **Listing Notes for a Specific Trip**
    - When the user asks about notes or observations on a particular trip (e.g. "what notes do I have for Japan?", "show me the notes for my upcoming trip"), call `get_notes_for_trip`.
    - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**

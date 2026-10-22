@@ -1,10 +1,5 @@
 # Trip Note Edit Skill
 
-## Purpose & Activation
-Provides capabilities to create, update, and delete notes, memos, and reminders for trips in Travel Portal.
-Activate and apply this skill when the user asks to add, record, modify, edit, or delete a note for a trip (e.g. "add a note to my Japan trip", "update the note about train tickets", "delete the note about car rental").
-
-## Note Guidelines & Actions
 1. **Creating a Trip Note**
    - When the user asks to add, save, or record a note for a trip, call `create_trip_note`.
    - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**

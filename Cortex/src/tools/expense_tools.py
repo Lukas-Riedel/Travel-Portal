@@ -38,6 +38,12 @@ class BaseExpenseTools(BaseCoreTools, ABC):
 
 
 class ExpenseReadTools(BaseExpenseTools):
+    def _get_description(self) -> str | None:
+        return 'Provides capabilities to query and view expenses recorded for trips in Travel Portal. Activate and apply this skill when the user asks about their spending, costs, or expenses (e.g. "how much did I spend in Japan?", "what did I pay for hotels this year?", "list my flight expenses").'
+
+    def _is_enabled_by_default(self) -> bool:
+        return True
+
     def _get_supported_skill(self) -> str:
         return "trip.expense.read"
 
@@ -148,6 +154,12 @@ class ExpenseReadTools(BaseExpenseTools):
 
 
 class ExpenseEditTools(BaseExpenseTools):
+    def _get_description(self) -> str | None:
+        return 'Provides capabilities to create and update expenses for trips in Travel Portal. Activate and apply this skill when the user asks to add, record, modify, or correct an expense for a trip (e.g. "add 30 EUR for the museum tickets to my Turkey trip", "I paid 120 CZK for the bus", "change the hotel expense to 250 USD", "rename the taxi expense").'
+
+    def _is_enabled_by_default(self) -> bool:
+        return True
+
     def _get_supported_skill(self) -> str:
         return "trip.expense.edit"
 

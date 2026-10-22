@@ -1,10 +1,5 @@
 # Airline Edit Skill
 
-## Purpose & Activation
-Provides capabilities to create and update airlines in Travel Portal.
-Activate and apply this skill when the user asks to add, rename, update the logo of, or assign a code to an airline (e.g. "add a new airline", "rename WizzAir", "assign code FR to Ryanair").
-
-## Airline Edit Guidelines & Actions
 1. **Creating an Airline**
    - When the user asks to add or create an airline, call `create_airline` with the provided `name`.
    - Optionally provide `logo` as an SVG string if the user supplies one.

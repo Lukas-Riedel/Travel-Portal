@@ -1,10 +1,5 @@
 # Trip Flight Read Skill
 
-## Purpose & Activation
-Provides capabilities to query and inspect scheduled and watched flights across trips in Travel Portal.
-Activate and apply this skill when the user asks about flights, bookings, flight schedules, airlines flown with, airports, or tracked/watched flights for a specific trip or across all trips.
-
-## Flight Guidelines & Actions
 1. **Listing Scheduled Flights**
    - When the user asks about flights, booked flights, flight schedules, or flights matching a specific airline, airport, or aircraft type (e.g. "what flights do I have booked?", "show flights for my Japan trip", "did I fly with Emirates in 2024?", "list flights departing from Prague", "what flights were on A380?"), call `get_scheduled_flights`.
    - Apply filters based on what the user mentions:
