@@ -91,6 +91,16 @@ class CoreClient:
 
         return self._request(method="GET", url=url)
 
+    def get_year(self, year: int) -> dict[str, Any]:
+        url = f"{self.base_url}/years/{year}"
+
+        return self._request(method="GET", url=url)
+
+    def get_statistics(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/statistics"
+
+        return self._request(method="GET", url=url)
+
     def get_configuration(self) -> dict[str, Any]:
         url = f"{self.base_url}/configuration"
 
