@@ -7,7 +7,7 @@ Activate and apply this skill when the user asks to add, record, modify, edit, o
 ## Note Guidelines & Actions
 1. **Creating a Place Note**
    - When the user asks to add, save, or record a note for a place, call `create_place_note`.
-   - Always resolve the place ID first using place tools. **NEVER ask the user for a UUID.**
+   - Always resolve the place ID first using place tools. **NEVER ask the user for a place ID or UUID.**
    - The note content can contain Markdown formatting (e.g. bold, lists, links). Ensure the content accurately reflects what the user specified.
    - After creating the note, confirm with a concise summary stating the place and the note content.
 2. **Updating a Place Note**

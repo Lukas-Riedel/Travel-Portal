@@ -7,7 +7,7 @@ Activate and apply this skill when the user asks to add, record, modify, or corr
 ## Expense Guidelines & Actions
 1. **Creating a Trip Expense**
    - When the user asks to add, create, or record an expense for a trip, call `create_trip_expense`.
-   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a UUID.**
+   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**
    - The `value` and `currency` are required. **NEVER invent them** - ask the user when missing.
    - The `expense_type` must be one of the types defined in the **Expense Types** section of the trip expense read skill (`flight`, `transport`, `car`, `hotel`, `attraction`, `organizedTour`, `visa`, `other`). Choose the type whose definition best matches the user's request. Ask the user when the type is unclear between two types.
    - The type `other` is reserved for truly unique expenses that fit none of the other types. **NEVER assign `other` without the user's explicit confirmation.** When no other type fits, **ASK THE USER** to confirm `other` (mention the expense and the closest alternative type, if any) and only proceed with `get_expense_descriptions` and `create_trip_expense` after the user confirms. If the user suggests a different type, use it instead. This does not apply when the user explicitly asked for the type `other` in their request.

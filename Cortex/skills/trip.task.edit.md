@@ -7,7 +7,7 @@ Activate and apply this skill when the user asks to add, create, modify, edit, o
 ## Task Guidelines & Actions
 1. **Creating a Trip Task**
    - When the user asks to add, create, or record a task for a trip, call `create_trip_task`.
-   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a UUID.**
+   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**
    - For `deadline`, use `convert_datetime_to_epoch` with the user's current timezone from Environmental Context as `tz_name`.
    - The `title` is expected to contain no more than 5 words, its purpose is to give a short idea of what the task is about (e.g. "reserve flight", "apply for a visa").
    - The `description` is expected to contain no more than 500 characters, its purpose is to clearly describe the action that needs to be done. **Always provide a plain text, never use Markdown.**

@@ -7,7 +7,7 @@ Activate and apply this skill when the user asks to add, record, modify, edit, o
 ## Note Guidelines & Actions
 1. **Creating a Trip Note**
    - When the user asks to add, save, or record a note for a trip, call `create_trip_note`.
-   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a UUID.**
+   - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**
    - The note content can contain Markdown formatting (e.g. bold, lists, links). Ensure the content accurately reflects what the user specified.
    - After creating the note, confirm with a concise summary stating the trip and the note content.
 2. **Updating a Trip Note**
