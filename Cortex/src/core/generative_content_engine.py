@@ -7,12 +7,16 @@ from google import genai
 from google.genai import types
 
 from src.client.core_client import CoreClient
-from src.core.generative_content_context import generative_content_environment
+from src.core.generative_content_context import (
+    generative_content_environment,
+    generative_content_skills,
+)
 from src.core.logger import logger
 from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
 
 CHAT_TIMEOUT_MS: Final[int] = 30000
+MAX_ALLOWED_SKILLS_LOADING_PER_CHAT: Final[int] = 5
 
 
 class GenerativeContentEngine:
@@ -36,100 +40,120 @@ class GenerativeContentEngine:
         messages: list[dict[str, Any]],
         schema: dict[str, Any] | None = None,
         allowed_skills: list[str] | None = None,
-        enabled_skills: list[str] | None = None,
         context: str | None = None,
-    ) -> tuple[str, list[dict[str, Any]]]:
+    ) -> tuple[str, list[dict[str, Any]], list[str]]:
         if not messages:
-            return "", []
+            return "", [], []
 
-        # Validate and reconstruct complete history (including SDK structures and thought signatures)
+        # Validate and reconstruct complete history (including SDK structures and thought signatures).
         history = [types.Content.model_validate(msg) for msg in messages[:-1]]
 
-        # The last message dictionary contains the new user turn/input
+        # The last message dictionary contains the new user turn/input.
         last_message = messages[-1].get("text", "")
 
-        config_kwargs = {}
+        for _ in range(MAX_ALLOWED_SKILLS_LOADING_PER_CHAT):
+            config_kwargs = {}
 
-        if allowed_skills is not None:
-            allowed_set = set(allowed_skills)
-            enabled_skills_by_default = (
-                self.tool_registry.get_enabled_by_default_skills(allowed_skills)
-            )
-            all_enabled_skills = list(
-                dict.fromkeys(
-                    skill
-                    for skill in [
-                        *enabled_skills_by_default,
-                        *(enabled_skills or []),
+            if allowed_skills is not None:
+                allowed_set = set(allowed_skills)
+                enabled_skills_by_default = (
+                    self.tool_registry.get_enabled_by_default_skills(allowed_skills)
+                )
+                explicitly_enabled_skills = generative_content_skills.get() or []
+                all_enabled_skills = list(
+                    dict.fromkeys(
+                        skill
+                        for skill in [
+                            *enabled_skills_by_default,
+                            *explicitly_enabled_skills,
+                        ]
+                        if skill in allowed_set
+                    )
+                )
+
+                parts = [
+                    p
+                    for p in [
+                        self.skill_registry.get_callable_skills(all_enabled_skills),
+                        self._build_disabled_skills(
+                            self.tool_registry.get_disabled_skills(
+                                enabled_skills=all_enabled_skills,
+                                allowed_skills=allowed_skills,
+                            )
+                        ),
+                        self._build_environmental_context(),
+                        self._build_personal_context(context),
                     ]
-                    if skill in allowed_set
-                )
+                    if p
+                ]
+                if parts:
+                    config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
+
+                tools = self.tool_registry.get_callable_tools(all_enabled_skills)
+                if tools:
+                    config_kwargs["tools"] = tools
+
+            if schema is not None:
+                config_kwargs["response_mime_type"] = "application/json"
+                config_kwargs["response_schema"] = schema
+
+            config = types.GenerateContentConfig(
+                **config_kwargs,
+                http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
             )
 
-            parts = [
-                p
-                for p in [
-                    self.skill_registry.get_callable_skills(all_enabled_skills),
-                    self._build_disabled_skills(
-                        self.tool_registry.get_disabled_skills(
-                            enabled_skills=all_enabled_skills,
-                            allowed_skills=allowed_skills,
+            restart_chat = False
+            for model in self.models:
+                logger.debug(
+                    f"Attempting generative content request with model '{model}'..."
+                )
+                try:
+                    chat = self.client.chats.create(
+                        model=model,
+                        history=list(history) if history else None,
+                        config=config,
+                    )
+
+                    skills_before = len(generative_content_skills.get() or [])
+                    response = chat.send_message(last_message)
+                    skills_after = len(generative_content_skills.get() or [])
+
+                    restart_chat = skills_before != skills_after
+                    if restart_chat:
+                        break
+
+                    # Extract the complete updated history from the chat session.
+                    updated_history = [
+                        content.model_dump(
+                            mode="json", exclude_none=True, by_alias=True
                         )
-                    ),
-                    self._build_environmental_context(),
-                    self._build_personal_context(context),
-                ]
-                if p
-            ]
-            if parts:
-                config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
+                        for content in chat.get_history()
+                    ]
 
-            tools = self.tool_registry.get_callable_tools(all_enabled_skills)
-            if tools:
-                config_kwargs["tools"] = tools
+                    logger.info(
+                        f"Generative content request succeeded with model '{model}'."
+                    )
+                    return (
+                        response.text or "",
+                        updated_history,
+                        generative_content_skills.get() or [],
+                    )
 
-        if schema is not None:
-            config_kwargs["response_mime_type"] = "application/json"
-            config_kwargs["response_schema"] = schema
+                except Exception as exc:
+                    logger.warning(
+                        f"Model '{model}' is unavailable ({exc}). Trying next model..."
+                    )
+                    continue
 
-        config = types.GenerateContentConfig(
-            **config_kwargs,
-            http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
-        )
-
-        for model in self.models:
-            logger.debug(
-                f"Attempting generative content request with model '{model}'..."
-            )
-            try:
-                chat = self.client.chats.create(
-                    model=model,
-                    history=list(history) if history else None,
-                    config=config,
-                )
-                response = chat.send_message(last_message)
-
-                # Extract the complete updated history from the chat session.
-                updated_history = [
-                    content.model_dump(mode="json", exclude_none=True, by_alias=True)
-                    for content in chat.get_history()
-                ]
-
-                logger.info(
-                    f"Generative content request succeeded with model '{model}'."
-                )
-                return response.text or "", updated_history
-
-            except Exception as exc:
-                logger.warning(
-                    f"Model '{model}' is unavailable ({exc}). Trying next model..."
-                )
+            if restart_chat:
                 continue
 
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="All generative content models are currently unavailable. Please try again later.",
-        )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="All generative content models are currently unavailable. Please try again later.",
+            )
+
+        # TODO: Return something if the threshold for loading skills has been reached.
 
     def _build_personal_context(self, context: str | None) -> str | None:
         if not context:

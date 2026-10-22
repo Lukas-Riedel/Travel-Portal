@@ -41,7 +41,7 @@
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
-            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, false, null);
+            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, false, null, null);
             if ($response === null) {
                 return null;
             }
@@ -53,17 +53,17 @@
             $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
 
-            $messages = $this->distributedCacheClient->get($cacheKey) ?? array();
+            $conversation = $this->distributedCacheClient->get($cacheKey) ?? array();
+
+            $messages = $conversation["history"] ?? array();
             $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
 
-            $response = $this->doGetResponse($messages, $accessToken, $username, null, true, $environment);
+            $response = $this->doGetResponse($messages, $accessToken, $username, null, true, $environment, $conversation["skills"] ?? null);
             if ($response === null) {
                 return null;
             }
 
-            if (isset($response["history"])) {
-                $this->distributedCacheClient->set($cacheKey, $response["history"], self::CONVERSATION_CACHE_TTL);
-            }
+            $this->distributedCacheClient->set($cacheKey, $response, self::CONVERSATION_CACHE_TTL);
 
             return new GenerativeContentResult($response["text"], $targetConversationId, array());
         }
@@ -72,13 +72,16 @@
             return $this->distributedCacheClient->get(sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $conversationId)) ?? array();
         }
 
-        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment) : ?array {
+        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment, ?array $skills) : ?array {
             $payload = array("messages" => $this->sanitizeChatHistory($messages), "environment" => $environment);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
             }
             if ($username !== null) {
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"][$username] ?? null;
+            }
+            if ($skills !== null) {
+                $payload["skills"] = $skills;
             }
 
             $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken($accessToken), "Content-Type: application/json");

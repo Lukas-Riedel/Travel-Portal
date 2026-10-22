@@ -6,7 +6,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.dependencies import get_current_user, require_trusted_service_account
-from src.core.generative_content_context import generative_content_environment
+from src.core.generative_content_context import (
+    generative_content_environment,
+    generative_content_skills,
+)
 
 router = APIRouter(
     prefix="/generativecontent",
@@ -30,6 +33,10 @@ class GenerativeContentRequest(BaseModel):
         default=None,
         description="Optional personal context prepended to the system instruction",
     )
+    skills: list[str] | None = Field(
+        default=None,
+        description="Optional list with explicitly enabled skills",
+    )
     environment: dict[str, Any] | None = Field(
         default=None,
         description="Optional arbitrary JSON subtree with environment data passed to the generative engine",
@@ -44,6 +51,10 @@ class GenerativeContentResponse(BaseModel):
     history: list[dict[str, Any]] = Field(
         default=...,
         description="New complete chat history",
+    )
+    skills: list[str] = Field(
+        default=...,
+        description="Enabled skills",
     )
 
 
@@ -68,7 +79,8 @@ def generate_content(
         description="Whether to include skills and tools in the prompt context",
     ),
 ) -> JSONResponse:
-    token = generative_content_environment.set(request.environment)
+    token_environment = generative_content_environment.set(request.environment)
+    token_skills = generative_content_skills.set(request.skills or [])
     try:
         u_id = current_user.get("user_id")
         allowed_skills = (
@@ -77,18 +89,20 @@ def generate_content(
             else None
         )
 
-        text, history = req_obj.app.state.generative_content_engine.generate(
+        text, history, skills = req_obj.app.state.generative_content_engine.generate(
             messages=request.messages,
             schema=request.schema,
             allowed_skills=allowed_skills,
             context=request.context,
         )
     finally:
-        generative_content_environment.reset(token)
+        generative_content_environment.reset(token_environment)
+        generative_content_skills.reset(token_skills)
 
     return JSONResponse(
         content={
             "text": json.loads(text) if request.schema is not None else (text or ""),
             "history": history,
+            "skills": skills,
         }
     )
