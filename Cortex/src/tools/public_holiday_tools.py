@@ -1,3 +1,4 @@
+from abc import ABC
 from datetime import date, datetime, time, timedelta
 from html import unescape
 from typing import Any
@@ -11,7 +12,59 @@ from src.tools.base_tools import BaseCoreTools
 REQUEST_TIMEOUT = (5, 15)
 
 
-class CategoryPublicHolidayReadTools(BaseCoreTools):
+class BasePublicHolidayTools(BaseCoreTools, ABC):
+    def _format_holiday(
+        self,
+        name: str,
+        category: str,
+        date: str,
+    ) -> dict[str, str]:
+        return {
+            "name": name,
+            "category": category,
+            "date": date,
+        }
+
+
+class TripPublicHolidayReadTools(BasePublicHolidayTools):
+    def _get_supported_skill(self) -> str:
+        return "trip.read"
+
+    def _get_tools(self) -> list[Any]:
+        return [
+            self.get_trip_public_holidays,
+        ]
+
+    def get_trip_public_holidays(
+        self, trip_id: str
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        """Retrieves public holidays associated with a specific trip.
+        Use this when the user asks which public holidays occur during a trip. Resolve the trip ID first using trip tools. Never ask the user for a UUID.
+
+        Args:
+            trip_id: The unique identifier of the trip whose public holidays should be retrieved.
+
+        Returns:
+            A list of public holidays, each containing:
+            - name (string): Holiday name.
+            - category (string): Category associated with the holiday.
+            - date (string): Holiday date in DD.MM.YYYY format (e.g. `"15.11.2026"`).
+        """
+        trip = self.core_client.get_trip(trip_id=trip_id)
+        if self._is_error_response(trip):
+            return trip
+
+        return [
+            self._format_holiday(
+                name=holiday.get("name"),
+                category=holiday.get("category"),
+                date=holiday.get("date"),
+            )
+            for holiday in trip.get("publicHolidays", [])
+        ]
+
+
+class CategoryPublicHolidayReadTools(BasePublicHolidayTools):
     def _get_supported_skill(self) -> str:
         return "category.read"
 
@@ -170,11 +223,11 @@ class CategoryPublicHolidayReadTools(BaseCoreTools):
         if occurrence.tzinfo is None:
             occurrence = user_tz.localize(occurrence)
 
-        return {
-            "name": unescape(event.get("summary", "")),
-            "category": category,
-            "date": self._epoch_to_date(
+        return self._format_holiday(
+            name=unescape(event.get("summary", "")),
+            category=category,
+            date=self._epoch_to_date(
                 epoch=int(occurrence.timestamp()),
                 user_tz=user_tz,
             ),
-        }
+        )

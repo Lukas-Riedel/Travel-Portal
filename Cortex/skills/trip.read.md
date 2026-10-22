@@ -22,5 +22,8 @@ Activate and apply this skill when the user asks about trips, itineraries, trave
 5. **Listing Candidate Trips**
    - When the user asks about unplanned or candidate trips, call `get_candidate_trips`.
    - Candidate trips do not necessarily represent a wishlist. A candidate trip is typically a trip that was already planned but was called off for whatever reason.
-6. **Extracting Trip ID**
+6. **Public Holidays**
+   - When the user asks which public holidays occur during a specific trip (e.g. "what public holidays are during my Japan trip?", "show public holidays for my 2026 trips"), resolve the trip first and call `get_trip_public_holidays` with its ID. **NEVER ask the user for a trip ID or UUID.**
+   - Present the returned holidays in a structured list or table, including their name and date. Do not infer holidays that are not returned by the tool.
+7. **Extracting Trip ID**
    - Once the target trip is found, use its `id` for subsequent actions. **NEVER invent a fake UUID.**
