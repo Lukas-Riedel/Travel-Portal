@@ -4,7 +4,7 @@ from typing import Any
 from src.tools.base_tools import BaseCoreTools
 
 
-class StayReadTools(BaseCoreTools):
+class TripStayReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query and inspect accommodation stays across trips in Travel Portal. Activate and apply this skill when the user asks about accommodation, hotels, resorts, or cruises for a specific trip or across all trips."
 

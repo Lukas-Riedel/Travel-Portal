@@ -110,7 +110,7 @@ class BaseFlightTools(BaseCoreTools, ABC):
         }
 
 
-class FlightReadTools(BaseFlightTools):
+class TripFlightReadTools(BaseFlightTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query and inspect scheduled and watched flights across trips in Travel Portal. Activate and apply this skill when the user asks about flights, bookings, flight schedules, airlines flown with, airports, or tracked/watched flights for a specific trip or across all trips."
 

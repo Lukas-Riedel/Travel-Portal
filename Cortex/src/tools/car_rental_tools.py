@@ -4,7 +4,7 @@ from typing import Any
 from src.tools.base_tools import BaseCoreTools
 
 
-class CarRentalReadTools(BaseCoreTools):
+class TripCarRentalReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query and inspect car rentals across trips in Travel Portal. Activate and apply this skill when the user asks about rented cars or car rentals for a specific trip or across all trips."
 
