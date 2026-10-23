@@ -6,10 +6,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.dependencies import get_current_user, require_trusted_service_account
-from src.core.generative_content_context import (
-    generative_content_environment,
-    generative_content_skills,
-)
+from src.core.generative_content_context import generative_content_environment
 
 router = APIRouter(
     prefix="/generativecontent",
@@ -73,24 +70,22 @@ def generate_content(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> JSONResponse:
     token_environment = generative_content_environment.set(request.environment)
-    token_skills = generative_content_skills.set(request.skills)
+
     try:
         u_id = current_user.get("user_id")
         allowed_skills = (
-            req_obj.app.state.iam_client.get_user_roles(u_id)
-            if request.skills and u_id
-            else None
+            req_obj.app.state.iam_client.get_user_roles(u_id) if u_id else None
         )
 
         text, history, skills = req_obj.app.state.generative_content_engine.generate(
             messages=request.messages,
             schema=request.schema,
+            enabled_skills=request.skills,
             allowed_skills=allowed_skills,
             context=request.context,
         )
     finally:
         generative_content_environment.reset(token_environment)
-        generative_content_skills.reset(token_skills)
 
     return JSONResponse(
         content={

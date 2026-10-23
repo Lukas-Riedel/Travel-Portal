@@ -6,11 +6,9 @@ from google import genai
 from google.genai import types
 
 from src.client.core_client import CoreClient
-from src.core.generative_content_context import (
-    generative_content_environment,
-    generative_content_skills,
-)
+from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
+from src.errors.missing_skills_error import MissingSkillsError
 from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
 
@@ -39,12 +37,13 @@ class GenerativeContentEngine:
         self,
         messages: list[dict[str, Any]],
         schema: dict[str, Any] | None = None,
+        enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
         depth: int = 0,
     ) -> tuple[str, list[dict[str, Any]], list[str]]:
         if not messages:
-            return "", [], generative_content_skills.get() or []
+            return "", [], enabled_skills
 
         if depth >= MAX_ALLOWED_SUBAGENTS:
             raise RuntimeError("The limit for sub-agents has been reached.")
@@ -52,6 +51,7 @@ class GenerativeContentEngine:
         history = [types.Content.model_validate(msg) for msg in messages[:-1]]
         config = self._build_config(
             schema=schema,
+            enabled_skills=enabled_skills,
             allowed_skills=allowed_skills,
             context=context,
         )
@@ -76,45 +76,39 @@ class GenerativeContentEngine:
                     config=config,
                 )
 
-                skills_before = len(generative_content_skills.get() or [])
-
                 # The last message dictionary contains the new user turn/input.
                 response = chat.send_message(messages[-1].get("text", ""))
 
-                skills_after = len(generative_content_skills.get() or [])
+                # Extract the complete updated history from the chat session.
+                updated_history = [
+                    content.model_dump(mode="json", exclude_none=True, by_alias=True)
+                    for content in chat.get_history()
+                ]
 
-                if skills_before == skills_after:
-                    # Extract the complete updated history from the chat session.
-                    updated_history = [
-                        content.model_dump(
-                            mode="json", exclude_none=True, by_alias=True
-                        )
-                        for content in chat.get_history()
-                    ]
+                logger.info(
+                    f"Generative content request succeeded with model '{model}'."
+                )
 
-                    logger.info(
-                        f"Generative content request succeeded with model '{model}'."
-                    )
+                return (
+                    response.text or "",
+                    updated_history,
+                    enabled_skills,
+                )
+            except MissingSkillsError as exc:
+                logger.debug(
+                    f"Starting a sub-agent... Reason: Totally {len(exc.skills)} new skills needs to be loaded"
+                )
 
-                    return (
-                        response.text or "",
-                        updated_history,
-                        generative_content_skills.get() or [],
-                    )
-                else:
-                    logger.debug(
-                        f"Starting a sub-agent... Reason: Totally {skills_after - skills_before} new skills needs to be loaded"
-                    )
-
-                    # The conversation is roll-backed to the point before enabling the skill happened.
-                    # The skill will be enabled because it is now in the context variable with enabled skills.
-                    return self.generate(
-                        messages=messages,
-                        schema=schema,
-                        allowed_skills=allowed_skills,
-                        context=context,
-                        depth=depth + 1,
-                    )
+                # The conversation is roll-backed to the point before enabling the skill happened.
+                # The skill will be enabled because it is now in the context variable with enabled skills.
+                return self.generate(
+                    messages=messages,
+                    schema=schema,
+                    enabled_skills=(enabled_skills or []) + exc.skills,
+                    allowed_skills=allowed_skills,
+                    context=context,
+                    depth=depth + 1,
+                )
 
             except Exception:
                 logger.exception(
@@ -129,17 +123,19 @@ class GenerativeContentEngine:
     def _build_config(
         self,
         schema: dict[str, Any] | None = None,
+        enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
     ) -> types.GenerateContentConfig:
         config_kwargs = {}
 
-        if allowed_skills is not None:
-            allowed_set = set(allowed_skills)
-            enabled_skills = generative_content_skills.get() or []
-            allowed_enabled_skills = [
-                skill for skill in enabled_skills if skill in allowed_set
-            ]
+        if enabled_skills is not None:
+            enabled_set = set(enabled_skills)
+            allowed_enabled_skills = (
+                [skill for skill in allowed_skills if skill in enabled_set]
+                if allowed_skills is not None
+                else enabled_skills
+            )
 
             parts = [
                 part

@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, NoReturn
 
-from src.core.generative_content_context import generative_content_skills
+from src.errors.missing_skills_error import MissingSkillsError
 from src.tools.base_tools import BaseTools
 
 
@@ -16,20 +16,12 @@ class PlatformTools(BaseTools):
             self.load_skills,
         ]
 
-    def load_skills(self, skills: list[str]) -> list[str]:
+    def load_skills(self, skills: list[str]) -> NoReturn:
         """Loads additional capability domains, instructions (skills), and associated tools into the current conversation context on-demand.
         Use this when the user asks about topics outside your core loaded skills.
 
         Args:
             skills: The list of skills to be loaded (e.g. `"trip.carrental.read"`).
-
-        Returns:
-            A list of all loaded skills.
         """
-        current_skills = generative_content_skills.get()
-        new_unique_skills = [s for s in skills if s not in current_skills]
 
-        if new_unique_skills:
-            generative_content_skills.set(current_skills + new_unique_skills)
-
-        return generative_content_skills.get()
+        raise MissingSkillsError(skills)
