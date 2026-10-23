@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 import requests
 
@@ -9,6 +9,8 @@ from src.api.logging_middleware import (
 from src.client.iam_client import IamClient
 from src.core.authentication_context import subject_token
 from src.core.logger import transaction_id
+
+REQUEST_TIMEOUT: Final[tuple[Literal[5], Literal[15]]] = (5, 15)
 
 
 # TODO: Deadlock risk - Core calls Cortex synchronously (blocking) and Cortex's agentic AI
@@ -43,7 +45,7 @@ class CoreClient:
             headers[TRANSACTION_ID_HEADER] = t_id
 
         response = requests.request(
-            method=method, url=url, headers=headers, timeout=15, **kwargs
+            method=method, url=url, headers=headers, timeout=REQUEST_TIMEOUT, **kwargs
         )
         if response.status_code == 204 or not response.content:
             return None

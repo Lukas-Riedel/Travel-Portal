@@ -1,6 +1,6 @@
 import hashlib
 import time
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 import requests
 from fastapi import HTTPException, status
@@ -8,6 +8,7 @@ from jose import jwk, jwt
 from jose.utils import base64url_decode
 
 JWKS_TTL: Final[int] = 86400
+REQUEST_TIMEOUT: Final[tuple[Literal[5], Literal[15]]] = (5, 15)
 
 
 # TODO: Extract service-layer functionality to AuthenticationService, and use IamClient only for calling IAM (similarly to Agent). Propagate Request-Origin and Transaction-Id correctly.
@@ -58,7 +59,7 @@ class IamClient:
             url=self.token_endpoint,
             json=payload,
             headers={"Content-Type": "application/json"},
-            timeout=10,
+            timeout=REQUEST_TIMEOUT,
         )
         if response.status_code != 201:
             raise RuntimeError(
@@ -78,7 +79,7 @@ class IamClient:
     def get_jwks_keys(self) -> dict[str, Any]:
         current_time = time.time()
         if self.cached_keys is None or current_time >= self.keys_expires_at:
-            response = requests.get(self.jwks_endpoint)
+            response = requests.get(self.jwks_endpoint, timeout=REQUEST_TIMEOUT)
             if response.status_code != 200:
                 raise RuntimeError(f"Could not fetch JWKS. Reason: {response.text}")
 
@@ -91,7 +92,7 @@ class IamClient:
         url = f"{self.iam_base_url}/users/{user_id}/roles"
         headers = {"Authorization": f"Bearer {self.get_service_access_token()}"}
 
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
         if response.status_code != 200:
             raise RuntimeError(f"Could not fetch user roles. Reason: {response.text}")
 

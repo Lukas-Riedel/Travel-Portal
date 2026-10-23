@@ -1,7 +1,7 @@
 from abc import ABC
 from datetime import date, datetime, time, timedelta
 from html import unescape
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 import requests
 from dateutil.rrule import rruleset, rrulestr
@@ -9,7 +9,7 @@ from icalendar import Calendar
 
 from src.tools.base_tools import BaseCoreTools
 
-REQUEST_TIMEOUT: tuple[Literal[5], Literal[15]] = (5, 15)
+REQUEST_TIMEOUT: Final[tuple[Literal[5], Literal[15]]] = (5, 15)
 
 
 class BaseCategoryTools(BaseCoreTools, ABC):
