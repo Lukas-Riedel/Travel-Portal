@@ -15,6 +15,13 @@ cortex:
       - models/gemini-3.8-flash
       - models/gemini-3.1-flash-lite
   engine: cpu
+  generative:
+    timeout: 30000
+    subagent:
+      count: 5
+    token:
+      tool:
+        max: 30000
   iam:
     host: iam
     port: 8080

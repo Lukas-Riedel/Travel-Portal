@@ -15,12 +15,7 @@ from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
-
-# TODO: Propagate all these constants to the Helm charts.
-CHAT_TIMEOUT_MS: Final[int] = 30000
-MAX_ALLOWED_SUBAGENTS_COUNT: Final[int] = 5
 CHARS_PER_TOKEN_COUNT: Final[int] = 3
-MAX_TOOL_RESULT_TOKENS: Final[int] = 30000
 
 
 class GenerativeContentEngine:
@@ -31,12 +26,18 @@ class GenerativeContentEngine:
         tool_registry: ToolRegistry,
         skill_registry: SkillRegistry,
         core_client: CoreClient,
+        chat_timeout_ms: int,
+        max_allowed_subagents_count: int,
+        max_tool_result_tokens: int,
     ) -> None:
         self.client: genai.Client = genai.Client(api_key=api_key)
         self.tool_registry: ToolRegistry = tool_registry
         self.skill_registry: SkillRegistry = skill_registry
         self.core_client: CoreClient = core_client
         self.models: list[str] = [m.strip() for m in models.split(",") if m.strip()]
+        self.chat_timeout_ms: int = chat_timeout_ms
+        self.max_allowed_subagents_count: int = max_allowed_subagents_count
+        self.max_tool_result_tokens: int = max_tool_result_tokens
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
 
     def generate(
@@ -74,7 +75,7 @@ class GenerativeContentEngine:
         previous_total_prompt_tokens: int = 0,
         previous_total_candidate_tokens: int = 0,
     ) -> tuple[str, list[dict[str, Any]], list[str]]:
-        if depth >= MAX_ALLOWED_SUBAGENTS_COUNT:
+        if depth >= self.max_allowed_subagents_count:
             raise RuntimeError("The limit for sub-agents has been reached.")
 
         config = self._build_config(
@@ -151,7 +152,7 @@ class GenerativeContentEngine:
                                 )
                                 / CHARS_PER_TOKEN_COUNT
                             )
-                            if estimated_tokens < MAX_TOOL_RESULT_TOKENS:
+                            if estimated_tokens < self.max_tool_result_tokens:
                                 function_responses.append(
                                     types.Part.from_function_response(
                                         name=fn_name,
@@ -159,7 +160,7 @@ class GenerativeContentEngine:
                                     )
                                 )
                             else:
-                                error = f"The tool call would consume roughly {estimated_tokens} input tokens but the limit is {MAX_TOOL_RESULT_TOKENS} input tokens per tool. Either provide filters to narrow down the results, or use a different tool."
+                                error = f"The tool call would consume roughly {estimated_tokens} input tokens but the limit is {self.max_tool_result_tokens} input tokens per tool. Either provide filters to narrow down the results, or use a different tool."
                                 logger.error(error)
 
                                 function_responses.append(
@@ -297,7 +298,7 @@ class GenerativeContentEngine:
 
         return types.GenerateContentConfig(
             **config_kwargs,
-            http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
+            http_options=types.HttpOptions(timeout=self.chat_timeout_ms),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(
                 disable=True
             ),

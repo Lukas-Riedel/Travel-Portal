@@ -101,6 +101,12 @@ spec:
                 secretKeyRef:
                   name: cortex-secret
                   key: google-gemini-api-key
+            - name: CHAT_TIMEOUT_MS
+              value: "{{ .Values.cortex.generative.timeout }}"
+            - name: MAX_ALLOWED_SUBAGENTS_COUNT
+              value: "{{ .Values.cortex.generative.subagent.count }}"
+            - name: MAX_TOOL_RESULT_TOKENS
+              value: "{{ .Values.cortex.generative.token.tool.max }}"
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp
