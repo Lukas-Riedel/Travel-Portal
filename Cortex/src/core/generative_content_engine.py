@@ -134,7 +134,10 @@ class GenerativeContentEngine:
 
                             function_responses.append(
                                 types.Part.from_function_response(
-                                    name=fn_name, response={"result": True}
+                                    name=fn_name,
+                                    response={
+                                        "result": {"enabled_skills": subagent_skills}
+                                    },
                                 )
                             )
 
