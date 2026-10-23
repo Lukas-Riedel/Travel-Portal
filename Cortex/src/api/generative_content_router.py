@@ -53,6 +53,14 @@ class GenerativeContentResponse(BaseModel):
         default=...,
         description="Enabled skills",
     )
+    input: int = Field(
+        default=...,
+        description="Consumed input tokens",
+    )
+    output: int = Field(
+        default=...,
+        description="Consumed output tokens",
+    )
 
 
 @router.post(
@@ -77,12 +85,14 @@ def generate_content(
             req_obj.app.state.iam_client.get_user_roles(u_id) if u_id else None
         )
 
-        text, history, skills = req_obj.app.state.generative_content_engine.generate(
-            messages=request.messages,
-            schema=request.schema,
-            enabled_skills=request.skills,
-            allowed_skills=allowed_skills,
-            context=request.context,
+        text, history, skills, input_tokens, output_tokens = (
+            req_obj.app.state.generative_content_engine.generate(
+                messages=request.messages,
+                schema=request.schema,
+                enabled_skills=request.skills,
+                allowed_skills=allowed_skills,
+                context=request.context,
+            )
         )
     finally:
         generative_content_environment.reset(token_environment)
@@ -92,5 +102,7 @@ def generate_content(
             "text": json.loads(text) if request.schema is not None else (text or ""),
             "history": history,
             "skills": skills,
+            "input": input_tokens,
+            "output": output_tokens,
         }
     )

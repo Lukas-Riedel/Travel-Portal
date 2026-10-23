@@ -46,7 +46,7 @@ class GenerativeContentEngine:
         enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
-    ) -> tuple[str, list[dict[str, Any]], list[str]]:
+    ) -> tuple[str, list[dict[str, Any]], list[str], int, int]:
         return (
             self._do_generate(
                 message=messages[-1].get("text", ""),
@@ -57,10 +57,9 @@ class GenerativeContentEngine:
                 enabled_skills=enabled_skills,
                 allowed_skills=allowed_skills,
                 context=context,
-                depth=0,
             )
             if messages
-            else ("", [], enabled_skills or [])
+            else ("", [], enabled_skills or [], 0, 0)
         )
 
     def _do_generate(
@@ -72,6 +71,8 @@ class GenerativeContentEngine:
         allowed_skills: list[str] | None = None,
         context: str | None = None,
         depth: int = 0,
+        previous_total_prompt_tokens: int = 0,
+        previous_total_candidate_tokens: int = 0,
     ) -> tuple[str, list[dict[str, Any]], list[str]]:
         if depth >= MAX_ALLOWED_SUBAGENTS_COUNT:
             raise RuntimeError("The limit for sub-agents has been reached.")
@@ -98,8 +99,8 @@ class GenerativeContentEngine:
                 },
             )
 
-            total_prompt_tokens = 0
-            total_candidate_tokens = 0
+            total_prompt_tokens = previous_total_prompt_tokens
+            total_candidate_tokens = previous_total_candidate_tokens
             subagent_started = False
 
             try:
@@ -193,9 +194,7 @@ class GenerativeContentEngine:
                             )
 
                     if start_subagent:
-                        logger.debug(
-                            f"Consumed {total_prompt_tokens} input tokens and {total_candidate_tokens} output tokens. Starting a sub-agent... "
-                        )
+                        logger.debug("Starting a sub-agent... ")
                         subagent_started = True
 
                         return self._do_generate(
@@ -206,6 +205,8 @@ class GenerativeContentEngine:
                             allowed_skills=allowed_skills,
                             context=context,
                             depth=depth + 1,
+                            previous_total_prompt_tokens=total_prompt_tokens,
+                            previous_total_candidate_tokens=total_candidate_tokens,
                         )
 
                     response = chat.send_message(function_responses)
@@ -233,6 +234,8 @@ class GenerativeContentEngine:
                     response.text or "",
                     updated_history,
                     enabled_skills or [],
+                    total_prompt_tokens,
+                    total_candidate_tokens,
                 )
 
             except Exception:
