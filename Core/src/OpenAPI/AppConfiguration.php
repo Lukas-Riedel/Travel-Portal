@@ -146,6 +146,41 @@
         additionalProperties: true
     )]
     #[OA\Schema(
+        schema: "AgenticAiPersonalContextConfiguration",
+        type: "object",
+        description: "Per-user personal context strings for the agentic AI.",
+        additionalProperties: new OA\AdditionalProperties(type: "string")
+    )]
+    #[OA\Schema(
+        schema: "AgenticAiConfiguration",
+        type: "object",
+        description: "The agentic AI configuration",
+        required: ["defaultSkills", "personalContext"],
+        properties: [
+            new OA\Property(
+                property: "defaultSkills",
+                type: "array",
+                items: new OA\Items(type: "string", example: "trip.read")
+            ),
+            new OA\Property(property: "personalContext", ref: "#/components/schemas/AgenticAiPersonalContextConfiguration")
+        ]
+    )]
+    #[OA\Schema(
+        schema: "KnownAddressesConfiguration",
+        type: "array",
+        description: "The known addresses configuration",
+        items: new OA\Items(
+            type: "object",
+            required: ["name", "radius", "latitude", "longitude"],
+            properties: [
+                new OA\Property(property: "name", type: "string", example: "Domov"),
+                new OA\Property(property: "radius", type: "number", format: "float", example: 0.5),
+                new OA\Property(property: "latitude", type: "number", format: "float", example: 50.5511909),
+                new OA\Property(property: "longitude", type: "number", format: "float", example: 13.7842376)
+            ]
+        )
+    )]
+    #[OA\Schema(
         schema: "AppConfiguration",
         type: "object",
         description: "An object representing the application configuration",
@@ -159,7 +194,9 @@
             new OA\Property(property: "generativeContentPrompt", ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
             new OA\Property(property: "highlight", ref: "#/components/schemas/HighlightConfiguration"),
             new OA\Property(property: "ephemeralTasks", ref: "#/components/schemas/EphemeralTasksConfiguration"),
-            new OA\Property(property: "agent", ref: "#/components/schemas/AgentConfiguration")
+            new OA\Property(property: "agent", ref: "#/components/schemas/AgentConfiguration"),
+            new OA\Property(property: "agenticAi", ref: "#/components/schemas/AgenticAiConfiguration"),
+            new OA\Property(property: "knownAddresses", ref: "#/components/schemas/KnownAddressesConfiguration")
         ]
     )]
     class AppConfiguration {
