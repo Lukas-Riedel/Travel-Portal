@@ -1,3 +1,5 @@
+import json
+import math
 from datetime import datetime
 from typing import Any, Final
 
@@ -13,8 +15,12 @@ from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
+
+# TODO: Propagate all these constants to the Helm charts.
 CHAT_TIMEOUT_MS: Final[int] = 30000
-MAX_ALLOWED_SUBAGENTS: Final[int] = 5
+MAX_ALLOWED_SUBAGENTS_COUNT: Final[int] = 5
+CHARS_PER_TOKEN_COUNT: Final[int] = 3
+MAX_TOOL_RESULT_TOKENS: Final[int] = 30000
 
 
 class GenerativeContentEngine:
@@ -67,7 +73,7 @@ class GenerativeContentEngine:
         context: str | None = None,
         depth: int = 0,
     ) -> tuple[str, list[dict[str, Any]], list[str]]:
-        if depth >= MAX_ALLOWED_SUBAGENTS:
+        if depth >= MAX_ALLOWED_SUBAGENTS_COUNT:
             raise RuntimeError("The limit for sub-agents has been reached.")
 
         config = self._build_config(
@@ -92,7 +98,10 @@ class GenerativeContentEngine:
                 },
             )
 
+            total_prompt_tokens = 0
+            total_candidate_tokens = 0
             subagent_started = False
+
             try:
                 chat = self.client.chats.create(
                     model=model,
@@ -105,6 +114,14 @@ class GenerativeContentEngine:
                 # Process function calls requested by the model.
                 iteration = 0
                 while response.function_calls:
+                    if response.usage_metadata:
+                        total_prompt_tokens += (
+                            response.usage_metadata.prompt_token_count or 0
+                        )
+                        total_candidate_tokens += (
+                            response.usage_metadata.candidates_token_count or 0
+                        )
+
                     function_responses = []
 
                     start_subagent = False
@@ -122,11 +139,34 @@ class GenerativeContentEngine:
                             fn_call_result = self.tool_registry.execute_tool(
                                 name=fn_name, args=fn_args
                             )
-                            function_responses.append(
-                                types.Part.from_function_response(
-                                    name=fn_name, response={"result": fn_call_result}
+
+                            estimated_tokens = math.ceil(
+                                len(
+                                    json.dumps(
+                                        obj=fn_call_result,
+                                        default=str,
+                                        ensure_ascii=False,
+                                    )
                                 )
+                                / CHARS_PER_TOKEN_COUNT
                             )
+                            if estimated_tokens < MAX_TOOL_RESULT_TOKENS:
+                                function_responses.append(
+                                    types.Part.from_function_response(
+                                        name=fn_name,
+                                        response={"result": fn_call_result},
+                                    )
+                                )
+                            else:
+                                error = f"The tool call would consume roughly {estimated_tokens} input tokens but the limit is {MAX_TOOL_RESULT_TOKENS} input tokens per tool. Either provide filters to narrow down the results, or use a different tool."
+                                logger.error(error)
+
+                                function_responses.append(
+                                    types.Part.from_function_response(
+                                        name=fn_name,
+                                        response={"error": error},
+                                    )
+                                )
 
                         except MissingSkillsError as exc:
                             start_subagent = True
@@ -153,7 +193,9 @@ class GenerativeContentEngine:
                             )
 
                     if start_subagent:
-                        logger.debug("Starting a sub-agent... ")
+                        logger.debug(
+                            f"Consumed {total_prompt_tokens} input tokens and {total_candidate_tokens} output tokens. Starting a sub-agent... "
+                        )
                         subagent_started = True
 
                         return self._do_generate(
@@ -169,6 +211,14 @@ class GenerativeContentEngine:
                     response = chat.send_message(function_responses)
                     iteration += 1
 
+                if response.usage_metadata:
+                    total_prompt_tokens += (
+                        response.usage_metadata.prompt_token_count or 0
+                    )
+                    total_candidate_tokens += (
+                        response.usage_metadata.candidates_token_count or 0
+                    )
+
                 # Extract the complete updated history from the chat session.
                 updated_history = [
                     content.model_dump(mode="json", exclude_none=True, by_alias=True)
@@ -176,7 +226,7 @@ class GenerativeContentEngine:
                 ]
 
                 logger.info(
-                    f"Generative content request succeeded with model '{model}'."
+                    f"Generative content request succeeded with model '{model}'. Consumed {total_prompt_tokens} input tokens and {total_candidate_tokens} output tokens."
                 )
 
                 return (
