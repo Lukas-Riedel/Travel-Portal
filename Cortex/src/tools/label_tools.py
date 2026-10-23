@@ -16,9 +16,6 @@ class LabelReadTools(BaseLabelTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and inspect labels available in Travel Portal. Activate and apply this skill when the user asks about labels or wants to see the available labels (e.g. "what labels do I have?", "show me all labels", "which labels can I use for places?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "label.read"
 
@@ -46,9 +43,6 @@ class LabelReadTools(BaseLabelTools):
 class PlaceLabelReadTools(BaseLabelTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and inspect labels assigned to places in Travel Portal. Activate and apply this skill when the user asks about labels assigned to a specific place (e.g. "what labels does Prague have?", "show me the labels for Angkor Wat").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "place.label.read"
@@ -80,9 +74,6 @@ class PlaceLabelReadTools(BaseLabelTools):
 class PlaceLabelEditTools(BaseLabelTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to assign existing labels to places and create new labels after user confirmation. Activate and apply this skill when the user asks to label a place, assign an existing label, or create a new label for a place (e.g. "label Prague as a city", "add the City label to Bangkok", "create a new label called UNESCO Site for Angkor Wat").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "place.label.edit"

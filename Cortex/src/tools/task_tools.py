@@ -32,9 +32,6 @@ class TaskReadTools(BaseTaskTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and view actionable tasks and to-do items recorded for trips in Travel Portal. Activate and apply this skill when the user asks about their tasks, to-do items, or reminders (e.g. "what tasks do I have?", "show me high-priority tasks", "what do I need to do before my Japan trip?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "trip.task.read"
 
@@ -99,9 +96,6 @@ class TaskReadTools(BaseTaskTools):
 class TaskEditTools(BaseTaskTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to create, update, and delete tasks and to-do items for trips in Travel Portal. Activate and apply this skill when the user asks to add, create, modify, edit, or delete a task for a trip (e.g. "add a task to my Japan trip", "mark task as done", "delete the packing task", "change priority of the visa task to high").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "trip.task.edit"

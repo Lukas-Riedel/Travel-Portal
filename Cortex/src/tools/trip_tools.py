@@ -9,9 +9,6 @@ class TripReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query, search, and locate trips in Travel Portal. Activate and apply this skill when the user asks about trips, travel history, upcoming trips, or searches for trips by name/destination."
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str:
         return "trip.read"
 

@@ -41,7 +41,7 @@
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
-            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, false, null, null);
+            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, null, array());
             if ($response === null) {
                 return null;
             }
@@ -49,7 +49,7 @@
             return $responseJsonSchema !== null ? json_encode($response["text"]) : $response["text"];
         }
 
-        public function getChatResponse(string $prompt, string $accessToken, ?string $username = null, ?string $conversationId = null, mixed $environment = null) : ?GenerativeContentResult {
+        public function getChatResponse(string $prompt, string $accessToken, ?string $username, ?string $conversationId, mixed $environment) : ?GenerativeContentResult {
             $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
 
@@ -58,7 +58,9 @@
             $messages = $conversation["history"] ?? array();
             $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
 
-            $response = $this->doGetResponse($messages, $accessToken, $username, null, true, $environment, $conversation["skills"] ?? null);
+            $skills = $conversation["skills"] ?? $this->configurationService->getConfigurationEntry("agenticAi")["defaultSkills"];
+
+            $response = $this->doGetResponse($messages, $accessToken, $username, null, $environment, $skills);
             if ($response === null) {
                 return null;
             }
@@ -72,21 +74,17 @@
             return $this->distributedCacheClient->get(sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $conversationId)) ?? array();
         }
 
-        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, bool $useSkills, mixed $environment, ?array $skills) : ?array {
-            $payload = array("messages" => $this->sanitizeChatHistory($messages), "environment" => $environment);
+        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, mixed $environment, array $skills) : ?array {
+            $payload = array("messages" => $this->sanitizeChatHistory($messages), "environment" => $environment, "skills" => $skills);
             if ($responseJsonSchema !== null) {
                 $payload["schema"] = $responseJsonSchema;
             }
             if ($username !== null) {
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"][$username] ?? null;
             }
-            if ($skills !== null) {
-                $payload["skills"] = $skills;
-            }
 
             $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken($accessToken), "Content-Type: application/json");
-            $url = sprintf("%s%s?useSkills=%s", $this->getCortexBaseUrl(), self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $useSkills ? "true" : "false");
-            $response = $this->httpClient->executeRequest(HttpMethod::POST, $url, $headers, json_encode($payload));
+            $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getCortexBaseUrl() . self::GENERATIVE_CONTENT_API_ENDPOINT_PATH, $headers, json_encode($payload));
 
             if (is_array($response) && isset($response["message"])) {
                 $this->logger->error("The generative content request was not successful. Reason: " . $response["message"]);

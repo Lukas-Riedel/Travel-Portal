@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -72,20 +72,14 @@ def generate_content(
     request: GenerativeContentRequest,
     req_obj: Request,
     current_user: dict[str, Any] = Depends(get_current_user),
-    *,
-    use_skills: bool = Query(
-        default=True,
-        alias="useSkills",
-        description="Whether to include skills and tools in the prompt context",
-    ),
 ) -> JSONResponse:
     token_environment = generative_content_environment.set(request.environment)
-    token_skills = generative_content_skills.set(request.skills or [])
+    token_skills = generative_content_skills.set(request.skills)
     try:
         u_id = current_user.get("user_id")
         allowed_skills = (
             req_obj.app.state.iam_client.get_user_roles(u_id)
-            if use_skills and u_id
+            if request.skills and u_id
             else None
         )
 

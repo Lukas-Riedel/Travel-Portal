@@ -56,28 +56,18 @@ class GenerativeContentEngine:
 
             if allowed_skills is not None:
                 allowed_set = set(allowed_skills)
-                enabled_skills_by_default = (
-                    self.tool_registry.get_enabled_by_default_skills(allowed_skills)
-                )
-                explicitly_enabled_skills = generative_content_skills.get() or []
-                all_enabled_skills = list(
-                    dict.fromkeys(
-                        skill
-                        for skill in [
-                            *enabled_skills_by_default,
-                            *explicitly_enabled_skills,
-                        ]
-                        if skill in allowed_set
-                    )
-                )
+                enabled_skills = generative_content_skills.get() or []
+                allowed_enabled_skills = [
+                    skill for skill in enabled_skills if skill in allowed_set
+                ]
 
                 parts = [
                     p
                     for p in [
-                        self.skill_registry.get_callable_skills(all_enabled_skills),
+                        self.skill_registry.get_callable_skills(allowed_enabled_skills),
                         self._build_disabled_skills(
                             self.tool_registry.get_disabled_skills(
-                                enabled_skills=all_enabled_skills,
+                                enabled_skills=allowed_enabled_skills,
                                 allowed_skills=allowed_skills,
                             )
                         ),
@@ -89,7 +79,7 @@ class GenerativeContentEngine:
                 if parts:
                     config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
-                tools = self.tool_registry.get_callable_tools(all_enabled_skills)
+                tools = self.tool_registry.get_callable_tools(allowed_enabled_skills)
                 if tools:
                     config_kwargs["tools"] = tools
 

@@ -19,9 +19,6 @@ class TripNoteReadTools(BaseNoteTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and inspect notes, memos, reminders, and observations recorded for a specific trip in Travel Portal. Activate and apply this skill when the user asks about notes, memos, or information written down for a specific trip (e.g. "what notes did I take during my Japan trip?", "show me notes for Egypt", "what did I note down during my Japan trip?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str:
         return "trip.note.read"
 
@@ -54,9 +51,6 @@ class TripNoteReadTools(BaseNoteTools):
 class TripNoteEditTools(BaseNoteTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to create, update, and delete notes, memos, and reminders for trips in Travel Portal. Activate and apply this skill when the user asks to add, record, modify, edit, or delete a note for a trip (e.g. "add a note to my Japan trip", "update the note about train tickets", "delete the note about car rental").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "trip.note.edit"
@@ -146,9 +140,6 @@ class PlaceNoteReadTools(BaseNoteTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and inspect notes, memos, reminders, and observations recorded for places in Travel Portal. Activate and apply this skill when the user asks about place notes, memos, or information written down for a specific place (e.g. "what notes do I have for Prague?", "show me notes for Angkor Wat", "did I write any tips for Eiffel Tower?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "place.note.read"
 
@@ -181,9 +172,6 @@ class PlaceNoteReadTools(BaseNoteTools):
 class PlaceNoteEditTools(BaseNoteTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to create, update, and delete notes, memos, and reminders for places in Travel Portal. Activate and apply this skill when the user asks to add, record, modify, edit, or delete a note for a place (e.g. "add a note to Prague", "update the note about opening hours for Angkor Wat", "delete the note about parking in Vienna").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "place.note.edit"

@@ -18,9 +18,6 @@ class AirportReadTools(BaseAirportTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and view airports stored in Travel Portal. Activate and apply this skill when the user asks about airports, their names, IATA codes, or countries (e.g. "what airport have I visited?", "show me all airports", "what is the full name of PRG?", "which country is DXB in?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "airport.read"
 
@@ -51,9 +48,6 @@ class AirportReadTools(BaseAirportTools):
 class AirportEditTools(BaseAirportTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to rename airports in Travel Portal. Activate and apply this skill when the user asks to rename an airport or correct its full official name (e.g. "rename PRG", "fix the full name of Dubai airport", "set the long name of JFK").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "airport.edit"

@@ -8,9 +8,6 @@ class StayReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query and inspect accommodation stays across trips in Travel Portal. Activate and apply this skill when the user asks about accommodation, hotels, resorts, or cruises for a specific trip or across all trips."
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str:
         return "trip.stay.read"
 

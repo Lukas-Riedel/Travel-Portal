@@ -48,10 +48,6 @@ class BaseTools(ABC):
         pass
 
     @abstractmethod
-    def _is_enabled_by_default(self) -> bool:
-        pass
-
-    @abstractmethod
     def _get_description(self) -> str | None:
         pass
 

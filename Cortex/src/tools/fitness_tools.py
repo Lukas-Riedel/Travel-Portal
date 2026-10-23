@@ -7,9 +7,6 @@ class TripFitnessReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and summarize daily fitness records for trips in Travel Portal. Activate and apply this skill when the user asks about steps, activity duration, or walking distance during a trip or across trips (e.g. "how many steps did I take in Japan?", "how far did I walk in 2024?", "show my daily walking distance on my Iceland trip").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "trip.fitness.read"
 

@@ -22,9 +22,6 @@ class VoucherReadTools(BaseVoucherTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and view vouchers, discount coupons, and gift cards in Travel Portal. Activate and apply this skill when the user asks about available vouchers, discount codes, or promotional credits (e.g. "what vouchers do I have?", "do I have any Flixbus or airline coupons?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "voucher.read"
 
@@ -57,9 +54,6 @@ class VoucherReadTools(BaseVoucherTools):
 class VoucherEditTools(BaseVoucherTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to create, record, and update vouchers, discount coupons, and gift cards in Travel Portal. Activate and apply this skill when the user asks to save, register, or log a new voucher, or when the user mentions that a voucher balance changed / was used."
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "voucher.edit"

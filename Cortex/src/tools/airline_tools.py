@@ -17,9 +17,6 @@ class AirlineReadTools(BaseAirlineTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query and view airlines stored in Travel Portal. Activate and apply this skill when the user asks about airlines, their names, or IATA codes (e.g. "what airlines do I have?", "show me all airlines", "what codes does WizzAir have?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "airline.read"
 
@@ -49,9 +46,6 @@ class AirlineReadTools(BaseAirlineTools):
 class AirlineEditTools(BaseAirlineTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to create and update airlines in Travel Portal. Activate and apply this skill when the user asks to add, rename, update the logo of, or assign a code to an airline (e.g. "add a new airline", "rename WizzAir", "assign code FR to Ryanair").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "airline.edit"

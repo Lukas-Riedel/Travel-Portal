@@ -11,9 +11,6 @@ class TimeTools(BaseTools):
     def _get_description(self) -> str | None:
         return None
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str | None:
         return None
 

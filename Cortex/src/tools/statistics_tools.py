@@ -22,9 +22,6 @@ class TripStatisticsReadTools(BaseStatisticsTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query statistics and discover interesting facts about trips in Travel Portal. Activate and apply this skill when the user asks what is known about a specific trip, asks for an interesting fact, or asks a general open-ended question about a trip (e.g. "what do you know about my Japan trip?", "tell me an interesting fact about Iceland", "what stands out about my trip to Peru?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str:
         return "trip.statistics.read"
 
@@ -58,9 +55,6 @@ class TripStatisticsReadTools(BaseStatisticsTools):
 class CategoryStatisticsReadTools(BaseStatisticsTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query statistics and discover interesting facts about categories in Travel Portal. Activate and apply this skill when the user asks what is known about a specific category, asks for an interesting fact, or asks a general open-ended question about a category (e.g. "what do you know about Japan?", "tell me an interesting fact about California", "what stands out about the Balkans?").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "category.statistics.read"
@@ -96,9 +90,6 @@ class YearStatisticsReadTools(BaseStatisticsTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query statistics and discover interesting facts about a calendar year in Travel Portal. Activate and apply this skill when the user asks what is known about a specific year, asks for an interesting fact, or asks a general open-ended question about a year (e.g. "what do you know about my travels in 2024?", "tell me an interesting fact about 2023", "what stands out about my travels last year?").'
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "year.statistics.read"
 
@@ -130,9 +121,6 @@ class YearStatisticsReadTools(BaseStatisticsTools):
 class StatisticsReadTools(BaseStatisticsTools):
     def _get_description(self) -> str | None:
         return 'Provides capabilities to query statistics and discover interesting facts about the user\'s travel data overall. Activate and apply this skill when the user asks what is known about their travels overall, asks for an interesting fact, or asks a general open-ended question about their travel history (e.g. "what do you know about my travels overall?", "tell me an interesting fact about my trips", "what stands out about my travel history?").'
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "statistics.read"

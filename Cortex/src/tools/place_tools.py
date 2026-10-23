@@ -140,9 +140,6 @@ class PlaceReadTools(BasePlaceTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query, search, and inspect places in Travel Portal. Activate and apply this skill when the user asks about visited places, destinations, locations, points of interest, candidate places, or wants to know when a specific place was visited."
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str:
         return "place.read"
 
@@ -374,9 +371,6 @@ class PlaceReadTools(BasePlaceTools):
 class PlaceEditTools(BasePlaceTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to create and update places in Travel Portal. Activate and apply this skill when the user wants to add a new candidate place or update the description of an existing place."
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "place.edit"

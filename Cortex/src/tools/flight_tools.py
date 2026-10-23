@@ -114,9 +114,6 @@ class FlightReadTools(BaseFlightTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to query and inspect scheduled and watched flights across trips in Travel Portal. Activate and apply this skill when the user asks about flights, bookings, flight schedules, airlines flown with, airports, or tracked/watched flights for a specific trip or across all trips."
 
-    def _is_enabled_by_default(self) -> bool:
-        return True
-
     def _get_supported_skill(self) -> str:
         return "trip.flight.read"
 
@@ -317,9 +314,6 @@ class FlightReadTools(BaseFlightTools):
 class FlightEditTools(BaseFlightTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to create scheduled and watched flights in Travel Portal. Activate and apply this skill when the user asks to add, record, watch, or schedule a flight."
-
-    def _is_enabled_by_default(self) -> bool:
-        return False
 
     def _get_supported_skill(self) -> str:
         return "flight.edit"

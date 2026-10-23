@@ -7,9 +7,6 @@ class GeocodingReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
         return "Provides capabilities to look up the timezone for an address or location using geocoding. Activate and apply this skill when the user asks which timezone applies to a location or needs a location's timezone for a date or time operation."
 
-    def _is_enabled_by_default(self) -> bool:
-        return False
-
     def _get_supported_skill(self) -> str:
         return "geocoding.read"
 
