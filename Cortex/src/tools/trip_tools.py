@@ -14,11 +14,40 @@ class TripReadTools(BaseCoreTools):
 
     def _get_tools(self) -> list[Any]:
         return [
+            self.get_trip_public_holidays,
             self.get_upcoming_trip,
             self.get_current_trip,
             self.get_trip_by_name,
             self.get_regular_trips,
             self.get_candidate_trips,
+        ]
+
+    def get_trip_public_holidays(
+        self, trip_id: str
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        """Retrieves public holidays associated with a specific trip.
+        Use this when the user asks which public holidays occur during a trip. Resolve the trip ID first using trip tools. Never ask the user for a UUID.
+
+        Args:
+            trip_id: The unique identifier of the trip whose public holidays should be retrieved.
+
+        Returns:
+            A list of public holidays, each containing:
+            - name (string): Holiday name.
+            - category (string): Category associated with the holiday.
+            - date (string): Holiday date in DD.MM.YYYY format (e.g. `"15.11.2026"`).
+        """
+        trip = self.core_client.get_trip(trip_id=trip_id)
+        if self._is_error_response(trip):
+            return trip
+
+        return [
+            {
+                "name": holiday.get("name"),
+                "category": holiday.get("category"),
+                "date": holiday.get("date"),
+            }
+            for holiday in trip.get("publicHolidays", [])
         ]
 
     def get_upcoming_trip(self) -> dict[str, Any] | None:

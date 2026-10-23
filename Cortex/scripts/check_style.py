@@ -55,6 +55,7 @@ EXEMPT_ATTRIBUTES = {
     # standard library
     "getenv",
     "fromtimestamp",
+    "strptime",
     "set",
     "reset",
     "verify",
