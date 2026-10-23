@@ -40,15 +40,36 @@ class GenerativeContentEngine:
         enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
+    ) -> tuple[str, list[dict[str, Any]], list[str]]:
+        return (
+            self._do_generate(
+                message=messages[-1].get("text", ""),
+                history=[
+                    types.Content.model_validate(message) for message in messages[:-1]
+                ],
+                schema=schema,
+                enabled_skills=enabled_skills,
+                allowed_skills=allowed_skills,
+                context=context,
+                depth=0,
+            )
+            if messages
+            else ("", [], enabled_skills or [])
+        )
+
+    def _do_generate(
+        self,
+        message: str | list[types.Part],
+        history: list[types.Content],
+        schema: dict[str, Any] | None = None,
+        enabled_skills: list[str] | None = None,
+        allowed_skills: list[str] | None = None,
+        context: str | None = None,
         depth: int = 0,
     ) -> tuple[str, list[dict[str, Any]], list[str]]:
-        if not messages:
-            return "", [], enabled_skills
-
         if depth >= MAX_ALLOWED_SUBAGENTS:
             raise RuntimeError("The limit for sub-agents has been reached.")
 
-        history = [types.Content.model_validate(msg) for msg in messages[:-1]]
         config = self._build_config(
             schema=schema,
             enabled_skills=enabled_skills,
@@ -60,7 +81,8 @@ class GenerativeContentEngine:
             logger.debug(
                 f"Attempting generative content request with model '{model}'...",
                 extra={
-                    "messages": messages,
+                    "input": message,
+                    "history": history,
                     "config": config.model_dump(
                         mode="json",
                         exclude_none=True,
@@ -69,6 +91,8 @@ class GenerativeContentEngine:
                     ),
                 },
             )
+
+            subagent_started = False
             try:
                 chat = self.client.chats.create(
                     model=model,
@@ -76,8 +100,71 @@ class GenerativeContentEngine:
                     config=config,
                 )
 
-                # The last message dictionary contains the new user turn/input.
-                response = chat.send_message(messages[-1].get("text", ""))
+                response = chat.send_message(message)
+
+                # Process function calls requested by the model.
+                iteration = 0
+                while response.function_calls:
+                    function_responses = []
+
+                    start_subagent = False
+                    subagent_skills = list(enabled_skills or [])
+
+                    for fn_call in response.function_calls:
+                        fn_name = fn_call.name
+                        fn_args = fn_call.args or {}
+
+                        try:
+                            logger.debug(
+                                f"Iteration {iteration + 1}: Calling '{fn_name}({', '.join(f'{k}={repr(v)}' for k, v in fn_args.items())})'..."
+                            )
+
+                            fn_call_result = self.tool_registry.execute_tool(
+                                name=fn_name, args=fn_args
+                            )
+                            function_responses.append(
+                                types.Part.from_function_response(
+                                    name=fn_name, response={"result": fn_call_result}
+                                )
+                            )
+
+                        except MissingSkillsError as exc:
+                            start_subagent = True
+                            subagent_skills.extend(exc.skills)
+
+                            function_responses.append(
+                                types.Part.from_function_response(
+                                    name=fn_name, response={"result": True}
+                                )
+                            )
+
+                        except Exception as exc:
+                            logger.exception(
+                                f"An error ocurred when calling '{fn_name}({', '.join(f'{k}={repr(v)}' for k, v in fn_args.items())})'."
+                            )
+
+                            function_responses.append(
+                                types.Part.from_function_response(
+                                    name=fn_name, response={"error": str(exc)}
+                                )
+                            )
+
+                    if start_subagent:
+                        logger.debug("Starting a sub-agent... ")
+                        subagent_started = True
+
+                        return self._do_generate(
+                            message=function_responses,
+                            history=chat.get_history(),
+                            schema=schema,
+                            enabled_skills=subagent_skills,
+                            allowed_skills=allowed_skills,
+                            context=context,
+                            depth=depth + 1,
+                        )
+
+                    response = chat.send_message(function_responses)
+                    iteration += 1
 
                 # Extract the complete updated history from the chat session.
                 updated_history = [
@@ -92,28 +179,17 @@ class GenerativeContentEngine:
                 return (
                     response.text or "",
                     updated_history,
-                    enabled_skills,
-                )
-            except MissingSkillsError as exc:
-                logger.debug(
-                    f"Starting a sub-agent... Reason: Totally {len(exc.skills)} new skills needs to be loaded"
-                )
-
-                # The conversation is roll-backed to the point before enabling the skill happened.
-                # The skill will be enabled because it is now in the context variable with enabled skills.
-                return self.generate(
-                    messages=messages,
-                    schema=schema,
-                    enabled_skills=(enabled_skills or []) + exc.skills,
-                    allowed_skills=allowed_skills,
-                    context=context,
-                    depth=depth + 1,
+                    enabled_skills or [],
                 )
 
             except Exception:
+                if subagent_started:
+                    raise
+
                 logger.exception(
                     f"Model '{model}' could not process the generative content request."
                 )
+
                 continue
 
         raise RuntimeError(
@@ -166,6 +242,9 @@ class GenerativeContentEngine:
         return types.GenerateContentConfig(
             **config_kwargs,
             http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                disable=True
+            ),
         )
 
     def _build_personal_context(self, context: str | None) -> str | None:

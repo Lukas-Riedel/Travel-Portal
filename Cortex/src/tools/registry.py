@@ -62,6 +62,13 @@ class ToolRegistry:
         for tool in tools:
             self.tools[tool.__name__] = (tool, supported_skill)
 
+    def execute_tool(self, name: str, args: dict[str, Any]) -> Any:
+        if name not in self.tools:
+            raise ValueError(f"Tool '{name}' does not exist.")
+
+        tool_func, _ = self.tools[name]
+        return tool_func(**args)
+
     def get_callable_tools(
         self, allowed_skills: list[str] | None = None
     ) -> list[Callable[..., Any]]:

@@ -1,4 +1,4 @@
-from typing import Any, NoReturn
+from typing import Any
 
 from src.errors.missing_skills_error import MissingSkillsError
 from src.tools.base_tools import BaseTools
@@ -16,7 +16,7 @@ class PlatformTools(BaseTools):
             self.load_skills,
         ]
 
-    def load_skills(self, skills: list[str]) -> NoReturn:
+    def load_skills(self, skills: list[str]) -> None:
         """Loads additional capability domains, instructions (skills), and associated tools into the current conversation context on-demand.
         Use this when the user asks about topics outside your core loaded skills.
 

@@ -8,6 +8,7 @@ MASTER_SKILL_FILENAME: Final[str] = "SKILL.md"
 SKILL_FILE_GLOB: Final[str] = "*.md"
 
 
+# TODO: Merge with ToolRegistry.
 class SkillRegistry:
     def __init__(self) -> None:
         self.master_skill: str = ""
