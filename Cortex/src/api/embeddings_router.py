@@ -46,7 +46,6 @@ class EmbeddingResponse(BaseModel):
         400: {"description": "Bad Request", "model": None},
         401: {"description": "Unauthorized", "model": None},
         403: {"description": "Forbidden", "model": None},
-        422: {"description": "Unprocessable Entity", "model": None},
     },
 )
 def get_text_embedding(
@@ -67,7 +66,6 @@ def get_text_embedding(
         400: {"description": "Bad Request", "model": None},
         401: {"description": "Unauthorized", "model": None},
         403: {"description": "Forbidden", "model": None},
-        422: {"description": "Unprocessable Entity", "model": None},
     },
 )
 def get_photo_embedding(

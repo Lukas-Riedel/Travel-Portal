@@ -65,7 +65,6 @@ class GenerativeContentResponse(BaseModel):
         400: {"description": "Bad Request"},
         401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
-        503: {"description": "Service Unavailable"},
     },
 )
 def generate_content(

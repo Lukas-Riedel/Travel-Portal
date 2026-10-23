@@ -104,14 +104,14 @@ class CategoryPublicHolidayReadTools(BasePublicHolidayTools):
             calendar_data = self._download_calendar(calendar_url=calendar_url)
             parsed_calendar = Calendar.from_ical(calendar_data)
             if parsed_calendar.name != "VCALENDAR":
-                raise ValueError("The configured URL did not return an ICS calendar")
+                raise RuntimeError("The configured URL did not return an ICS calendar")
 
             return self._extract_holidays(
                 calendar=parsed_calendar,
                 year=year if year is not None else datetime.now().year,
                 category=category.get("name"),
             )
-        except (requests.RequestException, ValueError, TypeError) as exc:
+        except (requests.RequestException, RuntimeError, TypeError) as exc:
             return {
                 "error": 400,
                 "message": f"Parsing an ICS calendar for the category failed. {exc}.",

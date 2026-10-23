@@ -88,6 +88,13 @@ async def validation_exception_handler(
     return await global_exception_handler(request=request, exc=exc)
 
 
+@app.exception_handler(RuntimeError)
+async def runtime_exception_handler(
+    request: Request, exc: RuntimeError
+) -> JSONResponse:
+    return await global_exception_handler(request=request, exc=exc)
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     status_code = 500

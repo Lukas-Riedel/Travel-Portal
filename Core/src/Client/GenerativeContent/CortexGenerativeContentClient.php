@@ -53,12 +53,12 @@
             $targetConversationId = $conversationId ?? Uuid::uuid4()->toString();
             $cacheKey = sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $targetConversationId);
 
-            $conversation = $this->distributedCacheClient->get($cacheKey) ?? array();
+            $lastResponse = $this->distributedCacheClient->get($cacheKey) ?? array();
 
-            $messages = $conversation["history"] ?? array();
+            $messages = $lastResponse["history"] ?? array();
             $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
 
-            $skills = $conversation["skills"] ?? $this->configurationService->getConfigurationEntry("agenticAi")["defaultSkills"];
+            $skills = $lastResponse["skills"] ?? $this->configurationService->getConfigurationEntry("agenticAi")["defaultSkills"];
 
             $response = $this->doGetResponse($messages, $accessToken, $username, null, $environment, $skills);
             if ($response === null) {
@@ -71,16 +71,16 @@
         }
 
         public function getChatHistory(string $conversationId) : mixed {
-            return $this->distributedCacheClient->get(sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $conversationId)) ?? array();
+            return $this->distributedCacheClient->get(sprintf(self::CONVERSATION_CACHE_KEY_FORMAT, $conversationId))["history"] ?? array();
         }
 
         private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, mixed $environment, array $skills) : ?array {
             $payload = array("messages" => $this->sanitizeChatHistory($messages), "environment" => $environment, "skills" => $skills);
-            if ($responseJsonSchema !== null) {
-                $payload["schema"] = $responseJsonSchema;
-            }
             if ($username !== null) {
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"][$username] ?? null;
+            }
+            if ($responseJsonSchema !== null) {
+                $payload["schema"] = $responseJsonSchema;
             }
 
             $headers = array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken($accessToken), "Content-Type: application/json");
@@ -91,7 +91,6 @@
                 return null;
             }
 
-            $this->logger->debug("The generative content request was successful. Prompt: '" . $messages[count($messages) - 1]["text"] . "' Response: '" . is_array($response["text"]) ? json_encode($response["text"]) : $response["text"] . "'");
             return $response;
         }
 

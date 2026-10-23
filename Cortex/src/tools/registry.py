@@ -42,9 +42,9 @@ class ToolRegistry:
                             supported_skill=instance._get_supported_skill(),
                             description=instance._get_description(),
                         )
-                    except Exception as exc:
-                        logger.error(
-                            f"Failed to initialize and register tools from class '{cls.__name__}': {exc}"
+                    except Exception:
+                        logger.exception(
+                            f"Failed to initialize and register tools from class '{cls.__name__}'."
                         )
 
         logger.info(f"Loaded {len(self.tools)} tool(s).")

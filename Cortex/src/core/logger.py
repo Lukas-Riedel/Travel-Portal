@@ -43,6 +43,9 @@ class JsonFormatter(logging.Formatter):
             log_record["ctxt_name"] = event.get("name")
             log_record["ctxt_args"] = json.dumps(obj=event.get("args"), default=str)
 
+        if record.exc_info:
+            log_record["exception"] = self.formatException(record.exc_info)
+
         return json.dumps(obj=log_record, default=str)
 
 

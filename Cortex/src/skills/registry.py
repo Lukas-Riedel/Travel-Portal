@@ -15,17 +15,13 @@ class SkillRegistry:
         self._auto_discover_and_register()
 
     def _auto_discover_and_register(self) -> None:
-        if not SKILLS_DIR.exists() or not SKILLS_DIR.is_dir():
-            logger.warning(f"Skills directory '{SKILLS_DIR}' does not exist.")
-            return
-
         main_skill_file = SKILLS_DIR / MASTER_SKILL_FILENAME
         if main_skill_file.exists() and main_skill_file.is_file():
             try:
                 self.master_skill = main_skill_file.read_text(encoding="utf-8").strip()
-            except Exception as exc:
-                logger.error(
-                    f"Failed to read master skill file '{main_skill_file}': {exc}"
+            except Exception:
+                logger.exception(
+                    f"Failed to read master skill file '{main_skill_file}'."
                 )
 
         for file_path in sorted(SKILLS_DIR.glob(SKILL_FILE_GLOB)):
@@ -37,8 +33,8 @@ class SkillRegistry:
                     self.skills[skill_name] = file_path.read_text(
                         encoding="utf-8"
                     ).strip()
-                except Exception as exc:
-                    logger.error(f"Failed to read skill file '{file_path}': {exc}")
+                except Exception:
+                    logger.exception(f"Failed to read skill file '{file_path}'.")
 
         logger.info(f"Loaded {len(self.skills)} skill(s).")
 

@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any, Final
 
 import pytz
-from fastapi import HTTPException, status
 from google import genai
 from google.genai import types
 
@@ -15,8 +14,9 @@ from src.core.logger import logger
 from src.skills.registry import SkillRegistry
 from src.tools.registry import ToolRegistry
 
+STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
 CHAT_TIMEOUT_MS: Final[int] = 30000
-MAX_ALLOWED_SKILLS_LOADING_PER_CHAT: Final[int] = 5
+MAX_ALLOWED_SUBAGENTS: Final[int] = 5
 
 
 class GenerativeContentEngine:
@@ -41,77 +41,49 @@ class GenerativeContentEngine:
         schema: dict[str, Any] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
+        depth: int = 0,
     ) -> tuple[str, list[dict[str, Any]], list[str]]:
         if not messages:
-            return "", [], []
+            return "", [], generative_content_skills.get() or []
 
-        # Validate and reconstruct complete history (including SDK structures and thought signatures).
+        if depth >= MAX_ALLOWED_SUBAGENTS:
+            raise RuntimeError("The limit for sub-agents has been reached.")
+
         history = [types.Content.model_validate(msg) for msg in messages[:-1]]
+        config = self._build_config(
+            schema=schema,
+            allowed_skills=allowed_skills,
+            context=context,
+        )
 
-        # The last message dictionary contains the new user turn/input.
-        last_message = messages[-1].get("text", "")
-
-        for _ in range(MAX_ALLOWED_SKILLS_LOADING_PER_CHAT):
-            config_kwargs = {}
-
-            if allowed_skills is not None:
-                allowed_set = set(allowed_skills)
-                enabled_skills = generative_content_skills.get() or []
-                allowed_enabled_skills = [
-                    skill for skill in enabled_skills if skill in allowed_set
-                ]
-
-                parts = [
-                    p
-                    for p in [
-                        self.skill_registry.get_callable_skills(allowed_enabled_skills),
-                        self._build_disabled_skills(
-                            self.tool_registry.get_disabled_skills(
-                                enabled_skills=allowed_enabled_skills,
-                                allowed_skills=allowed_skills,
-                            )
-                        ),
-                        self._build_environmental_context(),
-                        self._build_personal_context(context),
-                    ]
-                    if p
-                ]
-                if parts:
-                    config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
-
-                tools = self.tool_registry.get_callable_tools(allowed_enabled_skills)
-                if tools:
-                    config_kwargs["tools"] = tools
-
-            if schema is not None:
-                config_kwargs["response_mime_type"] = "application/json"
-                config_kwargs["response_schema"] = schema
-
-            config = types.GenerateContentConfig(
-                **config_kwargs,
-                http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
+        for model in self.models:
+            logger.debug(
+                f"Attempting generative content request with model '{model}'...",
+                extra={
+                    "messages": messages,
+                    "config": config.model_dump(
+                        mode="json",
+                        exclude_none=True,
+                        by_alias=True,
+                        fallback=str,
+                    ),
+                },
             )
-
-            restart_chat = False
-            for model in self.models:
-                logger.debug(
-                    f"Attempting generative content request with model '{model}'..."
+            try:
+                chat = self.client.chats.create(
+                    model=model,
+                    history=list(history) if history else None,
+                    config=config,
                 )
-                try:
-                    chat = self.client.chats.create(
-                        model=model,
-                        history=list(history) if history else None,
-                        config=config,
-                    )
 
-                    skills_before = len(generative_content_skills.get() or [])
-                    response = chat.send_message(last_message)
-                    skills_after = len(generative_content_skills.get() or [])
+                skills_before = len(generative_content_skills.get() or [])
 
-                    restart_chat = skills_before != skills_after
-                    if restart_chat:
-                        break
+                # The last message dictionary contains the new user turn/input.
+                response = chat.send_message(messages[-1].get("text", ""))
 
+                skills_after = len(generative_content_skills.get() or [])
+
+                if skills_before == skills_after:
                     # Extract the complete updated history from the chat session.
                     updated_history = [
                         content.model_dump(
@@ -123,27 +95,82 @@ class GenerativeContentEngine:
                     logger.info(
                         f"Generative content request succeeded with model '{model}'."
                     )
+
                     return (
                         response.text or "",
                         updated_history,
                         generative_content_skills.get() or [],
                     )
-
-                except Exception as exc:
-                    logger.warning(
-                        f"Model '{model}' is unavailable ({exc}). Trying next model..."
+                else:
+                    logger.debug(
+                        f"Starting a sub-agent... Reason: Totally {skills_after - skills_before} new skills needs to be loaded"
                     )
-                    continue
 
-            if restart_chat:
+                    # The conversation is roll-backed to the point before enabling the skill happened.
+                    # The skill will be enabled because it is now in the context variable with enabled skills.
+                    return self.generate(
+                        messages=messages,
+                        schema=schema,
+                        allowed_skills=allowed_skills,
+                        context=context,
+                        depth=depth + 1,
+                    )
+
+            except Exception:
+                logger.exception(
+                    f"Model '{model}' could not process the generative content request."
+                )
                 continue
 
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="All generative content models are currently unavailable. Please try again later.",
-            )
+        raise RuntimeError(
+            "All generative content models are currently unavailable. Please try again later."
+        )
 
-        # TODO: Return something if the threshold for loading skills has been reached.
+    def _build_config(
+        self,
+        schema: dict[str, Any] | None = None,
+        allowed_skills: list[str] | None = None,
+        context: str | None = None,
+    ) -> types.GenerateContentConfig:
+        config_kwargs = {}
+
+        if allowed_skills is not None:
+            allowed_set = set(allowed_skills)
+            enabled_skills = generative_content_skills.get() or []
+            allowed_enabled_skills = [
+                skill for skill in enabled_skills if skill in allowed_set
+            ]
+
+            parts = [
+                part
+                for part in [
+                    self.skill_registry.get_callable_skills(allowed_enabled_skills),
+                    self._build_disabled_skills(
+                        self.tool_registry.get_disabled_skills(
+                            enabled_skills=allowed_enabled_skills,
+                            allowed_skills=allowed_skills,
+                        )
+                    ),
+                    self._build_environmental_context(),
+                    self._build_personal_context(context),
+                ]
+                if part
+            ]
+            if parts:
+                config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
+
+            tools = self.tool_registry.get_callable_tools(allowed_enabled_skills)
+            if tools:
+                config_kwargs["tools"] = tools
+
+        if schema is not None:
+            config_kwargs["response_mime_type"] = STRUCTURED_RESPONSE_CONTENT_TYPE
+            config_kwargs["response_schema"] = schema
+
+        return types.GenerateContentConfig(
+            **config_kwargs,
+            http_options=types.HttpOptions(timeout=CHAT_TIMEOUT_MS),
+        )
 
     def _build_personal_context(self, context: str | None) -> str | None:
         if not context:
@@ -171,7 +198,10 @@ class GenerativeContentEngine:
         env = generative_content_environment.get()
 
         timezone_name = env.get("timezone") if env else "UTC"
-        latitude, longitude = env.get("latitude"), env.get("longitude")
+        latitude, longitude = (
+            env.get("latitude") if env else None,
+            env.get("longitude") if env else None,
+        )
 
         now = datetime.now(tz=pytz.timezone(timezone_name))
         lines = [
