@@ -225,6 +225,13 @@ class GenerativeContentEngine:
                                 estimated_tokens_per_turn += estimated_tokens_per_call
 
                         except MissingSkillsError as exc:
+                            allowed_set = set(allowed_skills)
+                            for requested_skill in exc.skills:
+                                if requested_skill not in allowed_set:
+                                    raise RuntimeError(
+                                        f"The skill '{requested_skill}' does not exist. Never invent non-existing skills."
+                                    ) from exc
+
                             start_subagent = True
                             subagent_skills.extend(exc.skills)
 
