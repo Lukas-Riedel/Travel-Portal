@@ -37,8 +37,7 @@ class AirlineReadTools(BaseAirlineTools):
             - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
         """
         airlines = self.core_client.get_airlines()
-        if self._is_error_response(airlines):
-            return airlines
+        self._verify_error_response(airlines)
 
         return [self._extract_airline(a) for a in airlines]
 
@@ -74,8 +73,7 @@ class AirlineEditTools(BaseAirlineTools):
             - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
         """
         airline = self.core_client.create_airline(name=name, logo=logo)
-        if self._is_error_response(airline):
-            return airline
+        self._verify_error_response(airline)
 
         return self._extract_airline(airline)
 
@@ -96,8 +94,7 @@ class AirlineEditTools(BaseAirlineTools):
             - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
         """
         airline = self.core_client.update_airline(airline_id=airline_id, name=name)
-        if self._is_error_response(airline):
-            return airline
+        self._verify_error_response(airline)
 
         return self._extract_airline(airline)
 
@@ -118,8 +115,7 @@ class AirlineEditTools(BaseAirlineTools):
             - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
         """
         airline = self.core_client.update_airline(airline_id=airline_id, logo=logo)
-        if self._is_error_response(airline):
-            return airline
+        self._verify_error_response(airline)
 
         return self._extract_airline(airline)
 
@@ -143,7 +139,6 @@ class AirlineEditTools(BaseAirlineTools):
             airline_id=airline_id,
             code=code,
         )
-        if self._is_error_response(airline):
-            return airline
+        self._verify_error_response(airline)
 
         return self._extract_airline(airline)

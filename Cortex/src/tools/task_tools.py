@@ -66,13 +66,11 @@ class TripTaskReadTools(BaseTaskTools):
         """
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(trip_type="regular", include="tasks")
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         result = []
         for trip in trips:
@@ -146,8 +144,7 @@ class TripTaskEditTools(BaseTaskTools):
             - deadline (string | null): Deadline in ISO 8601 format with timezone offset, or null.
         """
         trip = self.core_client.get_trip(trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         task = self.core_client.create_trip_task(
             trip_id=trip_id,
@@ -158,8 +155,7 @@ class TripTaskEditTools(BaseTaskTools):
             notification_interval=notification_interval,
             auto_delete=auto_delete,
         )
-        if self._is_error_response(task):
-            return task
+        self._verify_error_response(task)
 
         return self._extract_task(task=task, trip=trip)
 
@@ -194,8 +190,7 @@ class TripTaskEditTools(BaseTaskTools):
             - deadline (string | null): Deadline in ISO 8601 format with timezone offset, or null.
         """
         trip = self.core_client.get_trip(trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         task = self.core_client.update_trip_task(
             trip_id=trip_id,
@@ -204,8 +199,7 @@ class TripTaskEditTools(BaseTaskTools):
             description=description,
             priority=priority,
         )
-        if self._is_error_response(task):
-            return task
+        self._verify_error_response(task)
 
         return self._extract_task(task=task, trip=trip)
 
@@ -227,7 +221,6 @@ class TripTaskEditTools(BaseTaskTools):
             trip_id=trip_id,
             task_id=task_id,
         )
-        if self._is_error_response(result):
-            return result
+        self._verify_error_response(result)
 
         return {"deleted": True, "id": task_id}

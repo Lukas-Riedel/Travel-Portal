@@ -130,8 +130,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
             The excerpt string.
         """
         place = self.core_client.get_place(place_id)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         return place.get("excerpt")
 
@@ -208,8 +207,7 @@ class PlaceReadTools(BasePlaceTools):
             else None,
             sort=sort,
         )
-        if self._is_error_response(places):
-            return places
+        self._verify_error_response(places)
 
         return [self._extract_place(p) for p in self._filter_visible_places(places)]
 
@@ -247,8 +245,7 @@ class PlaceReadTools(BasePlaceTools):
             sort="-oldest",
             limit=limit,
         )
-        if self._is_error_response(places):
-            return places
+        self._verify_error_response(places)
 
         return [self._extract_place(p) for p in self._filter_visible_places(places)]
 
@@ -286,8 +283,7 @@ class PlaceReadTools(BasePlaceTools):
             category_id=category_id,
             include="dates" if trip_id is not None else None,
         )
-        if self._is_error_response(places):
-            return places
+        self._verify_error_response(places)
 
         return [self._extract_place(p) for p in self._filter_visible_places(places)]
 
@@ -316,8 +312,7 @@ class PlaceReadTools(BasePlaceTools):
                 - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
         search_results = self.core_client.search(query=query, include="place", limit=1)
-        if self._is_error_response(search_results):
-            return search_results
+        self._verify_error_response(search_results)
 
         place_result = next(
             (r for r in search_results if r.get("type") == "place"), None
@@ -330,8 +325,7 @@ class PlaceReadTools(BasePlaceTools):
             return None
 
         place = self.core_client.get_place(place_id)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         visible_places = self._filter_visible_places([place])
         if not visible_places:
@@ -358,8 +352,7 @@ class PlaceReadTools(BasePlaceTools):
             - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
         place = self.core_client.get_place(place_id)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         place_tz = pytz.timezone(place.get("timezone"))
         return [
@@ -409,8 +402,7 @@ class PlaceEditTools(BasePlaceTools):
         place = self.core_client.create_place(
             name=name, address=address, place_type="candidate"
         )
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         return self._extract_place(self._with_visible_dates(place))
 
@@ -438,7 +430,6 @@ class PlaceEditTools(BasePlaceTools):
                 - weather_forecast (object | null): Weather forecast, available only for dates in the near future. Contains temperature (°C), precipitation (total mm, probability %), and clouds (total, low, medium, high %).
         """
         place = self.core_client.update_place(place_id=place_id, excerpt=excerpt)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         return self._extract_place(self._with_visible_dates(place))

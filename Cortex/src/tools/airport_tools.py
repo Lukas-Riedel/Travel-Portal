@@ -39,8 +39,7 @@ class AirportReadTools(BaseAirportTools):
             - country (string): Country where the airport is located (e.g. `"Czechia"`).
         """
         airports = self.core_client.get_airports()
-        if self._is_error_response(airports):
-            return airports
+        self._verify_error_response(airports)
 
         return [self._extract_airport(a) for a in airports]
 
@@ -78,7 +77,6 @@ class AirportEditTools(BaseAirportTools):
             airport_id=airport_id,
             long_name=name,
         )
-        if self._is_error_response(airport):
-            return airport
+        self._verify_error_response(airport)
 
         return self._extract_airport(airport)

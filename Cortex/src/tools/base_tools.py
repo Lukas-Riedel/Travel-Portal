@@ -8,11 +8,13 @@ import pytz
 
 from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
+from src.errors.general_tool_error import GeneralToolError
 
 
 class BaseTools(ABC):
-    def _is_error_response(self, obj: Any) -> bool:
-        return isinstance(obj, dict) and bool(obj.get("message"))
+    def _verify_error_response(self, obj: Any) -> None:
+        if isinstance(obj, dict) and bool(obj.get("message")):
+            raise GeneralToolError(obj.get("message"))
 
     @abstractmethod
     def _get_tools(self) -> list[Any]:

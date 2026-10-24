@@ -46,8 +46,7 @@ class TripStatisticsReadTools(BaseStatisticsTools):
             - unit (string): The unit associated with the statistic (e.g. `"kilometers"`).
         """
         trip = self.core_client.get_trip(trip_id=trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         return self._extract_statistics(statistics=trip.get("statistics", []))
 
@@ -80,8 +79,7 @@ class CategoryStatisticsReadTools(BaseStatisticsTools):
             - unit (string): The unit associated with the statistic (e.g. `"kilometers"`).
         """
         category = self.core_client.get_category(category_id=category_id)
-        if self._is_error_response(category):
-            return category
+        self._verify_error_response(category)
 
         return self._extract_statistics(statistics=category.get("statistics", []))
 
@@ -112,8 +110,7 @@ class YearStatisticsReadTools(BaseStatisticsTools):
             - unit (string): The unit associated with the statistic (e.g. `"kilometers"`).
         """
         year_data = self.core_client.get_year(year=year)
-        if self._is_error_response(year_data):
-            return year_data
+        self._verify_error_response(year_data)
 
         return self._extract_statistics(statistics=year_data.get("statistics", []))
 
@@ -141,7 +138,6 @@ class StatisticsReadTools(BaseStatisticsTools):
             - unit (string): The unit associated with the statistic (e.g. `"kilometers"`).
         """
         statistics = self.core_client.get_statistics()
-        if self._is_error_response(statistics):
-            return statistics
+        self._verify_error_response(statistics)
 
         return self._extract_statistics(statistics=statistics)

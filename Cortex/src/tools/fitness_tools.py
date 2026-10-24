@@ -38,8 +38,7 @@ class TripFitnessReadTools(BaseCoreTools):
         """
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(
@@ -47,8 +46,7 @@ class TripFitnessReadTools(BaseCoreTools):
                 include="fitness",
                 year=year,
             )
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         return [
             {
@@ -85,8 +83,7 @@ class TripFitnessReadTools(BaseCoreTools):
             - distance (number): Distance in kilometers recorded on this day (e.g. `6.2`).
         """
         trip = self.core_client.get_trip(trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         return [
             {

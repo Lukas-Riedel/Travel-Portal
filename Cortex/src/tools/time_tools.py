@@ -4,6 +4,7 @@ from typing import Any
 import pytz
 from dateutil import parser
 
+from src.errors.general_tool_error import GeneralToolError
 from src.tools.base_tools import BaseTools
 
 
@@ -36,7 +37,7 @@ class TimeTools(BaseTools):
             - seconds (integer): Remaining seconds after whole minutes (e.g. 0).
         """
         if seconds < 0:
-            return {"error": 400, "message": "Duration in seconds cannot be negative."}
+            raise GeneralToolError("Duration in seconds cannot be negative.")
 
         return {
             "hours": seconds // 3600,
@@ -66,19 +67,18 @@ class TimeTools(BaseTools):
         """
         try:
             tz = pytz.timezone(tz_name)
-        except (pytz.UnknownTimeZoneError, ValueError):
-            return {"error": 400, "message": f"Invalid timezone name '{tz_name}'."}
+        except (pytz.UnknownTimeZoneError, ValueError) as exc:
+            raise GeneralToolError(f"Invalid timezone name '{tz_name}'.") from exc
 
         combined = f"{date_str.strip()} {time_str.strip()}"
         dayfirst = not date_str.strip()[:4].isdigit()
 
         try:
             dt_naive = parser.parse(timestr=combined, dayfirst=dayfirst)
-        except (ValueError, TypeError):
-            return {
-                "error": 400,
-                "message": f"Could not parse date '{date_str}' and time '{time_str}'.",
-            }
+        except (ValueError, TypeError) as exc:
+            raise GeneralToolError(
+                f"Could not parse date '{date_str}' and time '{time_str}'."
+            ) from exc
 
         dt_with_tz = tz.localize(dt_naive)
 
@@ -107,8 +107,8 @@ class TimeTools(BaseTools):
         """
         try:
             tz = pytz.timezone(tz_name)
-        except (pytz.UnknownTimeZoneError, ValueError):
-            return {"error": 400, "message": f"Invalid timezone name '{tz_name}'."}
+        except (pytz.UnknownTimeZoneError, ValueError) as exc:
+            raise GeneralToolError(f"Invalid timezone name '{tz_name}'.") from exc
 
         dt_utc = datetime.fromtimestamp(epoch, tz=UTC)
         dt_with_tz = dt_utc.astimezone(tz)
@@ -145,31 +145,28 @@ class TimeTools(BaseTools):
         """
         try:
             target_zone = pytz.timezone(target_tz)
-        except (pytz.UnknownTimeZoneError, ValueError):
-            return {
-                "error": 400,
-                "message": f"Invalid target timezone name '{target_tz}'.",
-            }
+        except (pytz.UnknownTimeZoneError, ValueError) as exc:
+            raise GeneralToolError(
+                f"Invalid target timezone name '{target_tz}'."
+            ) from exc
 
         dayfirst = not datetime_str.strip()[:4].isdigit()
         try:
             dt = parser.parse(timestr=datetime_str, dayfirst=dayfirst)
-        except (ValueError, TypeError):
-            return {
-                "error": 400,
-                "message": f"Could not parse datetime '{datetime_str}'.",
-            }
+        except (ValueError, TypeError) as exc:
+            raise GeneralToolError(
+                f"Could not parse datetime '{datetime_str}'."
+            ) from exc
 
         if dt.tzinfo is None:
             if source_tz:
                 try:
                     source_zone = pytz.timezone(source_tz)
                     dt = source_zone.localize(dt)
-                except (pytz.UnknownTimeZoneError, ValueError):
-                    return {
-                        "error": 400,
-                        "message": f"Invalid source timezone name '{source_tz}'.",
-                    }
+                except (pytz.UnknownTimeZoneError, ValueError) as exc:
+                    raise GeneralToolError(
+                        f"Invalid source timezone name '{source_tz}'."
+                    ) from exc
             else:
                 dt = dt.replace(tzinfo=UTC)
 

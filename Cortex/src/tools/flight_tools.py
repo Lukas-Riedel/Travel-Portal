@@ -171,8 +171,7 @@ class TripFlightReadTools(BaseFlightTools):
                 query=airline.strip(),
                 include="airline",
             )
-            if self._is_error_response(search_results):
-                return search_results
+            self._verify_error_response(search_results)
 
             airline_ids = {
                 r.get("entity", {}).get("id")
@@ -189,8 +188,7 @@ class TripFlightReadTools(BaseFlightTools):
                 query=airport.strip(),
                 include="airport",
             )
-            if self._is_error_response(search_results):
-                return search_results
+            self._verify_error_response(search_results)
 
             airport_ids = {
                 r.get("entity", {}).get("id")
@@ -204,8 +202,7 @@ class TripFlightReadTools(BaseFlightTools):
 
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id=trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(
@@ -213,8 +210,7 @@ class TripFlightReadTools(BaseFlightTools):
                 include="flights",
                 year=year,
             )
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         aircraft_query = aircraft.strip().lower() if aircraft else None
         matched_flights = []
@@ -281,8 +277,7 @@ class TripFlightReadTools(BaseFlightTools):
         """
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id=trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(
@@ -290,8 +285,7 @@ class TripFlightReadTools(BaseFlightTools):
                 include="watchedFlights",
                 year=year,
             )
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         matched_flights = []
 
@@ -363,8 +357,7 @@ class FlightEditTools(BaseFlightTools):
             scheduled_departure=scheduled_departure,
             scheduled_arrival=scheduled_arrival,
         )
-        if self._is_error_response(result):
-            return result
+        self._verify_error_response(result)
 
         return self._extract_flight(
             flight=result,
@@ -410,8 +403,7 @@ class FlightEditTools(BaseFlightTools):
             scheduled_departure=scheduled_departure,
             scheduled_arrival=scheduled_arrival,
         )
-        if self._is_error_response(result):
-            return result
+        self._verify_error_response(result)
 
         return self._extract_watched_flight(
             flight=result,

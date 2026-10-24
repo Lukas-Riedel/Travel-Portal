@@ -7,6 +7,7 @@ import requests
 from dateutil.rrule import rruleset, rrulestr
 from icalendar import Calendar
 
+from src.errors.general_tool_error import GeneralToolError
 from src.tools.base_tools import BaseCoreTools
 
 REQUEST_TIMEOUT: Final[tuple[Literal[5], Literal[15]]] = (5, 15)
@@ -60,8 +61,7 @@ class CategoryReadTools(BaseCategoryTools):
             country=country,
             categories="administrative" if country is not None else category_type,
         )
-        if self._is_error_response(categories):
-            return categories
+        self._verify_error_response(categories)
 
         return [self._extract_category(category) for category in categories]
 
@@ -84,8 +84,7 @@ class CategoryReadTools(BaseCategoryTools):
             include="category",
             limit=1,
         )
-        if self._is_error_response(search_results):
-            return search_results
+        self._verify_error_response(search_results)
 
         category_result = next(
             (result for result in search_results if result.get("type") == "category"),
@@ -99,8 +98,7 @@ class CategoryReadTools(BaseCategoryTools):
             return None
 
         category = self.core_client.get_category(category_id)
-        if self._is_error_response(category):
-            return category
+        self._verify_error_response(category)
 
         return self._extract_category(category)
 
@@ -121,15 +119,13 @@ class CategoryReadTools(BaseCategoryTools):
             - date (string): Holiday date in DD.MM.YYYY format (e.g. `"24.12.2026"`).
         """
         category = self.core_client.get_category(category_id=category_id)
-        if self._is_error_response(category):
-            return category
+        self._verify_error_response(category)
 
         calendar_url = (category.get("metadata") or {}).get("publicHolidaysCalendar")
         if not calendar_url:
-            return {
-                "error": 400,
-                "message": "The category has no public holidays calendar configured.",
-            }
+            raise RuntimeError(
+                "The category has no public holidays calendar configured"
+            )
 
         try:
             calendar_data = self._download_calendar(calendar_url=calendar_url)
@@ -143,10 +139,9 @@ class CategoryReadTools(BaseCategoryTools):
                 category=category.get("name"),
             )
         except (requests.RequestException, RuntimeError, TypeError) as exc:
-            return {
-                "error": 400,
-                "message": f"Parsing an ICS calendar for the category failed. {exc}.",
-            }
+            raise GeneralToolError(
+                f"Parsing an ICS calendar for the category failed. {exc}."
+            ) from exc
 
     def _download_calendar(self, calendar_url: str) -> bytes:
         response = requests.get(url=calendar_url, timeout=REQUEST_TIMEOUT)
@@ -288,14 +283,12 @@ class PlaceCategoryReadTools(BaseCategoryTools):
             - color (string | null): Category color (e.g. `"#012169"`).
         """
         place = self.core_client.get_place(place_id)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         categories = []
         for category_identifier in place.get("categories", []):
             category = self.core_client.get_category(category_identifier.get("id"))
-            if self._is_error_response(category):
-                return category
+            self._verify_error_response(category)
 
             categories.append(self._extract_category(category))
 
@@ -334,8 +327,7 @@ class CategoryEditTools(BaseCategoryTools):
             category_id=category_id,
             color=color,
         )
-        if self._is_error_response(category):
-            return category
+        self._verify_error_response(category)
 
         return self._extract_category(category)
 
@@ -360,7 +352,6 @@ class CategoryEditTools(BaseCategoryTools):
             category_id=category_id,
             public_holidays_calendar=calendar_url,
         )
-        if self._is_error_response(category):
-            return category
+        self._verify_error_response(category)
 
         return self._extract_category(category)

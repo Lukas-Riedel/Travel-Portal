@@ -40,8 +40,7 @@ class TripStayReadTools(BaseCoreTools):
         """
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(
@@ -49,8 +48,7 @@ class TripStayReadTools(BaseCoreTools):
                 include="stays",
                 year=year,
             )
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         system_tz = self._get_system_timezone()
         return [
@@ -85,8 +83,7 @@ class TripStayReadTools(BaseCoreTools):
         """
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(
@@ -94,8 +91,7 @@ class TripStayReadTools(BaseCoreTools):
                 include="stays",
                 year=year,
             )
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         system_tz = self._get_system_timezone()
         return [

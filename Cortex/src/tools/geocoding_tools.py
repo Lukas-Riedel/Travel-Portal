@@ -24,7 +24,6 @@ class GeocodingReadTools(BaseCoreTools):
             The IANA timezone identifier of the location.
         """
         location = self.core_client.get_coordinates(address=address)
-        if self._is_error_response(location):
-            return location
+        self._verify_error_response(location)
 
         return location.get("timezone")

@@ -85,8 +85,7 @@ class TripExpenseReadTools(BaseExpenseTools):
         """
         if trip_id is not None:
             trip = self.core_client.get_trip(trip_id)
-            if self._is_error_response(trip):
-                return trip
+            self._verify_error_response(trip)
             trips = [trip]
         else:
             trips = self.core_client.get_trips(
@@ -94,8 +93,7 @@ class TripExpenseReadTools(BaseExpenseTools):
                 include="expenses",
                 year=year,
             )
-            if self._is_error_response(trips):
-                return trips
+            self._verify_error_response(trips)
 
         main_currency = self._get_main_currency()
         return [
@@ -136,8 +134,7 @@ class TripExpenseReadTools(BaseExpenseTools):
         expenses = self.get_expenses(
             trip_id=trip_id, year=year, expense_type=expense_type
         )
-        if self._is_error_response(expenses):
-            return expenses
+        self._verify_error_response(expenses)
 
         return {
             "total": {
@@ -179,8 +176,7 @@ class TripExpenseEditTools(BaseExpenseTools):
             include="expenses",
             sort="-oldest",
         )
-        if self._is_error_response(trips):
-            return trips
+        self._verify_error_response(trips)
 
         descriptions = []
         for trip in trips:
@@ -235,8 +231,7 @@ class TripExpenseEditTools(BaseExpenseTools):
             - subscription (string | null): Description of the subscription the expense is tied to (e.g. `"Deutschland Ticket"`), or null.
         """
         trip = self.core_client.get_trip(trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         expense = self.core_client.create_trip_expense(
             trip_id=trip_id,
@@ -246,8 +241,7 @@ class TripExpenseEditTools(BaseExpenseTools):
             expense_type=expense_type,
             subscription_id=subscription_id,
         )
-        if self._is_error_response(expense):
-            return expense
+        self._verify_error_response(expense)
 
         return self._extract_expense(
             expense=expense, trip=trip, main_currency=self._get_main_currency()
@@ -289,8 +283,7 @@ class TripExpenseEditTools(BaseExpenseTools):
             - subscription (string | null): Description of the subscription the expense is tied to (e.g. `"Deutschland Ticket"`), or null.
         """
         trip = self.core_client.get_trip(trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         expense = self.core_client.update_trip_expense(
             trip_id=trip_id,
@@ -299,8 +292,7 @@ class TripExpenseEditTools(BaseExpenseTools):
             value=value,
             currency=currency.upper() if currency is not None else None,
         )
-        if self._is_error_response(expense):
-            return expense
+        self._verify_error_response(expense)
 
         return self._extract_expense(
             expense=expense, trip=trip, main_currency=self._get_main_currency()

@@ -42,8 +42,7 @@ class TripNoteReadTools(BaseNoteTools):
             - content (string): Markdown-formatted content of the note.
         """
         trip = self.core_client.get_trip(trip_id=trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         return [self._extract_note(note) for note in trip.get("notes", [])]
 
@@ -80,8 +79,7 @@ class TripNoteEditTools(BaseNoteTools):
             trip_id=trip_id,
             content=content,
         )
-        if self._is_error_response(note):
-            return note
+        self._verify_error_response(note)
 
         return self._extract_note(note)
 
@@ -107,8 +105,7 @@ class TripNoteEditTools(BaseNoteTools):
             note_id=note_id,
             content=content,
         )
-        if self._is_error_response(note):
-            return note
+        self._verify_error_response(note)
 
         return self._extract_note(note)
 
@@ -130,8 +127,7 @@ class TripNoteEditTools(BaseNoteTools):
             trip_id=trip_id,
             note_id=note_id,
         )
-        if self._is_error_response(result):
-            return result
+        self._verify_error_response(result)
 
         return {"deleted": True, "id": note_id}
 
@@ -163,8 +159,7 @@ class PlaceNoteReadTools(BaseNoteTools):
             - content (string): Markdown-formatted content of the note.
         """
         place = self.core_client.get_place(place_id=place_id)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         return [self._extract_note(note) for note in place.get("notes", [])]
 
@@ -201,8 +196,7 @@ class PlaceNoteEditTools(BaseNoteTools):
             place_id=place_id,
             content=content,
         )
-        if self._is_error_response(note):
-            return note
+        self._verify_error_response(note)
 
         return self._extract_note(note)
 
@@ -228,8 +222,7 @@ class PlaceNoteEditTools(BaseNoteTools):
             note_id=note_id,
             content=content,
         )
-        if self._is_error_response(note):
-            return note
+        self._verify_error_response(note)
 
         return self._extract_note(note)
 
@@ -251,7 +244,6 @@ class PlaceNoteEditTools(BaseNoteTools):
             place_id=place_id,
             note_id=note_id,
         )
-        if self._is_error_response(result):
-            return result
+        self._verify_error_response(result)
 
         return {"deleted": True, "id": note_id}

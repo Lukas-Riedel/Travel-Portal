@@ -34,8 +34,7 @@ class LabelReadTools(BaseLabelTools):
             - name (string): Label name (e.g. `"City"`).
         """
         labels = self.core_client.get_labels()
-        if self._is_error_response(labels):
-            return labels
+        self._verify_error_response(labels)
 
         return [self._extract_label(label) for label in labels]
 
@@ -65,8 +64,7 @@ class PlaceLabelReadTools(BaseLabelTools):
             - name (string): Label name (e.g. `"City"`).
         """
         place = self.core_client.get_place(place_id=place_id)
-        if self._is_error_response(place):
-            return place
+        self._verify_error_response(place)
 
         return [self._extract_label(label) for label in place.get("labels", [])]
 
@@ -106,7 +104,6 @@ class PlaceLabelEditTools(BaseLabelTools):
             place_id=place_id,
             name=label_name,
         )
-        if self._is_error_response(assigned_label):
-            return assigned_label
+        self._verify_error_response(assigned_label)
 
         return self._extract_label(assigned_label)

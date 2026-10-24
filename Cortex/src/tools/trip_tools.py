@@ -38,8 +38,7 @@ class TripReadTools(BaseCoreTools):
             - date (string): Holiday date in DD.MM.YYYY format (e.g. `"15.11.2026"`).
         """
         trip = self.core_client.get_trip(trip_id=trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         return [
             {
@@ -69,8 +68,7 @@ class TripReadTools(BaseCoreTools):
             trip_type="regular",
             sort="oldest",
         )
-        if self._is_error_response(trips):
-            return trips
+        self._verify_error_response(trips)
 
         current_timestamp = int(time.time())
         for trip in trips:
@@ -102,8 +100,7 @@ class TripReadTools(BaseCoreTools):
             trip_type="regular",
             sort="oldest",
         )
-        if self._is_error_response(trips):
-            return trips
+        self._verify_error_response(trips)
 
         current_timestamp = int(time.time())
         for trip in trips:
@@ -139,8 +136,7 @@ class TripReadTools(BaseCoreTools):
             - countries (list of strings): Countries visited on thh trip (excluding layovers).
         """
         search_results = self.core_client.search(query=query, include="trip", limit=1)
-        if self._is_error_response(search_results):
-            return search_results
+        self._verify_error_response(search_results)
 
         trip_result = next((r for r in search_results if r.get("type") == "trip"), None)
         if trip_result is None:
@@ -151,8 +147,7 @@ class TripReadTools(BaseCoreTools):
             return None
 
         trip = self.core_client.get_trip(trip_id)
-        if self._is_error_response(trip):
-            return trip
+        self._verify_error_response(trip)
 
         if not self._is_trip_visible(trip):
             return None
@@ -191,8 +186,7 @@ class TripReadTools(BaseCoreTools):
             year=year,
             sort=sort,
         )
-        if self._is_error_response(trips):
-            return trips
+        self._verify_error_response(trips)
 
         system_tz = self._get_system_timezone()
         return [
@@ -219,8 +213,7 @@ class TripReadTools(BaseCoreTools):
         trips = self.core_client.get_trips(
             trip_type="candidate",
         )
-        if self._is_error_response(trips):
-            return trips
+        self._verify_error_response(trips)
 
         system_tz = self._get_system_timezone()
         return [
