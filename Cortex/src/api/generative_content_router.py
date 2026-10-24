@@ -41,7 +41,7 @@ class GenerativeContentRequest(BaseModel):
 
 
 class GenerativeContentResponse(BaseModel):
-    text: str | dict[str, Any] = Field(
+    response: str | dict[str, Any] = Field(
         default=...,
         description="Generated response",
     )
@@ -85,7 +85,7 @@ def generate_content(
             req_obj.app.state.iam_client.get_user_roles(u_id) if u_id else None
         )
 
-        text, history, skills, input_tokens, output_tokens = (
+        response, history, skills, input_tokens, output_tokens = (
             req_obj.app.state.generative_content_engine.generate(
                 messages=request.messages,
                 schema=request.schema,
@@ -99,7 +99,9 @@ def generate_content(
 
     return JSONResponse(
         content={
-            "text": json.loads(text) if request.schema is not None else (text or ""),
+            "response": json.loads(response)
+            if request.schema is not None
+            else (response or ""),
             "history": history,
             "skills": skills,
             "input": input_tokens,

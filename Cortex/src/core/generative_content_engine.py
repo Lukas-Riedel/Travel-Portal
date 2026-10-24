@@ -16,6 +16,7 @@ from src.tools.registry import ToolRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
 CHARS_PER_TOKEN_COUNT: Final[int] = 3
+SOFT_TOKEN_LIMIT_RATIO: Final[float] = 0.75
 
 
 class GenerativeContentEngine:
@@ -27,8 +28,8 @@ class GenerativeContentEngine:
         skill_registry: SkillRegistry,
         core_client: CoreClient,
         chat_timeout_ms: int,
-        max_allowed_subagents_count: int,
         max_tool_result_tokens: int,
+        max_cumulative_tokens: int,
     ) -> None:
         self.client: genai.Client = genai.Client(api_key=api_key)
         self.tool_registry: ToolRegistry = tool_registry
@@ -36,8 +37,8 @@ class GenerativeContentEngine:
         self.core_client: CoreClient = core_client
         self.models: list[str] = [m.strip() for m in models.split(",") if m.strip()]
         self.chat_timeout_ms: int = chat_timeout_ms
-        self.max_allowed_subagents_count: int = max_allowed_subagents_count
         self.max_tool_result_tokens: int = max_tool_result_tokens
+        self.max_cumulative_tokens: int = max_cumulative_tokens
         logger.info(f"Loaded {len(self.models)} LLM model(s): {self.models}")
 
     def generate(
@@ -71,13 +72,10 @@ class GenerativeContentEngine:
         enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
-        depth: int = 0,
+        previous_iterations: int = 0,
         previous_total_prompt_tokens: int = 0,
         previous_total_candidate_tokens: int = 0,
-    ) -> tuple[str, list[dict[str, Any]], list[str]]:
-        if depth >= self.max_allowed_subagents_count:
-            raise RuntimeError("The limit for sub-agents has been reached.")
-
+    ) -> tuple[str, list[dict[str, Any]], list[str], int, int]:
         config = self._build_config(
             schema=schema,
             enabled_skills=enabled_skills,
@@ -100,6 +98,7 @@ class GenerativeContentEngine:
                 },
             )
 
+            total_iterations = previous_iterations
             total_prompt_tokens = previous_total_prompt_tokens
             total_candidate_tokens = previous_total_candidate_tokens
             subagent_started = False
@@ -112,11 +111,15 @@ class GenerativeContentEngine:
                 )
 
                 response = chat.send_message(message)
+                total_iterations += 1
 
                 # Process function calls requested by the model.
-                iteration = 0
                 while response.function_calls:
+                    estimated_tokens_per_turn = 0
                     if response.usage_metadata:
+                        estimated_tokens_per_turn = (
+                            response.usage_metadata.prompt_token_count or 0
+                        )
                         total_prompt_tokens += (
                             response.usage_metadata.prompt_token_count or 0
                         )
@@ -125,7 +128,6 @@ class GenerativeContentEngine:
                         )
 
                     function_responses = []
-
                     start_subagent = False
                     subagent_skills = list(enabled_skills or [])
 
@@ -135,14 +137,14 @@ class GenerativeContentEngine:
 
                         try:
                             logger.debug(
-                                f"Iteration {iteration + 1}: Calling '{fn_name}({', '.join(f'{k}={repr(v)}' for k, v in fn_args.items())})'..."
+                                f"Iteration {total_iterations}: Calling '{fn_name}({', '.join(f'{k}={repr(v)}' for k, v in fn_args.items())})'..."
                             )
 
                             fn_call_result = self.tool_registry.execute_tool(
                                 name=fn_name, args=fn_args
                             )
 
-                            estimated_tokens = math.ceil(
+                            estimated_tokens_per_call = math.ceil(
                                 len(
                                     json.dumps(
                                         obj=fn_call_result,
@@ -152,15 +154,19 @@ class GenerativeContentEngine:
                                 )
                                 / CHARS_PER_TOKEN_COUNT
                             )
-                            if estimated_tokens < self.max_tool_result_tokens:
-                                function_responses.append(
-                                    types.Part.from_function_response(
-                                        name=fn_name,
-                                        response={"result": fn_call_result},
-                                    )
+
+                            current_estimated_usage = (
+                                total_prompt_tokens
+                                + estimated_tokens_per_turn
+                                + estimated_tokens_per_call
+                            )
+
+                            if estimated_tokens_per_call > self.max_tool_result_tokens:
+                                error = (
+                                    f"The tool call would consume roughly {estimated_tokens_per_call} input tokens "
+                                    f"but the limit is {self.max_tool_result_tokens} input tokens per tool. "
+                                    "Either provide filters to narrow down the results, or use a different tool."
                                 )
-                            else:
-                                error = f"The tool call would consume roughly {estimated_tokens} input tokens but the limit is {self.max_tool_result_tokens} input tokens per tool. Either provide filters to narrow down the results, or use a different tool."
                                 logger.error(error)
 
                                 function_responses.append(
@@ -169,6 +175,54 @@ class GenerativeContentEngine:
                                         response={"error": error},
                                     )
                                 )
+                            elif current_estimated_usage > self.max_cumulative_tokens:
+                                remaining_tokens = max(
+                                    0,
+                                    self.max_cumulative_tokens
+                                    - estimated_tokens_per_turn
+                                    - total_prompt_tokens,
+                                )
+                                error = (
+                                    f"The tool call would consume roughly {estimated_tokens_per_call} input tokens "
+                                    f"which would exceed the remaining window of {remaining_tokens} input tokens. "
+                                    "Summarize your current findings and explain to the user that the token limit was reached, "
+                                    "asking them to narrow down their request."
+                                )
+                                logger.error(error)
+
+                                function_responses.append(
+                                    types.Part.from_function_response(
+                                        name=fn_name,
+                                        response={"error": error},
+                                    )
+                                )
+                            else:
+                                response_payload = {"result": fn_call_result}
+
+                                if (
+                                    current_estimated_usage
+                                    > SOFT_TOKEN_LIMIT_RATIO
+                                    * self.max_cumulative_tokens
+                                ):
+                                    remaining_tokens = max(
+                                        0,
+                                        self.max_cumulative_tokens
+                                        - current_estimated_usage,
+                                    )
+                                    warning = (
+                                        f"You are approaching the context window limit with roughly {remaining_tokens} input tokens remaining. "
+                                        "Do not invoke further tools unless absolutely necessary. Synthesize your final answer."
+                                    )
+                                    logger.warning(warning)
+                                    response_payload["warning"] = warning
+
+                                function_responses.append(
+                                    types.Part.from_function_response(
+                                        name=fn_name,
+                                        response=response_payload,
+                                    )
+                                )
+                                estimated_tokens_per_turn += estimated_tokens_per_call
 
                         except MissingSkillsError as exc:
                             start_subagent = True
@@ -195,9 +249,7 @@ class GenerativeContentEngine:
                             )
 
                     if start_subagent:
-                        logger.debug("Starting a sub-agent... ")
                         subagent_started = True
-
                         return self._do_generate(
                             message=function_responses,
                             history=chat.get_history(),
@@ -205,13 +257,13 @@ class GenerativeContentEngine:
                             enabled_skills=subagent_skills,
                             allowed_skills=allowed_skills,
                             context=context,
-                            depth=depth + 1,
+                            previous_iterations=total_iterations,
                             previous_total_prompt_tokens=total_prompt_tokens,
                             previous_total_candidate_tokens=total_candidate_tokens,
                         )
 
                     response = chat.send_message(function_responses)
-                    iteration += 1
+                    total_iterations += 1
 
                 if response.usage_metadata:
                     total_prompt_tokens += (

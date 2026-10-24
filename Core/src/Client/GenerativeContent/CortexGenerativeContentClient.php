@@ -46,7 +46,7 @@
                 return null;
             }
 
-            return $responseJsonSchema !== null ? json_encode($response["text"]) : $response["text"];
+            return $responseJsonSchema !== null ? json_encode($response["response"]) : $response["response"];
         }
 
         public function getChatResponse(string $prompt, string $accessToken, ?string $username, ?string $conversationId, mixed $environment) : ?GenerativeContentResult {
@@ -67,7 +67,7 @@
 
             $this->distributedCacheClient->set($cacheKey, $response, self::CONVERSATION_CACHE_TTL);
 
-            return new GenerativeContentResult($response["text"], $targetConversationId, array());
+            return new GenerativeContentResult($response["response"], $targetConversationId, array());
         }
 
         public function getChatHistory(string $conversationId) : mixed {

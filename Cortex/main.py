@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         skill_registry=app.state.skill_registry,
         core_client=app.state.core_client,
         chat_timeout_ms=int(os.getenv("CHAT_TIMEOUT_MS")),
-        max_allowed_subagents_count=int(os.getenv("MAX_ALLOWED_SUBAGENTS_COUNT")),
+        max_cumulative_tokens=int(os.getenv("MAX_CUMULATIVE_TOKENS")),
         max_tool_result_tokens=int(os.getenv("MAX_TOOL_RESULT_TOKENS")),
     )
     yield
