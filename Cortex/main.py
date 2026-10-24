@@ -20,8 +20,7 @@ from src.core.clustering_engine import ClusteringEngine
 from src.core.embeddings_engine import EmbeddingsEngine
 from src.core.generative_content_engine import GenerativeContentEngine
 from src.core.logger import logger, transaction_id
-from src.skills.registry import SkillRegistry
-from src.tools.registry import ToolRegistry
+from src.tools.registry import SkillRegistry
 
 load_dotenv()
 
@@ -44,14 +43,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         core_port=int(os.getenv("CORE_PORT")),
         iam_client=app.state.iam_client,
     )
-    app.state.tool_registry = ToolRegistry(
+    app.state.skill_registry = SkillRegistry(
         core_client=app.state.core_client,
     )
-    app.state.skill_registry = SkillRegistry()
     app.state.generative_content_engine = GenerativeContentEngine(
         api_key=os.getenv("GEMINI_API_KEY"),
         models=os.getenv("GEMINI_MODELS"),
-        tool_registry=app.state.tool_registry,
         skill_registry=app.state.skill_registry,
         core_client=app.state.core_client,
         chat_timeout_ms=int(os.getenv("CHAT_TIMEOUT_MS")),

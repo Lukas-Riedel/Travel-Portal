@@ -11,8 +11,7 @@ from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
 from src.errors.missing_skills_error import MissingSkillsError
-from src.skills.registry import SkillRegistry
-from src.tools.registry import ToolRegistry
+from src.tools.registry import SkillRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
 CHARS_PER_TOKEN_COUNT: Final[int] = 3
@@ -24,7 +23,6 @@ class GenerativeContentEngine:
         self,
         api_key: str,
         models: str,
-        tool_registry: ToolRegistry,
         skill_registry: SkillRegistry,
         core_client: CoreClient,
         chat_timeout_ms: int,
@@ -32,7 +30,6 @@ class GenerativeContentEngine:
         max_cumulative_tokens: int,
     ) -> None:
         self.client: genai.Client = genai.Client(api_key=api_key)
-        self.tool_registry: ToolRegistry = tool_registry
         self.skill_registry: SkillRegistry = skill_registry
         self.core_client: CoreClient = core_client
         self.models: list[str] = [m.strip() for m in models.split(",") if m.strip()]
@@ -142,7 +139,7 @@ class GenerativeContentEngine:
                                 f"Iteration {total_iterations}: Calling '{fn_name}({', '.join(f'{k}={repr(v)}' for k, v in fn_args.items())})'..."
                             )
 
-                            fn_call_result = self.tool_registry.execute_tool(
+                            fn_call_result = self.skill_registry.execute_tool(
                                 name=fn_name, args=fn_args
                             )
 
@@ -365,7 +362,7 @@ class GenerativeContentEngine:
                 for part in [
                     self.skill_registry.get_callable_skills(allowed_enabled_skills),
                     self._build_disabled_skills(
-                        self.tool_registry.get_disabled_skills(
+                        self.skill_registry.get_disabled_skills(
                             enabled_skills=allowed_enabled_skills,
                             allowed_skills=allowed_skills,
                         )
@@ -378,7 +375,7 @@ class GenerativeContentEngine:
             if parts:
                 config_kwargs["system_instruction"] = "\n\n---\n\n".join(parts)
 
-            tools = self.tool_registry.get_callable_tools(allowed_enabled_skills)
+            tools = self.skill_registry.get_callable_tools(allowed_enabled_skills)
             if tools:
                 config_kwargs["tools"] = tools
 
@@ -411,7 +408,7 @@ class GenerativeContentEngine:
         lines = ["# Disabled Skills"]
         for disabled_skill in disabled_skills:
             lines.append(
-                f"- {disabled_skill}: {self.tool_registry.get_skill_description(disabled_skill)}"
+                f"- {disabled_skill}: {self.skill_registry.get_skill_description(disabled_skill)}"
             )
 
         return "\n".join(lines)

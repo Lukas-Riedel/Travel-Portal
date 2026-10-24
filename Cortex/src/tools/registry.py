@@ -2,21 +2,32 @@ import importlib
 import inspect
 import pkgutil
 from collections.abc import Callable
-from typing import Any
+from pathlib import Path
+from typing import Any, Final
 
 from src.client.core_client import CoreClient
 from src.core.logger import logger
 from src.tools.base_tools import BaseCoreTools, BaseTools
 
+SKILLS_DIR: Final[Path] = Path(__file__).resolve().parent.parent.parent / "skills"
+MASTER_SKILL_FILENAME: Final[str] = "SKILL.md"
+SKILL_FILE_GLOB: Final[str] = "*.md"
 
-class ToolRegistry:
+
+class SkillRegistry:
     def __init__(self, core_client: CoreClient) -> None:
         self.core_client: CoreClient = core_client
+        self.master_skill: str = ""
         self.tools: dict[str, tuple[Callable[..., Any], str | None]] = {}
+        self.skills: dict[str, str] = {}
         self.skill_descriptions: dict[str, str] = {}
         self._auto_discover_and_register()
 
     def _auto_discover_and_register(self) -> None:
+        self._discover_tools()
+        self._discover_skills()
+
+    def _discover_tools(self) -> None:
         import src.tools as tools_package
 
         for module_info in pkgutil.iter_modules(tools_package.__path__):
@@ -48,6 +59,27 @@ class ToolRegistry:
                         )
 
         logger.info(f"Loaded {len(self.tools)} tool(s).")
+
+    def _discover_skills(self) -> None:
+        main_skill_file = SKILLS_DIR / MASTER_SKILL_FILENAME
+        try:
+            self.master_skill = main_skill_file.read_text(encoding="utf-8").strip()
+        except Exception:
+            logger.exception(f"Failed to read master skill file '{main_skill_file}'.")
+
+        for file_path in sorted(SKILLS_DIR.glob(SKILL_FILE_GLOB)):
+            if file_path.name == MASTER_SKILL_FILENAME:
+                continue
+            if file_path.is_file():
+                skill_name = file_path.stem
+                try:
+                    self.skills[skill_name] = file_path.read_text(
+                        encoding="utf-8"
+                    ).strip()
+                except Exception:
+                    logger.exception(f"Failed to read skill file '{file_path}'.")
+
+        logger.info(f"Loaded {len(self.skills)} skill(s).")
 
     def _register_module_tools(
         self,
@@ -89,6 +121,19 @@ class ToolRegistry:
             for tool, skill in self.tools.values()
             if skill is None or skill in allowed_set
         ]
+
+    def get_callable_skills(self, allowed_skills: list[str] | None = None) -> str:
+        skill_contents = []
+
+        if self.master_skill:
+            skill_contents.append(self.master_skill)
+
+        if allowed_skills:
+            for skill_name in sorted(set(allowed_skills)):
+                if content := self.skills.get(skill_name):
+                    skill_contents.append(content)
+
+        return "\n\n---\n\n".join(skill_contents)
 
     def get_disabled_skills(
         self,

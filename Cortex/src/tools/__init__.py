@@ -1,3 +1,3 @@
-from src.tools.registry import ToolRegistry
+from src.tools.registry import SkillRegistry
 
-__all__ = ["ToolRegistry"]
+__all__ = ["SkillRegistry"]
