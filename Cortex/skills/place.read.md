@@ -23,7 +23,7 @@
    - When the user asks when a specific place was visited (e.g. "when did I visit Prague?", "how many times have I been to Kyoto?"), call `get_place_dates`.
    - A date represents a timespan actively spent by sightseeing. If there are multiple dates for the same place close to each other, refer to it as a single visit of that place.
 5. **Finding a Place by Name**
-   - When the user mentions a specific place (e.g. "Vienna"), call `get_place_by_name` with the place as query.
+   - When the user mentions a specific location, first evaluate whether it refers to a broad geographical entity, island, region, or administrative area (e.g., "Bali", "Sicily", "Oregon") rather than a specific settlement, monument, or attraction. If it does, resolve it using category tools. Otherwise, call `get_place_by_name` with the place as query.
    - If no match is found, ask the user for clarification, or use tools for listing. This can happen fairly often since the tool performs a full-text search.
 6. **Getting an Excerpt for a Place**
    - When the user asks for a description, summary, or excerpt of a specific place, call `get_place_excerpt`.
