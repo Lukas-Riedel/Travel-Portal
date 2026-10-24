@@ -16,7 +16,7 @@ from src.tools.registry import ToolRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
 CHARS_PER_TOKEN_COUNT: Final[int] = 3
-SOFT_TOKEN_LIMIT_RATIO: Final[float] = 0.75
+SOFT_TOKEN_LIMIT_RATIO: Final[float] = 0.8
 
 
 class GenerativeContentEngine:
@@ -287,8 +287,12 @@ class GenerativeContentEngine:
                     response.text or "",
                     updated_history,
                     enabled_skills or [],
-                    total_prompt_tokens,
-                    total_candidate_tokens,
+                    response.usage_metadata.prompt_token_count or 0
+                    if response.usage_metadata
+                    else 0,
+                    response.usage_metadata.candidates_token_count or 0
+                    if response.usage_metadata
+                    else 0,
                 )
 
             except Exception:
