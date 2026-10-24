@@ -67,7 +67,18 @@ class ToolRegistry:
             raise ValueError(f"Tool '{name}' does not exist.")
 
         tool_func, _ = self.tools[name]
-        return tool_func(**args)
+
+        sig = inspect.signature(tool_func)
+        filled_args = dict(args) if args else {}
+
+        for param_name, param in sig.parameters.items():
+            if param_name not in filled_args:
+                if param.default is not inspect.Parameter.empty:
+                    filled_args[param_name] = param.default
+                else:
+                    filled_args[param_name] = None
+
+        return tool_func(**filled_args)
 
     def get_callable_tools(
         self, allowed_skills: list[str] | None = None

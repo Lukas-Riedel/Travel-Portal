@@ -48,7 +48,7 @@ class GenerativeContentEngine:
         enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
-    ) -> tuple[str, list[dict[str, Any]], list[str], int, int]:
+    ) -> tuple[str, list[dict[str, Any]], list[str], int]:
         return (
             self._do_generate(
                 message=messages[-1].get("text", ""),
@@ -75,7 +75,7 @@ class GenerativeContentEngine:
         previous_iterations: int = 0,
         previous_total_prompt_tokens: int = 0,
         previous_total_candidate_tokens: int = 0,
-    ) -> tuple[str, list[dict[str, Any]], list[str], int, int]:
+    ) -> tuple[str, list[dict[str, Any]], list[str], int]:
         config = self._build_config(
             schema=schema,
             enabled_skills=enabled_skills,
