@@ -61,6 +61,7 @@
     use Core\Service\Flight\WatchedFlightEphemeralTaskProvider;
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
+    use Core\Service\GenerativeContent\GenerativeContentService;
     use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightServiceListener;
@@ -160,7 +161,7 @@
 
     // Configured clients.
     $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"), $configurationService);
-    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $distributedCacheClient, $configurationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"), getenv("CONTEXT_COMPACTIFICATION_THRESHOLD"));
+    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $configurationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
     $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
     $calendarClient->setEventPublisher($eventPublisher);
@@ -193,6 +194,7 @@
     $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $carRentalService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
     $geocodingService->setTripService($tripService);
+    $generativeContentService = new GenerativeContentService($tripService, $placeService, $categoryService, $labelService, $yearService, $configurationService, $distributedCacheClient, $generativeContentClient, getenv("CONTEXT_COMPACTIFICATION_THRESHOLD"));
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
     $documentService = new DocumentService($databaseClient, $encryptionClient, $distributedCacheClient);
 

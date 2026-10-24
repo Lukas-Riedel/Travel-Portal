@@ -12,7 +12,7 @@ import { getMaximumAllowedTimetamp } from "../utils/timeUtils.ts"
 
 const RESPONSE_TIMEOUT_MS = 15000
 
-export const useChat = (): UseChatResult => {
+export const useChat = (requestedHighlightsCount?: number): UseChatResult => {
     const { hasRole } = useAuth()
     const resolvedLocation = useLocation()
 
@@ -47,7 +47,7 @@ export const useChat = (): UseChatResult => {
         }
 
         try {
-            const result = await createGenerativeContent(trimmed, conversationId.current, environment)
+            const result = await createGenerativeContent(trimmed, conversationId.current, environment, requestedHighlightsCount)
             clearTimeout(timeoutId)
 
             if (!result.content) {

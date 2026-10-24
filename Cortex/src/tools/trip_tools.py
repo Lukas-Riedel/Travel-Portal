@@ -112,7 +112,10 @@ class TripReadTools(BaseCoreTools):
                     return None
 
                 system_tz = self._get_system_timezone()
-                return self._extract_trip(trip=trip, system_tz=system_tz)
+                return self._extract_topic(
+                    topic_ids=[trip.get("id")],
+                    data=self._extract_trip(trip=trip, system_tz=system_tz),
+                )
 
         return None
 
@@ -153,7 +156,10 @@ class TripReadTools(BaseCoreTools):
             return None
 
         system_tz = self._get_system_timezone()
-        return self._extract_trip(trip=trip, system_tz=system_tz)
+        return self._extract_topic(
+            topic_ids=[trip_id],
+            data=self._extract_trip(trip=trip, system_tz=system_tz),
+        )
 
     def get_regular_trips(
         self, year: int | None, sort: str | None

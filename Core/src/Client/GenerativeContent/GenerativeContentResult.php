@@ -1,60 +1,40 @@
 <?php
     namespace Core\Client\GenerativeContent;
 
-    use OpenApi\Attributes as OA;
-
-    #[OA\Schema(
-        schema: "GenerativeContentResult",
-        type: "object",
-        description: "A class representing the result of a generative content chat request",
-        required: ["content", "conversationId", "highlights"],
-        properties: [
-            new OA\Property(
-                property: "content",
-                description: "The generated content response text in Markdown",
-                type: "string",
-                example: "Here are some tips for your trip..."
-            ),
-            new OA\Property(
-                property: "conversationId",
-                description: "The identifier of the conversation",
-                type: "string",
-                example: "26135e57-fe89-4a38-82d4-5e0ad0485e28"
-            ),
-            new OA\Property(
-                property: "highlights",
-                description: "List of related highlights resolved from image queries",
-                type: "array",
-                items: new OA\Items(ref: "#/components/schemas/Highlight")
-            )
-        ]
-    )]
     class GenerativeContentResult implements \JsonSerializable {
 
-        private readonly string $content;
-        private readonly string $conversationId;
-        private readonly array $highlights;
+        private readonly string $response;
+        private readonly mixed $history;
+        private readonly array $skills;
+        private readonly array $topicIds;
+        private readonly int $tokens;
 
-        public function __construct(string $content, string $conversationId, array $highlights) {
-            $this->content = $content;
-            $this->conversationId = $conversationId;
-            $this->highlights = $highlights;
+        public function __construct(string $response, mixed $history, array $skills, array $topicIds, int $tokens) {
+            $this->response = $response;
+            $this->history = $history;
+            $this->skills = $skills;
+            $this->topicIds = $topicIds;
+            $this->tokens = $tokens;
+        }
+        
+        public function getResponse() : string {
+            return $this->response;
         }
 
-        public function getContent() : string {
-            return $this->content;
+        public function getHistory() : mixed {
+            return $this->history;
         }
 
-        public function getConversationId() : string {
-            return $this->conversationId;
+        public function getSkills() : array {
+            return $this->skills;
         }
 
-        public function getHighlights() : array {
-            return $this->highlights;
+        public function getTopicIds() : array {
+            return $this->topicIds;
         }
 
-        public function withHighlights(array $highlights) : GenerativeContentResult {
-            return new GenerativeContentResult($this->content, $this->conversationId, $highlights);
+        public function getTokens() : int {
+            return $this->tokens;
         }
 
         #[\ReturnTypeWillChange]

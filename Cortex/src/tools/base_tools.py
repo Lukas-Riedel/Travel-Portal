@@ -16,6 +16,11 @@ class BaseTools(ABC):
         if isinstance(obj, dict) and bool(obj.get("message")):
             raise GeneralToolError(obj.get("message"))
 
+    def _extract_topic(
+        self, topic_ids: list[str], data: dict[str, Any]
+    ) -> dict[str, Any]:
+        return {"_topic_ids": topic_ids, "_data": data}
+
     @abstractmethod
     def _get_tools(self) -> list[Any]:
         pass

@@ -48,7 +48,10 @@ class TripStatisticsReadTools(BaseStatisticsTools):
         trip = self.core_client.get_trip(trip_id=trip_id)
         self._verify_error_response(trip)
 
-        return self._extract_statistics(statistics=trip.get("statistics", []))
+        return self._extract_topic(
+            topic_ids=[trip_id],
+            data=self._extract_statistics(statistics=trip.get("statistics", [])),
+        )
 
 
 class CategoryStatisticsReadTools(BaseStatisticsTools):
@@ -81,7 +84,10 @@ class CategoryStatisticsReadTools(BaseStatisticsTools):
         category = self.core_client.get_category(category_id=category_id)
         self._verify_error_response(category)
 
-        return self._extract_statistics(statistics=category.get("statistics", []))
+        return self._extract_topic(
+            topic_ids=[category_id],
+            data=self._extract_statistics(statistics=category.get("statistics", [])),
+        )
 
 
 class YearStatisticsReadTools(BaseStatisticsTools):
@@ -112,7 +118,10 @@ class YearStatisticsReadTools(BaseStatisticsTools):
         year_data = self.core_client.get_year(year=year)
         self._verify_error_response(year_data)
 
-        return self._extract_statistics(statistics=year_data.get("statistics", []))
+        return self._extract_topic(
+            topic_ids=[str(year)],
+            data=self._extract_statistics(statistics=year_data.get("statistics", [])),
+        )
 
 
 class StatisticsReadTools(BaseStatisticsTools):

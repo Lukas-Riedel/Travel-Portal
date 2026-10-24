@@ -2,20 +2,19 @@ import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } fro
 import axios, { AxiosHeaders } from "axios"
 import * as authRefresh from "axios-auth-refresh"
 import type { GeoJSON } from "geojson"
+import { jwtDecode } from "jwt-decode"
 
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
+ChatResponse,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight, GenerativeContentResult, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
-    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
-    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity
+    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
+    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity
 } from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
-import { jwtDecode } from "jwt-decode"
-
 import { getIamResponseWithCredentials, getIamResponseWithRefresh, getUserRoles } from "./iamClient.ts"
 
 export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
@@ -896,13 +895,15 @@ export const removeYearHighlight = async (year: number, highlightId: string): Pr
 export const createGenerativeContent = async (
     prompt: string,
     conversationId?: string,
-    environment?: Record<string, unknown>
-): Promise<GenerativeContentResult> =>
-    coreClient.post<GenerativeContentResult>("generativecontent",
+    environment?: Record<string, unknown>,
+    requestedHighlightsCount?: number
+): Promise<ChatResponse> =>
+    coreClient.post<ChatResponse>("generativecontent",
         {
             prompt,
             conversationId,
-            environment
+            environment,
+            requestedHighlightsCount
         }
     ).then(extractData)
 

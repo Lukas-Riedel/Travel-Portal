@@ -9,10 +9,12 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { ChatMessageRole } from "../types/ChatMessageRole.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
+const HIGHLIGHTS_COUNT = 3
+
 export default function ChatPage() {
     const { hasRole, username } = useAuth()
     const { t } = useTranslation()
-    const { messages, isLoading, sendMessage, clearConversation } = useChat()
+    const { messages, isLoading, sendMessage, clearConversation } = useChat(HIGHLIGHTS_COUNT)
     const { showClearConversationToast, showCopyConversationToast } = usePredefinedUserInput()
 
     const [input, setInput] = useState("")

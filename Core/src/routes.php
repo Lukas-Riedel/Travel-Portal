@@ -28,7 +28,7 @@
 
     return function(App $app, string $appName, string $versionTag, string $coreBaseUrl) use($configurationService, $deviceService, $flightService, $categoryService,
         $highlightService, $fitnessService, $geocodingService, $monitoringService, $labelService, $expenseService, $statisticsService, $timeTrackingService, $indexService,
-        $yearService, $tripService, $placeService, $noteService, $documentService, $photoService, $taskService, $generativeContentClient, $eventPublisher, $logger, $healthCheckables) {
+        $yearService, $tripService, $placeService, $noteService, $documentService, $photoService, $taskService, $generativeContentService, $eventPublisher, $logger, $healthCheckables) {
         ConfigurationResource::register($app, $configurationService);
         DeviceResource::register($app, $deviceService);
         AirlineResource::register($app, $flightService, $logger);
@@ -51,7 +51,7 @@
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);
         SearchResource::register($app, $indexService, $categoryService, $placeService, $flightService, $labelService, $tripService, $yearService, $photoService, $highlightService);
-        GenerativeContentResource::register($app, $generativeContentClient, $tripService, $placeService, $categoryService, $labelService);
+        GenerativeContentResource::register($app, $generativeContentService);
         SwaggerResource::register($app, $coreBaseUrl);
         ManagementResource::register($app, $appName, $versionTag, $healthCheckables);
     };

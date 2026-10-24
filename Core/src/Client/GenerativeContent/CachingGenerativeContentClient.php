@@ -4,6 +4,7 @@
     use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
 
+    // TODO: Merge into GenerativeContentService?
     class CachingGenerativeContentClient implements GenerativeContentClient {
 
         private const RESPONSE_CACHE_KEY_FORMAT = "CachingGenerativeContentClient:Response:%s";
@@ -32,11 +33,7 @@
             return $response;
         }
 
-        public function getChatResponse(string $prompt, string $accessToken, ?string $username, ?string $conversationId, mixed $environment) : ?GenerativeContentResult {
-            return $this->client->getChatResponse($prompt, $accessToken, $username, $conversationId, $environment);
-        }
-
-        public function getChatHistory(string $conversationId) : mixed {
-            return $this->client->getChatHistory($conversationId);
+        public function getChatResponse(array $messages, ?string $accessToken, ?string $username, mixed $environment, array $skills) : ?GenerativeContentResult {
+            return $this->client->getChatResponse($messages, $accessToken, $username, $environment, $skills);
         }
     }

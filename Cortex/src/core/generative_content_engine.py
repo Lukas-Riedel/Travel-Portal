@@ -48,7 +48,7 @@ class GenerativeContentEngine:
         enabled_skills: list[str] | None = None,
         allowed_skills: list[str] | None = None,
         context: str | None = None,
-    ) -> tuple[str, list[dict[str, Any]], list[str], int]:
+    ) -> tuple[str, list[dict[str, Any]], list[str], int, list[str]]:
         return (
             self._do_generate(
                 message=messages[-1].get("text", ""),
@@ -61,7 +61,7 @@ class GenerativeContentEngine:
                 context=context,
             )
             if messages
-            else ("", [], enabled_skills or [], 0)
+            else ("", [], enabled_skills or [], 0, [])
         )
 
     def _do_generate(
@@ -75,7 +75,8 @@ class GenerativeContentEngine:
         previous_iterations: int = 0,
         previous_total_prompt_tokens: int = 0,
         previous_total_candidate_tokens: int = 0,
-    ) -> tuple[str, list[dict[str, Any]], list[str], int]:
+        previous_topic_ids: list[str] | None = None,
+    ) -> tuple[str, list[dict[str, Any]], list[str], int, list[str]]:
         config = self._build_config(
             schema=schema,
             enabled_skills=enabled_skills,
@@ -101,6 +102,7 @@ class GenerativeContentEngine:
             total_iterations = previous_iterations
             total_prompt_tokens = previous_total_prompt_tokens
             total_candidate_tokens = previous_total_candidate_tokens
+            all_topic_ids = list(previous_topic_ids or [])
             subagent_started = False
 
             try:
@@ -147,13 +149,20 @@ class GenerativeContentEngine:
                             estimated_tokens_per_call = math.ceil(
                                 len(
                                     json.dumps(
-                                        obj=fn_call_result,
+                                        obj=fn_call_result.get("_data", fn_call_result)
+                                        if isinstance(fn_call_result, dict)
+                                        else fn_call_result,
                                         default=str,
                                         ensure_ascii=False,
                                     )
                                 )
                                 / CHARS_PER_TOKEN_COUNT
                             )
+
+                            if isinstance(fn_call_result, dict):
+                                all_topic_ids.extend(
+                                    fn_call_result.get("_topic_ids", [])
+                                )
 
                             current_estimated_usage = (
                                 total_prompt_tokens
@@ -197,7 +206,13 @@ class GenerativeContentEngine:
                                     )
                                 )
                             else:
-                                response_payload = {"result": fn_call_result}
+                                response_payload = {
+                                    "result": fn_call_result.get(
+                                        "_data", fn_call_result
+                                    )
+                                    if isinstance(fn_call_result, dict)
+                                    else fn_call_result
+                                }
 
                                 if (
                                     current_estimated_usage
@@ -279,6 +294,7 @@ class GenerativeContentEngine:
                             previous_iterations=total_iterations,
                             previous_total_prompt_tokens=total_prompt_tokens,
                             previous_total_candidate_tokens=total_candidate_tokens,
+                            previous_topic_ids=all_topic_ids,
                         )
 
                     response = chat.send_message(function_responses)
@@ -310,6 +326,7 @@ class GenerativeContentEngine:
                     + (response.usage_metadata.candidates_token_count or 0)
                     if response.usage_metadata
                     else 0,
+                    all_topic_ids,
                 )
 
             except Exception:

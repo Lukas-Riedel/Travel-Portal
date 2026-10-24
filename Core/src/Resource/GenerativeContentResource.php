@@ -3,14 +3,8 @@
 
     use Common\Resource\AbstractResource;
     use Common\Service\Authentication\UserRole;
-    use Core\Client\GenerativeContent\GenerativeContentClient;
-    use Core\Client\GenerativeContent\GenerativeContentResult;
-    use Core\Service\Category\CategoryService;
-    use Core\Service\Label\LabelService;
-    use Core\Service\Place\PlaceService;
-    use Core\Service\Trip\TripService;
+    use Core\Service\GenerativeContent\GenerativeContentService;
     use OpenApi\Attributes as OA;
-    use Ramsey\Uuid\Uuid;
     use Slim\App;
     use Slim\Psr7\Request;
     use Slim\Psr7\Response;
@@ -18,27 +12,14 @@
     #[OA\Tag(name: "Generative Content")]
     class GenerativeContentResource extends AbstractResource {
 
-        // TODO: Move this to the request, the UI should decide this.
-        private const IMAGE_COUNT = 3;
+        private readonly GenerativeContentService $generativeContentService;
 
-        private readonly GenerativeContentClient $generativeContentClient;
-        private readonly TripService $tripService;
-        private readonly PlaceService $placeService;
-        private readonly CategoryService $categoryService;
-        private readonly LabelService $labelService;
-
-        public function __construct(GenerativeContentClient $generativeContentClient, TripService $tripService, PlaceService $placeService,
-            CategoryService $categoryService, LabelService $labelService) {
-            $this->generativeContentClient = $generativeContentClient;
-            $this->tripService = $tripService;
-            $this->placeService = $placeService;
-            $this->categoryService = $categoryService;
-            $this->labelService = $labelService;
+        public function __construct(GenerativeContentService $generativeContentService) {
+            $this->generativeContentService = $generativeContentService;
         }
 
-        public static function register(App $app, GenerativeContentClient $generativeContentClient, TripService $tripService, PlaceService $placeService,
-            CategoryService $categoryService, LabelService $labelService) : void {
-            $resource = new self($generativeContentClient, $tripService, $placeService, $categoryService, $labelService);
+        public static function register(App $app, GenerativeContentService $generativeContentService) : void {
+            $resource = new self($generativeContentService);
 
             $app->group("/generativecontent", function($group) use($resource) {
                 $group->post("", [$resource, "createGenerativeContent"]);
@@ -74,6 +55,12 @@
                             type: "object",
                             description: "Optional arbitrary JSON subtree with environment data passed to the generative engine (e.g. timezone)",
                             example: ["timezone" => "Europe/Prague"]
+                        ),
+                        new OA\Property(
+                            property: "requestedHighlightsCount",
+                            type: "integer",
+                            description: "The count of requested highlights",
+                            example: 3
                         )
                     ]
                 )
@@ -82,7 +69,7 @@
                 new OA\Response(
                     response: 201,
                     description: "Success. Created a generative content conversation.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/GenerativeContentResult")
+                    content: new OA\JsonContent(ref: "#/components/schemas/ChatResponse")
                 ),
                 new OA\Response(
                     response: 400,
@@ -131,91 +118,10 @@
             $prompt = $this->requireJsonBodyField($request, "prompt");
             $conversationId = $this->getJsonBodyField($request, "conversationId");
             $environment = $this->getJsonBodyField($request, "environment");
+            $requestedHighlightsCount = $this->getJsonBodyField($request, "requestedHighlightsCount");
 
-            $rawResult = $this->generativeContentClient->getChatResponse($prompt, $this->getAccessToken($request),
-                $this->getUserInfo($request)->getUsername(), $conversationId, $environment);
-            if ($rawResult === null) {
-                return null;
-            }
-
-            return $this->enrichResult($rawResult);
-        }
-
-        private function enrichResult(GenerativeContentResult $result) : GenerativeContentResult {
-            $lastUserMessage = $this->getLastUserMessage($result->getConversationId());
-            if ($lastUserMessage === null) {
-                return $result;
-            }
-
-            $entityIdCandidates = $this->extractUuids($lastUserMessage);
-            if (count($entityIdCandidates) > self::IMAGE_COUNT) {
-                return $result;
-            }
-
-            $highlightsLists = array();
-            foreach ($entityIdCandidates as &$entityIdCandidate) {                
-                $resolvedEntity = $this->placeService->getRegularPlace($entityIdCandidate)
-                    ?? $this->tripService->getRegularTrip($entityIdCandidate)
-                    ?? $this->categoryService->getCategory($entityIdCandidate)
-                    ?? $this->labelService->getLabel($entityIdCandidate);
-
-                if ($resolvedEntity === null) {
-                    continue;
-                }
-
-                $highlights = $resolvedEntity->getHighlights();
-                if (!empty($highlights)) {
-                    shuffle($highlights);
-                    $highlightsLists[] = $highlights;
-                }           
-            }
-            shuffle($highlightsLists);
-
-            
-            $highlights = array();
-            for ($i = 0; $i < self::IMAGE_COUNT; ++$i) {
-                foreach ($highlightsLists as &$highlightsList) {
-                    if (isset($highlightsList[$i])) {
-                        $highlights[$highlightsList[$i]->getId()] = $highlightsList[$i];
-
-                        if (count($highlights) >= self::IMAGE_COUNT) {
-                            break 2;
-                        }
-                    }
-                }
-            }
-
-            // TODO: Currently, this doesn't respect roles for reading highlights.
-            return $result->withHighlights(array_values($highlights));
-        }
-
-        private function getLastUserMessage(string $conversationId) : mixed {
-            $messages = $this->generativeContentClient->getChatHistory($conversationId);
-
-            foreach (array_reverse($messages) as &$message) {
-                if (isset($message["role"]) && $message["role"] === "user") {
-                    return $message;
-                }
-            }
-            
-            return null;
-        }
-
-        private function extractUuids(mixed $data, bool $unique = true): array {
-            $uuids = array();
-
-            if (is_array($data)) {
-                foreach ($data as &$value) {
-                    if (is_array($value) || is_object($value)) {
-                        $uuids = array_merge($uuids, $this->extractUuids($value, false));
-                    }
-                    else if (is_string($value) && Uuid::isValid($value)) {
-                        $uuids[] = $value;
-                    }
-                }
-            }
-
-            return $unique ? array_values(array_unique($uuids)) : $uuids;
+            return $this->generativeContentService->getChatResponse($prompt, $this->getAccessToken($request),
+                $this->getUserInfo($request)->getUsername(), $conversationId, $environment, $requestedHighlightsCount ?? 0);
         }
     }
 ?>
