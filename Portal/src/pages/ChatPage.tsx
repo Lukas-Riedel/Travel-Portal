@@ -56,7 +56,7 @@ export default function ChatPage() {
         })
     }
 
-    return hasRole(UserRole.GenerativecontentEdit) && (
+    return hasRole(UserRole.GenerativecontentRead) && (
         <div className="flex flex-col min-h-[calc(100vh-300px)] md:h-[calc(100vh-300px)]">
             <div className="flex items-center justify-between pb-3 border-b border-gray-200 flex-shrink-0 px-2 md:px-0">
                 <h1 className="text-base font-semibold text-gray-900">{t("chat.label.title")}</h1>

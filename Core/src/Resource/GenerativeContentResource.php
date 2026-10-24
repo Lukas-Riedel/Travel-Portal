@@ -126,7 +126,7 @@
             ]
         )]
         public function createGenerativeContent(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireRole($request, UserRole::GenerativeContentEdit);
+            $this->requireRole($request, UserRole::GenerativeContentRead);
 
             $prompt = $this->requireJsonBodyField($request, "prompt");
             $conversationId = $this->getJsonBodyField($request, "conversationId");

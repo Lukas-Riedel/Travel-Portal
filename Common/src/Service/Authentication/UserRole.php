@@ -29,7 +29,6 @@
         case GeocodingRead = "geocoding.read";
         case GeocodingEdit = "geocoding.edit";
         case GenerativeContentRead = "generativecontent.read";
-        case GenerativeContentEdit = "generativecontent.edit";
         case HighlightRead = "highlight.read";
         case HighlightEdit = "highlight.edit";
         case LabelRead = "label.read";
