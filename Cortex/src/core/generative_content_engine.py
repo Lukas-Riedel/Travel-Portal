@@ -225,24 +225,36 @@ class GenerativeContentEngine:
                                 estimated_tokens_per_turn += estimated_tokens_per_call
 
                         except MissingSkillsError as exc:
+                            validation_passed = True
+
                             allowed_set = set(allowed_skills)
                             for requested_skill in exc.skills:
                                 if requested_skill not in allowed_set:
-                                    raise RuntimeError(
-                                        f"The skill '{requested_skill}' does not exist. Never invent non-existing skills."
-                                    ) from exc
+                                    function_responses.append(
+                                        types.Part.from_function_response(
+                                            name=fn_name,
+                                            response={
+                                                "error": f"The skill '{requested_skill}' does not exist. Never invent non-existing skills."
+                                            },
+                                        )
+                                    )
+                                    validation_passed = False
+                                    break
 
-                            start_subagent = True
-                            subagent_skills.extend(exc.skills)
+                            if validation_passed:
+                                start_subagent = True
+                                subagent_skills.extend(exc.skills)
 
-                            function_responses.append(
-                                types.Part.from_function_response(
-                                    name=fn_name,
-                                    response={
-                                        "result": {"enabled_skills": subagent_skills}
-                                    },
+                                function_responses.append(
+                                    types.Part.from_function_response(
+                                        name=fn_name,
+                                        response={
+                                            "result": {
+                                                "enabled_skills": subagent_skills
+                                            }
+                                        },
+                                    )
                                 )
-                            )
 
                         except Exception as exc:
                             logger.exception(
