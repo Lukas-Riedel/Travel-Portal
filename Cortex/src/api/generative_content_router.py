@@ -53,13 +53,9 @@ class GenerativeContentResponse(BaseModel):
         default=...,
         description="Enabled skills",
     )
-    input: int = Field(
+    tokens: int = Field(
         default=...,
-        description="Consumed input tokens",
-    )
-    output: int = Field(
-        default=...,
-        description="Consumed output tokens",
+        description="Number of input tokens needed to load the specified history with the specified skills",
     )
 
 
@@ -85,7 +81,7 @@ def generate_content(
             req_obj.app.state.iam_client.get_user_roles(u_id) if u_id else None
         )
 
-        response, history, skills, input_tokens, output_tokens = (
+        response, history, skills, tokens = (
             req_obj.app.state.generative_content_engine.generate(
                 messages=request.messages,
                 schema=request.schema,
@@ -104,7 +100,6 @@ def generate_content(
             else (response or ""),
             "history": history,
             "skills": skills,
-            "input": input_tokens,
-            "output": output_tokens,
+            "tokens": tokens,
         }
     )

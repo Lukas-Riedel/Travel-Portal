@@ -61,7 +61,7 @@ class GenerativeContentEngine:
                 context=context,
             )
             if messages
-            else ("", [], enabled_skills or [], 0, 0)
+            else ("", [], enabled_skills or [], 0)
         )
 
     def _do_generate(
@@ -287,10 +287,8 @@ class GenerativeContentEngine:
                     response.text or "",
                     updated_history,
                     enabled_skills or [],
-                    response.usage_metadata.prompt_token_count or 0
-                    if response.usage_metadata
-                    else 0,
-                    response.usage_metadata.candidates_token_count or 0
+                    (response.usage_metadata.prompt_token_count or 0)
+                    + (response.usage_metadata.candidates_token_count or 0)
                     if response.usage_metadata
                     else 0,
                 )
