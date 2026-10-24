@@ -10,6 +10,7 @@
     use Monolog\Logger;
     use Ramsey\Uuid\Uuid;
 
+    // TODO: Split some functionality (e.g., caching, context compactification) to GenerativeContentService.
     class CortexGenerativeContentClient implements GenerativeContentClient {
 
         private const GENERATIVE_CONTENT_API_ENDPOINT_PATH = "/generativecontent";
@@ -29,8 +30,10 @@
 
         private readonly string $cortexHost;
         private readonly int $cortexPort;
+        private readonly int $tokenCompactificationThreshold;
 
-        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, ConfigurationService $configurationService, HttpClient $httpClient, Logger $logger, string $cortexHost, int $cortexPort) {
+        public function __construct(AuthenticationService $authenticationService, CacheClient $distributedCacheClient, ConfigurationService $configurationService, HttpClient $httpClient,
+            Logger $logger, string $cortexHost, int $cortexPort, int $tokenCompactificationThreshold) {
             $this->authenticationService = $authenticationService;
             $this->distributedCacheClient = $distributedCacheClient;
             $this->configurationService = $configurationService;
@@ -38,6 +41,7 @@
             $this->logger = $logger;
             $this->cortexHost = $cortexHost;
             $this->cortexPort = $cortexPort;
+            $this->tokenCompactificationThreshold = $tokenCompactificationThreshold;
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
@@ -56,6 +60,10 @@
             $lastResponse = $this->distributedCacheClient->get($cacheKey) ?? array();
 
             $messages = $lastResponse["history"] ?? array();
+            if ($lastResponse["tokens"] ?? 0 > $this->tokenCompactificationThreshold) {
+                $messages = $this->compactMessages($messages);
+            }
+
             $messages[] = array("role" => self::USER_ROLE, "text" => $prompt);
 
             $skills = $lastResponse["skills"] ?? $this->configurationService->getConfigurationEntry("agenticAi")["defaultSkills"];
@@ -96,6 +104,28 @@
 
         private function createPrompt(string $query, array $context) : string {
             return str_replace(array_map(fn($key) => sprintf(self::KEY_PLACEHOLDER_FORMAT, $key), array_keys($context)), array_values($context), $query);
+        }
+
+        private function compactMessages(array $messages) : array {
+            $newMessages = array();
+
+            foreach ($messages as &$message) {
+                $newParts = array();
+                foreach ($message["parts"] as &$part) {
+                    if (isset($part["text"])) {
+                        $newParts[] = $part;
+                    }
+                }
+
+                if (!empty($newParts)) {
+                    $newMessages[] = array(
+                        "parts" => $newParts,
+                        "role" => $message["role"]
+                    );
+                }
+            }
+
+            return $newMessages;
         }
 
         private function getCortexBaseUrl() : string {

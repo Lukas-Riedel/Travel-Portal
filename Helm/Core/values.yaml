@@ -104,6 +104,10 @@ core:
           coefficient: "0.3"
         negative:
           coefficient: "0.2"
+  generative:
+    token:
+      compactification:
+        threshold: "70000"
   place:
     score:
       multiplier:

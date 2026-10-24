@@ -160,7 +160,7 @@
 
     // Configured clients.
     $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"), $configurationService);
-    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $distributedCacheClient, $configurationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $distributedCacheClient, $configurationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"), getenv("CONTEXT_COMPACTIFICATION_THRESHOLD"));
     $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
     $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
     $calendarClient->setEventPublisher($eventPublisher);

@@ -164,6 +164,8 @@
   value: "{{ .Values.core.place.quality.threshold.shadows.low }}"
 - name: LOW_SKY_QUALITY_THRESHOLD
   value: "{{ .Values.core.place.quality.threshold.sky.low }}"
+- name: CONTEXT_COMPACTIFICATION_THRESHOLD
+  value: "{{ .Values.core.generative.token.compactification.threshold }}"
 - name: STATISTICS_VALUES_COUNT_LIMIT
   value: "{{ .Values.core.statistics.values.limit }}"
 - name: ALBUM_THUMBNAIL_BUCKET
