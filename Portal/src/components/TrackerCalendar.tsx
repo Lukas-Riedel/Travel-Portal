@@ -107,7 +107,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
         const negativeOvertime = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Overtime] ?? null, hours => hours < 0, timezone)
         const vacation = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Vacation] ?? null, hours => hours < 0, timezone)
         const selfcare = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Selfcare] ?? null, hours => hours < 0, timezone)
-        const tenure = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Tenure] ?? null, hours => hours < 0, timezone)
+        const bonus = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.Bonus] ?? null, hours => hours < 0, timezone)
         const plannedWork = getEvents(day, timeTrackingEvents?.[TimeTrackingEventType.PlannedWork] ?? null, _ => true, timezone)
 
         return {
@@ -117,7 +117,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
             negativeOvertime,
             vacation,
             selfcare,
-            tenure,
+            bonus,
             plannedWork,
             isInTrip,
             standardWorkingHours,
@@ -126,7 +126,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                 + getEventHoursSum(negativeOvertime)
                 + getEventHoursSum(vacation)
                 + getEventHoursSum(selfcare)
-                + getEventHoursSum(tenure),
+                + getEventHoursSum(bonus),
             expectedWorkingHours: (isFreeDay(day) || isInTrip ? 0 : (standardWorkingHours + expectedOvertimeHoursPerDay))
                 + getEventHoursSum(plannedWork)
         }
@@ -158,8 +158,8 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
         handleNegativeEventCreated(day, TimeTrackingEventType.Selfcare)
     }
 
-    const handleNegativeTenureEventCreated = (day: Date) => {
-        handleNegativeEventCreated(day, TimeTrackingEventType.Tenure)
+    const handleNegativeBonusEventCreated = (day: Date) => {
+        handleNegativeEventCreated(day, TimeTrackingEventType.Bonus)
     }
 
     const handlePlannedWorkEventCreated = (day: Date) => {
@@ -309,10 +309,10 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                                     <Pill className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
-                                                            <li key="tenure">
+                                                            <li key="bonus">
                                                                 <button
                                                                     className="flex items-center space-x-1 text-white text-xs leading-tight"
-                                                                    onClick={() => handleNegativeTenureEventCreated(dayDate)}>
+                                                                    onClick={() => handleNegativeBonusEventCreated(dayDate)}>
                                                                     <Shield className="w-4 h-4 shrink-0 btn-icon" />
                                                                 </button>
                                                             </li>
@@ -395,10 +395,10 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
                                                                 timeTrackingEvents={daySummary.selfcare}
                                                                 onEventRemoved={onEventRemoved} />
                                                         )}
-                                                        {daySummary.tenure?.length > 0 && (
-                                                            <AbsenceInfo
-                                                                timeTrackingEventType={TimeTrackingEventType.Tenure}
-                                                                timeTrackingEvents={daySummary.tenure}
+                                                        {daySummary.bonus?.length > 0 && (
+                                                                <AbsenceInfo
+                                                                    timeTrackingEventType={TimeTrackingEventType.Bonus}
+                                                                    timeTrackingEvents={daySummary.bonus}
                                                                 onEventRemoved={onEventRemoved} />
                                                         )}
                                                     </ul>

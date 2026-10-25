@@ -9,13 +9,13 @@ BALANCE_EVENT_TYPES: Final[tuple[str, ...]] = (
     "overtime",
     "vacation",
     "selfcare",
-    "tenure",
+    "bonus",
 )
 
 
 class TrackerReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to query the current time off balances (overtime, vacation, selfcare days, and tenure) and the already planned time off from the time tracker in Travel Portal. Activate and apply this skill when the user asks how many days of vacation, selfcare days, overtime, or tenure they have available, or when their time off is planned (e.g. "how many vacation days do I have left?", "what is my overtime balance?", "when do I have my vacation planned?").'
+        return 'Provides capabilities to query the current time off balances (overtime, vacation, selfcare days, and bonus time-off) and the already planned time off from the time tracker in Travel Portal. Activate and apply this skill when the user asks how many days of vacation, selfcare days, overtime, or bonus they have available, or when their time off is planned (e.g. "how many vacation days do I have left?", "what is my overtime balance?", "when do I have my vacation planned?").'
 
     def _get_supported_skill(self) -> str:
         return "tracker.read"
@@ -32,7 +32,7 @@ class TrackerReadTools(BaseCoreTools):
 
     def get_time_off_balances(self) -> dict[str, Any]:
         """Retrieves the current time off balances from the time tracker in Travel Portal.
-        Use this when the user asks how much vacation, sick days, overtime, or tenure they have available -
+        Use this when the user asks how much vacation, sick days, overtime, or bonus time-off they have available -
         for example "how many vacation days do I have left?", "what is my overtime balance?".
 
         Returns:
@@ -42,7 +42,7 @@ class TrackerReadTools(BaseCoreTools):
             - overtime (integer): Overtime balance in days.
             - vacation (integer): Vacation balance in days.
             - selfcare (integer): Sick days (selfcare) balance in days.
-            - tenure (integer): Tenure balance in days.
+            - bonus (integer): Bonus time-off balance in days.
         """
         working_hours_per_day = self._get_working_hours_per_day()
 
@@ -62,12 +62,12 @@ class TrackerReadTools(BaseCoreTools):
 
     def get_planned_time_off(self) -> list[dict[str, Any]]:
         """Retrieves the time off that is already planned (from today onwards) in the time tracker in Travel Portal.
-        Use this when the user asks when or how much of their vacation, selfcare days, overtime, or tenure is already
+        Use this when the user asks when or how much of their vacation, selfcare days, overtime, or bonus time-off is already
         planned - for example "when do I have my vacation planned?", "do I have any time off planned next month?".
 
         Returns:
             A list of planned time off objects sorted by the date ascending (earliest first), where each object contains:
-            - type (string): Type of the time off. One of `overtime`, `vacation`, `selfcare`, `tenure`.
+            - type (string): Type of the time off. One of `overtime`, `vacation`, `selfcare`, `bonus`.
             - date (string): Date of the planned time off in DD.MM.YYYY format.
             - days (number): Length of the planned time off in working days (already adjusted to the user's FTE, can be fractional, e.g. `0.5`).
         """

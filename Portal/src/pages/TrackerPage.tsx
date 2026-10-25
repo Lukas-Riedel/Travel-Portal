@@ -7,7 +7,7 @@ import { useTimeTrackingEvents } from "../hooks/useTimeTrackingEvents"
 import { TimeTrackingEventType, TripIncludedEntity, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { isFutureTrip } from "../utils/tripUtils.ts"
 
-const TRACKED_EVENT_TYPES = [TimeTrackingEventType.Overtime, TimeTrackingEventType.Vacation, TimeTrackingEventType.Selfcare, TimeTrackingEventType.Tenure, TimeTrackingEventType.PlannedWork]
+const TRACKED_EVENT_TYPES = [TimeTrackingEventType.Overtime, TimeTrackingEventType.Vacation, TimeTrackingEventType.Selfcare, TimeTrackingEventType.Bonus, TimeTrackingEventType.PlannedWork]
 
 export default function TrackerPage() {
     const { hasRole } = useAuth()

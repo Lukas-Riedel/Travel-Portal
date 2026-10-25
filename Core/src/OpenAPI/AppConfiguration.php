@@ -62,9 +62,9 @@
             new OA\Property(
                 property: "openingBalance",
                 type: "object",
-                required: ["tenure", "selfcare", "vacation"],
+                required: ["bonus", "selfcare", "vacation"],
                 properties: [
-                    new OA\Property(property: "tenure", type: "number", format: "float", example: 0),
+                    new OA\Property(property: "bonus", type: "number", format: "float", example: 0),
                     new OA\Property(property: "selfcare", type: "number", format: "float", example: 12.8),
                     new OA\Property(property: "vacation", type: "number", format: "float", example: 160)
                 ]

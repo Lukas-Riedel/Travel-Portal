@@ -11,7 +11,7 @@
     enum TimeTrackingEventType : string {
         case Vacation = "vacation";
         case Selfcare = "selfcare";
-        case Tenure = "tenure";
+        case Bonus = "bonus";
         case Overtime = "overtime";
         case PlannedWork = 'plannedWork';
     }

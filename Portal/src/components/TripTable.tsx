@@ -54,7 +54,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
             let currentExpectedOvertimeHoursBalance = getEventTypeBalance(TimeTrackingEventType.Overtime)
             let currentExpectedTimeOffHoursBalance = getEventTypeBalance(TimeTrackingEventType.Vacation)
                 + getEventTypeBalance(TimeTrackingEventType.Selfcare)
-                + getEventTypeBalance(TimeTrackingEventType.Tenure)
+                + getEventTypeBalance(TimeTrackingEventType.Bonus)
 
             for (let i = 0; i < days.length; ++i) {
                 const day = days[i]
@@ -75,7 +75,7 @@ export default function TripTable({ trips, timeTrackingEvents }: TripTableProps)
 
                 const submittedTimeOffHours = (-1) * (doGetEventHoursSum(TimeTrackingEventType.Vacation)
                     + doGetEventHoursSum(TimeTrackingEventType.Selfcare)
-                    + doGetEventHoursSum(TimeTrackingEventType.Tenure)
+                    + doGetEventHoursSum(TimeTrackingEventType.Bonus)
                     + doGetEventHoursSum(TimeTrackingEventType.Overtime, hours => hours < 0))
 
                 currentExpectedOvertimeHoursBalance += doGetEventHoursSum(TimeTrackingEventType.PlannedWork)

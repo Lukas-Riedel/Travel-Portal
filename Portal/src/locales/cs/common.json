@@ -539,7 +539,7 @@
                         "confirmed": "Sick day byl úspěšně využit",
                         "failed": "Nepodařilo se využít sick day"
                     },
-                    "tenure": {
+                    "bonus": {
                         "message": "Zadej počet hodin k využití bonusového volna:",
                         "confirmed": "Bonusové volno bylo úspěšně využito",
                         "failed": "Nepodařilo se využít bonusové volno"
