@@ -52,7 +52,7 @@ class VoucherReadTools(BaseVoucherTools):
 
 class VoucherEditTools(BaseVoucherTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to create, record, and update vouchers, discount coupons, and gift cards in Travel Portal. Activate and apply this skill when the user asks to save, register, or log a new voucher, or when the user mentions that a voucher balance changed / was used."
+        return 'Provides capabilities to create, record, and update vouchers, discount coupons, and gift cards in Travel Portal. Activate and apply this skill when the user asks to save, register, or log a new voucher, or when the user mentions that a voucher balance changed / was used (e.g. "save a new Flixbus voucher worth 500 CZK", "I used 200 CZK from my airline voucher", "the gift card balance is now 50 EUR").'
 
     def _get_supported_skill(self) -> str:
         return "voucher.edit"

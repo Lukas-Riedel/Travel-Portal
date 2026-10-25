@@ -65,7 +65,7 @@ class SubscriptionReadTools(BaseSubscriptionTools):
 
 class SubscriptionEditTools(BaseSubscriptionTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to record and create active travel subscriptions and transit passes in Travel Portal. Activate and apply this skill when the user asks to save, register, or create a travel subscription or period transit pass."
+        return 'Provides capabilities to record and create active travel subscriptions and transit passes in Travel Portal. Activate and apply this skill when the user asks to save, register, or create a travel subscription or period transit pass (e.g. "save my Deutschland ticket for June", "add a monthly transit pass", "register my Interrail pass").'
 
     def _get_supported_skill(self) -> str:
         return "subscription.edit"

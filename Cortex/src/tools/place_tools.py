@@ -137,7 +137,7 @@ class BasePlaceTools(BaseCoreTools, ABC):
 
 class PlaceReadTools(BasePlaceTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to query, search, and inspect places in Travel Portal. Activate and apply this skill when the user asks about visited places, destinations, locations, points of interest, candidate places, or wants to know when a specific place was visited."
+        return 'Provides capabilities to query, search, and inspect places in Travel Portal. Activate and apply this skill when the user asks about visited places, destinations, locations, points of interest, candidate places, or wants to know when a specific place was visited (e.g. "what places have I visited in Japan?", "when was I in Prague?", "show me candidate places in Italy").'
 
     def _get_supported_skill(self) -> str:
         return "place.read"

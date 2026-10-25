@@ -307,7 +307,7 @@ class TripFlightReadTools(BaseFlightTools):
 
 class FlightEditTools(BaseFlightTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to create scheduled and watched flights in Travel Portal. Activate and apply this skill when the user asks to add, record, watch, or schedule a flight."
+        return 'Provides capabilities to create scheduled and watched flights in Travel Portal. Activate and apply this skill when the user asks to add, record, watch, or schedule a flight (e.g. "add a flight from Prague to Bangkok on May 5", "watch flight FR1234 on December 11", "schedule a flight to Lisbon for my Portugal trip").'
 
     def _get_supported_skill(self) -> str:
         return "flight.edit"

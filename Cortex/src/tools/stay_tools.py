@@ -6,7 +6,7 @@ from src.tools.base_tools import BaseCoreTools
 
 class TripStayReadTools(BaseCoreTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to query and inspect accommodation stays across trips in Travel Portal. Activate and apply this skill when the user asks about accommodation, hotels, resorts, or cruises for a specific trip or across all trips."
+        return 'Provides capabilities to query and inspect accommodation stays across trips in Travel Portal. Activate and apply this skill when the user asks about accommodation, hotels, resorts, or cruises for a specific trip or across all trips (e.g. "where did I stay in Japan?", "show me all my hotels", "which cruises have I been on?").'
 
     def _get_supported_skill(self) -> str:
         return "trip.stay.read"
