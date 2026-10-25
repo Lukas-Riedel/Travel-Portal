@@ -1,7 +1,7 @@
 from typing import Any
 
 from src.core.logger import logger
-from src.errors.missing_skills_error import MissingSkillsError
+from src.errors import MissingSkillsError
 from src.tools.base_tools import BaseTools
 
 

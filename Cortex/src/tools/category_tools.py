@@ -7,7 +7,7 @@ import requests
 from dateutil.rrule import rruleset, rrulestr
 from icalendar import Calendar
 
-from src.errors.general_tool_error import GeneralToolError
+from src.errors import GeneralToolError
 from src.tools.base_tools import BaseCoreTools
 
 REQUEST_TIMEOUT: Final[tuple[Literal[5], Literal[15]]] = (5, 15)

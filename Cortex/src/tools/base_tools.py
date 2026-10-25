@@ -8,7 +8,7 @@ import pytz
 
 from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
-from src.errors.general_tool_error import GeneralToolError
+from src.errors import GeneralToolError
 
 
 class BaseTools(ABC):

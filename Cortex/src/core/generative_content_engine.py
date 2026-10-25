@@ -10,7 +10,7 @@ from google.genai import types
 from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
-from src.errors.missing_skills_error import MissingSkillsError
+from src.errors import MissingSkillsError
 from src.tools.registry import SkillRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"

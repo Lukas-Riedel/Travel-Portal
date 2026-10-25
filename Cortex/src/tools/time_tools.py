@@ -4,7 +4,7 @@ from typing import Any
 import pytz
 from dateutil import parser
 
-from src.errors.general_tool_error import GeneralToolError
+from src.errors import GeneralToolError
 from src.tools.base_tools import BaseTools
 
 
