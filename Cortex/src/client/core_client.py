@@ -218,6 +218,13 @@ class CoreClient:
 
         return self._request(method="PATCH", url=url, json=payload)
 
+    def delete_trip_expense(
+        self, trip_id: str, expense_id: str
+    ) -> dict[str, Any] | None:
+        url = f"{self.base_url}/trips/{trip_id}/expenses/{expense_id}"
+
+        return self._request(method="DELETE", url=url)
+
     def create_trip_task(
         self,
         trip_id: str,

@@ -149,7 +149,7 @@ class TripExpenseReadTools(BaseExpenseTools):
 
 class TripExpenseEditTools(BaseExpenseTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to create and update expenses for trips in Travel Portal. Activate and apply this skill when the user asks to add, record, modify, or correct an expense for a trip (e.g. "add 30 EUR for the museum tickets to my Turkey trip", "I paid 120 CZK for the bus", "change the hotel expense to 250 USD", "rename the taxi expense").'
+        return 'Provides capabilities to create, update, and delete expenses for trips in Travel Portal. Activate and apply this skill when the user asks to add, record, modify, correct, or remove an expense for a trip (e.g. "add 30 EUR for the museum tickets to my Turkey trip", "I paid 120 CZK for the bus", "change the hotel expense to 250 USD", "rename the taxi expense", "delete the taxi expense").'
 
     def _get_supported_skill(self) -> str:
         return "trip.expense.edit"
@@ -160,6 +160,7 @@ class TripExpenseEditTools(BaseExpenseTools):
             self.create_trip_expense,
             self.update_trip_expense_description,
             self.update_trip_expense_value_and_currency,
+            self.delete_trip_expense,
         ]
 
     def get_expense_descriptions(self, expense_type: str) -> list[str]:
@@ -338,3 +339,25 @@ class TripExpenseEditTools(BaseExpenseTools):
         return self._extract_expense(
             expense=expense, trip=trip, main_currency=self._get_main_currency()
         )
+
+    def delete_trip_expense(self, trip_id: str, expense_id: str) -> dict[str, Any]:
+        """Deletes an existing expense from a trip in Travel Portal.
+        Use this when the user asks to delete, remove, or discard an expense - for example "delete the taxi expense", "remove the museum tickets from my Turkey trip".
+        Always resolve the trip ID first using trip tools and find the expense ID via get_expenses. Never ask the user for a UUID.
+
+        Args:
+            trip_id: The unique identifier of the trip the expense belongs to. Resolve via trip tools.
+            expense_id: The unique identifier of the expense to delete. Resolve via get_expenses.
+
+        Returns:
+            A confirmation object indicating successful deletion containing:
+            - deleted (boolean): True if deletion succeeded.
+            - id (string): Unique identifier of the deleted expense.
+        """
+        result = self.core_client.delete_trip_expense(
+            trip_id=trip_id,
+            expense_id=expense_id,
+        )
+        self._verify_error_response(result)
+
+        return {"deleted": True, "id": expense_id}
