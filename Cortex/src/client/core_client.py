@@ -315,6 +315,29 @@ class CoreClient:
 
         return self._request(method="PATCH", url=url, json=payload)
 
+    def get_documents(self) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/documents"
+
+        return self._request(method="GET", url=url)
+
+    def create_document(
+        self,
+        name: str,
+        code: str,
+        issuer: str,
+        expiration: int | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/documents"
+        payload = {
+            "name": name,
+            "code": code,
+            "issuer": issuer,
+        }
+        if expiration is not None:
+            payload["expiration"] = expiration
+
+        return self._request(method="POST", url=url, json=payload)
+
     def get_subscriptions(self) -> list[dict[str, Any]] | dict[str, Any]:
         url = f"{self.base_url}/subscriptions"
 

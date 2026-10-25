@@ -10,13 +10,6 @@ class BaseTaskTools(BaseCoreTools, ABC):
         task: dict[str, Any],
         trip: dict[str, Any],
     ) -> dict[str, Any]:
-        deadline = None
-        if task.get("deadline") is not None:
-            deadline = self._epoch_to_iso(
-                epoch=task["deadline"],
-                user_tz=self._get_user_timezone(),
-            )
-
         return {
             "id": task.get("id"),
             "trip_id": trip.get("id"),
@@ -24,7 +17,9 @@ class BaseTaskTools(BaseCoreTools, ABC):
             "title": task.get("title"),
             "description": task.get("description"),
             "priority": task.get("priority"),
-            "deadline": deadline,
+            "deadline": self._epoch_to_iso(
+                epoch=task.get("deadline"), user_tz=self._get_user_timezone()
+            ),
         }
 
 
