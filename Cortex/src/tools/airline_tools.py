@@ -44,7 +44,7 @@ class AirlineReadTools(BaseAirlineTools):
 
 class AirlineEditTools(BaseAirlineTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to create and update airlines in Travel Portal. Activate and apply this skill when the user asks to add, rename, update the logo of, or assign a code to an airline (e.g. "add a new airline", "rename WizzAir", "assign code FR to Ryanair").'
+        return 'Provides capabilities to create and update airlines in Travel Portal. Activate and apply this skill when the user asks to add, or assign a code to an airline (e.g. "add a new airline", "assign code FR to Ryanair").'
 
     def _get_supported_skill(self) -> str:
         return "airline.edit"
@@ -52,19 +52,16 @@ class AirlineEditTools(BaseAirlineTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.create_airline,
-            self.update_airline_name,
-            self.update_airline_logo,
             self.assign_airline_code,
         ]
 
-    def create_airline(self, name: str, logo: str | None = None) -> dict[str, Any]:
+    def create_airline(self, name: str) -> dict[str, Any]:
         """Creates a new airline in Travel Portal.
         Use this when the user asks to add or create an airline
         (e.g. "add WizzAir", "create a new airline called Ryanair").
 
         Args:
             name: The name of the airline (e.g. "WizzAir").
-            logo: SVG logo of the airline. Pass None to create the airline without a logo.
 
         Returns:
             The created airline object containing:
@@ -72,49 +69,7 @@ class AirlineEditTools(BaseAirlineTools):
             - name (string): Name of the airline (e.g. `"WizzAir"`).
             - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
         """
-        airline = self.core_client.create_airline(name=name, logo=logo)
-        self._verify_error_response(airline)
-
-        return self._extract_airline(airline)
-
-    def update_airline_name(self, airline_id: str, name: str) -> dict[str, Any]:
-        """Updates the name of an existing airline in Travel Portal.
-        Use this when the user asks to rename an airline or correct its name
-        (e.g. "rename WizzAir to Wizz Air", "fix the name of the airline").
-        Always resolve the airline first using get_airlines. Never ask the user for a UUID.
-
-        Args:
-            airline_id: The `id` of the airline as returned by get_airlines.
-            name: The new name of the airline (e.g. "Wizz Air").
-
-        Returns:
-            The updated airline object containing:
-            - id (string): Unique airline identifier.
-            - name (string): Name of the airline (e.g. `"WizzAir"`).
-            - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
-        """
-        airline = self.core_client.update_airline(airline_id=airline_id, name=name)
-        self._verify_error_response(airline)
-
-        return self._extract_airline(airline)
-
-    def update_airline_logo(self, airline_id: str, logo: str) -> dict[str, Any]:
-        """Updates the SVG logo of an existing airline in Travel Portal.
-        Use this when the user asks to set or replace the logo of an airline
-        (e.g. "set the logo of WizzAir", "update the logo for Ryanair").
-        Always resolve the airline first using get_airlines. Never ask the user for a UUID.
-
-        Args:
-            airline_id: The `id` of the airline as returned by get_airlines.
-            logo: The new SVG logo as a string (e.g. "<svg xmlns=\\"http://www.w3.org/2000/svg\\" .../>").
-
-        Returns:
-            The updated airline object containing:
-            - id (string): Unique airline identifier.
-            - name (string): Name of the airline (e.g. `"WizzAir"`).
-            - codes (array of strings): IATA codes assigned to this airline (e.g. `["W4", "W6", "W9"]`).
-        """
-        airline = self.core_client.update_airline(airline_id=airline_id, logo=logo)
+        airline = self.core_client.create_airline(name=name)
         self._verify_error_response(airline)
 
         return self._extract_airline(airline)

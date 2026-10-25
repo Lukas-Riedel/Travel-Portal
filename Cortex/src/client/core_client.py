@@ -424,12 +424,9 @@ class CoreClient:
     def create_airline(
         self,
         name: str,
-        logo: str | None = None,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/airlines"
         payload = {"name": name}
-        if logo is not None:
-            payload["logo"] = logo
 
         return self._request(method="POST", url=url, json=payload)
 
