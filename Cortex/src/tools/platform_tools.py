@@ -1,7 +1,7 @@
 from typing import Any
 
 from src.core.logger import logger
-from src.errors import MissingSkillsError
+from src.errors import MissingSkillsError, MissingTopicError
 from src.tools.base_tools import BaseTools
 
 
@@ -16,6 +16,7 @@ class PlatformTools(BaseTools):
         return [
             self.load_skills,
             self.report_missing_functionality,
+            self.add_conversation_topic,
         ]
 
     def load_skills(self, skills: list[str]) -> None:
@@ -48,3 +49,19 @@ class PlatformTools(BaseTools):
         # TODO: Report missing functionality in the request response. Record it in the database in Core.
         logger.error(f"MISSING FUNCTIONALITY: {description}")
         return None
+
+    def add_conversation_topic(self, topic_ids: list[str]) -> None:
+        """Declare primary conversation topics (e.g. place IDs, trip IDs, label IDs, category IDs, or years)
+        associated with the current user request and retrieved data.
+
+        Call this to anchor the UI presentation when the user's request focuses on specific entities,
+        allowing the system to attach relevant images or highlights to the AI response.
+
+        **IMPORTANT - batching rule:** NEVER call this tool in a standalone turn.
+        Always batch it in the same request alongside the primary data-fetching tool that retrieves
+        the details for these entities (e.g. call `search_places` and `add_conversation_topic` together).
+
+        Args:
+            topic_ids: A list of unique string identifiers representing the main entities or topics discussed.
+        """
+        raise MissingTopicError(topic_ids)

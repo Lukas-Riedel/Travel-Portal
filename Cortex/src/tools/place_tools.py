@@ -248,10 +248,7 @@ class PlaceReadTools(BasePlaceTools):
         self._verify_error_response(places)
 
         filtered_places = self._filter_visible_places(places)
-        return self._extract_topic(
-            topic_ids=[p.get("id") for p in filtered_places],
-            data=[self._extract_place(p) for p in filtered_places],
-        )
+        return [self._extract_place(p) for p in filtered_places]
 
     def get_candidate_places(
         self,
@@ -335,10 +332,7 @@ class PlaceReadTools(BasePlaceTools):
         if not visible_places:
             return None
 
-        return self._extract_topic(
-            topic_ids=[place_id],
-            data=self._extract_place(visible_places[0]),
-        )
+        return self._extract_place(visible_places[0])
 
     def get_place_dates(self, place_id: str) -> list[dict[str, Any]]:
         """Retrieves all visit dates for a specific place, including weather forecast for future dates.

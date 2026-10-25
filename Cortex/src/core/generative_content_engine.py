@@ -10,7 +10,7 @@ from google.genai import types
 from src.client.core_client import CoreClient
 from src.core.generative_content_context import generative_content_environment
 from src.core.logger import logger
-from src.errors import MissingSkillsError
+from src.errors import MissingSkillsError, MissingTopicError
 from src.tools.registry import SkillRegistry
 
 STRUCTURED_RESPONSE_CONTENT_TYPE: Final[str] = "application/json"
@@ -146,20 +146,13 @@ class GenerativeContentEngine:
                             estimated_tokens_per_call = math.ceil(
                                 len(
                                     json.dumps(
-                                        obj=fn_call_result.get("_data", fn_call_result)
-                                        if isinstance(fn_call_result, dict)
-                                        else fn_call_result,
+                                        obj=fn_call_result,
                                         default=str,
                                         ensure_ascii=False,
                                     )
                                 )
                                 / CHARS_PER_TOKEN_COUNT
                             )
-
-                            if isinstance(fn_call_result, dict):
-                                all_topic_ids.extend(
-                                    fn_call_result.get("_topic_ids", [])
-                                )
 
                             current_estimated_usage = (
                                 total_prompt_tokens
@@ -203,13 +196,7 @@ class GenerativeContentEngine:
                                     )
                                 )
                             else:
-                                response_payload = {
-                                    "result": fn_call_result.get(
-                                        "_data", fn_call_result
-                                    )
-                                    if isinstance(fn_call_result, dict)
-                                    else fn_call_result
-                                }
+                                response_payload = {"result": fn_call_result}
 
                                 if (
                                     current_estimated_usage
@@ -235,6 +222,16 @@ class GenerativeContentEngine:
                                     )
                                 )
                                 estimated_tokens_per_turn += estimated_tokens_per_call
+
+                        except MissingTopicError as exc:
+                            all_topic_ids.extend(exc.topic_ids)
+
+                            function_responses.append(
+                                types.Part.from_function_response(
+                                    name=fn_name,
+                                    response={"result": {"topic_ids": all_topic_ids}},
+                                )
+                            )
 
                         except MissingSkillsError as exc:
                             validation_passed = True

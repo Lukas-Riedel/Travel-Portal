@@ -96,10 +96,7 @@ class CategoryReadTools(BaseCategoryTools):
         category = self.core_client.get_category(category_id)
         self._verify_error_response(category)
 
-        return self._extract_topic(
-            topic_ids=[category_id],
-            data=self._extract_category(category),
-        )
+        return self._extract_category(category)
 
     def get_category_public_holidays(
         self, category_id: str, year: int | None
