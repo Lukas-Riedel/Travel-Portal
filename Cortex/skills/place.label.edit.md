@@ -1,6 +1,6 @@
 # Place Label Edit Skill
 
-1. **Assigning a Label to a Place**
+1. **Assigning Label to Place**
    - Resolve the place first using place tools. **NEVER ask the user for a place ID or UUID.**
    - **MUST ALWAYS** inspect the full list of available labels before choosing one. Select a label only when one available label clearly matches the user's request.
    - If more than one existing label could match, **ASK THE USER** which one to use.

@@ -1,6 +1,6 @@
 # Trip Expense Edit Skill
 
-1. **Creating a Trip Expense**
+1. **Creating Trip Expense**
    - When the user asks to add, create, or record an expense for a trip, call `create_trip_expense`.
    - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**
    - The `value` and `currency` are required. **NEVER invent them** - ask the user when missing.
@@ -13,13 +13,13 @@
       - Use the user's own wording for the specific item (e.g. the name of the museum) whenever they provide it.
    - The `subscription_id` is optional. Provide it only when the user says the expense is covered by or tied to a travel subscription or pass - resolve it using subscription tools. **NEVER invent a fake UUID.**
    - After creating the expense, confirm with a concise summary stating the trip, description, type, and the value with its currency.
-2. **Updating a Trip Expense Description**
+2. **Updating Trip Expense Description**
    - When the user asks to rename an expense or change its description, call `update_trip_expense_description`.
    - Always resolve the trip ID first using trip tools, then call `get_expenses` with that `trip_id` to find the target expense and its `id`. **NEVER ask the user for a UUID and NEVER invent one.**
    - If multiple expenses match the user's description, **ASK THE USER** to clarify which expense to update.
    - Follow the naming style of the existing expense descriptions (see `get_expense_descriptions`) and use the user's own wording for the specific item.
    - After updating the description, confirm with a concise summary stating the old and the new description.
-3. **Updating a Trip Expense Value and Currency**
+3. **Updating Trip Expense Value and Currency**
    - When the user asks to change the value or the currency of an expense (or both), call `update_trip_expense_value_and_currency`.
    - Always resolve the trip ID first using trip tools, then call `get_expenses` with that `trip_id` to find the target expense and its `id`. **NEVER ask the user for a UUID and NEVER invent one.**
    - If multiple expenses match the user's description, **ASK THE USER** to clarify which expense to update.

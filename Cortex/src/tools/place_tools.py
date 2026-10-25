@@ -390,7 +390,7 @@ class PlaceReadTools(BasePlaceTools):
 
 class PlaceEditTools(BasePlaceTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to create and update places in Travel Portal. Activate and apply this skill when the user wants to add a new candidate place or update the description of an existing place."
+        return "Provides capabilities to create, update, and delete places in Travel Portal. Activate and apply this skill when the user wants to add a new candidate place, remove an existing candidate place, or update the description of an existing place."
 
     def _get_supported_skill(self) -> str:
         return "place.edit"
@@ -400,6 +400,7 @@ class PlaceEditTools(BasePlaceTools):
             self.get_place_excerpt,
             self.create_candidate_place,
             self.update_place_excerpt,
+            self.delete_candidate_place,
         ]
 
     def create_candidate_place(self, name: str, address: str) -> dict[str, Any]:
@@ -460,3 +461,24 @@ class PlaceEditTools(BasePlaceTools):
         self._verify_error_response(place)
 
         return self._extract_place(self._with_visible_dates(place))
+
+    def delete_candidate_place(self, place_id: str) -> dict[str, Any]:
+        """Deletes an existing candidate (wishlist) place from Travel Portal.
+        Use this when the user asks to remove, delete, or discard a place from their wishlist - for example
+        "remove Petra from my wishlist", "delete the candidate place Machu Picchu".
+        Only candidate places can be deleted. Resolve the place ID first using get_place_by_name or get_candidate_places.
+
+        Args:
+            place_id: The unique identifier of the candidate place to delete. Never ask the user for a UUID.
+
+        Returns:
+            A confirmation object indicating successful deletion containing:
+            - deleted (boolean): True if deletion succeeded.
+            - id (string): Unique identifier of the deleted place.
+        """
+        result = self.core_client.delete_place(
+            place_id=place_id, place_type="candidate"
+        )
+        self._verify_error_response(result)
+
+        return {"deleted": True, "id": place_id}

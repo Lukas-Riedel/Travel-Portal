@@ -389,6 +389,12 @@ class CoreClient:
 
         return self._request(method="PATCH", url=url, json=payload)
 
+    def delete_place(self, place_id: str, place_type: str) -> dict[str, Any] | None:
+        url = f"{self.base_url}/places/{place_id}"
+        params = {"type": place_type}
+
+        return self._request(method="DELETE", url=url, params=params)
+
     def create_place_label(self, place_id: str, name: str) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}/labels"
         payload = {"name": name}
