@@ -401,6 +401,11 @@ class CoreClient:
 
         return self._request(method="POST", url=url, json=payload)
 
+    def delete_place_label(self, place_id: str, label_id: str) -> dict[str, Any] | None:
+        url = f"{self.base_url}/places/{place_id}/labels/{label_id}"
+
+        return self._request(method="DELETE", url=url)
+
     def create_place_note(self, place_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}/notes"
         payload = {"content": content}

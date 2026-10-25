@@ -71,7 +71,7 @@ class PlaceLabelReadTools(BaseLabelTools):
 
 class PlaceLabelEditTools(BaseLabelTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to assign existing labels to places and create new labels after user confirmation. Activate and apply this skill when the user asks to label a place, assign an existing label, or create a new label for a place (e.g. "label Prague as a city", "add the City label to Bangkok", "create a new label called UNESCO Site for Angkor Wat").'
+        return 'Provides capabilities to assign existing labels to places, create new labels after user confirmation, and unassign labels from places. Activate and apply this skill when the user asks to label a place, assign an existing label, create a new label for a place, or remove a label from a place (e.g. "label Prague as a city", "add the City label to Bangkok", "create a new label called UNESCO Site for Angkor Wat", "remove the City label from Prague").'
 
     def _get_supported_skill(self) -> str:
         return "place.label.edit"
@@ -79,6 +79,7 @@ class PlaceLabelEditTools(BaseLabelTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.assign_label_to_place,
+            self.unassign_label_from_place,
         ]
 
     def assign_label_to_place(
@@ -107,3 +108,28 @@ class PlaceLabelEditTools(BaseLabelTools):
         self._verify_error_response(assigned_label)
 
         return self._extract_label(assigned_label)
+
+    def unassign_label_from_place(
+        self,
+        place_id: str,
+        label_id: str,
+    ) -> dict[str, Any]:
+        """Unassigns a label from a place. The label itself is not deleted and remains available for other places.
+        Use this when the user asks to remove a label from a place - for example "remove the City label from Prague" or "unlabel Angkor Wat as a UNESCO Site". Resolve the place first using place tools and find the label ID among the labels assigned to the place using get_labels_for_place. Never ask the user for a UUID.
+
+        Args:
+            place_id: The unique identifier of the place, resolved using place tools.
+            label_id: The unique identifier of the label currently assigned to the place, resolved using get_labels_for_place.
+
+        Returns:
+            A confirmation object indicating successful unassignment containing:
+            - deleted (boolean): True if unassignment succeeded.
+            - id (string): Unique identifier of the unassigned label.
+        """
+        result = self.core_client.delete_place_label(
+            place_id=place_id,
+            label_id=label_id,
+        )
+        self._verify_error_response(result)
+
+        return {"deleted": True, "id": label_id}
