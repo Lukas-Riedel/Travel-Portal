@@ -147,6 +147,7 @@ class PlaceReadTools(BasePlaceTools):
             self.get_places,
             self.get_recently_visited_places,
             self.get_candidate_places,
+            self.get_nearby_places,
             self.get_place_by_name,
             self.get_place_dates,
             self.get_place_excerpt,
@@ -333,6 +334,31 @@ class PlaceReadTools(BasePlaceTools):
             return None
 
         return self._extract_place(visible_places[0])
+
+    def get_nearby_places(self, place_id: str, limit: int) -> list[dict[str, Any]]:
+        """Retrieves places located near a specific place.
+        Use this when the user asks what else is around a place or what they could visit nearby - for example
+        "what is near Prague?", "show me places close to Angkor Wat".
+        Resolve the place ID first using get_place_by_name if only a name is given.
+
+        Args:
+            place_id: The unique identifier of the place. Resolve via get_place_by_name.
+            limit: The maximum number of nearby places to return (e.g. 5).
+
+        Returns:
+            A list of place objects near the given place, where each object contains:
+            - id (string): Unique identifier of the place. Use it when looking up dates, excerpts, and others.
+            - name (string): Name of the place.
+            - country (string): Country the place is located in.
+            - timezone (string): IANA timezone identifier of the place.
+        """
+        place = self.core_client.get_place(place_id=place_id, nearby_places=limit)
+        self._verify_error_response(place)
+
+        nearby_places = place.get("nearbyPlaces") or []
+        return [
+            self._extract_place(p) for p in self._filter_visible_places(nearby_places)
+        ]
 
     def get_place_dates(self, place_id: str) -> list[dict[str, Any]]:
         """Retrieves all visit dates for a specific place, including weather forecast for future dates.

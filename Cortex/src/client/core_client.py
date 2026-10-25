@@ -366,10 +366,15 @@ class CoreClient:
 
         return self._request(method="GET", url=url, params=params)
 
-    def get_place(self, place_id: str) -> dict[str, Any]:
+    def get_place(
+        self, place_id: str, nearby_places: int | None = None
+    ) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}"
+        params = {}
+        if nearby_places is not None:
+            params["nearbyPlaces"] = nearby_places
 
-        return self._request(method="GET", url=url)
+        return self._request(method="GET", url=url, params=params)
 
     def create_place(self, name: str, address: str, place_type: str) -> dict[str, Any]:
         url = f"{self.base_url}/places"
