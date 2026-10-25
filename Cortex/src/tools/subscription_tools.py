@@ -31,6 +31,7 @@ class SubscriptionReadTools(BaseSubscriptionTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.get_subscriptions,
+            self.get_subscription_descriptions,
         ]
 
     def get_subscriptions(self) -> list[dict[str, Any]]:
@@ -50,20 +51,6 @@ class SubscriptionReadTools(BaseSubscriptionTools):
 
         return [self._extract_subscription(s) for s in subscriptions]
 
-
-class SubscriptionEditTools(BaseSubscriptionTools):
-    def _get_description(self) -> str | None:
-        return "Provides capabilities to record and create active travel subscriptions and transit passes in Travel Portal. Activate and apply this skill when the user asks to save, register, or create a travel subscription or period transit pass."
-
-    def _get_supported_skill(self) -> str:
-        return "subscription.edit"
-
-    def _get_tools(self) -> list[Any]:
-        return [
-            self.get_subscription_descriptions,
-            self.create_subscription,
-        ]
-
     def get_subscription_descriptions(self) -> list[str]:
         """Retrieves descriptions of all active travel-related subscriptions in Travel Portal (e.g. public transport passes, rail cards, airline subscription clubs).
 
@@ -74,6 +61,19 @@ class SubscriptionEditTools(BaseSubscriptionTools):
         self._verify_error_response(subscriptions)
 
         return [s.get("description") for s in subscriptions if s.get("description")]
+
+
+class SubscriptionEditTools(BaseSubscriptionTools):
+    def _get_description(self) -> str | None:
+        return "Provides capabilities to record and create active travel subscriptions and transit passes in Travel Portal. Activate and apply this skill when the user asks to save, register, or create a travel subscription or period transit pass."
+
+    def _get_supported_skill(self) -> str:
+        return "subscription.edit"
+
+    def _get_tools(self) -> list[Any]:
+        return [
+            self.create_subscription,
+        ]
 
     def create_subscription(
         self,

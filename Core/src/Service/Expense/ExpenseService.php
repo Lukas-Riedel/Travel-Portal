@@ -114,6 +114,7 @@
         }
 
         public function getActiveSubscriptions() : array {
+            $this->expenseMapper->deleteExpiredUnusedSubscriptions();
             return $this->expenseMapper->selectActiveSubscriptions();
         }
  

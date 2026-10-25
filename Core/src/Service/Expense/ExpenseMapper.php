@@ -398,6 +398,23 @@
                 ->execute();
         }
 
+        public function deleteExpiredUnusedSubscriptions() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM expense_subscription
+                WHERE expiration < ROUND(EXTRACT(EPOCH FROM NOW()))
+                    AND id NOT IN (
+                        SELECT subscription_id
+                        FROM expense
+                        WHERE subscription_id IS NOT NULL
+                    )
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->execute();
+        }
+
         private function selectSubscriptionMainCurrencyValue(string $subscriptionId) : ?float {
             $sql = <<<'SQL'
                 SELECT (value * exchange_rate) AS main_currency_value
