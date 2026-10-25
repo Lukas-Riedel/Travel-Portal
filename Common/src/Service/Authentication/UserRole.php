@@ -25,6 +25,8 @@
         case DocumentRead = "document.read";
         case DocumentEdit = "document.edit";
         case FitnessEdit = "fitness.edit";
+        case LifestyleRead = "lifestyle.read";
+        case LifestyleEdit = "lifestyle.edit";
         case FlightEdit = "flight.edit";
         case GeocodingRead = "geocoding.read";
         case GeocodingEdit = "geocoding.edit";
@@ -103,6 +105,7 @@
         case AgentShutdownRequestedEventProcessingEndedRead = "event.processingended.agentshutdownrequested.read";
         case AgentShutdownRequestedEventProcessingFailedRead = "event.processingfailed.agentshutdownrequested.read";
         case EventFitnessActivityDetectedRead = "event.fitnessactivitydetected.read";
+        case EventLifestyleActivityDetectedRead = "event.lifestyleactivitydetected.read";
         case EventDeviceLogOnRequestedRead = "event.devicelogonrequested.read";
         case EventFlightLoggedRead = "event.flightlogged.read";
         case IamAuthEdit = "iam.auth.edit";

@@ -71,6 +71,8 @@
     use Core\Service\Label\LabelIndexer;
     use Core\Service\Label\LabelService;
     use Core\Service\Label\LabelServiceListener;
+    use Core\Service\Lifestyle\LifestyleService;
+    use Core\Service\Lifestyle\LifestyleServiceListener;
     use Core\Service\Monitoring\MonitoringService;
     use Core\Service\Monitoring\MonitoringServiceListener;
     use Core\Service\Note\NoteService;
@@ -184,6 +186,7 @@
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"), getenv("STEPS_PER_MINUTE_THRESHOLD"));
+    $lifestyleService = new LifestyleService($databaseClient, getenv("LIFESTYLE_RETENTION_DAYS"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
     $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher, $generativeContentClient, $logger);
@@ -268,6 +271,7 @@
         new IndexServiceListener($indexService, $photoService, $highlightService, $placeService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
+        new LifestyleServiceListener($lifestyleService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("LIFESTYLE_RETENTION_DAYS")),
         new FlightServiceListener($flightService, $deviceService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),

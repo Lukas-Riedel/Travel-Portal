@@ -159,6 +159,9 @@ core:
         cover:
           confidence:
             coefficient: "0.3"
+  lifestyle:
+    retention:
+      days: "90"
   fitness:
     overwrite:
       threshold:

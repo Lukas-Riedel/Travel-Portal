@@ -342,6 +342,10 @@
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventFitnessActivityDetectedRead), array(DeviceType::BridgeX), array("intervals" => $intervals));
         }
 
+        public static function LifestyleActivityDetected(array $intervals, int $birthYear, int $height, bool $male) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventLifestyleActivityDetectedRead), array(DeviceType::BridgeX), array("intervals" => $intervals, "birthYear" => $birthYear, "height" => $height, "male" => $male));
+        }
+
         public static function DeviceLogOnRequested() : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDeviceLogOnRequestedRead), array(DeviceType::BridgeX), array());
         }

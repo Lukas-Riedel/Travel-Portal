@@ -181,11 +181,23 @@
         )
     )]
     #[OA\Schema(
+        schema: "LifestyleConfiguration",
+        type: "object",
+        description: "The lifestyle tracking configuration",
+        properties: [
+            new OA\Property(property: "trackingEnabled", type: "boolean"),
+            new OA\Property(property: "height", type: "number", format: "float"),
+            new OA\Property(property: "birthYear", type: "integer"),
+            new OA\Property(property: "male", type: "boolean")
+        ]
+    )]
+    #[OA\Schema(
         schema: "AppConfiguration",
         type: "object",
         description: "An object representing the application configuration",
         additionalProperties: true,
         properties: [
+            new OA\Property(property: "lifestyle", ref: "#/components/schemas/LifestyleConfiguration"),
             new OA\Property(property: "dynamicLabels", ref: "#/components/schemas/DynamicLabelsConfiguration"),
             new OA\Property(property: "homeLocation", ref: "#/components/schemas/HomeLocationConfiguration"),
             new OA\Property(property: "expensify", ref: "#/components/schemas/ExpensifyConfiguration"),

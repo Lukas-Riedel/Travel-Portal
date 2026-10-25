@@ -14,6 +14,7 @@ import cz.lriedel.bridgex.MainActivity
 import cz.lriedel.bridgex.R
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
+import cz.lriedel.bridgex.notification.LifestyleActivityDetectedNotificationFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asContextElement
@@ -32,6 +33,7 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             ProcessingEndedNotificationFactory(this),
             ProcessingFailedNotificationFactory(this),
             FitnessActivityDetectedNotificationFactory(this),
+            LifestyleActivityDetectedNotificationFactory(this),
             DeviceLogOnRequestedNotificationFactory(this),
             NewDataConsistencyIssuesDetectedNotificationFactory(this),
             TaskDeadlineReachedNotificationFactory(this),

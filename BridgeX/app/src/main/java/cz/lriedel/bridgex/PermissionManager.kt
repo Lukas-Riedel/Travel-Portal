@@ -9,6 +9,7 @@ import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
@@ -18,7 +19,8 @@ class PermissionManager(
     private val healthClient = HealthConnectClient.getOrCreate(mainActivity)
     private val requiredHealthPermissions = arrayOf(
         HealthPermission.getReadPermission(StepsRecord::class.java.kotlin),
-        HealthPermission.getReadPermission(DistanceRecord::class.java.kotlin)
+        HealthPermission.getReadPermission(DistanceRecord::class.java.kotlin),
+        HealthPermission.getReadPermission(WeightRecord::class.java.kotlin)
     )
     private val healthPermissionLauncher = mainActivity.registerForActivityResult(
         PermissionController.createRequestPermissionResultContract()) {}
@@ -109,4 +111,3 @@ class PermissionManager(
         private const val REQUEST_CODE_ACTIVITY_RECOGNITION = 1004
     }
 }
-

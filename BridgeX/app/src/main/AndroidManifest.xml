@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -38,6 +39,11 @@
 
         <service
             android:name=".fitness.FitnessForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="health"/>
+
+        <service
+            android:name=".lifestyle.LifestyleForegroundService"
             android:exported="false"
             android:foregroundServiceType="health"/>
 

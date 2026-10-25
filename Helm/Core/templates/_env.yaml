@@ -206,6 +206,8 @@
   value: "{{ .Values.core.fitness.overwrite.threshold.step }}"
 - name: UPDATE_FITNESS_THRESHOLD_DAYS
   value: "{{ .Values.core.fitness.update.threshold.days }}"
+- name: LIFESTYLE_RETENTION_DAYS
+  value: "{{ .Values.core.lifestyle.retention.days }}"
 - name: STEPS_PER_MINUTE_THRESHOLD
   value: "{{ .Values.core.fitness.step.minute.threshold }}"
 - name: VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD
