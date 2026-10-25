@@ -108,6 +108,16 @@ class CoreClient:
 
         return self._request(method="GET", url=url)
 
+    def get_time_tracking_events(
+        self, event_type: str | None = None
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/tracker"
+        params = {}
+        if event_type is not None:
+            params["type"] = event_type
+
+        return self._request(method="GET", url=url, params=params)
+
     def search(
         self, query: str, include: str | None = None, limit: int | None = None
     ) -> list[dict[str, Any]] | dict[str, Any]:
