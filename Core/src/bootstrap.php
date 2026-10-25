@@ -36,6 +36,7 @@
     use Core\Service\Authentication\AuthenticationService;
     use Core\Service\CarRental\CarRentalService;
     use Core\Service\CarRental\CarRentalServiceListener;
+    use Core\Service\CarRental\CarRentalStatisticsProvider;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
@@ -211,6 +212,7 @@
     $statisticsProviders = array(
         new TripStatisticsProvider($tripService),
         new FlightStatisticsProvider($flightService),
+        new CarRentalStatisticsProvider($tripService),
         new StayStatisticsProvider($stayService),
         new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
         new PhotoStatisticsProvider($photoService, $placeService),

@@ -64,6 +64,12 @@
         case MostUsedFlights = "MOST_USED_FLIGHTS";
         case MostUsedAircraftRegistrations = "MOST_USED_AIRCRAFT_REGISTRATIONS";
         case MostDelayedFlights = "MOST_DELAYED_FLIGHTS";
+        case TotalAirborneTimePerAircraft = "TOTAL_AIRBORNE_TIME_PER_AIRCRAFT";
+        case TotalAirborneTimePerAirline = "TOTAL_AIRBORNE_TIME_PER_AIRLINE";
+        case TotalAirborneDistancePerAircraft = "TOTAL_AIRBORNE_DISTANCE_PER_AIRCRAFT";
+        case TotalAirborneDistancePerAirline = "TOTAL_AIRBORNE_DISTANCE_PER_AIRLINE";
+        case CheapestFlightsPerKilometer = "CHEAPEST_FLIGHTS_PER_KILOMETER";
+        case MostExpensiveFlightsPerKilometer = "MOST_EXPENSIVE_FLIGHTS_PER_KILOMETER";
 
         case TotalPhotosCount = "TOTAL_PHOTOS_COUNT";
         case AveragePhotosPerAlbum = "AVERAGE_PHOTOS_PER_ALBUM";
@@ -73,6 +79,9 @@
         case MostPhotosPerCategory = "MOST_PHOTOS_PER_CATEGORY";
         case MostPhotosPerTrip = "MOST_PHOTOS_PER_TRIP";
         case MostUsedCameras = "MOST_USED_CAMERAS";
+        
+        case LongestCarRentals = "LONGEST_CAR_RENTALS";
+        case TotalCarRentalDays = "TOTAL_CAR_RENTAL_DAYS";
 
         case TotalHotelNightsCount = "TOTAL_HOTEL_NIGHTS_COUNT";
         case AverageNightsPerHotel = "AVERAGE_NIGHTS_PER_HOTEL";
@@ -136,7 +145,14 @@
                 self::MostUsedAirports,
                 self::MostUsedFlights,
                 self::MostUsedAircraftRegistrations,
-                self::MostDelayedFlights => UserRole::TripFlightRead,
+                self::MostDelayedFlights,
+                self::TotalAirborneTimePerAircraft,
+                self::TotalAirborneTimePerAirline,
+                self::TotalAirborneDistancePerAircraft,
+                self::TotalAirborneDistancePerAirline => UserRole::TripFlightRead,
+
+                self::CheapestFlightsPerKilometer,
+                self::MostExpensiveFlightsPerKilometer => UserRole::TripExpenseRead,
 
                 self::TotalPhotosCount,
                 self::AveragePhotosPerAlbum,
@@ -146,6 +162,9 @@
                 self::MostPhotosPerCategory,
                 self::MostPhotosPerTrip,
                 self::MostUsedCameras => UserRole::PlaceAlbumRead,
+
+                self::LongestCarRentals,
+                self::TotalCarRentalDays => UserRole::TripCarRentalRead,
 
                 self::TotalHotelNightsCount,
                 self::AverageNightsPerHotel,
