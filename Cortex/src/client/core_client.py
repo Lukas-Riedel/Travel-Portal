@@ -548,3 +548,33 @@ class CoreClient:
         }
 
         return self._request(method="POST", url=url, params=params, json=payload)
+
+    def log_flight(
+        self,
+        flight: str,
+        origin_airport_name: str,
+        origin_airport_code: str,
+        destination_airport_name: str,
+        destination_airport_code: str,
+        aircraft: str,
+        registration: str,
+        scheduled_departure: int,
+        actual_departure: int,
+        scheduled_arrival: int,
+        actual_arrival: int,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/flights"
+        params = {"type": "logged"}
+        payload = {
+            "flight": flight,
+            "aircraft": aircraft,
+            "registration": registration,
+            "from": {"name": origin_airport_name, "code": origin_airport_code},
+            "to": {"name": destination_airport_name, "code": destination_airport_code},
+            "scheduledDeparture": scheduled_departure,
+            "actualDeparture": actual_departure,
+            "scheduledArrival": scheduled_arrival,
+            "actualArrival": actual_arrival,
+        }
+
+        return self._request(method="POST", url=url, params=params, json=payload)

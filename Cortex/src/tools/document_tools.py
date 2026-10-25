@@ -70,9 +70,9 @@ class DocumentEditTools(BaseDocumentTools):
         Never guess or invent the issuer, name, or code - ask the user when any of them is missing.
 
         Args:
-            name: The name of the document (e.g. `"EEA ID Card"`, `"Passport"`).
-            code: The code (number) of the document (e.g. `"203432977"`).
-            issuer: The issuer of the document (e.g. `"Prague 4"`, `"Emirates"`).
+            name: The name of the document (e.g. "EEA ID Card", "Passport").
+            code: The code (number) of the document (e.g. "203432977").
+            issuer: The issuer of the document (e.g. "Prague 4", "Emirates").
             expiration: Optional expiration timestamp in Unix epoch seconds. Pass None if the document does not expire.
 
         Returns:
