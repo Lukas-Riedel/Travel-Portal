@@ -34,7 +34,7 @@
         }
 
         public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
-            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, null, array());
+            $response = $this->doGetResponse(array(array("role" => self::USER_ROLE, "text" => $this->createPrompt($query, $context))), null, null, $responseJsonSchema, null, null);
             if ($response === null) {
                 return null;
             }
@@ -52,7 +52,7 @@
         }
 
         // TODO: Keep only this method in GenerativeContentClient (rename to getResponse), and move others to GenerativeContentService. Prompt with placeholders would be created in GenerativeContentService, and all callers would call GenerativeContentService instead.
-        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, mixed $environment, array $skills) : ?array {
+        private function doGetResponse(array $messages, ?string $accessToken, ?string $username, ?array $responseJsonSchema, mixed $environment, ?array $skills) : ?array {
             $payload = array("messages" => $messages, "environment" => $environment, "skills" => $skills);
             if ($username !== null) {
                 $payload["context"] = $this->configurationService->getConfigurationEntry("agenticAi")["personalContext"][$username] ?? null;
