@@ -13,10 +13,17 @@
       - Use the user's own wording for the specific item (e.g. the name of the museum) whenever they provide it.
    - The `subscription_id` is optional. Provide it only when the user says the expense is covered by or tied to a travel subscription or pass - resolve it using subscription tools. **NEVER invent a fake UUID.**
    - After creating the expense, confirm with a concise summary stating the trip, description, type, and the value with its currency.
-2. **Updating a Trip Expense**
-   - When the user asks to rename an expense or change its value or currency, call `update_trip_expense`.
+2. **Updating a Trip Expense Description**
+   - When the user asks to rename an expense or change its description, call `update_trip_expense_description`.
    - Always resolve the trip ID first using trip tools, then call `get_expenses` with that `trip_id` to find the target expense and its `id`. **NEVER ask the user for a UUID and NEVER invent one.**
    - If multiple expenses match the user's description, **ASK THE USER** to clarify which expense to update.
-   - Pass only the fields the user wants to change. The type and the subscription of an expense cannot be changed.
-   - When the user changes only the currency, ask whether the value stays the same, unless it is obvious from the request.
-   - After updating the expense, confirm with a concise summary of the changes.
+   - Follow the naming style of the existing expense descriptions (see `get_expense_descriptions`) and use the user's own wording for the specific item.
+   - After updating the description, confirm with a concise summary stating the old and the new description.
+3. **Updating a Trip Expense Value and Currency**
+   - When the user asks to change the value or the currency of an expense (or both), call `update_trip_expense_value_and_currency`.
+   - Always resolve the trip ID first using trip tools, then call `get_expenses` with that `trip_id` to find the target expense and its `id`. **NEVER ask the user for a UUID and NEVER invent one.**
+   - If multiple expenses match the user's description, **ASK THE USER** to clarify which expense to update.
+   - The `value` is always required. When the user changes only the currency, ask whether the value stays the same, unless it is obvious from the request.
+   - The `currency` is optional. Pass None when the user changes only the value, the current currency is kept.
+   - The type and the subscription of an expense cannot be changed.
+   - After updating the expense, confirm with a concise summary stating the old and the new value with its currency.

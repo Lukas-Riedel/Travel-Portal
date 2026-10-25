@@ -6,7 +6,7 @@
    - The note content can contain Markdown formatting (e.g. bold, lists, links). Ensure the content accurately reflects what the user specified.
    - After creating the note, confirm with a concise summary stating the place and the note content.
 2. **Updating a Place Note**
-   - When the user asks to modify, rewrite, or update an existing place note, call `update_place_note`.
+   - When the user asks to modify, rewrite, or update an existing place note, call `update_place_note_content`.
    - Always resolve the place ID first using place tools, then inspect existing notes using `get_notes_for_place` to find the target note and its `id`. **NEVER ask the user for a UUID and NEVER invent one.**
    - If multiple notes match the user's description, **ASK THE USER** to clarify which note to update.
    - The `content` must be the complete updated Markdown text (not a diff or partial update).

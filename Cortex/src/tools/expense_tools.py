@@ -158,7 +158,8 @@ class TripExpenseEditTools(BaseExpenseTools):
         return [
             self.get_expense_descriptions,
             self.create_trip_expense,
-            self.update_trip_expense,
+            self.update_trip_expense_description,
+            self.update_trip_expense_value_and_currency,
         ]
 
     def get_expense_descriptions(self, expense_type: str) -> list[str]:
@@ -247,25 +248,20 @@ class TripExpenseEditTools(BaseExpenseTools):
             expense=expense, trip=trip, main_currency=self._get_main_currency()
         )
 
-    def update_trip_expense(
+    def update_trip_expense_description(
         self,
         trip_id: str,
         expense_id: str,
-        description: str | None,
-        value: float | None,
-        currency: str | None,
+        description: str,
     ) -> dict[str, Any]:
-        """Updates an existing expense in Travel Portal.
-        Use this when the user asks to change the description, value, or currency of an existing expense.
+        """Updates the description of an existing expense in Travel Portal.
+        Use this when the user asks to rename an expense or change its description.
         Always resolve the trip ID first using trip tools and find the expense ID via get_expenses. Never ask the user for a UUID.
-        At least one of description, value, or currency must be provided.
 
         Args:
             trip_id: The unique identifier of the trip the expense belongs to. Resolve via trip tools.
             expense_id: The unique identifier of the expense to update. Resolve via get_expenses.
-            description: New description for the expense. Pass None to leave unchanged.
-            value: New value of the expense in the resulting currency. Pass None to leave unchanged.
-            currency: New 3-letter currency code (e.g. "EUR", "USD", "CZK"). Pass None to leave unchanged.
+            description: New description for the expense.
 
         Returns:
             The updated expense object containing:
@@ -289,6 +285,51 @@ class TripExpenseEditTools(BaseExpenseTools):
             trip_id=trip_id,
             expense_id=expense_id,
             description=description,
+        )
+        self._verify_error_response(expense)
+
+        return self._extract_expense(
+            expense=expense, trip=trip, main_currency=self._get_main_currency()
+        )
+
+    def update_trip_expense_value_and_currency(
+        self,
+        trip_id: str,
+        expense_id: str,
+        value: float,
+        currency: str | None,
+    ) -> dict[str, Any]:
+        """Updates the value and optionally the currency of an existing expense in Travel Portal.
+        Use this when the user asks to change the amount, the currency, or both of an existing expense.
+        Always resolve the trip ID first using trip tools and find the expense ID via get_expenses. Never ask the user for a UUID.
+
+        Args:
+            trip_id: The unique identifier of the trip the expense belongs to. Resolve via trip tools.
+            expense_id: The unique identifier of the expense to update. Resolve via get_expenses.
+            value: New value of the expense in the resulting currency (e.g. 30).
+            currency: New 3-letter currency code (e.g. "EUR", "USD", "CZK"). Pass None to keep the current currency.
+
+        Returns:
+            The updated expense object containing:
+            - id (string): Unique identifier of the expense.
+            - trip_id (string): Unique identifier of the trip.
+            - trip_name (string): Name and year of the associated trip.
+            - description (string): Description of the expense.
+            - type (string): Type of the expense.
+            - price (object): The amount actually paid, containing:
+                - value (number): Amount in the currency it was paid in (e.g. `30`).
+                - currency (string): 3-letter currency code it was paid in (e.g. `"EUR"`).
+            - converted_price (object): The same amount converted to the user's main (home) currency using the exchange rate from the time the expense was created (or its currency last changed), not the current rate. Contains:
+                - value (number): Converted amount (e.g. `756.3`). Converted values of different expenses are directly comparable and summable.
+                - currency (string): 3-letter code of the main currency (e.g. `"CZK"`).
+            - subscription (string | null): Description of the subscription the expense is tied to (e.g. `"Deutschland Ticket"`), or null.
+        """
+        trip = self.core_client.get_trip(trip_id)
+        self._verify_error_response(trip)
+
+        expense = self.core_client.update_trip_expense(
+            trip_id=trip_id,
+            expense_id=expense_id,
             value=value,
             currency=currency.upper() if currency is not None else None,
         )

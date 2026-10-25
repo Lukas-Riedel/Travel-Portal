@@ -57,7 +57,7 @@ class TripNoteEditTools(BaseNoteTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.create_trip_note,
-            self.update_trip_note,
+            self.update_trip_note_content,
             self.delete_trip_note,
         ]
 
@@ -83,7 +83,7 @@ class TripNoteEditTools(BaseNoteTools):
 
         return self._extract_note(note)
 
-    def update_trip_note(
+    def update_trip_note_content(
         self, trip_id: str, note_id: str, content: str
     ) -> dict[str, Any]:
         """Updates the content of an existing trip note in Travel Portal.
@@ -174,7 +174,7 @@ class PlaceNoteEditTools(BaseNoteTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.create_place_note,
-            self.update_place_note,
+            self.update_place_note_content,
             self.delete_place_note,
         ]
 
@@ -200,7 +200,7 @@ class PlaceNoteEditTools(BaseNoteTools):
 
         return self._extract_note(note)
 
-    def update_place_note(
+    def update_place_note_content(
         self, place_id: str, note_id: str, content: str
     ) -> dict[str, Any]:
         """Updates the content of an existing place note in Travel Portal.

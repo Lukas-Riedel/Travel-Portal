@@ -101,7 +101,9 @@ class TripTaskEditTools(BaseTaskTools):
     def _get_tools(self) -> list[Any]:
         return [
             self.create_trip_task,
-            self.update_trip_task,
+            self.update_trip_task_title,
+            self.update_trip_task_description,
+            self.update_trip_task_priority,
             self.delete_trip_task,
         ]
 
@@ -159,25 +161,20 @@ class TripTaskEditTools(BaseTaskTools):
 
         return self._extract_task(task=task, trip=trip)
 
-    def update_trip_task(
+    def update_trip_task_title(
         self,
         trip_id: str,
         task_id: str,
-        title: str | None,
-        description: str | None,
-        priority: str | None,
+        title: str,
     ) -> dict[str, Any]:
-        """Updates an existing task in Travel Portal.
-        Use this when the user asks to modify, rename, or change the priority of an existing task.
+        """Updates the title of an existing task in Travel Portal.
+        Use this when the user asks to rename a task or change its title.
         Always resolve the trip ID first using trip tools and find the task ID via get_tasks. Never ask the user for a UUID.
-        At least one of title, description, or priority must be provided.
 
         Args:
             trip_id: The unique identifier of the trip the task belongs to. Resolve via trip tools.
             task_id: The unique identifier of the task to update. Resolve via get_tasks.
-            title: New title for the task. Pass None to leave unchanged.
-            description: New description for the task. Pass None to leave unchanged.
-            priority: New priority level. Must be one of: 'lowest', 'low', 'medium', 'high', 'highest'. Pass None to leave unchanged.
+            title: New title for the task.
 
         Returns:
             The updated task object containing:
@@ -196,7 +193,79 @@ class TripTaskEditTools(BaseTaskTools):
             trip_id=trip_id,
             task_id=task_id,
             title=title,
+        )
+        self._verify_error_response(task)
+
+        return self._extract_task(task=task, trip=trip)
+
+    def update_trip_task_description(
+        self,
+        trip_id: str,
+        task_id: str,
+        description: str,
+    ) -> dict[str, Any]:
+        """Updates the description of an existing task in Travel Portal.
+        Use this when the user asks to change, rewrite, or add a description of an existing task.
+        Always resolve the trip ID first using trip tools and find the task ID via get_tasks. Never ask the user for a UUID.
+
+        Args:
+            trip_id: The unique identifier of the trip the task belongs to. Resolve via trip tools.
+            task_id: The unique identifier of the task to update. Resolve via get_tasks.
+            description: New description for the task.
+
+        Returns:
+            The updated task object containing:
+            - id (string): Unique identifier of the task.
+            - trip_id (string): Unique identifier of the trip.
+            - trip_name (string): Name and year of the associated trip.
+            - title (string): Title of the task.
+            - description (string | null): Optional description.
+            - priority (string): Priority level.
+            - deadline (string | null): Deadline in ISO 8601 format with timezone offset, or null.
+        """
+        trip = self.core_client.get_trip(trip_id)
+        self._verify_error_response(trip)
+
+        task = self.core_client.update_trip_task(
+            trip_id=trip_id,
+            task_id=task_id,
             description=description,
+        )
+        self._verify_error_response(task)
+
+        return self._extract_task(task=task, trip=trip)
+
+    def update_trip_task_priority(
+        self,
+        trip_id: str,
+        task_id: str,
+        priority: str,
+    ) -> dict[str, Any]:
+        """Updates the priority of an existing task in Travel Portal.
+        Use this when the user asks to change the priority of an existing task.
+        Always resolve the trip ID first using trip tools and find the task ID via get_tasks. Never ask the user for a UUID.
+
+        Args:
+            trip_id: The unique identifier of the trip the task belongs to. Resolve via trip tools.
+            task_id: The unique identifier of the task to update. Resolve via get_tasks.
+            priority: New priority level. Must be one of: 'lowest', 'low', 'medium', 'high', 'highest'.
+
+        Returns:
+            The updated task object containing:
+            - id (string): Unique identifier of the task.
+            - trip_id (string): Unique identifier of the trip.
+            - trip_name (string): Name and year of the associated trip.
+            - title (string): Title of the task.
+            - description (string | null): Optional description.
+            - priority (string): Priority level.
+            - deadline (string | null): Deadline in ISO 8601 format with timezone offset, or null.
+        """
+        trip = self.core_client.get_trip(trip_id)
+        self._verify_error_response(trip)
+
+        task = self.core_client.update_trip_task(
+            trip_id=trip_id,
+            task_id=task_id,
             priority=priority,
         )
         self._verify_error_response(task)
