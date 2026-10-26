@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
-import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type Note, type Photo, type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type LifestyleEvent, type Note, type Photo, type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
@@ -68,6 +68,64 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             logout,
             t("general.prompt.logout.confirmed"),
             t("general.prompt.logout.failed")
+        )
+
+    const showAddLifestyleIntakeToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
+        showFormToast(
+            t("lifestyle.prompt.create.intake.message"),
+            [
+                {
+                    type: "text",
+                    label: t("lifestyle.prompt.create.intake.label.description"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("lifestyle.prompt.create.intake.label.calories"),
+                    required: true,
+                    min: 0
+                },
+                {
+                    type: "datetime-local",
+                    label: t("lifestyle.prompt.create.intake.label.timestamp"),
+                    required: true,
+                    defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
+                }
+            ],
+            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories))
+        )
+
+    const showAddLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
+        showFormToast(
+            t("lifestyle.prompt.create.activity.message"),
+            [
+                {
+                    type: "text",
+                    label: t("lifestyle.prompt.create.activity.label.description"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("lifestyle.prompt.create.activity.label.calories"),
+                    required: true,
+                    min: 0
+                },
+                {
+                    type: "datetime-local",
+                    label: t("lifestyle.prompt.create.activity.label.timestamp"),
+                    required: true,
+                    defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
+                }
+            ],
+            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories))
+        )
+
+    const showRemoveLifestyleEventToast = (removeLifestyleEvent: () => Promise<void>) =>
+        showConfirmToast(
+            t("lifestyle.prompt.remove.message"),
+            removeLifestyleEvent,
+            t("lifestyle.prompt.remove.confirmed"),
+            t("lifestyle.prompt.remove.failed")
         )
 
     const showClearConversationToast = (clearConversation: () => Promise<void>) =>
@@ -1483,6 +1541,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         )
 
     return {
+        showAddLifestyleIntakeToast,
+        showAddLifestyleActivityToast,
+        showRemoveLifestyleEventToast,
         showUpdateTaskTitleAndDescriptionToast,
         showUpdateTaskPriorityToast,
         showRemoveTaskToast,

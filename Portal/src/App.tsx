@@ -21,6 +21,7 @@ import CountriesPage from "./pages/CountriesPage.jsx"
 import FlightsPage from "./pages/FlightsPage.jsx"
 import LabelHighlightsPage from "./pages/LabelHighlightsPage.jsx"
 import LabelPage from "./pages/LabelPage.jsx"
+import LifestylePage from "./pages/LifestylePage.tsx"
 import PlaceHighlightsPage from "./pages/PlaceHighlightsPage.jsx"
 import PlacePage from "./pages/PlacePage.jsx"
 import PlansPage from "./pages/PlansPage.jsx"
@@ -185,6 +186,7 @@ function AppContent() {
             <Route path="/plan/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/admin" element={<MainLayout><AdminPage /></MainLayout>} />
             <Route path="/chat" element={<MainLayout><ChatPage /></MainLayout>} />
+            <Route path="/lifestyle" element={<MainLayout><LifestylePage /></MainLayout>} />
         </Routes>
     ) : (
         <MainLayout>

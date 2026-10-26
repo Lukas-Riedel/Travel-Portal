@@ -21,6 +21,7 @@ const ALBUM_PAGE_PREFIX = "/album"
 const LABEL_PAGE_PREFIX = "/label"
 const ADMIN_PAGE_PREFIX = "/admin"
 const CHAT_PAGE_PREFIX = "/chat"
+const LIFESTYLE_PAGE_PREFIX = "/lifestyle"
 const HIGHLIGHT_PAGE_PREFIX = "/highlight"
 const TRACKER_PAGE_PREFIX = "/tracker"
 const FLIGHT_PAGE_PREFIX = "/flight"
@@ -114,6 +115,9 @@ export function getPath(to: Navigable, target: AppLinkTarget = AppLinkTarget.Def
         }
         else if (to === StaticNavigationTarget.Chat) {
             path = CHAT_PAGE_PREFIX
+        }
+        else if (to === StaticNavigationTarget.Lifestyle) {
+            path = LIFESTYLE_PAGE_PREFIX
         }
     }
 

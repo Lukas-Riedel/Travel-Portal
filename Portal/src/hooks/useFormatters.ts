@@ -52,7 +52,9 @@ export function useFormatters(): UseFormattersResult {
     const formatPlaces = (v: number) => t("general.unit.place", { count: v })
     const formatDays = (v: number) => t("general.unit.day", { count: v })
     const formatFlights = (v: number) => t("general.unit.flight", { count: v })
+    const formatKilograms = (v: number) => t("general.unit.kilogram", { count: Math.round(v * 10) / 10 })
     const formatSteps = (v: number) => t("general.unit.step", { count: v })
+    const formatCalories = (v: number) => t("general.unit.calorie", { count: Math.round(v) })
     const formatVisits = (v: number) => t("general.unit.visit", { count: v })
     const formatAirports = (v: number) => t("general.unit.airport", { count: v })
     const formatNights = (v: number) => t("general.unit.night", { count: v })
@@ -150,7 +152,9 @@ export function useFormatters(): UseFormattersResult {
         formatPlaces,
         formatDays,
         formatFlights,
+        formatKilograms,
         formatSteps,
+        formatCalories,
         formatVisits,
         formatAirports,
         formatNights,

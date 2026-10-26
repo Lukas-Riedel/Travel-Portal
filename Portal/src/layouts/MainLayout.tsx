@@ -83,6 +83,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         // TODO: Find a better required role.
         { label: t("menu.label.plan"), to: StaticNavigationTarget.Plan, requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
         { label: t("menu.label.tracker"), to: StaticNavigationTarget.Tracker, requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
+        { label: t("menu.label.lifestyle"), to: StaticNavigationTarget.Lifestyle, requiredRole: UserRole.LifestyleEdit, allowedPrefixes: ["/lifestyle"] },
         // TODO: Find a better requried role.
         { label: t("menu.label.admin"), to: StaticNavigationTarget.Admin, requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
     ].filter(({ to, requiredRole }) => !requiredRole || hasRole(requiredRole) || (to && location.pathname.startsWith(getPath(to))))

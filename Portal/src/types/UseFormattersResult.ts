@@ -13,7 +13,9 @@ export interface UseFormattersResult {
     formatPlaces: (value: number) => string
     formatDays: (value: number) => string
     formatFlights: (value: number) => string
+    formatKilograms: (value: number) => string
     formatSteps: (value: number) => string
+    formatCalories: (value: number) => string
     formatVisits: (value: number) => string
     formatAirports: (value: number) => string
     formatNights: (value: number) => string

@@ -10,7 +10,7 @@ import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
 ChatResponse,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
+    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, LifestyleEvent, LifestyleEventType, Location, Note, PendingPhoto, Photo,
     Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity
 } from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
@@ -550,6 +550,17 @@ export const listDataConsistencyIssues = async (): Promise<DataConsistencyIssue[
 export const listStatistics = async (): Promise<Statistics[]> =>
     coreClient.get<Statistics[]>("statistics")
         .then(extractData)
+
+export const listLifestyleEvents = async ({ type, from, to }: { type?: LifestyleEventType, from?: number, to?: number } = {}): Promise<LifestyleEvent[]> =>
+    coreClient.get<LifestyleEvent[]>(createQueryPath("lifestyle", { type, from, to }))
+        .then(extractData)
+
+export const createLifestyleEvent = async (type: LifestyleEventType, content: string, timestamp: number, calories?: number): Promise<LifestyleEvent> =>
+    coreClient.post<LifestyleEvent>("lifestyle", { type, content, timestamp, calories })
+        .then(extractData)
+
+export const removeLifestyleEvent = async (eventId: string): Promise<void> =>
+    coreClient.delete(`lifestyle/${eventId}`)
 
 export const createSubscription = async (description: string, value: number, currency: ExpenseCurrency, expiration: number): Promise<Subscription> =>
     coreClient.post<Subscription>("subscriptions",

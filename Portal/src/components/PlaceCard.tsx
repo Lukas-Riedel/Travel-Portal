@@ -1,9 +1,9 @@
 import { Earth, Trash2 } from "lucide-react"
 
-import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
-import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
+import type { DistanceAwarePlace } from "../types/DistanceAwarePlace.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getEntityPrettyName } from "../utils/formattingUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"

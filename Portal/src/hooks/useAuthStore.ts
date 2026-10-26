@@ -1,7 +1,7 @@
 import { create } from "zustand"
 
-import type { UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { AuthSession } from "../types/AuthSession.ts"
+import type { UserRole } from "../types/CoreSwaggerTypes.ts"
 import type { UseAuthStoreResult } from "../types/UseAuthStoreResult.ts"
 import { useCache } from "./useCache.ts"
 

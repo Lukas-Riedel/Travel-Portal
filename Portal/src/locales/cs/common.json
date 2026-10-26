@@ -72,6 +72,7 @@
             "kilometer_one": "{{count}} kilometr",
             "kilometer_few": "{{count}} kilometry",
             "kilometer_other": "{{count}} kilometrů",
+            "kilogram": "{{count}} kg",
             "millimeter_one": "{{count}} milimetr",
             "millimeter_few": "{{count}} milimetry",
             "millimeter_other": "{{count}} milimetrů",
@@ -102,6 +103,7 @@
             "step_one": "{{count}} krok",
             "step_few": "{{count}} kroky",
             "step_other": "{{count}} kroků",
+            "calorie": "{{count}} kcal",
             "visit_one": "{{count}} návštěva",
             "visit_few": "{{count}} návštěvy",
             "visit_other": "{{count}} návštěv",
@@ -470,7 +472,8 @@
             "flights": "Lety",
             "statistics": "Statistiky",
             "plan": "Plán",
-            "tracker": "Tracker",
+            "tracker": "Sledování času",
+            "lifestyle": "Životní styl",
             "admin": "Admin",
             "chat": "Asistent"
         },
@@ -1394,6 +1397,55 @@
                 "message": "Opravdu chceš odstranit tento highlight?",
                 "confirmed": "Highlight byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit highlight"
+            }
+        }
+    },
+    "lifestyle": {
+        "title": "Životní styl",
+        "fact": {
+            "currentWeight": "Aktuální váha",
+            "weightTrend": "Trend váhy",
+            "todayIntake": "Příjem dnes",
+            "todayExpenditure": "Výdej dnes"
+        },
+        "section": {
+            "stepsLastDays": "Kroky za posledních {{period}}",
+            "deficitLastDays": "Deficit za posledních {{period}}",
+            "weightPrediction": "Odhad váhy za {{period}}"
+        },
+        "label": {
+            "stepsCount": "Kroky",
+            "intake": "Příjem",
+            "expenditure": "Výdej",
+            "basalMetabolism": "Bazální metabolismus",
+            "deficit": "Deficit",
+            "surplus": "Přebytek",
+            "measuredWeight": "Naměřená váha",
+            "predictedWeight": "Odhadovaná váha"
+        },
+        "prompt": {
+            "create": {
+                "intake": {
+                    "message": "Přidat příjem",
+                    "label": {
+                        "description": "Popis",
+                        "calories": "Kalorie (kcal)",
+                        "timestamp": "Datum a čas"
+                    }
+                },
+                "activity": {
+                    "message": "Přidat aktivitu",
+                    "label": {
+                        "description": "Popis",
+                        "calories": "Kalorie (kcal)",
+                        "timestamp": "Datum a čas"
+                    }
+                }
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit tento záznam?",
+                "confirmed": "Záznam byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit záznam"
             }
         }
     }

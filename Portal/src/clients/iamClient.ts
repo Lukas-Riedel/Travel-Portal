@@ -1,8 +1,8 @@
 import type { AxiosInstance, AxiosResponse } from "axios"
 import axios from "axios"
 
-import type { IamResponse } from "../types/IamResponse.ts"
 import type { UserRole } from "../types/CoreSwaggerTypes.ts"
+import type { IamResponse } from "../types/IamResponse.ts"
 
 export const getIamResponseWithCredentials = async (username: string, password: string): Promise<IamResponse> =>
     iamClient.post<IamResponse>("token",
