@@ -217,7 +217,7 @@ export default function TrackerCalendar({ trips, timeTrackingEvents, onEventCrea
     }
 
     return (
-        <div className="w-full p-4 border rounded-md shadow-md bg-white text-black my-4 overflow-x-hidden">
+        <div className="w-full p-4 border rounded-md shadow-md bg-white text-black my-8 overflow-x-hidden">
             <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={() => !isPreviousMonthDisabled && setMonth(-1)}

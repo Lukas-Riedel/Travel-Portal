@@ -17,12 +17,12 @@ export default function TrackerPage() {
 
     return hasRole(UserRole.TrackerRead) && (
         <>
+            <TimeOffBalanceSummary timeTrackingEvents={timeTrackingEvents} />
             <TrackerCalendar
                 trips={trips}
                 timeTrackingEvents={timeTrackingEvents}
                 onEventCreated={hasRole(UserRole.TrackerEdit) ? createTimeTrackingEvent : undefined}
                 onEventRemoved={hasRole(UserRole.TrackerEdit) ? removeTimeTrackingEvent : undefined} />
-            <TimeOffBalanceSummary timeTrackingEvents={timeTrackingEvents} />
             {hasRole(UserRole.PortalFutureRead) && (
                 <TripTable
                     trips={trips?.filter(trip => trip && isFutureTrip(trip)) ?? null}

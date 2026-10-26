@@ -132,7 +132,7 @@ function EventRow({ event, isSummary, onLifestyleEventDeleted }: EventRowProps) 
     }
 
     return (
-        <div className={`flex items-center justify-between gap-3 rounded-lg p-3 hover:bg-gray-100 transition-colors ${color}`}>
+        <div className={`flex items-center justify-between gap-3 p-3 hover:bg-gray-100 transition-colors ${color}`}>
             <div className="flex items-center gap-4 min-w-0 flex-1">
                 {!isSummary ? (
                     <span className="w-10 shrink-0 -ml-2 text-right text-xs opacity-60 whitespace-nowrap">

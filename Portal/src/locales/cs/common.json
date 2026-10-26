@@ -499,6 +499,7 @@
         }
     },
     "tracker": {
+        "title": "Sledování času",
         "label": {
             "hours": {
                 "overtime": {
@@ -511,6 +512,12 @@
                     "available": "Dostupných dnů volna",
                     "required": "Potřebných dnů volna"
                 }
+            },
+            "type": {
+                "overtime": "Přesčasy",
+                "vacation": "Dovolená",
+                "selfcare": "Sick days",
+                "bonus": "Bonusové volno"
             }
         },
         "prompt": {
