@@ -118,6 +118,36 @@ class CoreClient:
 
         return self._request(method="GET", url=url, params=params)
 
+    def get_lifestyle_events(
+        self,
+        event_type: str | None = None,
+        from_timestamp: int | None = None,
+        to_timestamp: int | None = None,
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        url = f"{self.base_url}/lifestyle"
+        params = {}
+        if event_type is not None:
+            params["type"] = event_type
+        if from_timestamp is not None:
+            params["from"] = from_timestamp
+        if to_timestamp is not None:
+            params["to"] = to_timestamp
+
+        return self._request(method="GET", url=url, params=params)
+
+    def create_lifestyle_event(
+        self, event_type: str, timestamp: int, content: str, calories: float | None
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/lifestyle"
+        payload = {
+            "type": event_type,
+            "timestamp": timestamp,
+            "content": content,
+            "calories": calories,
+        }
+
+        return self._request(method="POST", url=url, json=payload)
+
     def search(
         self, query: str, include: str | None = None, limit: int | None = None
     ) -> list[dict[str, Any]] | dict[str, Any]:
