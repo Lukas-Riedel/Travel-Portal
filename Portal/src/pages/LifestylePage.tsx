@@ -37,6 +37,7 @@ export default function LifestylePage() {
                 recentPeriodDays={RECENT_PERIOD_DAYS} />
             <LifestyleEventSummary
                 events={events ? recentUserEvents : null}
+                onLifestyleEventCreated={hasRole(UserRole.LifestyleEdit) ? createLifestyleEvent : undefined}
                 onLifestyleEventDeleted={hasRole(UserRole.LifestyleEdit) ? removeLifestyleEvent : undefined} />
         </div>
     )

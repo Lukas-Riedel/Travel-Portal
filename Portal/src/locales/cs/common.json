@@ -1453,6 +1453,11 @@
                 "message": "Opravdu chceš odstranit tento záznam?",
                 "confirmed": "Záznam byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit záznam"
+            },
+            "duplicate": {
+                "message": "Opravdu chceš zduplikovat tento záznam?",
+                "confirmed": "Záznam byl úspěšně zduplikován",
+                "failed": "Nepodařilo se zduplikovat záznam"
             }
         }
     }

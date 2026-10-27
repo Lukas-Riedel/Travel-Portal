@@ -6,7 +6,7 @@ import { useFormatters } from "../hooks/useFormatters.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import type { LifestyleEvent } from "../types/CoreSwaggerTypes.ts"
 import { LifestyleEventType } from "../types/CoreSwaggerTypes.ts"
-import { formatTimestamp } from "../utils/timeUtils.ts"
+import { formatTimestamp, getCurrentTimestamp } from "../utils/timeUtils.ts"
 
 const EVENT_TYPES: Record<LifestyleEventType, { color: string, icon: LucideIcon, isExpenditure: boolean }> = {
     [LifestyleEventType.Intake]: { color: "text-red-600", icon: Utensils, isExpenditure: false },
@@ -18,10 +18,11 @@ const EVENT_TYPES: Record<LifestyleEventType, { color: string, icon: LucideIcon,
 
 interface LifestyleEventSummaryProps {
     events: LifestyleEvent[] | null
+    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories: number) => Promise<LifestyleEvent>
     onLifestyleEventDeleted?: (id: string) => Promise<void>
 }
 
-export default function LifestyleEventSummary({ events, onLifestyleEventDeleted }: LifestyleEventSummaryProps) {
+export default function LifestyleEventSummary({ events, onLifestyleEventCreated, onLifestyleEventDeleted }: LifestyleEventSummaryProps) {
     const { t } = useTranslation()
 
     if (!events) {
@@ -80,6 +81,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventDeleted 
                                                 content: t("lifestyle.label.basalMetabolism"),
                                                 calories: totalBasalMetabolismCalories
                                             }}
+                                            onLifestyleEventCreated={onLifestyleEventCreated}
                                             onLifestyleEventDeleted={onLifestyleEventDeleted} />
                                     )}
                                     {stepEvents.length && (
@@ -92,6 +94,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventDeleted 
                                                 content: String(totalSteps),
                                                 calories: totalStepCalories,
                                             }}
+                                            onLifestyleEventCreated={onLifestyleEventCreated}
                                             onLifestyleEventDeleted={onLifestyleEventDeleted} />
                                     )}
                                     {dayEvents.filter(event => event.type !== LifestyleEventType.Steps && event.type !== LifestyleEventType.BasalMetabolism).map(event => (
@@ -99,6 +102,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventDeleted 
                                             isSummary={false}
                                             key={event.id}
                                             event={event}
+                                            onLifestyleEventCreated={onLifestyleEventCreated}
                                             onLifestyleEventDeleted={onLifestyleEventDeleted} />
                                     ))}
                                 </div>
@@ -114,13 +118,14 @@ export default function LifestyleEventSummary({ events, onLifestyleEventDeleted 
 interface EventRowProps {
     event: LifestyleEvent
     isSummary: boolean
+    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories: number) => Promise<LifestyleEvent>
     onLifestyleEventDeleted?: (id: string) => Promise<void>
 }
 
-function EventRow({ event, isSummary, onLifestyleEventDeleted }: EventRowProps) {
+function EventRow({ event, isSummary, onLifestyleEventCreated, onLifestyleEventDeleted }: EventRowProps) {
     const { t } = useTranslation()
     const { formatCalories, formatKilograms, formatSteps } = useFormatters()
-    const { showRemoveLifestyleEventToast } = usePredefinedUserInput()
+    const { showDuplicateLifestyleEventToast, showRemoveLifestyleEventToast } = usePredefinedUserInput()
 
     const { color, icon: Icon, isExpenditure } = EVENT_TYPES[event.type]
 
@@ -128,6 +133,12 @@ function EventRow({ event, isSummary, onLifestyleEventDeleted }: EventRowProps) 
     const handleLifestyleEventDeleted = () => {
         if (onLifestyleEventDeleted) {
             showRemoveLifestyleEventToast(() => onLifestyleEventDeleted(event.id))
+        }
+    }
+
+    const handleIntakeLifestyleEventDuplicated = () => {
+        if (onLifestyleEventCreated) {
+            showDuplicateLifestyleEventToast(() => onLifestyleEventCreated(event.type, event.content!, getCurrentTimestamp(), event.calories!))
         }
     }
 
@@ -142,7 +153,13 @@ function EventRow({ event, isSummary, onLifestyleEventDeleted }: EventRowProps) 
                     <span className="w-10 shrink-0 -ml-2" aria-hidden="true" />
                 )}
                 <span className="shrink-0">
-                    <Icon className={`w-5 h-5 ${color}`} />
+                    {!isSummary && event.type === LifestyleEventType.Intake && onLifestyleEventCreated ? (
+                        <button onClick={handleIntakeLifestyleEventDuplicated}>
+                            <Icon className={`w-5 h-5 ${color}`} />
+                        </button>
+                    ) : (
+                        <Icon className={`w-5 h-5 ${color}`} />
+                    )}
                 </span>
                 <div className="min-w-0 flex-1 truncate">
                     {event.type === LifestyleEventType.Weight ? formatKilograms(Number.parseFloat(event.content!))
