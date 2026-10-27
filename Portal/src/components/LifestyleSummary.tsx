@@ -40,6 +40,8 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
 
     let todayIntake = 0
     let todayExpenditure = 0
+    let latestIntakeTimestamp: number | undefined
+    let latestExpenditureTimestamp: number | undefined
 
     if (events) {
         events
@@ -51,9 +53,11 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
 
                 if (event.type === LifestyleEventType.Intake) {
                     todayIntake += event.calories
+                    latestIntakeTimestamp = Math.max(latestIntakeTimestamp ?? event.timestamp, event.timestamp)
                 }
                 else if ([LifestyleEventType.Steps, LifestyleEventType.BasalMetabolism, LifestyleEventType.Expense].includes(event.type)) {
                     todayExpenditure += Math.abs(event.calories)
+                    latestExpenditureTimestamp = Math.max(latestExpenditureTimestamp ?? event.timestamp, event.timestamp)
                 }
             })
     }
@@ -108,11 +112,13 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
                 <FactCard
                     icon={Utensils}
                     label={t("lifestyle.fact.todayIntake")}
-                    value={events === null ? null : (todayIntake > 0 ? formatCalories(todayIntake) : "-")} />
+                    value={events === null ? null : (todayIntake > 0 ? formatCalories(todayIntake) : "-")}
+                    description={latestIntakeTimestamp !== undefined ? formatTimestamp(latestIntakeTimestamp, t("general.format.datetime.year.excluded")) : undefined} />
                 <FactCard
                     icon={Flame}
                     label={t("lifestyle.fact.todayExpenditure")}
-                    value={events === null ? null : (todayExpenditure > 0 ? formatCalories(todayExpenditure) : "-")} />
+                    value={events === null ? null : (todayExpenditure > 0 ? formatCalories(todayExpenditure) : "-")}
+                    description={latestExpenditureTimestamp !== undefined ? formatTimestamp(latestExpenditureTimestamp, t("general.format.datetime.year.excluded")) : undefined} />
             </CardGrid>
         </div>
     )

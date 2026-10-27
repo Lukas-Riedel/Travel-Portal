@@ -41,7 +41,12 @@
 
             if ($this->scheduler->requestExecution(self::FETCH_LIFESTYLE_ACTION_NAME, self::FETCH_LIFESTYLE_ACTION_INTERVAL)) {
                 $basalMetabolismEvents = $this->lifestyleService->getLifestyleEvents(LifestyleEventType::BasalMetabolism, null, null);
-                $validTimestamps = array_flip(array_map(fn($event) => $event->getTimestamp(), $basalMetabolismEvents));
+                $stepEvents = $this->lifestyleService->getLifestyleEvents(LifestyleEventType::Steps, null, null);
+
+                $basalMetabolismTimestamps = array_flip(array_map(fn($event) => $event->getTimestamp(), $basalMetabolismEvents));
+                $stepTimestamps = array_flip(array_map(fn($event) => $event->getTimestamp(), $stepEvents));
+                
+                $validTimestamps = array_intersect_key($basalMetabolismTimestamps, $stepTimestamps);
                 $allRequiredTimestamps = $this->getAllRequiredBasalMetabolismTimestamps();
                 
                 $timestampsToUpdate = array();

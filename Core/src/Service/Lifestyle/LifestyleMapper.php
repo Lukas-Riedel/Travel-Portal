@@ -18,7 +18,7 @@
                 FROM lifestyle
                 WHERE :CONDITIONS
                 ORDER BY timestamp DESC,
-                    id DESC
+                    type DESC
             SQL;
 
             $whereClauseBuilder = new WhereClauseBuilder();
@@ -26,7 +26,7 @@
                 $whereClauseBuilder->withClause("timestamp >= ?", $from);
             }
             if ($to !== null) {
-                $whereClauseBuilder->withClause("timestamp <= ?", $to);
+                $whereClauseBuilder->withClause("timestamp < ?", $to);
             }
             if ($type !== null) {
                 $whereClauseBuilder->withClause("type = ?", $type->value);
