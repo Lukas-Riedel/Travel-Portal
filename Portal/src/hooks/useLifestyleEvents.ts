@@ -13,7 +13,7 @@ export const useLifestyleEvents = (from: number): UseLifestyleEventsResult => {
 
     return {
         events,
-        createLifestyleEvent: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) =>
+        createLifestyleEvent: (type: LifestyleEventType, content: string, timestamp: number, calories: number) =>
             createLifestyleEvent(type, content, timestamp, calories).then(refetchResponse),
         removeLifestyleEvent: (eventId: string) => removeLifestyleEvent(eventId).then(refetchResponse)
     }

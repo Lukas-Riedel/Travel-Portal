@@ -70,7 +70,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("general.prompt.logout.failed")
         )
 
-    const showAddLifestyleIntakeToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
+    const showAddLifestyleIntakeToast = (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) =>
         showFormToast(
             t("lifestyle.prompt.create.intake.message"),
             [
@@ -95,7 +95,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories))
         )
 
-    const showAddLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
+    const showAddLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) =>
         showFormToast(
             t("lifestyle.prompt.create.activity.message"),
             [

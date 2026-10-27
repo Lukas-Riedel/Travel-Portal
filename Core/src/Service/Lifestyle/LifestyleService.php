@@ -14,7 +14,7 @@
             $this->lifestyleRetentionDays = $lifestyleRetentionDays;
         }
 
-        public function createLifestyleEvent(LifestyleEventType $type, int $timestamp, string $content, ?float $calories) : LifestyleEvent {
+        public function createLifestyleEvent(LifestyleEventType $type, int $timestamp, ?string $content, ?float $calories) : LifestyleEvent {
             $event = new LifestyleEvent(null, $type, $timestamp, $content, $calories);
             $this->lifestyleMapper->insertLifestyleEvent($event);
             return $event;

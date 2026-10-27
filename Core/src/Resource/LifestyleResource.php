@@ -39,7 +39,7 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["timestamp", "type", "content"],
+                    required: ["timestamp", "type"],
                     properties: [
                         new OA\Property(
                             property: "type",
@@ -120,7 +120,7 @@
 
             $type = $this->requireJsonBodyField($request, "type");
             $timestamp = $this->requireJsonBodyField($request, "timestamp");
-            $content = $this->requireJsonBodyField($request, "content");
+            $content = $this->getJsonBodyField($request, "content");
             $calories = $this->getJsonBodyField($request, "calories");
 
             $mappedType = LifestyleEventType::from($type);

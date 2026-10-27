@@ -62,7 +62,7 @@ export default function LifestyleDashboard({ events, monitoredPeriodDays, recent
     const weightTrend = [...events]
         .filter(event => event.type === LifestyleEventType.Weight && event.timestamp >= cutoff)
         .sort((a, b) => a.timestamp - b.timestamp)
-        .map(event => ({ timestamp: event.timestamp, weight: Number.parseFloat(event.content) }))
+        .map(event => ({ timestamp: event.timestamp, weight: Number.parseFloat(event.content!) }))
         .filter(event => Number.isFinite(event.weight))
 
     const deficitChart = dayKeys.map((dateKey, index) => {
@@ -99,7 +99,7 @@ export default function LifestyleDashboard({ events, monitoredPeriodDays, recent
         }
     }).filter(day => day.intake > 0)
 
-    const currentWeight = latestWeight ? Number.parseFloat(latestWeight.content) : Number.NaN
+    const currentWeight = latestWeight ? Number.parseFloat(latestWeight.content!) : Number.NaN
     const weightPrediction = (() => {
         if (!Number.isFinite(currentWeight) || deficitChart.length === 0) {
             return null

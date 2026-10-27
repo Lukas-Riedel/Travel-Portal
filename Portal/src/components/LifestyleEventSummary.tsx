@@ -61,7 +61,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventDeleted 
                         const totalBasalMetabolismCalories = basalMetabolismEvents.map(event => event.calories).reduce((sum, calories) => sum! + calories!, 0)
 
                         const stepEvents = dayEvents.filter(event => event.type === LifestyleEventType.Steps)
-                        const totalSteps = stepEvents.reduce((sum, event) => sum + Number.parseFloat(event.content), 0)
+                        const totalSteps = stepEvents.reduce((sum, event) => sum + Number.parseFloat(event.content!), 0)
                         const totalStepCalories = stepEvents.map(event => event.calories).reduce((sum, calories) => sum! + calories!, 0)
 
                         return (
@@ -145,8 +145,8 @@ function EventRow({ event, isSummary, onLifestyleEventDeleted }: EventRowProps) 
                     <Icon className={`w-5 h-5 ${color}`} />
                 </span>
                 <div className="min-w-0 flex-1 truncate">
-                    {event.type === LifestyleEventType.Weight ? formatKilograms(Number.parseFloat(event.content))
-                        : event.type === LifestyleEventType.Steps ? formatSteps(Number.parseFloat(event.content))
+                    {event.type === LifestyleEventType.Weight ? formatKilograms(Number.parseFloat(event.content!))
+                        : event.type === LifestyleEventType.Steps ? formatSteps(Number.parseFloat(event.content!))
                             : event.content}
                 </div>
             </div>

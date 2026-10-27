@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "LifestyleEvent",
         type: "object",
-        required: ["id", "timestamp", "type", "content"],
+        required: ["id", "timestamp", "type"],
         properties: [
             new OA\Property(
                 property: "id", 
@@ -45,10 +45,10 @@
         private ?string $id;
         private readonly LifestyleEventType $type;
         private readonly int $timestamp;
-        private readonly string $content;
+        private readonly ?string $content;
         private readonly ?float $calories;
 
-        public function __construct(?string $id,LifestyleEventType $type, int $timestamp, string $content, ?float $calories) {
+        public function __construct(?string $id,LifestyleEventType $type, int $timestamp, ?string $content, ?float $calories) {
             $this->timestamp = $timestamp;
             $this->id = $id;
             $this->type = $type;

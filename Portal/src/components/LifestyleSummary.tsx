@@ -12,7 +12,7 @@ import FactCard from "./FactCard.tsx"
 export interface LifestyleSummaryProps {
     events: LifestyleEvent[] | null
     monitoredPeriodDays: number
-    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) => Promise<LifestyleEvent>
+    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories: number) => Promise<LifestyleEvent>
 }
 
 export default function LifestyleSummary({ events, monitoredPeriodDays, onLifestyleEventCreated }: LifestyleSummaryProps) {
@@ -30,7 +30,7 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
         ? [...events]
             .filter(event => event.type === LifestyleEventType.Weight && event.timestamp >= getCurrentTimestamp() - monitoredPeriodDays * ONE_DAY_SECONDS)
             .sort((first, second) => first.timestamp - second.timestamp)
-            .map(event => ({ timestamp: event.timestamp, weight: Number.parseFloat(event.content) }))
+            .map(event => ({ timestamp: event.timestamp, weight: Number.parseFloat(event.content!) }))
             .filter(event => Number.isFinite(event.weight))
         : []
 
@@ -64,13 +64,13 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
 
     const handleLifestyleIntakeEventCreated = () => {
         if (onLifestyleEventCreated) {
-            showAddLifestyleIntakeToast((content: string, timestamp: Date, calories?: number) => onLifestyleEventCreated(LifestyleEventType.Intake, content, timestamp.getTime() / 1000, calories))
+            showAddLifestyleIntakeToast((content: string, timestamp: Date, calories: number) => onLifestyleEventCreated(LifestyleEventType.Intake, content, timestamp.getTime() / 1000, calories))
         }
     }
 
     const handleLifestyleActivityEventCreated = () => {
         if (onLifestyleEventCreated) {
-            showAddLifestyleActivityToast((content: string, timestamp: Date, calories?: number) => onLifestyleEventCreated(LifestyleEventType.Expense, content, timestamp.getTime() / 1000, calories))
+            showAddLifestyleActivityToast((content: string, timestamp: Date, calories: number) => onLifestyleEventCreated(LifestyleEventType.Expense, content, timestamp.getTime() / 1000, calories))
         }
     }
 
@@ -102,7 +102,7 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
                 <FactCard
                     icon={Scale}
                     label={t("lifestyle.fact.currentWeight")}
-                    value={events === null ? null : latestWeightEvent ? formatKilograms(Number.parseFloat(latestWeightEvent.content)) : "-"}
+                    value={events === null ? null : latestWeightEvent ? formatKilograms(Number.parseFloat(latestWeightEvent.content!)) : "-"}
                     description={latestWeightEvent ? formatTimestamp(latestWeightEvent.timestamp, t("general.format.datetime.year.excluded")) : undefined} />
                 <FactCard
                     icon={weightDelta != null && weightDelta <= 0 ? TrendingDown : TrendingUp}

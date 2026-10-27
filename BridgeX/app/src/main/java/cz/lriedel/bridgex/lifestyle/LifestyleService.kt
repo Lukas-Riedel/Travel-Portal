@@ -61,9 +61,6 @@ class LifestyleService private constructor(
         ).records.firstOrNull()
 
         val weightKg = weightBeforeStart?.weight?.inKilograms ?: 0.0
-        val weightContent = BigDecimal.valueOf(weightKg)
-            .setScale(1, RoundingMode.HALF_UP)
-            .toPlainString()
 
         // Step 1: Record calories burnt by steps.
         val metrics: Set<AggregateMetric<*>> = setOf(COUNT_TOTAL)
@@ -94,6 +91,7 @@ class LifestyleService private constructor(
         }
 
         // Step 2: Record basal metabolism calories.
+        // TODO: Move this to LifestyleServiceListener in Core. There would be no need to send sex, height, and age then.
         val age = LocalDate.now().year - birthYear.toInt()
         // Mifflin-St Jeor formula (kcal/day), prorated to the length of the interval
         val sexOffset = if (male) 5.0 else -161.0
@@ -103,7 +101,6 @@ class LifestyleService private constructor(
         val basalMetabolismRequest = LifestyleRequest(
             timestamp = start,
             type = "basalMetabolism",
-            content = weightContent,
             calories = bmr.toLong()
         )
 

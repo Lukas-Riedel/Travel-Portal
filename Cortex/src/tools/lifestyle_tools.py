@@ -32,11 +32,7 @@ class LifestyleReadTools(BaseCoreTools):
         events = self.core_client.get_lifestyle_events(event_type="weight")
         self._verify_error_response(events)
 
-        weights = [event for event in events if event.get("content") is not None]
-        if not weights:
-            return None
-
-        latest = max(weights, key=lambda event: int(event.get("timestamp", 0)))
+        latest = max(events, key=lambda event: int(event.get("timestamp", 0)))
         user_tz = self._get_user_timezone()
 
         return {
@@ -103,18 +99,18 @@ class LifestyleReadTools(BaseCoreTools):
                 continue
 
             event_type = event.get("type")
-            if event_type == "weight" and event.get("content") is not None:
+            if event_type == "weight":
                 if timestamp >= weight_timestamps[date]:
-                    daily[date]["weight"] = float(event["content"])
+                    daily[date]["weight"] = float(event.get("content"))
                     weight_timestamps[date] = timestamp
 
-            if event_type == "steps" and event.get("content") is not None:
-                daily[date]["steps"] += int(float(event["content"]))
+            if event_type == "steps":
+                daily[date]["steps"] += int(float(event.get("content")))
 
             if event.get("calories") is None:
                 continue
 
-            calories = abs(float(event["calories"]))
+            calories = abs(float(event.get("calories")))
             item = {"calories": calories, "name": event.get("content", "")}
 
             if event_type == "intake":
@@ -131,8 +127,7 @@ class LifestyleReadTools(BaseCoreTools):
         for day in daily.values():
             breakdown = day["deficit_breakdown"]
             day["deficit"] = (
-                breakdown["steps"]
-                + breakdown["basal_metabolism"]
+                breakdown["basal_metabolism"]
                 + breakdown["expenditure"]
                 - breakdown["intake"]
             )
