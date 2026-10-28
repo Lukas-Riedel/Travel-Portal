@@ -1,4 +1,4 @@
-import { createLifestyleEvent, listLifestyleEvents, removeLifestyleEvent } from "../clients/coreClient.ts"
+import { createLifestyleEvent, listLifestyleEvents, removeLifestyleEvent, updateLifestyleEventContent } from "../clients/coreClient.ts"
 import type { LifestyleEventType } from "../types/CoreSwaggerTypes.ts"
 import type { UseLifestyleEventsResult } from "../types/UseLifestyleEventsResult.ts"
 import { ONE_HOUR_SECONDS } from "../utils/timeUtils.ts"
@@ -15,6 +15,8 @@ export const useLifestyleEvents = (from: number): UseLifestyleEventsResult => {
         events,
         createLifestyleEvent: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) =>
             createLifestyleEvent(type, content, timestamp, calories).then(refetchResponse),
+        updateLifestyleEventContent: (eventId: string, content: string) =>
+            updateLifestyleEventContent(eventId, content).then(refetchResponse),
         removeLifestyleEvent: (eventId: string) => removeLifestyleEvent(eventId).then(refetchResponse)
     }
 }

@@ -124,6 +124,15 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("lifestyle.prompt.create.activity.failed")
         )
 
+    const showUpdateLifestyleEventContentToast = (event: LifestyleEvent, updateLifestyleEventContent: (content: string) => Promise<LifestyleEvent>) =>
+        showInputToast(
+            t("lifestyle.prompt.update.content.message"),
+            updateLifestyleEventContent,
+            t("lifestyle.prompt.update.content.confirmed"),
+            t("lifestyle.prompt.update.content.failed"),
+            event.content ?? ""
+        )
+
     const showRemoveLifestyleEventToast = (removeLifestyleEvent: () => Promise<void>) =>
         showConfirmToast(
             t("lifestyle.prompt.remove.message"),
@@ -1555,6 +1564,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     return {
         showCreateLifestyleIntakeToast,
         showCreateLifestyleActivityToast,
+        showUpdateLifestyleEventContentToast,
         showDuplicateLifestyleEventToast,
         showRemoveLifestyleEventToast,
         showUpdateTaskTitleAndDescriptionToast,

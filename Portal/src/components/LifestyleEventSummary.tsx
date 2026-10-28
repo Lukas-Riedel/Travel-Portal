@@ -1,4 +1,4 @@
-import { Activity, Flame, Footprints, type LucideIcon, Scale, Trash2, Utensils } from "lucide-react"
+import { Activity, Edit2, Flame, Footprints, type LucideIcon, Scale, Trash2, Utensils } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { TailSpin } from "react-loader-spinner"
 
@@ -19,10 +19,11 @@ const EVENT_TYPES: Record<LifestyleEventType, { color: string, icon: LucideIcon,
 interface LifestyleEventSummaryProps {
     events: LifestyleEvent[] | null
     onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) => Promise<LifestyleEvent>
+    onLifestyleEventContentUpdated?: (id: string, content: string) => Promise<LifestyleEvent>
     onLifestyleEventDeleted?: (id: string) => Promise<void>
 }
 
-export default function LifestyleEventSummary({ events, onLifestyleEventCreated, onLifestyleEventDeleted }: LifestyleEventSummaryProps) {
+export default function LifestyleEventSummary({ events, onLifestyleEventCreated, onLifestyleEventContentUpdated, onLifestyleEventDeleted }: LifestyleEventSummaryProps) {
     const { t } = useTranslation()
 
     if (!events) {
@@ -82,6 +83,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventCreated,
                                                 calories: totalBasalMetabolismCalories
                                             }}
                                             onLifestyleEventCreated={onLifestyleEventCreated}
+                                            onLifestyleEventContentUpdated={onLifestyleEventContentUpdated}
                                             onLifestyleEventDeleted={onLifestyleEventDeleted} />
                                     )}
                                     {stepEvents.length && (
@@ -95,6 +97,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventCreated,
                                                 calories: totalStepCalories,
                                             }}
                                             onLifestyleEventCreated={onLifestyleEventCreated}
+                                            onLifestyleEventContentUpdated={onLifestyleEventContentUpdated}
                                             onLifestyleEventDeleted={onLifestyleEventDeleted} />
                                     )}
                                     {dayEvents.filter(event => event.type !== LifestyleEventType.Steps && event.type !== LifestyleEventType.BasalMetabolism).map(event => (
@@ -103,6 +106,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventCreated,
                                             key={event.id}
                                             event={event}
                                             onLifestyleEventCreated={onLifestyleEventCreated}
+                                            onLifestyleEventContentUpdated={onLifestyleEventContentUpdated}
                                             onLifestyleEventDeleted={onLifestyleEventDeleted} />
                                     ))}
                                 </div>
@@ -119,13 +123,14 @@ interface EventRowProps {
     event: LifestyleEvent
     isSummary: boolean
     onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) => Promise<LifestyleEvent>
+    onLifestyleEventContentUpdated?: (id: string, content: string) => Promise<LifestyleEvent>
     onLifestyleEventDeleted?: (id: string) => Promise<void>
 }
 
-function EventRow({ event, isSummary, onLifestyleEventCreated, onLifestyleEventDeleted }: EventRowProps) {
+function EventRow({ event, isSummary, onLifestyleEventCreated, onLifestyleEventContentUpdated, onLifestyleEventDeleted }: EventRowProps) {
     const { t } = useTranslation()
     const { formatCalories, formatKilograms, formatSteps } = useFormatters()
-    const { showDuplicateLifestyleEventToast, showRemoveLifestyleEventToast } = usePredefinedUserInput()
+    const { showDuplicateLifestyleEventToast, showRemoveLifestyleEventToast, showUpdateLifestyleEventContentToast } = usePredefinedUserInput()
 
     const { color, icon: Icon, isExpenditure } = EVENT_TYPES[event.type]
 
@@ -139,6 +144,12 @@ function EventRow({ event, isSummary, onLifestyleEventCreated, onLifestyleEventD
     const handleIntakeLifestyleEventDuplicated = () => {
         if (onLifestyleEventCreated) {
             showDuplicateLifestyleEventToast(() => onLifestyleEventCreated(event.type, event.content!, getCurrentTimestamp(), event.calories!))
+        }
+    }
+
+    const handleLifestyleEventContentUpdated = () => {
+        if (onLifestyleEventContentUpdated) {
+            showUpdateLifestyleEventContentToast(event, content => onLifestyleEventContentUpdated(event.id, content))
         }
     }
 
@@ -161,10 +172,19 @@ function EventRow({ event, isSummary, onLifestyleEventCreated, onLifestyleEventD
                         <Icon className={`w-5 h-5 ${color}`} />
                     )}
                 </span>
-                <div className="min-w-0 flex-1 truncate">
-                    {event.type === LifestyleEventType.Weight ? formatKilograms(Number.parseFloat(event.content!))
-                        : event.type === LifestyleEventType.Steps ? formatSteps(Number.parseFloat(event.content!))
-                            : event.content}
+                <div className="min-w-0 flex-1 flex items-center gap-1">
+                    <span className="truncate">
+                        {event.type === LifestyleEventType.Weight ? formatKilograms(Number.parseFloat(event.content!))
+                            : event.type === LifestyleEventType.Steps ? formatSteps(Number.parseFloat(event.content!))
+                                : event.content}
+                    </span>
+                    {!isSummary && onLifestyleEventContentUpdated && [LifestyleEventType.Intake, LifestyleEventType.Expense].includes(event.type) && (
+                        <button
+                            className="p-1 btn-icon shrink-0"
+                            onClick={handleLifestyleEventContentUpdated}>
+                            <Edit2 size={16} />
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">

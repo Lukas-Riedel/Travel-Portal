@@ -41,6 +41,26 @@
                 });
         }       
 
+        public function selectLifestyleEvent(string $eventId) : ?LifestyleEvent {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM lifestyle
+                WHERE id = ?
+            SQL;
+
+            $lifestyleEventRow = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($eventId)
+                ->getSingleRow();
+
+            if ($lifestyleEventRow === null) {
+                return null;
+            }
+
+            return new LifestyleEvent($lifestyleEventRow["id"], LifestyleEventType::from($lifestyleEventRow["type"]), intval($lifestyleEventRow["timestamp"]),
+                $lifestyleEventRow["content"], $lifestyleEventRow["calories"] === null ? null : floatval($lifestyleEventRow["calories"]));
+        }
+
         public function insertLifestyleEvent(LifestyleEvent $lifestyleEvent) : bool {
             $sql = <<<'SQL'
                 INSERT INTO lifestyle (
@@ -82,6 +102,19 @@
                 ->statementBuilder($sql)
                 ->withParameters($eventId)
                 ->execute();
+        }
+
+        public function updateLifestyleEventContent(string $eventId, string $content) : bool {
+            $sql = <<<'SQL'
+                UPDATE lifestyle
+                SET content = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($content, $eventId)
+                ->execute() === 1;
         }
 
         public function deleteStaleLifestyleEvents(int $lifestyleRetentionDays) : int {

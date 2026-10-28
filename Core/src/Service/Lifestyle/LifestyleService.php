@@ -35,8 +35,16 @@
             return $this->lifestyleMapper->selectLifestyleEvents($type, $from, $to);
         }
 
+        public function getLifestyleEvent(string $eventId) : ?LifestyleEvent {
+            return $this->lifestyleMapper->selectLifestyleEvent($eventId);
+        }
+
         public function removeLifestyleEvent(string $eventId) : bool {
             return $this->lifestyleMapper->deleteLifestyleEvent($eventId) > 0;
+        }
+
+        public function updateLifestyleEventContent(string $eventId, string $content) : bool {
+            return $this->lifestyleMapper->updateLifestyleEventContent($eventId, $content);
         }
     }
 ?>

@@ -555,8 +555,16 @@ export const listLifestyleEvents = async ({ type, from, to }: { type?: Lifestyle
     coreClient.get<LifestyleEvent[]>(createQueryPath("lifestyle", { type, from, to }))
         .then(extractData)
 
+export const getLifestyleEvent = async (eventId: string): Promise<LifestyleEvent> =>
+    coreClient.get<LifestyleEvent>(`lifestyle/${eventId}`)
+        .then(extractData)
+
 export const createLifestyleEvent = async (type: LifestyleEventType, content: string, timestamp: number, calories?: number): Promise<LifestyleEvent> =>
     coreClient.post<LifestyleEvent>("lifestyle", { type, content, timestamp, calories })
+        .then(extractData)
+
+export const updateLifestyleEventContent = async (eventId: string, content: string): Promise<LifestyleEvent> =>
+    coreClient.patch<LifestyleEvent>(`lifestyle/${eventId}`, { content })
         .then(extractData)
 
 export const removeLifestyleEvent = async (eventId: string): Promise<void> =>

@@ -16,7 +16,7 @@ const RECENT_PERIOD_DAYS = 10
 export default function LifestylePage() {
     const { hasRole } = useAuth()
     const { configuration } = useConfiguration()
-    const { events, createLifestyleEvent, removeLifestyleEvent } = useLifestyleEvents(getCurrentTimestamp() - MONITORED_PERIOD_DAYS * ONE_DAY_SECONDS)
+    const { events, createLifestyleEvent, updateLifestyleEventContent, removeLifestyleEvent } = useLifestyleEvents(getCurrentTimestamp() - MONITORED_PERIOD_DAYS * ONE_DAY_SECONDS)
 
     const recentUserEvents = useMemo(() => {
         const cutoff = Math.floor(startOfDay(subDays(new Date(), RECENT_PERIOD_DAYS - 1)).getTime() / 1000)
@@ -38,6 +38,7 @@ export default function LifestylePage() {
             <LifestyleEventSummary
                 events={events ? recentUserEvents : null}
                 onLifestyleEventCreated={hasRole(UserRole.LifestyleEdit) ? createLifestyleEvent : undefined}
+                onLifestyleEventContentUpdated={hasRole(UserRole.LifestyleEdit) ? updateLifestyleEventContent : undefined}
                 onLifestyleEventDeleted={hasRole(UserRole.LifestyleEdit) ? removeLifestyleEvent : undefined} />
         </div>
     )

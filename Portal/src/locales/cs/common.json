@@ -1453,6 +1453,13 @@
                     "failed": "Nepodařilo se zaznamenat aktivitu"
                 }
             },
+            "update": {
+                "content": {
+                    "message": "Zadej nový název záznamu:",
+                    "confirmed": "Název záznamu byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat název záznamu"
+                }
+            },
             "remove": {
                 "message": "Opravdu chceš odstranit tento záznam?",
                 "confirmed": "Záznam byl úspěšně odstraněn",
