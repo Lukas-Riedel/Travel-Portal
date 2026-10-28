@@ -21,7 +21,7 @@ class PlatformTools(BasePistonTools):
         ]
 
     def execute_python_code(self, code: str) -> dict[str, Any]:
-        """Execute Python code in the isolated sanfbox runtime.
+        """Execute Python code in the isolated sandbox runtime.
         Use this for calculations or to run Python code when needed. The result contains the execution status and the program's output.
 
         Args:
