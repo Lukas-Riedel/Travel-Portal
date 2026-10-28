@@ -35,9 +35,7 @@ export default function PlacePage() {
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights, removePlace } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
-    // TODO: Doesn't work if this page displays a candidate (removing a regular place returns 404).
-    const handlePlaceRemoved = () =>
-        removePlace().then(() => removeCandidatePlace(placeId!).catch(() => {}))
+    const doRemovePlace = () => removeCandidatePlace(placeId!).catch(() => removePlace())
 
     const mostSpecificCategory = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
@@ -65,7 +63,7 @@ export default function PlacePage() {
                 internalAttributes={hasRole(UserRole.PlaceEdit) ? attributes : undefined}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) ? (highlightsCount => refreshPlaceHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined}
-                onRemoved={hasRole(UserRole.PlaceEdit) ? handlePlaceRemoved : undefined} />
+                onRemoved={hasRole(UserRole.PlaceEdit) ? doRemovePlace : undefined} />
             <HighlightCarousel
                 place={place ?? undefined}
                 highlights={place ? (place.highlights ?? []).filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) : null}
