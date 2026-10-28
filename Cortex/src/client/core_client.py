@@ -148,6 +148,11 @@ class CoreClient:
 
         return self._request(method="POST", url=url, json=payload)
 
+    def delete_lifestyle_event(self, lifestyle_event_id: str) -> dict[str, Any] | None:
+        url = f"{self.base_url}/lifestyle/{lifestyle_event_id}"
+
+        return self._request(method="DELETE", url=url)
+
     def search(
         self, query: str, include: str | None = None, limit: int | None = None
     ) -> list[dict[str, Any]] | dict[str, Any]:

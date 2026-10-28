@@ -464,8 +464,7 @@ class PlaceEditTools(BasePlaceTools):
 
     def delete_candidate_place(self, place_id: str) -> dict[str, Any]:
         """Deletes an existing candidate (wishlist) place from Travel Portal.
-        Use this when the user asks to remove, delete, or discard a place from their wishlist - for example
-        "remove Petra from my wishlist", "delete the candidate place Machu Picchu".
+        Use this when the user asks to remove, delete, or discard a place from their wishlist - for example "remove Petra from my wishlist", "delete the candidate place Machu Picchu".
         Only candidate places can be deleted. Resolve the place ID first using get_place_by_name or get_candidate_places.
 
         Args:
