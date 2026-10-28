@@ -7,6 +7,7 @@ from typing import Any
 import pytz
 
 from src.client.core_client import CoreClient
+from src.client.piston_client import PistonClient
 from src.core.generative_content_context import generative_content_environment
 from src.errors import GeneralToolError
 
@@ -85,3 +86,8 @@ class BaseCoreTools(BaseTools):
             return None
 
         return datetime.fromtimestamp(epoch, tz=user_tz).strftime("%H:%M")
+
+
+class BasePistonTools(BaseTools):
+    def __init__(self, piston_client: PistonClient) -> None:
+        self.piston_client: PistonClient = piston_client

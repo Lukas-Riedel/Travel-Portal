@@ -53,7 +53,7 @@ class TimeTools(BaseTools):
     ) -> dict[str, Any]:
         """Converts a given date (YYYY-MM-DD or DD.MM.YYYY) and time (HH:MM or HH:MM:SS) into a precise Unix epoch timestamp.
         Use this tool whenever creating tasks with deadlines, vouchers with expiration, or calculating precise timestamps.
-        NEVER calculate epoch timestamps by mental math; use this tool to prevent calculation errors.
+        NEVER calculate epoch timestamps by mental math. Use this tool to prevent calculation errors.
 
         Args:
             date_str (string): Date string in format 'YYYY-MM-DD' or 'D.M.YYYY' / 'DD.MM.YYYY' (e.g. '2026-04-15' or '15.4.2026').

@@ -84,6 +84,16 @@ jobs:
           --wait \
           --timeout 5m \
           --atomic
+    - name: Deploy Piston with Helm
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        helm upgrade piston ./Helm/Piston \
+          -f ./Helm/Piston/values.yaml \
+          --install \
+          --wait \
+          --timeout 5m \
+          --atomic
     - name: Deploy RabbitMQ with Helm
       run: |
         echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig

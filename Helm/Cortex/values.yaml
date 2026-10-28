@@ -33,6 +33,9 @@ cortex:
   core:
     host: core
     port: 8080
+  piston:
+    host: piston
+    port: 2000
   grafana:
     client:
       name: travel-portal-service

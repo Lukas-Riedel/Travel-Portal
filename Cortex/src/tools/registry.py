@@ -6,8 +6,9 @@ from pathlib import Path
 from typing import Any, Final
 
 from src.client.core_client import CoreClient
+from src.client.piston_client import PistonClient
 from src.core.logger import logger
-from src.tools.base_tools import BaseCoreTools, BaseTools
+from src.tools.base_tools import BaseCoreTools, BasePistonTools, BaseTools
 
 SKILLS_DIR: Final[Path] = Path(__file__).resolve().parent.parent.parent / "skills"
 MASTER_SKILL_FILENAME: Final[str] = "SKILL.md"
@@ -15,8 +16,9 @@ SKILL_FILE_GLOB: Final[str] = "*.md"
 
 
 class SkillRegistry:
-    def __init__(self, core_client: CoreClient) -> None:
+    def __init__(self, core_client: CoreClient, piston_client: PistonClient) -> None:
         self.core_client: CoreClient = core_client
+        self.piston_client: PistonClient = piston_client
         self.master_skill: str = ""
         self.tools: dict[str, tuple[Callable[..., Any], str | None]] = {}
         self.skills: dict[str, str] = {}
@@ -45,6 +47,8 @@ class SkillRegistry:
                     try:
                         if issubclass(cls, BaseCoreTools):
                             instance = cls(core_client=self.core_client)
+                        elif issubclass(cls, BasePistonTools):
+                            instance = cls(piston_client=self.piston_client)
                         else:
                             instance = cls()
 

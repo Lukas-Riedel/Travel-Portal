@@ -1,0 +1,11 @@
+piston:
+  enabled: true
+  image: ghcr.io/engineer-man/piston
+  tag: latest
+  replicas: 1
+  runtimes:
+    - language: python
+      version: "3.12.0"
+  service:
+    type: ClusterIP
+    port: 2000

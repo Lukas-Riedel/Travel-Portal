@@ -1,0 +1,83 @@
+{{- if .Values.piston.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-install-runtimes
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-runtime-installer
+    spec:
+      nodeSelector:
+        type: local
+      restartPolicy: Never
+      containers:
+        - name: install-runtimes
+          image: node:20-alpine
+          env:
+            - name: PISTON_URL
+              value: "http://{{ .Release.Name }}:{{ .Values.piston.service.port }}"
+            - name: PISTON_RUNTIMES
+              value: {{ .Values.piston.runtimes | toJson | quote }}
+            - name: RETRY_ATTEMPTS
+              value: "120"
+            - name: RETRY_INTERVAL_SECONDS
+              value: "5"
+          command:
+            - node
+            - -e
+            - |
+              (async () => {
+                const baseUrl = process.env.PISTON_URL
+                const requested = JSON.parse(process.env.PISTON_RUNTIMES)
+                const retryAttempts = Number(process.env.RETRY_ATTEMPTS)
+                const retryInterval = Number(process.env.RETRY_INTERVAL_SECONDS)
+                let ready = false
+
+                for (let attempt = 0; attempt < retryAttempts; attempt++) {
+                  try {
+                    const response = await fetch(`${baseUrl}/api/v2/runtimes`)
+                    if (response.ok) {
+                      ready = true
+                      break
+                    }
+                  } catch (_) {}
+                  await new Promise(resolve => setTimeout(resolve, retryInterval * 1000))
+                }
+
+                if (!ready) throw new Error('Piston API did not become ready in time')
+
+                for (const { language, version } of requested) {
+                  const runtimesResponse = await fetch(`${baseUrl}/api/v2/runtimes`)
+                  if (!runtimesResponse.ok) throw new Error(`Could not list installed runtimes: ${runtimesResponse.status}`)
+                  const runtimes = await runtimesResponse.json()
+                  const alreadyInstalled = runtimes.some(runtime =>
+                    runtime.language === language &&
+                    runtime.version === version
+                  )
+
+                  if (alreadyInstalled) {
+                    console.log(`${language} ${version}: already installed`)
+                    continue
+                  }
+
+                  const response = await fetch(`${baseUrl}/api/v2/packages`, {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ language, version }),
+                  })
+                  const body = await response.text()
+                  if (!response.ok) throw new Error(`Could not install ${language} ${version}: ${response.status} ${body}`)
+                  console.log(`${language} ${version}: installed`)
+                }
+              })().catch(error => {
+                console.error(error)
+                process.exit(1)
+              })
+{{- end }}

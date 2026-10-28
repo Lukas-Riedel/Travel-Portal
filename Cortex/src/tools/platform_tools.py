@@ -2,10 +2,10 @@ from typing import Any
 
 from src.core.logger import logger
 from src.errors import MissingSkillsError, MissingTopicError
-from src.tools.base_tools import BaseTools
+from src.tools.base_tools import BasePistonTools
 
 
-class PlatformTools(BaseTools):
+class PlatformTools(BasePistonTools):
     def _get_description(self) -> str | None:
         return None
 
@@ -17,7 +17,30 @@ class PlatformTools(BaseTools):
             self.load_skills,
             self.report_missing_functionality,
             self.add_conversation_topic,
+            self.execute_python_code,
         ]
+
+    def execute_python_code(self, code: str) -> dict[str, Any]:
+        """Execute Python code in the isolated sanfbox runtime.
+        Use this for calculations or to run Python code when needed. The result contains the execution status and the program's output.
+
+        Args:
+            code: The Python source code to execute.
+
+        Returns:
+            An object containing:
+            - success (boolean): Whether the program exited with code 0.
+            - code (integer): The program's exit code.
+            - output (string): Combined standard output and standard error.
+            - stdout (string): Standard output from the program.
+            - stderr (string): Standard error from the program, including any traceback.
+            - signal (string or null): Signal that stopped the program, if any.
+            - status (string or null): Sandbox execution status, if set.
+            - message (string or null): Additional message from sandbox, if any.
+            - version (string or null): Python runtime version selected by sandbox.
+        """
+
+        return self.piston_client.execute_python_code(code=code)
 
     def load_skills(self, skills: list[str]) -> None:
         """Loads additional capability domains, instructions (skills), and associated tools into the current conversation context on-demand.
@@ -64,4 +87,5 @@ class PlatformTools(BaseTools):
         Args:
             topic_ids: A list of unique string identifiers representing the main entities or topics discussed.
         """
+
         raise MissingTopicError(topic_ids)

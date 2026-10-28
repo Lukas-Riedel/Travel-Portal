@@ -1,0 +1,71 @@
+{{- if .Values.piston.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.piston.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      nodeSelector:
+        type: local
+      containers:
+        - name: {{ .Release.Name }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500Mi
+          image: "{{ .Values.piston.image }}:{{ .Values.piston.tag }}"
+          securityContext:
+            privileged: true
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
+              set -e
+              entrypoint=/piston_api/src/docker-entrypoint.sh
+              sed -i -e 's/mkdir isolate/mkdir -p isolate/' -e 's/mkdir init/mkdir -p init/' -e 's/echo 1 > isolate\/cgroup\.procs/if [ ! -d isolate\/init ]; then echo 1 > isolate\/cgroup.procs; fi/' "$entrypoint"
+              grep -q 'mkdir -p isolate/' "$entrypoint"
+              grep -q 'mkdir -p init' "$entrypoint"
+              grep -Fq 'if [ ! -d isolate/init ]; then echo 1 > isolate/cgroup.procs; fi' "$entrypoint"
+              exec "$entrypoint"
+          ports:
+            - containerPort: {{ .Values.piston.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.piston.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.piston.service.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+          env:
+            - name: PISTON_RUN_MEMORY_LIMIT
+              value: "1073741824"
+          volumeMounts:
+            - name: {{ .Release.Name }}-packages
+              mountPath: /piston/packages
+            - name: {{ .Release.Name }}-tmp
+              mountPath: /tmp
+      volumes:
+        - name: {{ .Release.Name }}-packages
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+        - name: {{ .Release.Name }}-tmp
+          emptyDir: {}
+{{- end }}

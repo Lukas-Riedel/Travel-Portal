@@ -1,0 +1,5 @@
+apiVersion: v2
+name: piston
+description: Piston code execution engine
+type: application
+version: 0.1.0

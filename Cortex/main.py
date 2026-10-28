@@ -16,6 +16,7 @@ from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
 from src.client.core_client import CoreClient
 from src.client.iam_client import IamClient
+from src.client.piston_client import PistonClient
 from src.core.clustering_engine import ClusteringEngine
 from src.core.embeddings_engine import EmbeddingsEngine
 from src.core.generative_content_engine import GenerativeContentEngine
@@ -43,8 +44,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         core_port=int(os.getenv("CORE_PORT")),
         iam_client=app.state.iam_client,
     )
+    app.state.piston_client = PistonClient(
+        piston_host=os.getenv("PISTON_HOST"),
+        piston_port=int(os.getenv("PISTON_PORT")),
+    )
     app.state.skill_registry = SkillRegistry(
         core_client=app.state.core_client,
+        piston_client=app.state.piston_client,
     )
     app.state.generative_content_engine = GenerativeContentEngine(
         api_key=os.getenv("GEMINI_API_KEY"),
