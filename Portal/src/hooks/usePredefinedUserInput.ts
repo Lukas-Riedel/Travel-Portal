@@ -92,7 +92,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
                 }
             ],
-            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories))
+            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories)),
+            t("lifestyle.prompt.create.intake.confirmed"),
+            t("lifestyle.prompt.create.intake.failed")
         )
 
     const showAddLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) =>
@@ -117,7 +119,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
                 }
             ],
-            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories))
+            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories)),
+            t("lifestyle.prompt.create.activity.confirmed"),
+            t("lifestyle.prompt.create.activity.failed")
         )
 
     const showRemoveLifestyleEventToast = (removeLifestyleEvent: () => Promise<void>) =>

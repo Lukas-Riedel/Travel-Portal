@@ -1438,7 +1438,9 @@
                         "description": "Popis",
                         "calories": "Kalorie (kcal)",
                         "timestamp": "Datum a čas"
-                    }
+                    },
+                    "confirmed": "Příjem byl úspěšně zaznamenán",
+                    "failed": "Nepodařilo se zaznamenat příjem"
                 },
                 "activity": {
                     "message": "Přidat aktivitu",
@@ -1446,7 +1448,9 @@
                         "description": "Popis",
                         "calories": "Kalorie (kcal)",
                         "timestamp": "Datum a čas"
-                    }
+                    },
+                    "confirmed": "Aktivita byla úspěšně zaznamenána",
+                    "failed": "Nepodařilo se zaznamenat aktivitu"
                 }
             },
             "remove": {
