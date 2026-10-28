@@ -1,4 +1,4 @@
-import { Backpack, Calendar, CircleQuestionMark, Earth, Landmark, LocateFixed, LogIn, LogOut, Map as MapIcon, MapPin, PlaneIcon, Search, Tag, TowerControl, TreePalm, Waves, XIcon } from "lucide-react"
+import { Backpack, Calendar, CircleQuestionMark, Clock, Earth, HeartPulse, Landmark, Lightbulb, LocateFixed, LogIn, LogOut, Map as MapIcon, MapPin, MessageCircle, PieChart, PlaneIcon, Rss, Search, Settings, Tag, TowerControl, TreePalm, Waves, XIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
@@ -9,6 +9,7 @@ import CategoryFlag from "../components/CategoryFlag.tsx"
 import LoadingTile from "../components/LoadingTile.tsx"
 import PhotoTile from "../components/PhotoTile.js"
 import { useAuth } from "../contexts/AuthContext.tsx"
+import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { type AirlineIdentifier, type AirportIdentifier, CategoryCategory, type CategoryIdentifier, type Highlight, IndexableEntityType, type Label, type PlaceIdentifier, type SearchResult, type TripIdentifier, UserRole, type YearIdentifier } from "../types/CoreSwaggerTypes.ts"
@@ -59,6 +60,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
     const { isLoggedIn, username, login, logout, hasRole } = useAuth()
+    const { configuration } = useConfiguration()
     const location = useLocation()
     const { t } = useTranslation()
     const { showLogoutToast, showLoginToast } = usePredefinedUserInput()
@@ -73,20 +75,85 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // TODO: Handle allowed prefixes in a better way (i.e., through the getPath function somehow).
     const navigationItems = [
-        { label: t("menu.label.search"), requiredRole: UserRole.SearchRead, onClick: () => setIsSearchOpen(true) },
-        { label: t("menu.label.feed"), to: StaticNavigationTarget.Feed, requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/feed"] },
-        { label: t("menu.label.trips"), to: StaticNavigationTarget.Trips, requiredRole: UserRole.TripRead, allowedPrefixes: ["/trip", "/year"] },
-        { label: t("menu.label.places"), to: StaticNavigationTarget.Places, requiredRole: UserRole.PlaceRead, allowedPrefixes: ["/place", "/category"] },
-        { label: t("menu.label.flights"), to: StaticNavigationTarget.Flights, requiredRole: UserRole.TripFlightRead, allowedPrefixes: ["/flight", "/airport", "/airline"] },
-        { label: t("menu.label.statistics"), to: StaticNavigationTarget.Statistics, requiredRole: UserRole.StatisticsRead, allowedPrefixes: ["/statistics"] },
-        { label: t("menu.label.chat"), to: StaticNavigationTarget.Chat, requiredRole: UserRole.GenerativecontentRead, allowedPrefixes: ["/chat"] },
+        {
+            label: t("menu.label.search"),
+            icon: Search,
+            isVisible: hasRole(UserRole.SearchRead),
+            onClick: () => setIsSearchOpen(true)
+        },
+        {
+            label: t("menu.label.feed"),
+            icon: Rss,
+            to: StaticNavigationTarget.Feed,
+            isVisible: hasRole(UserRole.PlaceRead),
+            allowedPrefixes: ["/feed"]
+        },
+        {
+            label: t("menu.label.trips"),
+            icon: Backpack,
+            to: StaticNavigationTarget.Trips,
+            isVisible: hasRole(UserRole.TripRead),
+            allowedPrefixes: ["/trip", "/year"]
+        },
+        {
+            label: t("menu.label.places"),
+            icon: MapPin,
+            to: StaticNavigationTarget.Places,
+            isVisible: hasRole(UserRole.PlaceRead),
+            allowedPrefixes: ["/place", "/category"]
+        },
+        {
+            label: t("menu.label.flights"),
+            icon: PlaneIcon,
+            to: StaticNavigationTarget.Flights,
+            isVisible: hasRole(UserRole.TripFlightRead),
+            allowedPrefixes: ["/flight", "/airport", "/airline"]
+        },
+        {
+            label: t("menu.label.statistics"),
+            icon: PieChart,
+            to: StaticNavigationTarget.Statistics,
+            isVisible: hasRole(UserRole.StatisticsRead),
+            allowedPrefixes: ["/statistics"]
+        },
         // TODO: Find a better required role.
-        { label: t("menu.label.plan"), to: StaticNavigationTarget.Plan, requiredRole: UserRole.PortalFutureRead, allowedPrefixes: ["/plan"] },
-        { label: t("menu.label.tracker"), to: StaticNavigationTarget.Tracker, requiredRole: UserRole.TrackerEdit, allowedPrefixes: ["/tracker"] },
-        { label: t("menu.label.lifestyle"), to: StaticNavigationTarget.Lifestyle, requiredRole: UserRole.LifestyleEdit, allowedPrefixes: ["/lifestyle"] },
-        // TODO: Find a better requried role.
-        { label: t("menu.label.admin"), to: StaticNavigationTarget.Admin, requiredRole: UserRole.ConfigurationEdit, allowedPrefixes: ["/admin"] },
-    ].filter(({ to, requiredRole }) => !requiredRole || hasRole(requiredRole) || (to && location.pathname.startsWith(getPath(to))))
+        {
+            label: t("menu.label.plan"),
+            icon: Lightbulb,
+            to: StaticNavigationTarget.Plan,
+            isVisible: hasRole(UserRole.PortalFutureRead),
+            allowedPrefixes: ["/plan"]
+        },
+        {
+            label: t("menu.label.tracker"),
+            icon: Clock,
+            to: StaticNavigationTarget.Tracker,
+            isVisible: hasRole(UserRole.TrackerEdit),
+            allowedPrefixes: ["/tracker"]
+        },
+        {
+            label: t("menu.label.lifestyle"),
+            icon: HeartPulse,
+            to: StaticNavigationTarget.Lifestyle,
+            isVisible: hasRole(UserRole.LifestyleEdit) && (configuration?.lifestyle?.trackingEnabled ?? false),
+            allowedPrefixes: ["/lifestyle"]
+        },
+        {
+            label: t("menu.label.chat"),
+            icon: MessageCircle,
+            to: StaticNavigationTarget.Chat,
+            isVisible: hasRole(UserRole.GenerativecontentRead),
+            allowedPrefixes: ["/chat"]
+        },
+        // TODO: Find a better required role.
+        {
+            label: t("menu.label.admin"),
+            icon: Settings,
+            to: StaticNavigationTarget.Admin,
+            isVisible: hasRole(UserRole.ConfigurationEdit),
+            allowedPrefixes: ["/admin"]
+        }
+    ].filter(({ isVisible = true, to }) => isVisible || (to && location.pathname.startsWith(getPath(to))))
 
     const handleUserLoggedIn = () => {
         requestPermissions()
@@ -207,31 +274,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </svg>
                         )}
                     </button>
-                    <nav className="hidden md:flex space-x-6 items-center text-center">
-                        {navigationItems.map(({ label, to, onClick, allowedPrefixes }) => {
+                    <nav className="hidden md:flex space-x-2 items-center text-center">
+                        {navigationItems.map(({ label, icon: Icon, to, onClick, allowedPrefixes }) => {
                             const isActive = allowedPrefixes?.some(prefix => location.pathname.startsWith(prefix))
+                            const className = `relative inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${isActive
+                                ? "bg-blue-50 text-blue-700"
+                                : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                                }`
+
                             return to ? (
                                 <AppLink
                                     key={label}
                                     to={to}
                                     onClick={onClick}
-                                    className={`relative inline-block px-2 py-1 font-medium transition-colors duration-200
-                                        ${isActive
-                                            ? "text-blue-700 after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-full after:bg-blue-700"
-                                            : "text-gray-700 hover:text-blue-700 hover:after:absolute hover:after:left-0 hover:after:bottom-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-blue-600"
-                                        }`}>
-                                    {label}
+                                    title={label}
+                                    className={className}>
+                                    <Icon size={19} />
                                 </AppLink>
                             ) : (
                                 <button
                                     key={label}
                                     onClick={onClick}
-                                    className={`relative inline-block px-2 py-1 font-medium transition-colors duration-200 cursor-pointer
-                                        ${isActive
-                                            ? "text-blue-700 after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-full after:bg-blue-700"
-                                            : "text-gray-700 hover:text-blue-700 hover:after:absolute hover:after:left-0 hover:after:bottom-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-blue-600"
-                                        }`}>
-                                    {label}
+                                    title={label}
+                                    className={`${className} cursor-pointer`}>
+                                    <Icon size={19} />
                                 </button>
                             )
                         })}
