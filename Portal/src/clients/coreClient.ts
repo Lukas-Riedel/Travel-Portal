@@ -555,7 +555,7 @@ export const listLifestyleEvents = async ({ type, from, to }: { type?: Lifestyle
     coreClient.get<LifestyleEvent[]>(createQueryPath("lifestyle", { type, from, to }))
         .then(extractData)
 
-export const createLifestyleEvent = async (type: LifestyleEventType, content: string, timestamp: number, calories: number): Promise<LifestyleEvent> =>
+export const createLifestyleEvent = async (type: LifestyleEventType, content: string, timestamp: number, calories?: number): Promise<LifestyleEvent> =>
     coreClient.post<LifestyleEvent>("lifestyle", { type, content, timestamp, calories })
         .then(extractData)
 

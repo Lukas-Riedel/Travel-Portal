@@ -18,7 +18,7 @@ const EVENT_TYPES: Record<LifestyleEventType, { color: string, icon: LucideIcon,
 
 interface LifestyleEventSummaryProps {
     events: LifestyleEvent[] | null
-    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories: number) => Promise<LifestyleEvent>
+    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) => Promise<LifestyleEvent>
     onLifestyleEventDeleted?: (id: string) => Promise<void>
 }
 
@@ -118,7 +118,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventCreated,
 interface EventRowProps {
     event: LifestyleEvent
     isSummary: boolean
-    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories: number) => Promise<LifestyleEvent>
+    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) => Promise<LifestyleEvent>
     onLifestyleEventDeleted?: (id: string) => Promise<void>
 }
 

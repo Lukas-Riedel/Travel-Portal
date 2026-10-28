@@ -5,8 +5,8 @@ import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetad
 import type { Highlightable } from "./Highlightable.ts"
 
 export interface UsePredefinedUserInputResult {
-    showAddLifestyleIntakeToast: (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) => Promise<boolean>
-    showAddLifestyleActivityToast: (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) => Promise<boolean>
+    showCreateLifestyleIntakeToast: (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) => Promise<boolean>
+    showCreateLifestyleActivityToast: (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) => Promise<boolean>
     showDuplicateLifestyleEventToast: (duplicateLifestyleEvent: () => Promise<LifestyleEvent>) => Promise<boolean>
     showRemoveLifestyleEventToast: (removeLifestyleEvent: () => Promise<void>) => Promise<boolean>
     showSelectHighlightsToast: (selectHighlights: (count: number) => Promise<Highlight[]>) => Promise<boolean>

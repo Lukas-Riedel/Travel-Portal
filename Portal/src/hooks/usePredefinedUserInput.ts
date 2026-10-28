@@ -70,7 +70,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("general.prompt.logout.failed")
         )
 
-    const showAddLifestyleIntakeToast = (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) =>
+    const showCreateLifestyleIntakeToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
         showFormToast(
             t("lifestyle.prompt.create.intake.message"),
             [
@@ -82,7 +82,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "number",
                     label: t("lifestyle.prompt.create.intake.label.calories"),
-                    required: true,
+                    required: false,
                     min: 0
                 },
                 {
@@ -92,12 +92,12 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
                 }
             ],
-            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories)),
+            (description: string, calories: string | undefined, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), calories === undefined ? undefined : parseFloat(calories)),
             t("lifestyle.prompt.create.intake.confirmed"),
             t("lifestyle.prompt.create.intake.failed")
         )
 
-    const showAddLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories: number) => Promise<LifestyleEvent>) =>
+    const showCreateLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
         showFormToast(
             t("lifestyle.prompt.create.activity.message"),
             [
@@ -1553,8 +1553,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         )
 
     return {
-        showAddLifestyleIntakeToast,
-        showAddLifestyleActivityToast,
+        showCreateLifestyleIntakeToast,
+        showCreateLifestyleActivityToast,
         showDuplicateLifestyleEventToast,
         showRemoveLifestyleEventToast,
         showUpdateTaskTitleAndDescriptionToast,

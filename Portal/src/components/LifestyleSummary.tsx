@@ -12,13 +12,13 @@ import FactCard from "./FactCard.tsx"
 export interface LifestyleSummaryProps {
     events: LifestyleEvent[] | null
     monitoredPeriodDays: number
-    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories: number) => Promise<LifestyleEvent>
+    onLifestyleEventCreated?: (type: LifestyleEventType, content: string, timestamp: number, calories?: number) => Promise<LifestyleEvent>
 }
 
 export default function LifestyleSummary({ events, monitoredPeriodDays, onLifestyleEventCreated }: LifestyleSummaryProps) {
     const { t } = useTranslation()
     const { formatCalories, formatDays, formatKilograms } = useFormatters()
-    const { showAddLifestyleIntakeToast, showAddLifestyleActivityToast } = usePredefinedUserInput()
+    const { showCreateLifestyleIntakeToast, showCreateLifestyleActivityToast } = usePredefinedUserInput()
 
     const latestWeightEvent = events
         ? [...events]
@@ -64,13 +64,13 @@ export default function LifestyleSummary({ events, monitoredPeriodDays, onLifest
 
     const handleLifestyleIntakeEventCreated = () => {
         if (onLifestyleEventCreated) {
-            showAddLifestyleIntakeToast((content: string, timestamp: Date, calories: number) => onLifestyleEventCreated(LifestyleEventType.Intake, content, timestamp.getTime() / 1000, calories))
+            showCreateLifestyleIntakeToast((content: string, timestamp: Date, calories?: number) => onLifestyleEventCreated(LifestyleEventType.Intake, content, timestamp.getTime() / 1000, calories))
         }
     }
 
     const handleLifestyleActivityEventCreated = () => {
         if (onLifestyleEventCreated) {
-            showAddLifestyleActivityToast((content: string, timestamp: Date, calories: number) => onLifestyleEventCreated(LifestyleEventType.Expense, content, timestamp.getTime() / 1000, calories))
+            showCreateLifestyleActivityToast((content: string, timestamp: Date, calories?: number) => onLifestyleEventCreated(LifestyleEventType.Expense, content, timestamp.getTime() / 1000, calories))
         }
     }
 
