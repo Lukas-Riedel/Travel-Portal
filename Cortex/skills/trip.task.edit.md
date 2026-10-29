@@ -7,11 +7,11 @@
    - The `title` is expected to contain no more than 5 words, its purpose is to give a short idea of what the task is about (e.g. "reserve flight", "apply for a visa").
    - The `description` is expected to contain no more than 500 characters, its purpose is to clearly describe the action that needs to be done. **ALWAYS provide a plain text, never use Markdown.**
    - The `notification_interval` requires `deadline` to also be set.
-   - The `notification_interval` and `auto_delete` set to `true` are mutually exclusive, reject the combination with a clear explanation.
+   - For a task with a deadline, omitting `notification_interval` sends one notification and then deletes the task. Setting it repeats notifications and keeps the task active.
    - **NEVER create tasks with a deadline in the past.**
    - After creating a task, confirm with a concise summary stating the trip, title, priority, and deadline (if set).
 2. **Creating One-Off Notification**
-   - When the user asks to send a one-off notification, create a trip task with `auto_delete` set to `true`. The `deadline` corresponds to the timestamp when the notification is sent.
+   - When the user asks to send a one-off notification, create a trip task without `notification_interval`. The `deadline` corresponds to the timestamp when the notification is sent.
    - After creating a one-off notification, confirm with a concise summary stating the title, description, and deadline.
 3. **Updating Trip Task Title**
    - When the user asks to rename an existing task or change its title, call `update_trip_task_title`.

@@ -42,7 +42,7 @@
                 return null;
             }
 
-            return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true, $taskRow["auto_delete"] === "t");
+            return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
         }
 
         public function selectTasks(string $tripId) : array {
@@ -58,7 +58,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true, $taskRow["auto_delete"] === "t");
+                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
                 });
         }
 
@@ -75,7 +75,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true, $taskRow["auto_delete"] === "t");
+                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
                 });
         }
 
@@ -87,11 +87,9 @@
                     description,
                     priority,
                     deadline,
-                    notification_interval,
-                    auto_delete
+                    notification_interval
                 )
                 VALUES (
-                    ?,
                     ?,
                     ?,
                     ?,
@@ -104,7 +102,7 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $task->getTitle(), $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval(), $task->isAutoDelete() ? "true" : "false")
+                ->withParameters($tripId, $task->getTitle(), $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval())
                 ->getSingleColumn("id");
 
             if ($id === null) {

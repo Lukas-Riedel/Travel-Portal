@@ -7,7 +7,7 @@
         schema: "Task",
         type: "object",
         description: "A class representing a task",
-        required: ["title", "priority", "actionable", "autoDelete"],
+        required: ["title", "priority", "actionable"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -58,12 +58,6 @@
                 type: "boolean",
                 example: true
             ),
-            new OA\Property(
-                property: "autoDelete",
-                description: "Whether to automatically delete the task after its deadline is reached",
-                type: "boolean",
-                example: false
-            )
         ]
     )]
     class Task implements \JsonSerializable {
@@ -76,9 +70,8 @@
         private readonly ?int $notificationInterval;
         private readonly ?string $url;
         private readonly bool $actionable;
-        private readonly bool $autoDelete;
 
-        public function __construct(?string $id, string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable, bool $autoDelete) {
+        public function __construct(?string $id, string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable) {
             $this->id = $id;
             $this->title = $title;
             $this->description = $description;
@@ -87,7 +80,6 @@
             $this->notificationInterval = $notificationInterval;
             $this->url = $url;
             $this->actionable = $actionable;
-            $this->autoDelete = $autoDelete;
         }
 
         public function getId() : ?string {
@@ -124,10 +116,6 @@
 
         public function isActionable() : bool {
             return $this->actionable;
-        }
-
-        public function isAutoDelete() : bool {
-            return $this->autoDelete;
         }
 
         #[\ReturnTypeWillChange]

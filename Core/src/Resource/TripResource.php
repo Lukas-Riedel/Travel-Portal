@@ -1669,12 +1669,6 @@
                             format: "int64",
                             example: 86400
                         ),
-                        new OA\Property(
-                            property: "autoDelete",
-                            description: "Whether to automatically delete the task after its deadline is reached",
-                            type: "boolean",
-                            example: false
-                        )
                     ]
                 )
             ),
@@ -1757,11 +1751,9 @@
             $priority = $this->requireJsonBodyField($request, "priority");
             $deadline = $this->getJsonBodyField($request, "deadline");
             $notificationInterval = $this->getJsonBodyField($request, "notificationInterval");
-            $autoDelete = $this->getJsonBodyField($request, "autoDelete") ?? false;
-
             $mappedPriority = TaskPriority::from($priority);
 
-            return $this->taskService->createTask($title, $description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $autoDelete, $tripId);
+            return $this->taskService->createTask($title, $description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
         }
 
         #[OA\Patch(

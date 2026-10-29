@@ -260,14 +260,11 @@ class CoreClient:
         description: str | None = None,
         deadline: int | None = None,
         notification_interval: int | None = None,
-        *,
-        auto_delete: bool = False,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/tasks"
         payload = {
             "title": title,
             "priority": priority,
-            "autoDelete": auto_delete,
         }
         if description is not None:
             payload["description"] = description

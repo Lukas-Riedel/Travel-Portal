@@ -778,15 +778,14 @@ export const updatePlaceNoteContent = async (placeId: string, noteId: string, co
 export const removePlaceNote = async (placeId: string, noteId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}/notes/${noteId}`)
 
-export const createTripTask = async (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string, autoDelete?: boolean): Promise<Task> =>
+export const createTripTask = async (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string): Promise<Task> =>
     coreClient.post<Task>(`trips/${tripId}/tasks`,
         {
             title,
             description,
             priority,
             notificationInterval,
-            deadline,
-            autoDelete
+            deadline
         }
     ).then(extractData)
 

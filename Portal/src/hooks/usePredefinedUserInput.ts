@@ -1454,7 +1454,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("day.prompt.copy.failed")
         )
 
-    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date, description?: string, autoDelete?: boolean) => Promise<Task>) =>
+    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date, description?: string) => Promise<Task>) =>
         showFormToast(
             t("task.prompt.create.message"),
             [
@@ -1499,15 +1499,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false,
                     options: [3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({ id: `${interval}`, name: formatDuration(interval) })),
                 },
-                {
-                    type: "checkbox",
-                    label: t("task.label.autoDelete"),
-                    required: false,
-                    defaultValue: false
-                }
             ] as const,
-            (tripId: string, title: string, description: string | undefined, priority: string, deadline: string | undefined, notificationInterval: string, autoDelete: boolean) =>
-                createTripTask(tripId, title, priority as TaskPriority, notificationInterval ? parseInt(notificationInterval) : undefined, deadline ? new Date(deadline) : undefined, description, autoDelete),
+            (tripId: string, title: string, description: string | undefined, priority: string, deadline: string | undefined, notificationInterval: string) =>
+                createTripTask(tripId, title, priority as TaskPriority, notificationInterval ? parseInt(notificationInterval) : undefined, deadline ? new Date(deadline) : undefined, description),
             t("task.prompt.create.confirmed"),
             t("task.prompt.create.failed")
         )

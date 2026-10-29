@@ -110,15 +110,14 @@ class TripTaskEditTools(BaseTaskTools):
         description: str | None,
         deadline: int | None,
         notification_interval: int | None,
-        auto_delete: bool,  # noqa: FBT001
     ) -> dict[str, Any]:
         """Creates a new task for a specific trip in Travel Portal.
         Use this when the user asks to add, create, or record a task, to-do item, or reminder for a trip.
         Always resolve the trip ID first using trip tools. Never ask the user for a UUID.
 
-        Business rules (enforce strictly - reject with a clear error message if violated):
-        - `deadline` is required when `notification_interval` is set (a repeating notification needs an anchor point).
-        - `notification_interval` and `auto_delete` are mutually exclusive - a task cannot both notify repeatedly and auto-delete.
+        Rules:
+        - For a task with a deadline, omitting `notification_interval` sends one notification and then deletes the task. Setting it repeats notifications and keeps the task active.
+        - `notification_interval` requires `deadline` to be set.
         - `deadline`, if provided, must be in the future. Use convert_datetime_to_epoch to convert a user-supplied date.
 
         Args:
@@ -127,8 +126,7 @@ class TripTaskEditTools(BaseTaskTools):
             priority: Priority level of the task. Must be one of: 'lowest', 'low', 'medium', 'high', 'highest'.
             description: Optional longer description or notes for the task. Pass None if not provided.
             deadline: Optional deadline as a Unix epoch timestamp (seconds). Use convert_datetime_to_epoch to convert a date. Must be in the future.
-            notification_interval: Optional interval in seconds between repeated deadline notifications (e.g. 86400 for daily). Requires `deadline` to be set. Cannot be combined with `auto_delete=True`.
-            auto_delete: Whether to automatically delete the task once its deadline is reached. Cannot be combined with `notification_interval`.
+            notification_interval: Optional interval in seconds between repeated deadline notifications (e.g. 86400 for daily). Requires `deadline`; when omitted on a task with a deadline, the task is deleted after its first notification.
 
         Returns:
             The created task object containing:
@@ -150,7 +148,6 @@ class TripTaskEditTools(BaseTaskTools):
             description=description,
             deadline=deadline,
             notification_interval=notification_interval,
-            auto_delete=auto_delete,
         )
         self._verify_error_response(task)
 

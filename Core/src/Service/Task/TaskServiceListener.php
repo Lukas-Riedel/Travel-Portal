@@ -23,8 +23,15 @@
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::SEND_TASK_NOTIFICATIONS_ACTION_NAME, self::SEND_TASK_NOTIFICATIONS_ACTION_INTERVAL)) {
                 foreach ($this->taskService->getTasksForNotifications() as &$task) {
-                    $this->eventPublisher->publish(Event::TaskDeadlineReached($task->getTitle(), $task->getDescription(), $task->getUrl(), $task->getId() === null ? null : $this->taskService->getTripIdForTask($task->getId())));
+                    $this->eventPublisher->publish(Event::TaskDeadlineReached($task->getId(), $task->getTitle(), $task->getDescription(), $task->getUrl(),
+                        $task->getId() === null ? null : $this->taskService->getTripIdForTask($task->getId()), $task->getNotificationInterval() === null));
                 }
+            }
+        }
+
+        public function onTaskDeadlineReached(mixed $message) : void {
+            if ($message["taskId"] !== null && $message["tripId"] !== null && $message["autoDelete"]) {
+                $this->taskService->removeTask($message["taskId"], $message["tripId"]);
             }
         }
     }

@@ -41,8 +41,8 @@
             $this->ephemeralTaskProviders = $ephemeralTaskProviders;
         }
 
-        public function createTask(string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, bool $autoDelete, string $tripId) : Task {
-            $task = new Task(null, $title, $description, $priority, $deadline, $notificationInterval, null, true, $autoDelete);
+        public function createTask(string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, string $tripId) : Task {
+            $task = new Task(null, $title, $description, $priority, $deadline, $notificationInterval, null, true);
             $this->taskMapper->insertTask($task, $tripId);
             return $task;
         }
@@ -86,8 +86,7 @@
             $tasks = array();
 
             foreach ($this->taskMapper->selectTasksForNotifications() as &$task) {
-                if ($task->isAutoDelete()) {
-                    $this->taskMapper->deleteTask($task->getId(), null);
+                if ($task->getNotificationInterval() === null) {
                     $tasks[] = $task;
                 }
                 else {
@@ -174,7 +173,7 @@
 
                     $tasks[] = new Task(null, $template["title"], $this->createText($template["text"], $candidate->getPlaceholders()),
                         TaskPriority::from($template["priority"]), $candidate->getValidity() - $template["trigger"]["seconds"], $template["notificationInterval"] ?? null,
-                        $candidate->getUrl(), $template["actionable"] ?? false, true);
+                        $candidate->getUrl(), $template["actionable"] ?? false);
                 }
             }
 

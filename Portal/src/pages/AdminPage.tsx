@@ -202,16 +202,12 @@ export default function AdminPage() {
     }
 
     const handleTaskCreated = () => {
-        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, title, priority, notificationInterval, deadline, description, autoDelete) => {
+        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, title, priority, notificationInterval, deadline, description) => {
             if (deadline && !isTodayOrFutureDay(deadline)) {
                 return Promise.reject("Deadline must be in the future.")
             }
 
-            if (notificationInterval && autoDelete) {
-                return Promise.reject("Notification interval cannot be set for auto-deletable tasks.")
-            }
-
-            return createTripTask(tripId, title, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined, description, autoDelete)
+            return createTripTask(tripId, title, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined, description)
         })
     }
 

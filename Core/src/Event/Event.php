@@ -301,8 +301,10 @@
         }
 
         // TODO: Rename "task" to "description" (also in receivers - Portal and BridgeX).
-        public static function TaskDeadlineReached(string $title, ?string $task, ?string $url, ?string $tripId) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("title" => $title, "task" => $task, "url" => $url, "tripId" => $tripId));
+        public static function TaskDeadlineReached(?string $taskId, string $title, ?string $task, ?string $url, ?string $tripId, bool $autoDelete) : Event {
+            return (new CompositeEvent(Event::getEventName(), array("taskId" => $taskId, "title" => $title, "task" => $task, "url" => $url, "tripId" => $tripId, "autoDelete" => $autoDelete)))
+                ->addCloudMessagingEvent(array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addWorkerEvent(EventPriority::Highest);
         }
 
         public static function VoucherExpiring(string $issuer, float $value, string $currency, int $expiration) : Event {
