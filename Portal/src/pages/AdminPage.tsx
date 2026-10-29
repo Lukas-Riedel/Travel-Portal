@@ -202,12 +202,12 @@ export default function AdminPage() {
     }
 
     const handleTaskCreated = () => {
-        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, title, priority, notificationInterval, deadline, description) => {
-            if (deadline && !isTodayOrFutureDay(deadline)) {
+        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, title, priority, deadline, notificationInterval, description) => {
+            if (!isTodayOrFutureDay(deadline)) {
                 return Promise.reject("Deadline must be in the future.")
             }
 
-            return createTripTask(tripId, title, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined, description)
+            return createTripTask(tripId, title, priority, deadline.getTime() / 1000, notificationInterval, description)
         })
     }
 

@@ -14,7 +14,7 @@ export interface UseTripResult {
     removeTripExpense: (expenseId: string) => Promise<void>
     updateTripExpenseDescription: (expenseId: string, description: string) => Promise<Expense>
     updateTripExpenseValue: (expenseId: string, value: number, currency: ExpenseCurrency) => Promise<Expense>
-    createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string) => Promise<Task>
+    createTripTask: (tripId: string, title: string, priority: TaskPriority, deadline: number, notificationInterval?: number, description?: string) => Promise<Task>
     updateTripTaskTitle: (tripId: string, taskId: string, title: string, description?: string) => Promise<Task>
     updateTripTaskPriority: (tripId: string, taskId: string, priority: TaskPriority) => Promise<Task>
     removeTripTask: (tripId: string, taskId: string) => Promise<void>

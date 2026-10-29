@@ -42,7 +42,7 @@
                 return null;
             }
 
-            return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
+            return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
         }
 
         public function selectTasks(string $tripId) : array {
@@ -58,7 +58,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
+                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
                 });
         }
 
@@ -75,7 +75,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
+                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
                 });
         }
 

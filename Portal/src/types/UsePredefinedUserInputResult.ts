@@ -83,7 +83,7 @@ export interface UsePredefinedUserInputResult {
     showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geometry: Geometry) => GeoJSON, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCopyTripItineraryToast: (copyTripItinerary: () => Promise<void>) => Promise<boolean>
     showCopyDayItineraryToast: (copyDayItinerary: () => Promise<void>) => Promise<boolean>
-    showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date, description?: string) => Promise<Task>) => Promise<boolean>
+    showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, deadline: Date, notificationInterval?: number, description?: string) => Promise<Task>) => Promise<boolean>
     showRemoveTaskToast: (removeTask: () => Promise<void>) => Promise<boolean>
     showUpdateTaskPriorityToast: (updateTaskPriority: (priority: TaskPriority) => Promise<Task>) => Promise<boolean>
     showUpdateTaskTitleAndDescriptionToast: (title: string, description: string | undefined, updateTaskTitle: (title: string, description?: string) => Promise<Task>) => Promise<boolean>

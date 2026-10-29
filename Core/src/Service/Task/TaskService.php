@@ -41,7 +41,7 @@
             $this->ephemeralTaskProviders = $ephemeralTaskProviders;
         }
 
-        public function createTask(string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, string $tripId) : Task {
+        public function createTask(string $title, ?string $description, TaskPriority $priority, int $deadline, ?int $notificationInterval, string $tripId) : Task {
             $task = new Task(null, $title, $description, $priority, $deadline, $notificationInterval, null, true);
             $this->taskMapper->insertTask($task, $tripId);
             return $task;
@@ -62,18 +62,6 @@
                 $priorityDiff = $b->getPriority()->toNumber() - $a->getPriority()->toNumber();
                 if ($priorityDiff !== 0) {
                     return $priorityDiff;
-                }
-
-                if ($a->getDeadline() === null && $b->getDeadline() === null) {
-                    return 0;
-                }
-
-                if ($a->getDeadline() === null) {
-                    return 1;
-                }
-
-                if ($b->getDeadline() === null) {
-                    return -1;
                 }
 
                 return $a->getDeadline() - $b->getDeadline();

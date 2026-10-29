@@ -257,19 +257,14 @@ class CoreClient:
         trip_id: str,
         title: str,
         priority: str,
+        deadline: int,
         description: str | None = None,
-        deadline: int | None = None,
         notification_interval: int | None = None,
     ) -> dict[str, Any]:
         url = f"{self.base_url}/trips/{trip_id}/tasks"
-        payload = {
-            "title": title,
-            "priority": priority,
-        }
+        payload = {"title": title, "priority": priority, "deadline": deadline}
         if description is not None:
             payload["description"] = description
-        if deadline is not None:
-            payload["deadline"] = deadline
         if notification_interval is not None:
             payload["notificationInterval"] = notification_interval
 

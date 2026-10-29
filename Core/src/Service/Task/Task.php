@@ -7,7 +7,7 @@
         schema: "Task",
         type: "object",
         description: "A class representing a task",
-        required: ["title", "priority", "actionable"],
+        required: ["title", "priority", "deadline", "actionable"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -66,12 +66,12 @@
         private readonly string $title;
         private readonly ?string $description;
         private readonly TaskPriority $priority;
-        private readonly ?int $deadline;
+        private readonly int $deadline;
         private readonly ?int $notificationInterval;
         private readonly ?string $url;
         private readonly bool $actionable;
 
-        public function __construct(?string $id, string $title, ?string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url, bool $actionable) {
+        public function __construct(?string $id, string $title, ?string $description, TaskPriority $priority, int $deadline, ?int $notificationInterval, ?string $url, bool $actionable) {
             $this->id = $id;
             $this->title = $title;
             $this->description = $description;
@@ -102,7 +102,7 @@
             return $this->priority;
         }
 
-        public function getDeadline() : ?int {
+        public function getDeadline() : int {
             return $this->deadline;
         }
 

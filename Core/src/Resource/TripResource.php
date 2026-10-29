@@ -1636,7 +1636,7 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["title", "priority"],
+                    required: ["title", "priority", "deadline"],
                     properties: [
                         new OA\Property(
                             property: "title",
@@ -1749,11 +1749,11 @@
             $title = $this->requireJsonBodyField($request, "title");
             $description = $this->getJsonBodyField($request, "description");
             $priority = $this->requireJsonBodyField($request, "priority");
-            $deadline = $this->getJsonBodyField($request, "deadline");
+            $deadline = $this->requireJsonBodyField($request, "deadline");
             $notificationInterval = $this->getJsonBodyField($request, "notificationInterval");
             $mappedPriority = TaskPriority::from($priority);
 
-            return $this->taskService->createTask($title, $description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
+            return $this->taskService->createTask($title, $description, $mappedPriority, intval($deadline), $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
         }
 
         #[OA\Patch(

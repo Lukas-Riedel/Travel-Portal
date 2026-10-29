@@ -18,7 +18,7 @@ export const useRegularTrips = ({ year, include }: UseRegularTripsProps = {}): U
 
     return {
         trips: response === null ? null : response,
-        createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string) => createTripTask(tripId, title, priority, notificationInterval, deadline, description).then(refetchResponse),
+        createTripTask: (tripId: string, title: string, priority: TaskPriority, deadline: number, notificationInterval?: number, description?: string) => createTripTask(tripId, title, priority, deadline, notificationInterval, description).then(refetchResponse),
         removeTripTask: (tripId: string, taskId: string) => removeTripTask(tripId, taskId).then(refetchResponse),
         updateTripTaskTitle: (tripId: string, taskId: string, newTitle: string, newDescription?: string) => updateTripTaskTitle(tripId, taskId, newTitle, newDescription).then(refetchResponse),
         updateTripTaskPriority: (tripId: string, taskId: string, newPriority: TaskPriority) => updateTripTaskPriority(tripId, taskId, newPriority).then(refetchResponse)

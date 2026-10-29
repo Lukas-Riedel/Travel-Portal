@@ -34,7 +34,7 @@ export const useTrip = (tripId?: string): UseTripResult => {
         removeTripExpense: (expenseId: string) => removeTripExpense(tripId!, expenseId).then(refetchResponse),
         updateTripExpenseDescription: (expenseId: string, description: string) => updateTripExpenseDescription(tripId!, expenseId, description).then(refetchResponse),
         updateTripExpenseValue: (expenseId: string, value: number, currency: ExpenseCurrency) => updateTripExpenseValue(tripId!, expenseId, value, currency).then(refetchResponse),
-        createTripTask: (tripId: string, title: string, priority: TaskPriority, notificationInterval?: number, deadline?: number, description?: string) => createTripTask(tripId, title, priority, notificationInterval, deadline, description).then(refetchResponse),
+        createTripTask: (tripId: string, title: string, priority: TaskPriority, deadline: number, notificationInterval?: number, description?: string) => createTripTask(tripId, title, priority, deadline, notificationInterval, description).then(refetchResponse),
         updateTripTaskTitle: (tripId: string, taskId: string, title: string, description?: string) => updateTripTaskTitle(tripId, taskId, title, description).then(refetchResponse),
         updateTripTaskPriority: (tripId: string, taskId: string, priority: TaskPriority) => updateTripTaskPriority(tripId, taskId, priority).then(refetchResponse),
         removeTripTask: (tripId: string, taskId: string) => removeTripTask(tripId, taskId).then(refetchResponse),

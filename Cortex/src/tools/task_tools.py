@@ -107,26 +107,25 @@ class TripTaskEditTools(BaseTaskTools):
         trip_id: str,
         title: str,
         priority: str,
-        description: str | None,
-        deadline: int | None,
-        notification_interval: int | None,
+        deadline: int,
+        description: str | None = None,
+        notification_interval: int | None = None,
     ) -> dict[str, Any]:
         """Creates a new task for a specific trip in Travel Portal.
         Use this when the user asks to add, create, or record a task, to-do item, or reminder for a trip.
         Always resolve the trip ID first using trip tools. Never ask the user for a UUID.
 
         Rules:
-        - For a task with a deadline, omitting `notification_interval` sends one notification and then deletes the task. Setting it repeats notifications and keeps the task active.
-        - `notification_interval` requires `deadline` to be set.
-        - `deadline`, if provided, must be in the future. Use convert_datetime_to_epoch to convert a user-supplied date.
+        - Omitting `notification_interval` sends one notification after the deadline and then deletes the task. Setting it repeats notifications and keeps the task active.
+        - The `deadline` must be in the future. Use convert_datetime_to_epoch to convert a user-supplied date.
 
         Args:
             trip_id: The unique identifier of the trip the task belongs to. Resolve via trip tools.
             title: Short title of the task (e.g. "Buy JR Pass", "Book airport transfer").
             priority: Priority level of the task. Must be one of: 'lowest', 'low', 'medium', 'high', 'highest'.
             description: Optional longer description or notes for the task. Pass None if not provided.
-            deadline: Optional deadline as a Unix epoch timestamp (seconds). Use convert_datetime_to_epoch to convert a date. Must be in the future.
-            notification_interval: Optional interval in seconds between repeated deadline notifications (e.g. 86400 for daily). Requires `deadline`; when omitted on a task with a deadline, the task is deleted after its first notification.
+            deadline: Required deadline as a Unix epoch timestamp (seconds). Use convert_datetime_to_epoch to convert a date. Must be in the future.
+            notification_interval: Optional interval in seconds between repeated deadline notifications (e.g. 86400 for daily). When omitted, the task is deleted after its first notification.
 
         Returns:
             The created task object containing:

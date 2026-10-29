@@ -3,11 +3,10 @@
 1. **Creating Trip Task**
    - When the user asks to add, create, or record a task for a trip, call `create_trip_task`.
    - Always resolve the trip ID first using trip tools. **NEVER ask the user for a trip ID or UUID.**
-   - For `deadline`, use `convert_datetime_to_epoch` with the user's current timezone from Environmental Context as `tz_name`.
+   - For `deadline`, use `convert_datetime_to_epoch` with the user's current timezone from Environmental Context as `tz_name`. It is required and must be in the future.
    - The `title` is expected to contain no more than 5 words, its purpose is to give a short idea of what the task is about (e.g. "reserve flight", "apply for a visa").
    - The `description` is expected to contain no more than 500 characters, its purpose is to clearly describe the action that needs to be done. **ALWAYS provide a plain text, never use Markdown.**
-   - The `notification_interval` requires `deadline` to also be set.
-   - For a task with a deadline, omitting `notification_interval` sends one notification and then deletes the task. Setting it repeats notifications and keeps the task active.
+   - Omitting `notification_interval` sends one notification and then deletes the task. Setting it repeats notifications in the specified interval, and keeps the task active.
    - **NEVER create tasks with a deadline in the past.**
    - After creating a task, confirm with a concise summary stating the trip, title, priority, and deadline (if set).
 2. **Creating One-Off Notification**
