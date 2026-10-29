@@ -4,6 +4,7 @@
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
+    use Core\Service\Trip\TripService;
 
     class TaskServiceListener {
         
@@ -11,11 +12,13 @@
         private const SEND_TASK_NOTIFICATIONS_ACTION_INTERVAL = 300;
         
         private readonly TaskService $taskService;
+        private readonly TripService $tripService;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
 
-        public function __construct(TaskService $taskService, EventPublisher $eventPublisher, Scheduler $scheduler) {
+        public function __construct(TaskService $taskService, TripService $tripService, EventPublisher $eventPublisher, Scheduler $scheduler) {
             $this->taskService = $taskService;
+            $this->tripService = $tripService;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
         }
@@ -30,8 +33,12 @@
         }
 
         public function onTaskDeadlineReached(mixed $message) : void {
-            if ($message["taskId"] !== null && $message["tripId"] !== null && $message["autoDelete"]) {
-                $this->taskService->removeTask($message["taskId"], $message["tripId"]);
+            if ($message["taskId"] !== null && $message["tripId"] !== null) {
+                $trip = $this->tripService->getRegularTrip($message["tripId"]);
+                
+                if ($message["autoDelete"] || ($trip !== null && $trip->getEnd() < time())) {
+                    $this->taskService->removeTask($message["taskId"], $message["tripId"]);
+                }
             }
         }
     }
