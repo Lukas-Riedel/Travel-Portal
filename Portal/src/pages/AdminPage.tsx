@@ -13,7 +13,7 @@ import DocumentCardGrid from "../components/DocumentCardGrid.tsx"
 import ExpenseSummary from "../components/ExpenseSummary.tsx"
 import FlightCardGrid from "../components/FlightCardGrid.tsx"
 import FloatingButton from "../components/FloatingButton.js"
-import NoteCardGrid from "../components/NoteCardGrid.tsx"
+import NoteGroupCardGrid from "../components/NoteGroupCardGrid.tsx"
 import PlaceCardGrid from "../components/PlaceCardGrid.tsx"
 import RegionEditor from "../components/RegionEditor.tsx"
 import SubscriptionCardGrid from "../components/SubscriptionCardGrid.tsx"
@@ -254,7 +254,7 @@ export default function AdminPage() {
                         onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined}
                         onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined} />
                     {hasRole(UserRole.TripNoteRead) && (
-                        <NoteCardGrid
+                        <NoteGroupCardGrid
                             rowSize={3}
                             notes={upcomingOrCurrentTrip ? (upcomingOrCurrentTrip.notes ?? []) : null}
                             onNoteCreated={createTripNote}

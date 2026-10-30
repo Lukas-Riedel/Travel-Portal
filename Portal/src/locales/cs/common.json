@@ -714,6 +714,9 @@
         }
     },
     "note": {
+        "group": {
+            "other": "Ostatní"
+        },
         "placeholder": {
             "new": "Nová poznámka"
         },

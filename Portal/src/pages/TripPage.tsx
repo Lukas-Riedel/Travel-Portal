@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient"
 import ExpenseSummary from "../components/ExpenseSummary"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
-import NoteCardGrid from "../components/NoteCardGrid.jsx"
+import NoteGroupCardGrid from "../components/NoteGroupCardGrid.jsx"
 import PageHeader from "../components/PageHeader"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import StatisticsPanel from "../components/StatisticsPanel"
@@ -108,7 +108,7 @@ export default function TripPage() {
                     onExpenseRemoved={hasRole(UserRole.TripExpenseEdit) ? removeTripExpense : undefined} />
             )}
             {hasRole(UserRole.TripNoteRead) && (
-                <NoteCardGrid
+                <NoteGroupCardGrid
                     rowSize={3}
                     notes={trip ? (trip.notes ?? []) : null}
                     onNoteCreated={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}
