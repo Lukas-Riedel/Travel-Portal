@@ -152,7 +152,7 @@ class LifestyleReadTools(BaseLifestyleTools):
 
 class LifestyleEditTools(BaseLifestyleTools):
     def _get_description(self) -> str:
-        return 'Provides capabilities to record food and drink intake, record manually reported physical activity expenditure, and delete lifestyle events in Travel Portal. Activate and apply this skill when the user asks to log or record something they ate or drank, log or record an activity they performed, or delete, remove, or discard a recorded intake or activity (e.g. "I had a chicken sandwich for lunch", "log my usual breakfast", "I went for a run", "record my bike ride yesterday", "delete the lunch I just logged"). For intake, use recent food history to check for a corresponding previously recorded item and its calories before recording; activity can be recorded directly.'
+        return 'Provides capabilities to record food and drink intake, record manually reported physical activity expenditure, rename lifestyle events, and delete lifestyle events in Travel Portal. Activate and apply this skill when the user asks to log or record something they ate or drank, log or record an activity they performed, rename or correct a recorded intake or activity, or delete, remove, or discard a recorded intake or activity (e.g. "I had a chicken sandwich for lunch", "log my usual breakfast", "I went for a run", "record my bike ride yesterday", "rename the lunch event", "delete the lunch I just logged"). For intake, use recent food history to check for a corresponding previously recorded item and its calories before recording; activity can be recorded directly.'
 
     def _get_supported_skill(self) -> str:
         return "lifestyle.edit"
@@ -162,6 +162,7 @@ class LifestyleEditTools(BaseLifestyleTools):
             self.get_recent_lifestyle_intake_events,
             self.record_lifestyle_intake,
             self.record_lifestyle_activity,
+            self.update_lifestyle_event_content,
             self.delete_lifestyle_event,
         ]
 
@@ -181,13 +182,13 @@ class LifestyleEditTools(BaseLifestyleTools):
         return [self._extract_event(event) for event in events]
 
     def record_lifestyle_intake(
-        self, content: str, calories: float, timestamp: int | None = None
+        self, name: str, calories: float, timestamp: int | None = None
     ) -> dict[str, Any]:
         """Records a food or drink intake event in Travel Portal.
         Use this to record food or drink intake reported by the user (e.g. "a chicken sandwich", "coffee with milk").
 
         Args:
-            content: Concise name for the food or drink (e.g. "Chicken sandwich", "Coffee with milk").
+            name: Concise name for the food or drink (e.g. "Chicken sandwich", "Coffee with milk").
             calories: Calories to record (e.g. 450). Use the matched history value when applicable, otherwise provide the language model's reasonable estimate. The stored value is made non-negative.
             timestamp: Optional Unix epoch timestamp in seconds for when the intake occurred. Convert user-provided natural-language dates or times with the time tools (e.g. use the user's specified lunch time). Omit to record the event now.
 
@@ -199,19 +200,19 @@ class LifestyleEditTools(BaseLifestyleTools):
         """
         return self._record_event(
             event_type="intake",
-            content=content,
+            content=name,
             calories=calories,
             timestamp=timestamp,
         )
 
     def record_lifestyle_activity(
-        self, content: str, calories: float, timestamp: int | None = None
+        self, name: str, calories: float, timestamp: int | None = None
     ) -> dict[str, Any]:
         """Records manually reported physical activity expenditure in calories.
         Use this to record physical activity reported by the user (e.g. "30-minute run", "walked the dog").
 
         Args:
-            content: Concise description of the activity, based on what the user reported (e.g. "30-minute run").
+            name: Concise description of the activity, based on what the user reported (e.g. "30-minute run").
             calories: Calories expended during the activity (e.g. 250). Use a value given by the user or estimate it from the reported activity. The stored value is made non-negative.
             timestamp: Optional Unix epoch timestamp in seconds for when the activity occurred. Convert user-provided natural-language dates or times with the time tools (e.g. the user's specified workout time). Omit to record the event now.
 
@@ -223,7 +224,7 @@ class LifestyleEditTools(BaseLifestyleTools):
         """
         return self._record_event(
             event_type="expense",
-            content=content,
+            content=name,
             calories=calories,
             timestamp=timestamp,
         )
@@ -234,7 +235,7 @@ class LifestyleEditTools(BaseLifestyleTools):
         Resolve the event ID from the created event object or lifestyle event history first. Never ask the user for a UUID.
 
         Args:
-            lifestyle_event_id: Unique identifier of the lifestyle event to delete. Resolve it from an existing event; never invent it.
+            lifestyle_event_id: Unique identifier of the lifestyle event to delete. Resolve from an existing event.
 
         Returns:
             A confirmation object indicating successful deletion containing:
@@ -247,6 +248,31 @@ class LifestyleEditTools(BaseLifestyleTools):
         self._verify_error_response(result)
 
         return {"deleted": True, "id": lifestyle_event_id}
+
+    def update_lifestyle_event_content(
+        self, lifestyle_event_id: str, name: str
+    ) -> dict[str, Any]:
+        """Renames an existing lifestyle event in Travel Portal.
+        Use this when the user asks to rename a recorded food, drink, or physical activity event.
+        Resolve the event ID from the created event object or lifestyle event history first. Never ask the user for a UUID.
+
+        Args:
+            lifestyle_event_id: Unique identifier of the lifestyle event to rename. Resolve from an existing event.
+            name: New concise name or description for the lifestyle event.
+
+        Returns:
+            The updated lifestyle event object containing:
+            - id (string): Unique identifier of the lifestyle event.
+            - name (string): Updated food, drink, or activity name.
+            - calories (number): Calories recorded for the event.
+        """
+        event = self.core_client.update_lifestyle_event_content(
+            lifestyle_event_id=lifestyle_event_id,
+            content=name,
+        )
+        self._verify_error_response(event)
+
+        return self._extract_event(event)
 
     def _record_event(
         self,

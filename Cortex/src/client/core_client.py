@@ -148,6 +148,14 @@ class CoreClient:
 
         return self._request(method="POST", url=url, json=payload)
 
+    def update_lifestyle_event_content(
+        self, lifestyle_event_id: str, content: str
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/lifestyle/{lifestyle_event_id}"
+        payload = {"content": content}
+
+        return self._request(method="PATCH", url=url, json=payload)
+
     def delete_lifestyle_event(self, lifestyle_event_id: str) -> dict[str, Any] | None:
         url = f"{self.base_url}/lifestyle/{lifestyle_event_id}"
 
