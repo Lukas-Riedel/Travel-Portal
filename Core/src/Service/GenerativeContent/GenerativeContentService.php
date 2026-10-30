@@ -16,6 +16,8 @@
 
         private const USER_ROLE = "user";
 
+        private const MAX_COMPACTED_MESSAGES = 40;
+
         private const CONVERSATION_CACHE_KEY_FORMAT = "GenerativeContentService:Conversation:%s";
         private const CONVERSATION_CACHE_TTL = CommonConstants::ONE_DAY_SECONDS;
 
@@ -87,7 +89,7 @@
                 }
             }
 
-            return $newMessages;
+            return array_slice($newMessages, -self::MAX_COMPACTED_MESSAGES);
         }
 
         private function getHighlights(array $topicIds, int $requestedHighlightsCount) : array {
