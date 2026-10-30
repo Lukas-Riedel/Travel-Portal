@@ -278,6 +278,39 @@ class PlaceReadTools(BasePlaceTools):
                 - end_time (string): End time of the visit in HH:MM format (in the place's local timezone).
                 - trip_name (string | null): Name and year of the associated candidate trip (e.g. `"Egypt"`), if any.
         """
+        if trip_id is not None:
+            trip = self.core_client.get_trip(trip_id)
+            self._verify_error_response(trip)
+
+            if trip.get("start") is None:
+                places = []
+                for country in trip.get("countries", []):
+                    search_results = self.core_client.search(
+                        query=country,
+                        include="category",
+                        limit=1,
+                    )
+                    self._verify_error_response(search_results)
+
+                    if not search_results:
+                        continue
+
+                    category_id = (search_results[0].get("entity") or {}).get("id")
+                    if not category_id:
+                        continue
+
+                    country_places = self.core_client.get_places(
+                        place_type="candidate",
+                        category_id=category_id,
+                    )
+                    self._verify_error_response(country_places)
+
+                    places.extend(country_places)
+
+                return [
+                    self._extract_place(p) for p in self._filter_visible_places(places)
+                ]
+
         places = self.core_client.get_places(
             place_type="candidate",
             trip_id=trip_id,
