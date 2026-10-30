@@ -261,7 +261,7 @@ class LifestyleEditTools(BaseLifestyleTools):
                 timestamp if timestamp is not None else datetime.now().timestamp()
             ),
             content=content,
-            calories=abs(calories),
+            calories=round(abs(calories), -1),
         )
         self._verify_error_response(event)
 
