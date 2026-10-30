@@ -282,7 +282,7 @@ class PlaceReadTools(BasePlaceTools):
             trip = self.core_client.get_trip(trip_id)
             self._verify_error_response(trip)
 
-            if trip.get("start") is None:
+            if trip.get("start") is not None:
                 places = []
                 for country in trip.get("countries", []):
                     search_results = self.core_client.search(

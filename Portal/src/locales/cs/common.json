@@ -1081,6 +1081,16 @@
         "placeholder": {
             "input": "Napiš zprávu..."
         },
+        "action": {
+            "load": {
+                "message": "Najdi můj nadcházející výlet a načti k němu všechny dostupné informace: poznámky, úkoly a celý itinerář včetně relevantních míst, letů, ubytování a dalších plánovaných aktivit. Z dostupných poznámek a úkolů vyhodnoť, jak je plán rozpracovaný, co už je hotové a co ještě zbývá vyřešit. Nakonec stručně shrň aktuální stav plánování.",
+                "label": "Načíst kontext nadcházejícího výletu"
+            },
+            "save": {
+                "message": "Najdi můj nadcházející výlet a vytvoř k němu novou poznámku se shrnutím této konverzace. Zahrň důležitá rozhodnutí, naplánované kroky a otevřené otázky, které ještě zbývá vyřešit, aby bylo možné při příští konverzaci ihned navázat tam, kde jsme skončili. Není potřeba zahrnovat věci, které lze vyčíst z jiných poznámek nebo existujících úkolů. Po uložení potvrď, že byla poznámka vytvořena.",
+                "label": "Uložit kontext nadcházejícího výletu"
+            }
+        },
         "prompt": {
             "clear": {
                 "message": "Opravdu chceš začít novou konverzaci?",

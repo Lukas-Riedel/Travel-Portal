@@ -1,4 +1,4 @@
-import { AlertCircle, Bot, ClipboardCopy, RotateCcw, Send, User2 } from "lucide-react"
+import { AlertCircle, Bot, ClipboardCopy, Download, type LucideIcon,RotateCcw, Save, Send, User2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
@@ -6,10 +6,26 @@ import ReactMarkdown from "react-markdown"
 import { useAuth } from "../contexts/AuthContext.tsx"
 import { useChat } from "../hooks/useChat.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
+import type { ChatMessage } from "../types/ChatMessage.ts"
 import { ChatMessageRole } from "../types/ChatMessageRole.ts"
 import { UserRole } from "../types/CoreSwaggerTypes.ts"
 
 const HIGHLIGHTS_COUNT = 3
+
+const CHAT_ACTIONS: { icon: LucideIcon, action: string, requiredRole: UserRole, isDisabled: (messages: ChatMessage[]) => boolean }[] = [
+    {
+        icon: Download,
+        action: "chat.action.load",
+        requiredRole: UserRole.TripEdit,
+        isDisabled: messages => messages.length > 0
+    },
+    {
+        icon: Save,
+        action: "chat.action.save",
+        requiredRole: UserRole.TripEdit,
+        isDisabled: messages => messages.length === 0
+    },
+]
 
 export default function ChatPage() {
     const { hasRole, username } = useAuth()
@@ -32,6 +48,17 @@ export default function ChatPage() {
 
         setInput("")
         const restored = await sendMessage(text)
+        if (restored !== undefined) {
+            setInput(restored)
+        }
+    }
+
+    const handleChatActionTriggered = async (action: string) => {
+        if (isLoading) {
+            return
+        }
+
+        const restored = await sendMessage(t(`${action}.message`))
         if (restored !== undefined) {
             setInput(restored)
         }
@@ -63,6 +90,19 @@ export default function ChatPage() {
             <div className="flex items-center justify-between pb-3 border-b border-gray-200 flex-shrink-0 px-2 md:px-0">
                 <h1 className="text-base font-semibold text-gray-900">{t("chat.label.title")}</h1>
                 <div className="flex items-center gap-2">
+                    {CHAT_ACTIONS.filter(action => hasRole(action.requiredRole)).map(action => {
+                        const Icon = action.icon
+                        return (
+                            <button
+                                key={action.action}
+                                onClick={() => handleChatActionTriggered(action.action)}
+                                disabled={isLoading || action.isDisabled(messages)}
+                                className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed text-gray-500"
+                                title={t(`${action.action}.label`)}>
+                                <Icon size={16} />
+                            </button>
+                        )
+                    })}
                     <button
                         onClick={handleConversationCopied}
                         disabled={messages.length === 0}
