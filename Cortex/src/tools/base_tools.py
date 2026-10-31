@@ -65,6 +65,13 @@ class BaseCoreTools(BaseTools):
 
         return self._get_maximum_timestamp() >= trip.get("start", 0)
 
+    def _verify_lifestyle_tracking_enabled(self) -> None:
+        config = self.core_client.get_configuration()
+        if not bool(config["lifestyle"]["trackingEnabled"]):
+            raise GeneralToolError(
+                "Lifestyle tracking is disabled. Do not read or use lifestyle data because it may be outdated. Inform the user that lifestyle tracking must be enabled first."
+            )
+
     def _get_system_timezone(self) -> tzinfo:
         config = self.core_client.get_configuration()
         return pytz.timezone(config["homeLocation"]["timezone"])

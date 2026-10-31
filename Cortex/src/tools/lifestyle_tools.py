@@ -39,6 +39,8 @@ class LifestyleReadTools(BaseLifestyleTools):
             - date (string): Date of the measurement in the user's local timezone, formatted as DD.MM.YYYY.
             - time (string): Local measurement time in 24-hour HH:MM format.
         """
+        self._verify_lifestyle_tracking_enabled()
+
         events = self.core_client.get_lifestyle_events(event_type="weight")
         self._verify_error_response(events)
 
@@ -70,6 +72,8 @@ class LifestyleReadTools(BaseLifestyleTools):
             - intake (list): Food and drink events with a calorie value. Each item contains id (string), name (string), and calories (number).
             - expenditure (list): Manually recorded activity events with a calorie value. Each item contains id (string), name (string), and calories (number). Steps and basal metabolism contribute to deficit but are not listed here.
         """
+        self._verify_lifestyle_tracking_enabled()
+
         user_tz = self._get_user_timezone()
         now = datetime.now(user_tz)
         first_date = now.date() - timedelta(days=days - 1)
@@ -176,6 +180,8 @@ class LifestyleEditTools(BaseLifestyleTools):
             - name (string): Recorded food or drink name.
             - calories (number): Calories recorded for that event.
         """
+        self._verify_lifestyle_tracking_enabled()
+
         events = self.core_client.get_lifestyle_events(event_type="intake")
         self._verify_error_response(events)
 
@@ -242,6 +248,8 @@ class LifestyleEditTools(BaseLifestyleTools):
             - deleted (boolean): True if deletion succeeded.
             - id (string): Unique identifier of the deleted lifestyle event.
         """
+        self._verify_lifestyle_tracking_enabled()
+
         result = self.core_client.delete_lifestyle_event(
             lifestyle_event_id=lifestyle_event_id
         )
@@ -266,6 +274,8 @@ class LifestyleEditTools(BaseLifestyleTools):
             - name (string): Updated food, drink, or activity name.
             - calories (number): Calories recorded for the event.
         """
+        self._verify_lifestyle_tracking_enabled()
+
         event = self.core_client.update_lifestyle_event_content(
             lifestyle_event_id=lifestyle_event_id,
             content=name,
@@ -281,6 +291,8 @@ class LifestyleEditTools(BaseLifestyleTools):
         calories: float,
         timestamp: int | None,
     ) -> dict[str, Any]:
+        self._verify_lifestyle_tracking_enabled()
+
         event = self.core_client.create_lifestyle_event(
             event_type=event_type,
             timestamp=int(
