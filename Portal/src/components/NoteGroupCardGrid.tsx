@@ -31,6 +31,7 @@ export default function NoteGroupCardGrid({ notes, rowSize, columnSize, onNoteCr
     }, new Map<string, { title: string, notes: Note[], hasHeading: boolean }>())
 
     const groups = groupedNotes.size > 0 ? Array.from(groupedNotes.values()) : [{ title: t("note.group.other"), notes: [], hasHeading: false }]
+    groups.sort((first, second) => first.title.localeCompare(second.title, undefined, { sensitivity: "base" }))
 
     const soleGroup = groups.length === 1 ? groups[0] : undefined
     if (!notes || (soleGroup && !soleGroup.hasHeading)) {
