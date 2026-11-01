@@ -9,8 +9,8 @@
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
-use Core\Service\Place\PlaceIncludedEntity;
-use Core\Service\Place\PlaceService;
+    use Core\Service\Place\PlaceIncludedEntity;
+    use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Monolog\Logger;
 
@@ -48,9 +48,16 @@ use Core\Service\Place\PlaceService;
                 $labelId = $this->labelService->getOrCreateLabelId($dynamicLabel["name"]);
 
                 $labeledPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
-                    time() - $dynamicLabel["interval"], time(), null, null, array(), PlaceSortingStrategy::OldestAscending);
-
-                $this->labelService->reassignLabelForPlaces($labelId, array_map(fn($place) => $place->getId(), $labeledPlaces));
+                    time() - $dynamicLabel["interval"], time(), null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
+                
+                $this->labelService->removeLabelForAllHighlights($labelId);
+                foreach ($labeledPlaces as &$labeledPlace) {
+                    foreach ($labeledPlace->getHighlights() as &$highlight) {
+                        $this->labelService->reassignLabelToHighlight($highlight->getId(), $labelId, 1.0);
+                    }
+                }
+                
+                $this->eventPublisher->publish(Event::LabelUpdated($labelId));
             }
         }
 
@@ -111,6 +118,8 @@ use Core\Service\Place\PlaceService;
                         $this->labelService->reassignLabelToHighlight($message["highlightId"], $label->getId(), $labelSimilarity);
                     }
                 }
+                
+                $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());
             }
         }
 

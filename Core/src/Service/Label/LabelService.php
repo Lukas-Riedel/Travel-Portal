@@ -174,14 +174,9 @@
             }
             return $wasRemoved;
         }
-
-        public function reassignLabelForPlaces(string $labelId, array $placeIds) : void {
-            $this->labelMapper->deleteLabelForAllPlaces($labelId);
-            foreach ($placeIds as &$placeId) {
-                $this->labelMapper->insertLabel($placeId, $labelId);
-            }
-            $this->labelMapper->deleteStaleLabelIdentifiers();
-            $this->eventPublisher->publish(Event::LabelUpdated($labelId));
+        
+        public function removeLabelForAllHighlights(string $labelId) : bool {
+            return $this->labelMapper->deleteLabelForAllHighlights($labelId) > 0;
         }
 
         public function assignLabelsToPlace(Place $place) : void {

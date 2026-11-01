@@ -237,6 +237,19 @@
                 ->execute();
         }
 
+        public function deleteLabelForAllHighlights(string $labelId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM label_highlight
+                WHERE label_id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($labelId)
+                ->execute();
+        }
+
         public function deleteStaleLabelIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
