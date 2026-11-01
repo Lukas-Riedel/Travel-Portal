@@ -52,7 +52,7 @@ export default function LifestyleEventSummary({ events, onLifestyleEventCreated,
 
     const sortedGroups = [...groupedEvents.entries()]
         .map(([formattedDate, dayEvents]) => [formattedDate, [...dayEvents].sort((a, b) => b.timestamp - a.timestamp)] as const)
-        .sort(([firstDate], [secondDate]) => secondDate.localeCompare(firstDate))
+        .sort(([, firstDayEvents], [, secondDayEvents]) => secondDayEvents[0]!.timestamp - firstDayEvents[0]!.timestamp)
 
     return (
         <div>
