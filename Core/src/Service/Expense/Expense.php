@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "Expense",
         type: "object",
-        description: "An object representing an expense",
+        description: "A class representing an expense",
         required: ["id", "description", "value", "currency", "exchangeRate", "type", "mainCurrencyValue"],
         properties: [
             new OA\Property(

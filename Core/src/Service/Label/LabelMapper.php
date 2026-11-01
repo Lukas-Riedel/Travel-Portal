@@ -18,20 +18,17 @@
             $this->minHighlightSimilarity = $minHighlightSimilarity;
         }
 
-        public function selectLabels(?string $labelId, ?string $placeId, array $includedEntities) : array {
+        public function selectLabels(?string $labelId, array $includedEntities) : array {
             $sql = <<<'SQL'
-                SELECT li.*
-                FROM label_identifier li
+                SELECT *
+                FROM label_identifier
                 WHERE :CONDITIONS
-                ORDER BY li.name
+                ORDER BY name
             SQL;
 
             $whereClauseBuilder = new WhereClauseBuilder();
             if ($labelId !== null) {
-                $whereClauseBuilder->withClause("li.id = ?", $labelId);
-            }
-            if ($placeId !== null) {
-                $whereClauseBuilder->withClause("EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id AND l.place_id = ?)", $placeId);
+                $whereClauseBuilder->withClause("id = ?", $labelId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
@@ -61,7 +58,7 @@
             return $labels;
         }
         
-        public function selectLabelsForHighlights(array $highlightIds) : array {
+        public function selectLabelIdentifiersForHighlights(array $highlightIds) : array {
             $sql = <<<SQL
                 SELECT li.*
                 FROM label_identifier li
@@ -79,21 +76,28 @@
                 ->withParameters($this->minHighlightSimilarity, ...$highlightIds)
                 ->getMappedResultSet(function($labelRow) {
                     $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
-                    return new Label($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null, array());
+                    return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
                 });
         }
 
-        public function selectPlaceIdsForLabelId(string $labelId) : array {            
+        public function selectLabelIdentifier(string $labelName) : ?LabelIdentifier {       
             $sql = <<<'SQL'
-                SELECT place_id
-                FROM label
-                WHERE label_id = ?
+                SELECT *
+                FROM label_identifier
+                WHERE name = ?
             SQL;
 
-            return $this->databaseClient
+            $labelRow = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($labelId)
-                ->getResultSetForColumn("place_id");
+                ->withParameters($labelName)
+                ->getSingleRow();
+            
+            if ($labelRow === null) {
+                return null;
+            }
+            
+            $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
+            return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
         }
 
         public function selectHighlightIdsForLabelId(string $labelId) : array {            
@@ -108,19 +112,6 @@
                 ->statementBuilder($sql)
                 ->withParameters($this->minHighlightSimilarity, $labelId)
                 ->getResultSetForColumn("highlight_id");
-        }
-
-        public function selectLabelId(string $labelName) : ?string {
-            $sql = <<<'SQL'
-                SELECT id
-                FROM label_identifier
-                WHERE name = ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($labelName)
-                ->getSingleColumn("id");
         }
 
         public function insertHighlightLabel(string $highlightId, string $labelId, float $similarity) : bool {
@@ -143,40 +134,33 @@
                 ->execute() === 1;
         }
 
-        public function insertLabel(string $placeId, string $labelId) : bool {
+        public function insertLabelIdentifier(LabelIdentifier $labelIdentifier) : ?string {
             $sql = <<<'SQL'
-                INSERT INTO label (
-                    place_id,
-                    label_id
+                INSERT INTO label_identifier (
+                    name,
+                    unicode,
+                    description
                 )
                 VALUES (
                     ?,
-                    ?
-                )
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($placeId, $labelId)
-                ->execute() === 1;
-        }
-
-        public function insertLabelId(string $labelName) : ?string {
-            $sql = <<<'SQL'
-                INSERT INTO label_identifier (
-                    name
-                )
-                VALUES (
+                    ?,
                     ?
                 )
                 ON CONFLICT DO NOTHING
                 RETURNING id
             SQL;
 
-            return $this->databaseClient
+            $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($labelName)
+                ->withParameters($labelIdentifier->getName(), $labelIdentifier->getMetadata()?->getUnicode(), $labelIdentifier->getMetadata()?->getDescription())
                 ->getSingleColumn("id");
+
+            if ($id === null) {
+                return false;
+            }
+
+            $labelIdentifier->setId($id);
+            return true;
         }
         
         public function updateLabelName(string $labelId, string $name) : bool {
@@ -218,7 +202,6 @@
                 ->execute() === 1;
         }
 
-
         public function updateLabelMainHighlight(string $labelId, ?string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE label_identifier
@@ -246,24 +229,10 @@
                 ->execute();
         }
 
-        public function deleteLabelForPlace(string $placeId, string $labelId) : int {
+        public function deleteLabelForAllHighlights(string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label
-                WHERE place_id = ?
-                    AND label_id = ?
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($placeId, $labelId)
-                ->execute();
-        }
-
-        public function deleteLabelForAllPlaces(string $labelId) : int {
-            $sql = <<<'SQL'
-                DELETE
-                FROM label
+                FROM label_highlight
                 WHERE label_id = ?
             SQL;
 
@@ -273,11 +242,11 @@
                 ->execute();
         }
 
-        public function deleteLabelForAllHighlights(string $labelId) : int {
+        public function deleteLabel(string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_highlight
-                WHERE label_id = ?
+                FROM label_identifier
+                WHERE id = ?
             SQL;
 
             return $this->databaseClient

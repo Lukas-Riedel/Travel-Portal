@@ -31,7 +31,7 @@ export default function PlacePage() {
     const { t } = useTranslation()
     const { formatMeters } = useFormatters()
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
-        updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
+        updatePlaceMainHighlight, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights, removePlace } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
@@ -74,9 +74,7 @@ export default function PlacePage() {
                 onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updatePlaceHighlightQualityAttributes : undefined} />
             <CategoryBar categories={place ? (place.categories ?? []) : null} />
             <LabelBar
-                labels={place ? (place.labels ?? []) : null}
-                onLabelAdded={hasRole(UserRole.PlaceLabelEdit) ? createPlaceLabel : undefined}
-                onLabelRemoved={hasRole(UserRole.PlaceLabelEdit) ? removePlaceLabel : undefined} />
+                labels={place ? (place.labels ?? []) : null} />
             <PlaceContent
                 place={place}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined}

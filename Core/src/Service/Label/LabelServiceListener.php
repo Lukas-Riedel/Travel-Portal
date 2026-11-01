@@ -45,7 +45,7 @@
 
         public function onAllDynamicLabelsInvalidated(mixed $message) : void {
             foreach ($this->configurationService->getConfigurationEntry("dynamicLabels") as &$dynamicLabel) {
-                $labelId = $this->labelService->getOrCreateLabelId($dynamicLabel["name"]);
+                $labelId = $this->labelService->getOrCreateLabelIdentifier($dynamicLabel["name"], null)->getId();
 
                 $labeledPlaces = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null,
                     time() - $dynamicLabel["interval"], time(), null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
@@ -144,24 +144,11 @@
             }
         }
 
-        public function onPlaceCreated(mixed $message) : void {
-            $place = $this->placeService->getRegularPlace($message["placeId"]);
-            if ($place === null) {
-                $place = $this->placeService->getCandidatePlace($message["placeId"]);
-            }
-
-            if ($place !== null) {
-                $this->labelService->assignLabelsToPlace($place);
-            }
-        }
-
         public function onLabelCreated(mixed $message) : void {
             $label = $this->labelService->getLabel($message["labelId"]);  
             if ($label !== null) {
                 $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
                 if (!in_array($label->getName(), $dynamicLabelNames)) {
-                    $this->labelService->assignPlacesToLabel($label);
-
                     $this->reassignLabelToHighlights($label);
                 }
             }

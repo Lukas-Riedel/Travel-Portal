@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "TimeTrackingEvent",
         type: "object",
-        description: "An object representing a time tracking event",
+        description: "A class representing a time tracking event",
         required: ["id", "description", "hours", "timestamp", "type", "balance"],
         properties: [
             new OA\Property(

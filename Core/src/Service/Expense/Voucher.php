@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "Voucher",
         type: "object",
-        description: "An object representing a voucher",
+        description: "A class representing a voucher",
         required: ["id", "code", "issuer", "value", "currency"],
         properties: [
             new OA\Property(

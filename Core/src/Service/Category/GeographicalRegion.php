@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "GeographicalRegion",
         type: "object",
-        description: "An object representing a geographical region",
+        description: "A class representing a geographical region",
         required: ["category", "radius", "geoJson"],
         properties: [
             new OA\Property(

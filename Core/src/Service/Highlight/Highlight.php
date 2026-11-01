@@ -7,7 +7,7 @@
     #[OA\Schema(
         schema: "Highlight",
         type: "object",
-        description: "An object representing a highlight",
+        description: "A class representing a highlight",
         required: ["id", "url", "photo", "attributes"],
         properties: [
             new OA\Property(

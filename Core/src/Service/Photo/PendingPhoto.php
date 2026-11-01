@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "PendingPhoto",
         type: "object",
-        description: "An object representing a photo pending upload",
+        description: "A class representing a photo pending upload",
         required: ["albumId", "fileName", "batchId", "expectedBatchSize", "batchPosition", "uploadToken"],
         properties: [
             new OA\Property(

@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "PhotoEmbedding",
         type: "object",
-        description: "An object representing a photo embedding",
+        description: "A class representing a photo embedding",
         required: ["id", "embedding"],
         properties: [
             new OA\Property(

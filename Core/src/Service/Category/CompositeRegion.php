@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "CompositeRegion",
         type: "object",
-        description: "An object representing a composite region",
+        description: "A class representing a composite region",
         required: ["category", "includedCategories", "excludedCategories"],
         properties: [
             new OA\Property(

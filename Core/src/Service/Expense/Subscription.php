@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "Subscription",
         type: "object",
-        description: "An object representing a subscription",
+        description: "A class representing a subscription",
         required: ["id", "description", "value", "currency", "exchangeRate", "expiration", "mainCurrencyValue"],
         properties: [
             new OA\Property(

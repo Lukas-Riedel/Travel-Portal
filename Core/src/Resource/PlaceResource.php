@@ -5,7 +5,6 @@
     use Common\Routing\NotFoundException;
     use Common\Service\Authentication\UserRole;
     use Core\Service\Highlight\HighlightService;
-    use Core\Service\Label\LabelService;
     use Core\Service\Note\NoteService;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\Date;
@@ -27,22 +26,20 @@
 
         private readonly PlaceService $placeService;
         private readonly PhotoService $photoService;
-        private readonly LabelService $labelService;
         private readonly NoteService $noteService;
         private readonly HighlightService $highlightService;
         private readonly Logger $logger;
 
-        public function __construct(PlaceService $placeService, PhotoService $photoService, LabelService $labelService, NoteService $noteService, HighlightService $highlightService, Logger $logger) {
+        public function __construct(PlaceService $placeService, PhotoService $photoService, NoteService $noteService, HighlightService $highlightService, Logger $logger) {
             $this->placeService = $placeService;
             $this->photoService = $photoService;
-            $this->labelService = $labelService;
             $this->noteService = $noteService;
             $this->highlightService = $highlightService;
             $this->logger = $logger;
         }
 
-        public static function register(App $app, PlaceService $placeService, PhotoService $photoService, LabelService $labelService, NoteService $noteService, HighlightService $highlightService, Logger $logger) : void {
-            $resource = new self($placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
+        public static function register(App $app, PlaceService $placeService, PhotoService $photoService, NoteService $noteService, HighlightService $highlightService, Logger $logger) : void {
+            $resource = new self($placeService, $photoService, $noteService, $highlightService, $logger);
 
             $app->group("/places", function($group) use($resource) {
                 $group->post("", [$resource, "createPlace"]);
@@ -50,8 +47,6 @@
                 $group->get("/{placeId}", [$resource, "getPlace"]);
                 $group->patch("/{placeId}", [$resource, "updatePlace"]);
                 $group->delete("/{placeId}", [$resource, "removePlace"]);
-                $group->post("/{placeId}/labels", [$resource, "createPlaceLabel"]);
-                $group->delete("/{placeId}/labels/{labelId}", [$resource, "removePlaceLabel"]);
                 $group->post("/{placeId}/notes", [$resource, "createPlaceNote"]);
                 $group->patch("/{placeId}/notes/{noteId}", [$resource, "updatePlaceNote"]);
                 $group->delete("/{placeId}/notes/{noteId}", [$resource, "removePlaceNote"]);
@@ -1350,203 +1345,6 @@
             $wasRemoved = $this->highlightService->removePlaceHighlight($placeId, $highlightId);
             if (!$wasRemoved) {
                 throw new NotFoundException($highlightId);                
-            }
-
-            return null;
-        }
-
-        #[OA\Post(
-            path: "/places/{placeId}/labels",
-            summary: "Create a label for a place with the specified identifier",
-            operationId: "createPlaceLabel",
-            tags: ["Places"],
-            security: [ ["bearerAuth" => []] ],
-            requestBody: new OA\RequestBody(
-                required: true,
-                content: new OA\JsonContent(
-                    type: "object",
-                    required: ["name"],
-                    properties: [
-                        new OA\Property(
-                            property: "name",
-                            description: "The name of the label",
-                            type: "string",
-                            example: "City"
-                        )
-                    ]
-                )
-            ),
-            parameters: [
-                new OA\Parameter(
-                    name: "placeId",
-                    in: "path",
-                    required: true,
-                    description: "The identifier of the place",
-                    schema: new OA\Schema(type: "string"),
-                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
-                )
-            ],
-            responses: [
-                new OA\Response(
-                    response: 201,
-                    description: "Success. Created a label for a place with the specified identifier.",
-                    content: new OA\JsonContent(ref: "#/components/schemas/Label")
-                ),
-                new OA\Response(
-                    response: 400,
-                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Bad Request",
-                                ref: "#/components/examples/BadRequest"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 401,
-                    description: "Unauthorized. The request required user authentication.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Unauthorized",
-                                ref: "#/components/examples/Unauthorized"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 403,
-                    description: "Forbidden. The user did not have access to the requested resource.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Forbidden",
-                                ref: "#/components/examples/Forbidden"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 404,
-                    description: "Not Found. The requested resource did not exist.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Not Found",
-                                ref: "#/components/examples/NotFound"
-                            )
-                        ]
-                    )
-                )
-            ]
-        )]
-        public function createPlaceLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireRole($request, UserRole::PlaceLabelEdit);
-
-            $placeId = $this->requirePathArgument($routeArguments, "placeId");
-            $name = $this->requireJsonBodyField($request, "name");
-
-            return $this->labelService->createLabel($placeId, $name);
-        }
-
-        #[OA\Delete(
-            path: "/places/{placeId}/labels/{labelId}",
-            summary: "Remove a label for a place with the specified identifier",
-            operationId: "removePlaceLabel",
-            tags: ["Places"],
-            security: [ ["bearerAuth" => []] ],
-            parameters: [
-                new OA\Parameter(
-                    name: "placeId",
-                    in: "path",
-                    required: true,
-                    description: "The identifier of the place",
-                    schema: new OA\Schema(type: "string"),
-                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
-                ),
-                new OA\Parameter(
-                    name: "labelId",
-                    in: "path",
-                    required: true,
-                    description: "The identifier of the label",
-                    schema: new OA\Schema(type: "string"),
-                    example: "6846808f-b8d8-409c-bc78-97878b3a4446",
-                )
-            ],
-            responses: [
-                new OA\Response(
-                    response: 204,
-                    description: "Success. Removed a label for a place with the specified identifier."
-                ),
-                new OA\Response(
-                    response: 400,
-                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Bad Request",
-                                ref: "#/components/examples/BadRequest"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 401,
-                    description: "Unauthorized. The request required user authentication.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Unauthorized",
-                                ref: "#/components/examples/Unauthorized"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 403,
-                    description: "Forbidden. The user did not have access to the requested resource.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Forbidden",
-                                ref: "#/components/examples/Forbidden"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 404,
-                    description: "Not Found. The requested resource did not exist.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Not Found",
-                                ref: "#/components/examples/NotFound"
-                            )
-                        ]
-                    )
-                )
-            ]
-        )]
-        public function removePlaceLabel(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireRole($request, UserRole::PlaceLabelEdit);
-
-            $placeId = $this->requirePathArgument($routeArguments, "placeId");
-            $labelId = $this->requirePathArgument($routeArguments, "labelId");
-
-            $wasRemoved = $this->labelService->removeLabelForPlace($placeId, $labelId);
-            if (!$wasRemoved) {
-                throw new NotFoundException($labelId);                
             }
 
             return null;

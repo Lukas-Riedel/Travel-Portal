@@ -1,4 +1,4 @@
-import type { Album, Highlight, Label, Note, Place } from "./CoreSwaggerTypes.ts"
+import type { Album, Highlight, Note, Place } from "./CoreSwaggerTypes.ts"
 
 export interface UsePlaceResult {
     place: Place | null
@@ -8,8 +8,6 @@ export interface UsePlaceResult {
     removePlaceHighlight: (highlightId: string) => Promise<void>
     updatePlaceMainHighlight: (highlightId: string) => Promise<Place>
     updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>
-    createPlaceLabel: (name: string) => Promise<Label>
-    removePlaceLabel: (labelId: string) => Promise<void>
     updatePlaceExcerpt: (excerpt: string) => Promise<Place>
     refreshPlaceExcerpt: () => Promise<Place>
     updatePlaceLocation: (latitude: number, longitude: number) => Promise<Place>

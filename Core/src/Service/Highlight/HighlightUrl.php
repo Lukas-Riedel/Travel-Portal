@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "HighlightUrl",
         type: "object",
-        description: "An object representing highlight image URLs",
+        description: "A class representing highlight image URLs",
         required: [],
         properties: [
             new OA\Property(

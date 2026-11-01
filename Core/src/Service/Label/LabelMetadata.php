@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "LabelMetadata",
         type: "object",
-        description: "An object representing metadata of a label",
+        description: "A class representing metadata of a label",
         properties: [
             new OA\Property(
                 property: "unicode",

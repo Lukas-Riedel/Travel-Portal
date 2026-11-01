@@ -125,6 +125,14 @@ export const listLabels = async ({ include }: { include?: LabelIncludedEntity[] 
     coreClient.get<Label[]>(createQueryPath("labels", { include: include?.join(",") }))
         .then(extractData)
 
+export const createLabel = async (name: string, metadata?: LabelMetadata): Promise<Label> =>
+    coreClient.post<Label>("labels",
+        {
+            name,
+            metadata
+        }
+    ).then(extractData)
+
 export const updateLabelName = async (labelId: string, name: string): Promise<Label> =>
     coreClient.patch<Label>(`labels/${labelId}`,
         {
@@ -824,16 +832,6 @@ export const updateTripNoteContent = async (tripId: string, noteId: string, cont
 
 export const removeTripNote = async (tripId: string, noteId: string): Promise<void> =>
     coreClient.delete(`trips/${tripId}/notes/${noteId}`)
-
-export const createPlaceLabel = async (placeId: string, name: string): Promise<Label> =>
-    coreClient.post<Label>(`places/${placeId}/labels`,
-        {
-            name
-        }
-    ).then(extractData)
-
-export const removePlaceLabel = async (placeId: string, labelId: string): Promise<void> =>
-    coreClient.delete(`places/${placeId}/labels/${labelId}`)
 
 export const createAirlineCode = async (airlineId: string, code: string): Promise<Airline> =>
     coreClient.post<Airline>(`airlines/${airlineId}/codes`,

@@ -7,7 +7,7 @@
     #[OA\Schema(
         schema: "Label",
         type: "object",
-        description: "An object representing a label",
+        description: "A class representing a label",
         required: ["id", "name"],
         properties: [
             new OA\Property(

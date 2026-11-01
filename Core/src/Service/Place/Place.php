@@ -95,7 +95,7 @@
                 property: "labels",
                 description: "The labels of the place",
                 type: "array",
-                items: new OA\Items(ref: "#/components/schemas/Label")
+                items: new OA\Items(ref: "#/components/schemas/LabelIdentifier")
             ),
             new OA\Property(
                 property: "notes",

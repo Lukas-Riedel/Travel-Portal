@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "CategoryMetadata",
         type: "object",
-        description: "An object representing metadata of a category",
+        description: "A class representing metadata of a category",
         properties: [
             new OA\Property(
                 property: "color",

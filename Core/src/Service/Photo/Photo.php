@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "Photo",
         type: "object",
-        description: "An object representing a photo",
+        description: "A class representing a photo",
         required: ["id", "url"],
         properties: [
             new OA\Property(

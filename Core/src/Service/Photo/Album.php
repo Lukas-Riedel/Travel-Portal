@@ -6,7 +6,7 @@
     #[OA\Schema(
         schema: "Album",
         type: "object",
-        description: "An object representing a photo album",
+        description: "A class representing a photo album",
         required: ["id", "name", "permalink", "imagesCount", "indoorImagesCount"],
         properties: [
             new OA\Property(

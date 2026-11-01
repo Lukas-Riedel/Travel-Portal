@@ -7,6 +7,7 @@
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Label\Label;
     use Core\Service\Label\LabelIncludedEntity;
+    use Core\Service\Label\LabelMetadata;
     use Core\Service\Label\LabelService;
     use Monolog\Logger;
     use OpenApi\Attributes as OA;
@@ -31,6 +32,7 @@
             $resource = new self($labelService, $highlightService, $logger);
 
             $app->group("/labels", function($group) use($resource) {
+                $group->post("", [$resource, "createLabel"]);
                 $group->get("", [$resource, "listLabels"]);
                 $group->get("/{labelId}", [$resource, "getLabel"]);
                 $group->patch("/{labelId}", [$resource, "updateLabel"]);
@@ -39,6 +41,91 @@
                 $group->post("/{labelId}/highlights/refresh", [$resource, "refreshLabelHighlights"]);
                 $group->delete("/{labelId}/highlights/{highlightId}", [$resource, "removeLabelHighlight"]);
             });
+        }
+
+        #[OA\Post(
+            path: "/labels",
+            summary: "Create a label",
+            operationId: "createLabel",
+            tags: ["Labels"],
+            security: [ ["bearerAuth" => []] ],
+            requestBody: new OA\RequestBody(
+                required: true,
+                content: new OA\JsonContent(
+                    type: "object",
+                    required: ["name"],
+                    properties: [
+                        new OA\Property(
+                            property: "name",
+                            description: "The name of the label",
+                            type: "string",
+                            example: "Tropical paradise"
+                        ),
+                        new OA\Property(
+                            property: "metadata",
+                            description: "Optional metadata for the label",
+                            ref: "#/components/schemas/LabelMetadata"
+                        )
+                    ]
+                )
+            ),
+            
+            responses: [
+                new OA\Response(
+                    response: 200,
+                    description: "Success. The label was created.",
+                    content: new OA\JsonContent(ref: "#/components/schemas/Label")
+                ),
+                new OA\Response(
+                    response: 400,
+                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Bad Request",
+                                ref: "#/components/examples/BadRequest"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: "Unauthorized. The request required user authentication.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Unauthorized",
+                                ref: "#/components/examples/Unauthorized"
+                            )
+                        ]
+                    )
+                ),
+                new OA\Response(
+                    response: 403,
+                    description: "Forbidden. The user did not have access to the requested resource.",
+                    content: new OA\JsonContent(
+                        ref: "#/components/schemas/RequestError",
+                        examples: [
+                            new OA\Examples(
+                                example: "Forbidden",
+                                ref: "#/components/examples/Forbidden"
+                            )
+                        ]
+                    )
+                )
+            ]
+        )]
+        public function createLabel(Request $request, Response $response, array $routeArguments) : mixed {
+            $this->requireRole($request, UserRole::LabelEdit);
+
+            $name = $this->requireJsonBodyField($request, "name");
+            $metadata = $this->getJsonBodyField($request, "metadata");
+
+            $convertedMetadata = $metadata === null ? null : new LabelMetadata($metadata["unicode"] ?? null, $metadata["description"] ?? null);
+
+            return $this->labelService->createLabel($name, $convertedMetadata);
         }
 
         #[OA\Get(
@@ -750,7 +837,7 @@
 
             $labelId = $this->requirePathArgument($routeArguments, "labelId");
 
-            $wasRemoved = $this->labelService->removeLabelForAllPlaces($labelId);
+            $wasRemoved = $this->labelService->removeLabel($labelId);
             if (!$wasRemoved) {
                 throw new NotFoundException($labelId);
             }

@@ -48,7 +48,7 @@
         SubscriptionResource::register($app, $expenseService);
         YearResource::register($app, $yearService, $highlightService, $logger);
         TripResource::register($app, $tripService, $expenseService, $noteService, $highlightService, $taskService, $logger);
-        PlaceResource::register($app, $placeService, $photoService, $labelService, $noteService, $highlightService, $logger);
+        PlaceResource::register($app, $placeService, $photoService, $noteService, $highlightService, $logger);
         AirportResource::register($app, $flightService, $logger);
         DocumentResource::register($app, $documentService);
         VoucherResource::register($app, $expenseService);

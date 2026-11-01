@@ -7,7 +7,7 @@
     #[OA\Schema(
         schema: "Document",
         type: "object",
-        description: "An object representing a document",
+        description: "A class representing a document",
         required: ["id", "name", "code", "issuer"],
         properties: [
             new OA\Property(
