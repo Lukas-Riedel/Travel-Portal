@@ -47,7 +47,6 @@
         case PlaceHighlightRead = "place.highlight.read";
         case PlaceHighlightEdit = "place.highlight.edit";
         case PlaceLabelRead = "place.label.read";
-        case PlaceLabelEdit = "place.label.edit";
         case PlaceAlbumRead = "place.album.read";
         case PlaceAlbumEdit = "place.album.edit";
         case RegionRead = "region.read";

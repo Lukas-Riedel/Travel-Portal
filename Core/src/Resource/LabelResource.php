@@ -72,7 +72,7 @@
             
             responses: [
                 new OA\Response(
-                    response: 200,
+                    response: 201,
                     description: "Success. The label was created.",
                     content: new OA\JsonContent(ref: "#/components/schemas/Label")
                 ),

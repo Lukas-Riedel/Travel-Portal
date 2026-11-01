@@ -13,6 +13,7 @@ import DocumentCardGrid from "../components/DocumentCardGrid.tsx"
 import ExpenseSummary from "../components/ExpenseSummary.tsx"
 import FlightCardGrid from "../components/FlightCardGrid.tsx"
 import FloatingButton from "../components/FloatingButton.js"
+import LabelCardGrid from "../components/LabelCardGrid.tsx"
 import NoteGroupCardGrid from "../components/NoteGroupCardGrid.tsx"
 import PlaceCardGrid from "../components/PlaceCardGrid.tsx"
 import RegionEditor from "../components/RegionEditor.tsx"
@@ -30,6 +31,7 @@ import { useDataConsistencyIssues } from "../hooks/useDataConsistencyIssues.ts"
 import { useDevices } from "../hooks/useDevices.ts"
 import { useDocuments } from "../hooks/useDocuments.ts"
 import { useEvents } from "../hooks/useEvents.ts"
+import { useLabels } from "../hooks/useLabels.ts"
 import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { useQueryParamState } from "../hooks/useQueryParamState.ts"
 import { useRegions } from "../hooks/useRegions.ts"
@@ -53,12 +55,13 @@ export default function AdminPage() {
     const { publishAllAlbumsInvalidatedEvent, publishFolderSynchronizationRequestedEvent, publishPhotosUploadingTriggeredEvent } = useEvents()
     const { configuration, updateConfigurationEntry } = useConfiguration()
     const { showCreateAirlineToast, showSynchronizePhotosToast, showCreateSelectedRegionToast, showCreatePlaceToast, showCreateVoucherToast,
-        showCreateDocumentToast, showCreateFlightToast, showCreateSubscriptionToast, showCreateTripTaskToast } = usePredefinedUserInput()
+        showCreateDocumentToast, showCreateFlightToast, showCreateSubscriptionToast, showCreateTripTaskToast, showCreateLabelToast } = usePredefinedUserInput()
 
     const [selectedKey, setSelectedKey] = useQueryParamState(KEY_URL_QUERY_PARAM_NAME)
     const [selectedTab, setSelectedTab] = useQueryParamState(TAB_URL_QUERY_PARAM_NAME, AdminMenuTabName.Trip)
 
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
+    const { labels, createLabel, updateLabelMetadata, removeLabel } = useLabels()
     const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: DeviceType.Agent })
     const { trips, createTripTask, removeTripTask, updateTripTaskTitle, updateTripTaskPriority } = useRegularTrips({ include: [TripIncludedEntity.WatchedFlights, TripIncludedEntity.Tasks] })
@@ -94,6 +97,11 @@ export default function AdminPage() {
             name: AdminMenuTabName.Airlines,
             label: t("menu.tab.label.airlines"),
             enabled: hasRole(UserRole.AirlineEdit)
+        },
+        {
+            name: AdminMenuTabName.Labels,
+            label: t("menu.tab.label.labels"),
+            enabled: hasRole(UserRole.LabelEdit)
         },
         {
             name: AdminMenuTabName.DataConsistencyIssues,
@@ -165,6 +173,10 @@ export default function AdminPage() {
 
     const handleAirlineCreated = () => {
         showCreateAirlineToast(createAirline)
+    }
+
+    const handleLabelCreated = () => {
+        showCreateLabelToast(createLabel)
     }
 
     const handleSubscriptionCreated = () => {
@@ -294,6 +306,19 @@ export default function AdminPage() {
                     <FloatingButton
                         icon={Plus}
                         onClick={handleAirlineCreated} />
+                </>
+            )}
+            {activeTab === AdminMenuTabName.Labels && hasRole(UserRole.LabelEdit) && (
+                <>
+                    <LabelCardGrid
+                        rowSize={6}
+                        columnSize={4}
+                        labels={labels}
+                        onLabelMetadataUpdated={updateLabelMetadata}
+                        onLabelRemoved={removeLabel} />
+                    <FloatingButton
+                        icon={Plus}
+                        onClick={handleLabelCreated} />
                 </>
             )}
             {activeTab === AdminMenuTabName.DataConsistencyIssues && hasRole(UserRole.MonitoringRead) && (

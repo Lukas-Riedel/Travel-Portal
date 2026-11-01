@@ -524,20 +524,12 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.remove.failed")
         )
 
-    const showAssignLabelToast = (createLabel: () => Promise<Label>) =>
+    const showRemoveLabelToast = (removeLabel: () => Promise<void>) =>
         showConfirmToast(
-            t("label.prompt.assign.message"),
-            createLabel,
-            t("label.prompt.assign.confirmed"),
-            t("label.prompt.assign.failed")
-        )
-
-    const showUnassignLabelToast = (removeLabel: () => Promise<void>) =>
-        showConfirmToast(
-            t("label.prompt.unassign.message"),
+            t("label.prompt.remove.message"),
             removeLabel,
-            t("label.prompt.unassign.confirmed"),
-            t("label.prompt.unassign.failed")
+            t("label.prompt.remove.confirmed"),
+            t("label.prompt.remove.failed")
         )
 
     const showUpdateAirlineLogoToast = (updateAirlineLogo: (logo: string) => Promise<Airline>) =>
@@ -1641,8 +1633,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showUpdateMainHighlightToast,
         showUpdateHighlightToast,
         showRemoveHighlightToast,
-        showAssignLabelToast,
-        showUnassignLabelToast,
+        showRemoveLabelToast,
         showUpdateLabelToast,
         showClearConversationToast,
         showCopyConversationToast

@@ -123,14 +123,6 @@
         public static function LabelUpdated(string $labelId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
         }
-        
-        public static function AutoAssignedPlaceLabelsInvalidated(string $placeId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("placeId" => $placeId));
-        }
-
-        public static function AutoAssignedLabelPlacesInvalidated(string $labelId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
-        }
 
         public static function CategoryInvalidated(string $categoryId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("categoryId" => $categoryId));

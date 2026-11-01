@@ -482,6 +482,7 @@
                 "trip": "Aktuální výlet",
                 "flights": "Sledované lety",
                 "airlines": "Aerolinky",
+                "labels": "Štítky",
                 "issues": "Hlášené problémy",
                 "configuration": "Konfigurace",
                 "devices": "Zařízení",
@@ -874,12 +875,7 @@
                 "confirmed": "Štítek byl úspěšně přidán",
                 "failed": "Nepodařilo se přidat štítek"
             },
-            "assign": {
-                "message": "Opravdu chceš přiřadit tento štítek?",
-                "confirmed": "Štítek byl úspěšně přiřazen",
-                "failed": "Nepodařilo se přiřadit štítek"
-            },
-            "unassign": {
+            "remove": {
                 "message": "Opravdu chceš odstranit tento štítek?",
                 "confirmed": "Štítek byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit štítek"

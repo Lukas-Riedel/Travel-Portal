@@ -2,6 +2,7 @@ export enum AdminMenuTabName {
     Trip = "trip",
     Flights = "flights",
     Airlines = "airlines",
+    Labels = "labels",
     DataConsistencyIssues = "issues",
     Configuration = "configuration",
     Devices = "devices",

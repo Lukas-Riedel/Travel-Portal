@@ -9,6 +9,7 @@ class BaseLabelTools(BaseCoreTools, ABC):
         return {
             "id": label.get("id"),
             "name": label.get("name"),
+            "description": label.get("metadata", {}).get("description"),
         }
 
 
@@ -32,6 +33,7 @@ class LabelReadTools(BaseLabelTools):
             A list of label objects, where each object contains:
             - id (string): Unique label identifier.
             - name (string): Label name (e.g. `"City"`).
+            - description (string): Short label description.
         """
         labels = self.core_client.get_labels()
         self._verify_error_response(labels)
@@ -41,19 +43,17 @@ class LabelReadTools(BaseLabelTools):
 
 class PlaceLabelReadTools(BaseLabelTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to query and inspect labels assigned to places in Travel Portal. Activate and apply this skill when the user asks about labels assigned to a specific place (e.g. "what labels does Prague have?", "show me the labels for Angkor Wat").'
+        return 'Provides capabilities to inspect automatically matched labels for places in Travel Portal. Activate and apply this skill when the user asks what labels a place has (e.g. "what labels does Prague have?", "show me the labels for Angkor Wat"). Place labels are derived from highlight similarity and cannot be manually assigned or removed.'
 
     def _get_supported_skill(self) -> str:
         return "place.label.read"
 
     def _get_tools(self) -> list[Any]:
-        return [
-            self.get_labels_for_place,
-        ]
+        return [self.get_labels_for_place]
 
     def get_labels_for_place(self, place_id: str) -> list[dict[str, Any]]:
-        """Retrieves the labels assigned to a specific place.
-        Use this when the user asks which labels are assigned to a place - for example "what labels does Prague have?" or "show me the labels for Angkor Wat". Resolve the place first using place tools. Never ask the user for a UUID.
+        """Retrieves the labels automatically matched to a specific place.
+        Resolve the place first using place tools. Never ask the user for a UUID.
 
         Args:
             place_id: The unique identifier of the place, resolved using place tools.
@@ -62,6 +62,7 @@ class PlaceLabelReadTools(BaseLabelTools):
             A list of label objects for the place, where each object contains:
             - id (string): Unique label identifier.
             - name (string): Label name (e.g. `"City"`).
+            - description (string): Short label description.
         """
         place = self.core_client.get_place(place_id=place_id)
         self._verify_error_response(place)
@@ -69,67 +70,62 @@ class PlaceLabelReadTools(BaseLabelTools):
         return [self._extract_label(label) for label in place.get("labels", [])]
 
 
-class PlaceLabelEditTools(BaseLabelTools):
+class LabelEditTools(BaseLabelTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to assign existing labels to places, create new labels after user confirmation, and unassign labels from places. Activate and apply this skill when the user asks to label a place, assign an existing label, create a new label for a place, or remove a label from a place (e.g. "label Prague as a city", "add the City label to Bangkok", "create a new label called UNESCO Site for Angkor Wat", "remove the City label from Prague").'
+        return "Provides capabilities to create and update standalone labels in Travel Portal. Activate and apply this skill when the user asks to manage a label or its description. Labels are automatically matched to place highlights; they cannot be manually assigned to or removed from individual places."
 
     def _get_supported_skill(self) -> str:
-        return "place.label.edit"
+        return "label.edit"
 
     def _get_tools(self) -> list[Any]:
         return [
-            self.assign_label_to_place,
-            self.unassign_label_from_place,
+            self.create_label,
+            self.update_label_description,
         ]
 
-    def assign_label_to_place(
+    def create_label(
         self,
-        place_id: str,
-        label_name: str,
+        name: str,
+        description: str | None = None,
     ) -> dict[str, Any]:
-        """Assigns an existing label to a place or creates a new label after user confirmation.
-        Use this when the user asks to apply a label to a place - for example "label Prague as a city" or "add the City label to Angkor Wat". Resolve the place first using place tools and select an existing label from the available labels. If the label does not exist, call this only after the user explicitly confirms creating it. Never ask the user for a UUID.
+        """Creates a standalone label, optionally with a description.
+        Use this when the user asks to create a label (e.g. "create a label called City").
+        The description is used to match the label to place highlights. Labels are matched automatically and cannot be manually assigned to places.
 
         Args:
-            place_id: The unique identifier of the place, resolved using place tools.
-            label_name: The exact name of an existing label selected from available labels, or the new label name after explicit user confirmation (e.g. "City").
+            name: Name of the label to create (e.g. "City").
+            description: Optional description used to match the label to place highlights (e.g. "urban area with dense buildings and public transport").
 
         Returns:
-            The assigned label object containing:
+            The label object containing:
             - id (string): Unique label identifier.
-            - place_id (string): Unique identifier of the place.
-            - place_name (string): Name of the place (e.g. `"Prague"`).
             - name (string): Label name (e.g. `"City"`).
+            - description (string): Short label description.
         """
-        assigned_label = self.core_client.create_place_label(
-            place_id=place_id,
-            name=label_name,
-        )
-        self._verify_error_response(assigned_label)
+        label = self.core_client.create_label(name=name, description=description)
+        self._verify_error_response(label)
 
-        return self._extract_label(assigned_label)
+        return self._extract_label(label)
 
-    def unassign_label_from_place(
-        self,
-        place_id: str,
-        label_id: str,
+    def update_label_description(
+        self, label_id: str, description: str
     ) -> dict[str, Any]:
-        """Unassigns a label from a place. The label itself is not deleted and remains available for other places.
-        Use this when the user asks to remove a label from a place - for example "remove the City label from Prague" or "unlabel Angkor Wat as a UNESCO Site". Resolve the place first using place tools and find the label ID among the labels assigned to the place using get_labels_for_place. Never ask the user for a UUID.
+        """Updates the description of an existing standalone label.
+        Use this when the user asks to change the description that controls matching to place highlights.
+        Always resolve the label ID using get_labels. Never ask the user for a UUID.
 
         Args:
-            place_id: The unique identifier of the place, resolved using place tools.
-            label_id: The unique identifier of the label currently assigned to the place, resolved using get_labels_for_place.
+            label_id: The `id` of the label as returned by get_labels.
+            description: New description used to match the label to place highlights.
 
         Returns:
-            A confirmation object indicating successful unassignment containing:
-            - deleted (boolean): True if unassignment succeeded.
-            - id (string): Unique identifier of the unassigned label.
+            The label object containing:
+            - id (string): Unique label identifier.
+            - name (string): Label name (e.g. `"City"`).
+            - description (string): Short label description.
         """
-        result = self.core_client.delete_place_label(
-            place_id=place_id,
-            label_id=label_id,
+        updated_label = self.core_client.update_label(
+            label_id=label_id, description=description
         )
-        self._verify_error_response(result)
-
-        return {"deleted": True, "id": label_id}
+        self._verify_error_response(updated_label)
+        return self._extract_label(updated_label)

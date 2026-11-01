@@ -447,17 +447,6 @@ class CoreClient:
 
         return self._request(method="DELETE", url=url, params=params)
 
-    def create_place_label(self, place_id: str, name: str) -> dict[str, Any]:
-        url = f"{self.base_url}/places/{place_id}/labels"
-        payload = {"name": name}
-
-        return self._request(method="POST", url=url, json=payload)
-
-    def delete_place_label(self, place_id: str, label_id: str) -> dict[str, Any] | None:
-        url = f"{self.base_url}/places/{place_id}/labels/{label_id}"
-
-        return self._request(method="DELETE", url=url)
-
     def create_place_note(self, place_id: str, content: str) -> dict[str, Any]:
         url = f"{self.base_url}/places/{place_id}/notes"
         payload = {"content": content}
@@ -468,6 +457,24 @@ class CoreClient:
         url = f"{self.base_url}/labels"
 
         return self._request(method="GET", url=url)
+
+    def create_label(
+        self,
+        name: str,
+        description: str | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.base_url}/labels"
+        payload = {"name": name}
+        if description is not None:
+            payload["metadata"] = {"description": description}
+
+        return self._request(method="POST", url=url, json=payload)
+
+    def update_label(self, label_id: str, description: str) -> dict[str, Any]:
+        url = f"{self.base_url}/labels/{label_id}"
+        payload = {"metadata": {"description": description}}
+
+        return self._request(method="PATCH", url=url, json=payload)
 
     def update_place_note(
         self, place_id: str, note_id: str, content: str | None = None
