@@ -87,6 +87,26 @@
                 ->getSingleColumn("id");
         }
 
+        public function insertHighlightLabel(string $highlightId, string $labelId, float $similarity) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO label_highlight (
+                    highlight_id,
+                    label_id,
+                    similarity
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    ?
+                )
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($highlightId, $labelId, $similarity)
+                ->execute() === 1;
+        }
+
         public function insertLabel(string $placeId, string $labelId) : bool {
             $sql = <<<'SQL'
                 INSERT INTO label (
@@ -175,7 +195,20 @@
                 ->withParameters($highlightIdentifier, $labelId)
                 ->execute() === 1;
         }
+        
+        public function deleteLabelForHighlight(string $highlightId, string $labelId) : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM label_highlight
+                WHERE highlight_id = ?
+                    AND label_id = ?
+            SQL;
 
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($highlightId, $labelId)
+                ->execute();
+        }
 
         public function deleteLabelForPlace(string $placeId, string $labelId) : int {
             $sql = <<<'SQL'

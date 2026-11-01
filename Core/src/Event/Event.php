@@ -40,8 +40,8 @@
             return new WebhookEvent(Event::CalendarInvalidated($calendar), $ttl);
         }
 
-        public static function HighlightCreated(string $highlightType, string $entityId, string $highlightId) : Event {
-            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId));
+        public static function HighlightCreated(string $highlightType, string $entityId, string $highlightId, string $photoId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Highest, array("highlightType" => HighlightType::from($highlightType)->value, "entityId" => $entityId, "highlightId" => $highlightId, "photoId" => $photoId));
         }
 
         public static function HighlightUpdated(string $highlightType, string $entityId, string $highlightId) : Event {

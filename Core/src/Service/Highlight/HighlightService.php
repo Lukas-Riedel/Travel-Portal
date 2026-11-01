@@ -114,18 +114,18 @@
 
             $highlightId = $this->getOrCreateHighlightId($photoId);
 
-            $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$placeService) {
+            $this->transactionManager->executeAtomically(function() use(&$placeId, &$highlightId, &$photoId, &$placeService) {
                 $this->highlightMapper->insertHighlight(HighlightType::Place, $placeId, $highlightId);
 
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId));
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Place->value, $placeId, $highlightId, $photoId));
                 // TODO: Move this to onHighlightCreated.
                 $place = $placeService->getRegularPlace($placeId);
                 foreach ($place->getCategories() as &$category) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $category->getId(), $highlightId, $photoId));
                 }
                 // TODO: Move this to onHighlightCreated.
                 foreach ($place->getLabels() as &$label) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Label->value, $label->getId(), $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Label->value, $label->getId(), $highlightId, $photoId));
                 }
             });
 
@@ -140,12 +140,12 @@
 
             $highlightId = $this->getOrCreateHighlightId($photoId);
 
-            $this->transactionManager->executeAtomically(function() use(&$tripId, &$highlightId, &$tripService) {
+            $this->transactionManager->executeAtomically(function() use(&$tripId, &$highlightId, &$photoId, &$tripService) {
                 $this->highlightMapper->insertHighlight(HighlightType::Trip, $tripId, $highlightId);
 
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId));         
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Trip->value, $tripId, $highlightId, $photoId));         
                 // TODO: Move this to onHighlightCreated.       
-                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId));   
+                $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $tripService->getRegularTrip($tripId)->getYear(), $highlightId, $photoId));   
             });         
 
             $this->updateHighlight($highlightId);
@@ -163,11 +163,11 @@
             }
 
             $wasCreated = true;
-            $this->transactionManager->executeAtomically(function() use(&$categoryId, &$highlightId, &$wasCreated) {
+            $this->transactionManager->executeAtomically(function() use(&$categoryId, &$highlightId, &$photoId, &$wasCreated) {
                 // TODO: Throw an exception if the highlight couldn't be created (because it already exists -> HTTP 400).
                 $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Category, $categoryId, $highlightId) > 0;
                 if ($wasCreated) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Category->value, $categoryId, $highlightId, $photoId));
                 }                   
             });
 
@@ -179,7 +179,7 @@
             $tripHighlightExists = !empty($this->highlightMapper->selectEntityIdsForHighlightId(HighlightType::Trip, $highlightId));
 
             $wasCreated = true;
-            $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$wasCreated, &$tripHighlightExists) {
+            $this->transactionManager->executeAtomically(function() use(&$year, &$highlightId, &$photoId, &$wasCreated, &$tripHighlightExists) {
                 if ($tripHighlightExists) {
                     // TODO: Throw an exception if the highlight couldn't be created (because it already exists -> HTTP 400).
                     $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Year, $year, $highlightId) > 0;
@@ -190,7 +190,7 @@
                 }
 
                 if ($wasCreated) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $year, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Year->value, $year, $highlightId, $photoId));
                 }                  
             });
 
@@ -264,11 +264,11 @@
             }
 
             $wasCreated = true;
-            $this->transactionManager->executeAtomically(function() use(&$labelId, &$highlightId, &$wasCreated) {
+            $this->transactionManager->executeAtomically(function() use(&$labelId, &$highlightId, &$photoId, &$wasCreated) {
                 // TODO: Throw an exception if the highlight couldn't be created (because it already exists -> HTTP 400).
                 $wasCreated &= $this->highlightMapper->deleteHighlight(HighlightType::Label, $labelId, $highlightId) > 0;
                 if ($wasCreated) {
-                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Label->value, $labelId, $highlightId));
+                    $this->eventPublisher->publish(Event::HighlightCreated(HighlightType::Label->value, $labelId, $highlightId, $photoId));
                 }
             });
 

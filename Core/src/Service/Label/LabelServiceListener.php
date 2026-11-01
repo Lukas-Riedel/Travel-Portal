@@ -1,13 +1,16 @@
 <?php
     namespace Core\Service\Label;
 
+    use Core\Client\Embedding\EmbeddingClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightType;
-    use Core\Service\Place\PlaceService;
+    use Core\Service\Photo\PhotoService;
+use Core\Service\Place\PlaceIncludedEntity;
+use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
     use Monolog\Logger;
 
@@ -18,18 +21,22 @@
         
         private readonly LabelService $labelService;
         private readonly PlaceService $placeService;
+        private readonly PhotoService $photoService;
         private readonly ConfigurationService $configurationService;
+        private readonly EmbeddingClient $embeddingClient;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
         private readonly Logger $logger;
 
         private readonly int $maxHighlightsPerLabelCount;
 
-        public function __construct(LabelService $labelService, PlaceService $placeService, ConfigurationService $configurationService, EventPublisher $eventPublisher,
-            Scheduler $scheduler, Logger $logger, int $maxHighlightsPerLabelCount) {
+        public function __construct(LabelService $labelService, PlaceService $placeService, PhotoService $photoService, ConfigurationService $configurationService,
+            EmbeddingClient $embeddingClient, EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger, int $maxHighlightsPerLabelCount) {
             $this->labelService = $labelService;
             $this->placeService = $placeService;
+            $this->photoService = $photoService;
             $this->configurationService = $configurationService;
+            $this->embeddingClient = $embeddingClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
             $this->logger = $logger;
@@ -63,6 +70,11 @@
                 if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
                     $this->labelService->refreshLabelHighlights($message["labelId"], $this->maxHighlightsPerLabelCount);
                 }
+
+                $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
+                if (!in_array($label->getName(), $dynamicLabelNames)) {
+                    $this->reassignLabelToHighlights($label);
+                }
             }
         }
 
@@ -76,6 +88,27 @@
                     
                     if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
                         $this->labelService->refreshLabelHighlights($message["entityId"], $this->maxHighlightsPerLabelCount);
+                    }
+                }
+            }
+            
+            if ($message["highlightType"] === HighlightType::Place->value) {
+                $highlightEmbedding = $this->photoService->getPhotoEmbedding($message["photoId"])?->getEmbedding();
+                if ($highlightEmbedding !== null) {
+                    foreach ($this->labelService->getAllLabels(array()) as &$label) {
+                        $labelDescription = $label->getMetadata()?->getDescription();
+                        if ($labelDescription === null) {
+                            continue;
+                        }
+
+                        // TODO: Do not harcode the language here. The value depends on language that the label description is written in.
+                        $labelEmbedding = $this->embeddingClient->getTextEmbedding($labelDescription, "cs");
+                        if ($labelEmbedding === null) {
+                            continue;
+                        }
+
+                        $labelSimilarity = $this->embeddingClient->getEmbeddingSimilarity($labelEmbedding, $highlightEmbedding);
+                        $this->labelService->reassignLabelToHighlight($message["highlightId"], $label->getId(), $labelSimilarity);
                     }
                 }
             }
@@ -114,16 +147,45 @@
         }
 
         public function onLabelCreated(mixed $message) : void {
-            $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
-            $label = $this->labelService->getLabel($message["labelId"]);            
-            if ($label !== null && !in_array($label->getName(), $dynamicLabelNames)) {
-                $this->labelService->assignPlacesToLabel($label);
+            $label = $this->labelService->getLabel($message["labelId"]);  
+            if ($label !== null) {
+                $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
+                if (!in_array($label->getName(), $dynamicLabelNames)) {
+                    $this->labelService->assignPlacesToLabel($label);
+
+                    $this->reassignLabelToHighlights($label);
+                }
             }
         }
 
         public function onSchedulerTriggered(mixed $message) : void {
             if ($this->scheduler->requestExecution(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME, self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL)) {
                 $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());
+            }
+        }
+
+        private function reassignLabelToHighlights(Label $label) : void {
+            $labelDescription = $label->getMetadata()?->getDescription();
+            if ($labelDescription !== null) {
+                // TODO: Do not harcode the language here. The value depends on language that the label description is written in.
+                $labelEmbedding = $this->embeddingClient->getTextEmbedding($labelDescription, "cs");
+
+                if ($labelEmbedding !== null) {
+                    $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null, null,
+                        null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
+                    
+                    foreach ($places as &$place) {
+                        foreach ($place->getHighlights() as &$highlight) {
+                            $highlightEmbedding = $this->photoService->getPhotoEmbedding($highlight->getPhoto()->getId())?->getEmbedding();
+                            if ($highlightEmbedding === null) {
+                                continue;
+                            }
+
+                            $labelSimilarity = $this->embeddingClient->getEmbeddingSimilarity($labelEmbedding, $highlightEmbedding);
+                            $this->labelService->reassignLabelToHighlight($highlight->getId(), $label->getId(), $labelSimilarity);
+                        }
+                    }
+                }                    
             }
         }
     }

@@ -71,6 +71,13 @@
             return $label;
         }
 
+        public function reassignLabelToHighlight(string $highlightId, string $labelId, float $similarity) : void {
+            $this->transactionManager->executeAtomically(function() use(&$highlightId, &$labelId, &$similarity) {
+                $this->labelMapper->deleteLabelForHighlight($highlightId, $labelId);
+                $this->labelMapper->insertHighlightLabel($highlightId, $labelId, $similarity);
+            });
+        }
+
         public function getAllLabels(array $includedEntities) : array {
             return $this->labelMapper->selectLabels(null, null, $includedEntities);
         }
@@ -90,7 +97,7 @@
             }
 
             $labelId = null;
-            $this->transactionManager->executeAtomically(function() use($labelName, &$labelId) {
+            $this->transactionManager->executeAtomically(function() use(&$labelName, &$labelId) {
                 $labelId = $this->labelMapper->insertLabelId($labelName);
                 $this->eventPublisher->publish(Event::LabelCreated($labelId));
             });
@@ -108,7 +115,11 @@
         }
 
         public function updateLabelDescription(string $labelId, string $description) : bool {
-            return $this->labelMapper->updateLabelDescription($labelId, $description);
+            $wasUpdated = $this->labelMapper->updateLabelDescription($labelId, $description);
+            if ($wasUpdated) {
+                $this->eventPublisher->publish(Event::LabelUpdated($labelId));
+            }
+            return $wasUpdated;
         }
 
         public function updateLabelUnicode(string $labelId, string $unicode) : bool {

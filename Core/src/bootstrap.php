@@ -285,7 +285,7 @@
         new YearServiceListener($yearService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
-        new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
+        new LabelServiceListener($labelService, $placeService, $photoService, $configurationService, $embeddingClient, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
         new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD")), intval(getenv("SUBSCRIPTION_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new DocumentServiceListener($documentService, $eventPublisher, $scheduler, intval(getenv("DOCUMENT_EXPIRING_NOTIFICATION_THRESHOLD"))),
