@@ -29,6 +29,14 @@
 
         private const OLD_TRIP_EVENT_TEMPORARY_TABLE = "old_trip_event";
 
+        private const KEYWORDS_RESPONSE_SCHEMA = array(
+            "type" => "array",
+            "items" => array(
+                "type" => "string",
+                "description" => "An English keyword or short visual phrase for the trip."
+            )
+        );
+
         private const YEAR_FORMAT = "Y";
 
         private readonly TripMapper $tripMapper;
@@ -73,11 +81,19 @@
             $places = $this->placeService->getRegularPlaces(null, null, $tripId, null, null, null, null, null,
                 null, null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["tripHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["tripKeywords"];
+            $response = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))), self::KEYWORDS_RESPONSE_SCHEMA);
+
+            $keywords = array($trip->getName());
+            if ($response !== null) {
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)) {
+                    $keywords = $decoded;
+                }
+            }
 
             $tripPlaceHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places)));
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query ?? $trip->getName(), $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $keywords, $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
 
             foreach ($trip->getHighlights() as &$highlight) {
                 if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {

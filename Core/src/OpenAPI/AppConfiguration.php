@@ -76,12 +76,15 @@
         type: "object",
         description: "The generative content prompt configuration",
         properties: [
+            new OA\Property(property: "calories", type: "string", example: "Determine the approximate calories for the meal \"{description}\" and output only one rounded number."),
             new OA\Property(property: "placeExcerpt", type: "string", example: "Write a travel blog article about {name} ({country}) in region {region}."),
             new OA\Property(property: "alternativeAddress", type: "string", example: "Find an alternative name for the place \"{address}\" for use with the Geocoding API."),
-            new OA\Property(property: "tripHighlightsSelecting", type: "string", example: "CLIP prompt for a trip covering: {places}."),
-            new OA\Property(property: "yearHighlightsSelecting", type: "string", example: "CLIP prompt for the year's best moments from: {places}."),
-            new OA\Property(property: "placeHighlightsSelecting", type: "string", example: "CLIP prompt for {name} in {country}."),
-            new OA\Property(property: "categoryHighlightsSelecting", type: "string", example: "CLIP prompt for the region {name} containing: {places}.")
+            new OA\Property(property: "tripKeywords", type: "string", example: "Generate 5 to 10 visual keywords for a trip covering: {places}."),
+            new OA\Property(property: "yearKeywords", type: "string", example: "Generate 5 to 10 visual keywords for the year's best moments from: {places}."),
+            new OA\Property(property: "placeKeywords", type: "string", example: "Generate 5 to 10 visual keywords for {name} in {country}."),
+            new OA\Property(property: "categoryKeywords", type: "string", example: "Generate 5 to 10 visual keywords for the region {name} containing: {places}."),
+            new OA\Property(property: "labelAutoAssignmentForLabel", type: "string", example: "Evaluate whether each place in {places} is clearly known for the label {label}."),
+            new OA\Property(property: "labelAutoAssignmentForPlace", type: "string", example: "Evaluate whether the place {name} ({country}) is clearly known for each of these labels: {labels}.")
         ]
     )]
     #[OA\Schema(
@@ -100,8 +103,7 @@
                     new OA\Property(property: "composition", type: "array", items: new OA\Items(ref: "#/components/schemas/HighlightAttributeConfigurationOption")),
                     new OA\Property(property: "circumstances", type: "array", items: new OA\Items(ref: "#/components/schemas/HighlightAttributeConfigurationOption"))
                 ]
-            ),
-            new OA\Property(property: "negativeTerms", type: "array", items: new OA\Items(type: "string", example: "macro photography"))
+            )
         ]
     )]
     #[OA\Schema(

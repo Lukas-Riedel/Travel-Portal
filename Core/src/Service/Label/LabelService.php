@@ -118,7 +118,7 @@
 
             $places = $this->placeService->getRegularPlaces(null, $labelId, null, null, null, null, null, null,
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $count,
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $label->getName(), $count,
                 $label->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
 
             foreach ($label->getHighlights() as &$highlight) {

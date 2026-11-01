@@ -144,10 +144,6 @@
   value: "{{ .Values.core.highlight.selecting.candidate.coefficient }}"
 - name: CLUSTERS_COUNT_COEFFICIENT
   value: "{{ .Values.core.highlight.selecting.cluster.coefficient }}"
-- name: STYLE_EMBEDDING_COEFFICIENT
-  value: "{{ .Values.core.highlight.selecting.embedding.style.coefficient }}"
-- name: NEGATIVE_EMBEDDING_COEFFICIENT
-  value: "{{ .Values.core.highlight.selecting.embedding.negative.coefficient }}"
 - name: HIGHLIGHT_SCORE_MULTIPLIER
   value: "{{ .Values.core.place.score.multiplier.highlight }}"
 - name: PHOTO_SCORE_MULTIPLIER

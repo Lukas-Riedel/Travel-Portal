@@ -27,6 +27,14 @@
 
         private const HIGHLIGHTS_SELECTING_PLACE_LIMIT = 20;
 
+        private const KEYWORDS_RESPONSE_SCHEMA = array(
+            "type" => "array",
+            "items" => array(
+                "type" => "string",
+                "description" => "An English keyword or short visual phrase for the category."
+            )
+        );
+
         private readonly CategoryMapper $categoryMapper;        
         private readonly EventPublisher $eventPublisher;
         private readonly CacheClient $memoryCacheClient;
@@ -62,10 +70,18 @@
             $places = $placeService->getRegularPlaces($categoryId, null, null, null, null, null, null, null,
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["categoryHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), array_slice($places, 0, self::HIGHLIGHTS_SELECTING_PLACE_LIMIT)))));
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["categoryKeywords"];
+            $response = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $category->getName(), "places" => implode(", ", array_map(fn($place) => $place->getName(), array_slice($places, 0, self::HIGHLIGHTS_SELECTING_PLACE_LIMIT)))), self::KEYWORDS_RESPONSE_SCHEMA);
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $query ?? $category->getName(), $count,
+            $keywords = array($category->getName());
+            if ($response !== null) {
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)) {
+                    $keywords = $decoded;
+                }
+            }
+
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForCategory(array_map(fn($place) => $place->getId(), $places), $keywords, $count,
                 $category->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
 
             foreach ($category->getHighlights() as &$highlight) {

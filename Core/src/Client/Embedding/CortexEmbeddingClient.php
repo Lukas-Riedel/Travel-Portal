@@ -16,8 +16,6 @@
         private const TEXT_EMBEDDING_CACHE_KEY_FORMAT = "CortexEmbeddingClient:TextEmbedding:%s";
         private const TEXT_EMBEDDING_CACHE_TTL = CommonConstants::ONE_YEAR_SECONDS;
 
-        // TODO: Do not hardcode the source language here.
-        private const TEXT_EMBEDDING_SOURCE_LANGUAGE = "cs";
         private const TEXT_EMBEDDING_TARGET_LANGUAGE = "en";
 
         private readonly AuthenticationService $authenticationService;
@@ -45,15 +43,17 @@
             return isset($response["embedding"]) && is_array($response["embedding"]) ? $response["embedding"] : null;
         }
 
-        public function getTextEmbedding(string $text) : ?array {
-            $cacheKey = sprintf(self::TEXT_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", mb_strtolower($text)));
+        public function getTextEmbedding(string $text, string $language) : ?array {
+            $language = strtolower($language);
+
+            $cacheKey = sprintf(self::TEXT_EMBEDDING_CACHE_KEY_FORMAT, hash("sha256", $language . ":" . mb_strtolower($text)));
             $cachedEmbedding = $this->distributedCacheClient->get($cacheKey, self::TEXT_EMBEDDING_CACHE_TTL);
             if ($cachedEmbedding !== null) {
                 return $cachedEmbedding;
             }
 
-            $translatedText = $this->translationClient->translate($text, self::TEXT_EMBEDDING_SOURCE_LANGUAGE, self::TEXT_EMBEDDING_TARGET_LANGUAGE);
-            $payload = array("data" => $translatedText);
+            $embeddingText = $language === self::TEXT_EMBEDDING_TARGET_LANGUAGE ? $text : $this->translationClient->translate($text, $language, self::TEXT_EMBEDDING_TARGET_LANGUAGE);
+            $payload = array("data" => $embeddingText);
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getCortexBaseUrl() . self::TEXT_EMBEDDING_API_ENDPOINT_PATH,
                 array("Authorization: Bearer " . $this->authenticationService->getServiceAccessToken(), "Content-Type: application/json"), json_encode($payload));

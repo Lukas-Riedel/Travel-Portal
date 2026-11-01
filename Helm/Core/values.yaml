@@ -99,11 +99,6 @@ core:
         coefficient: "20"
       cluster:
         coefficient: "3.1"
-      embedding:
-        style:
-          coefficient: "0.3"
-        negative:
-          coefficient: "0.2"
   generative:
     token:
       compactification:
