@@ -1,5 +1,5 @@
 
-import { createLabelHighlight, getLabel, refreshLabelHighlights, removeLabelHighlight, updateHighlightQualityAttributes,updateLabelMainHighlight, updateLabelMetadata, updateLabelName } from "../clients/coreClient.ts"
+import { createLabelHighlight, getLabel, refreshLabelHighlights, removeLabel, removeLabelHighlight, updateHighlightQualityAttributes,updateLabelMainHighlight, updateLabelMetadata, updateLabelName } from "../clients/coreClient.ts"
 import type { LabelMetadata } from "../types/CoreSwaggerTypes.ts"
 import type { UseLabelResult } from "../types/UseLabelResult.ts"
 import { ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
@@ -15,6 +15,7 @@ export const useLabel = (labelId?: string): UseLabelResult => {
 
     return {
         label: response,
+        removeLabel: () => removeLabel(labelId!),
         updateLabelName: (name: string) => updateLabelName(labelId!, name).then(setResponse),
         updateLabelMetadata: (metadata: LabelMetadata) => updateLabelMetadata(labelId!, metadata).then(setResponse),
         updateLabelMainHighlight: (highlightId: string) => updateLabelMainHighlight(labelId!, highlightId).then(setResponse),

@@ -3,7 +3,7 @@ package cz.lriedel.agent.model.request;
 import lombok.Builder;
 import org.apache.commons.lang3.Validate;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record PhotoPrototype(String fileName, @Nullable String batchId, @Nullable Integer expectedBatchSize, @Nullable Integer batchPosition,

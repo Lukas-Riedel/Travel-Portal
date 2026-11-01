@@ -16,11 +16,13 @@ import CandidateCategoryPage from "./pages/CandidateCategoryPage.jsx"
 import CandidateLabelPage from "./pages/CandidateLabelPage.jsx"
 import CategoryHighlightsPage from "./pages/CategoryHighlightsPage.jsx"
 import CategoryPage from "./pages/CategoryPage.jsx"
+import ChatPage from "./pages/ChatPage.tsx"
 import CountriesPage from "./pages/CountriesPage.jsx"
 import FlightsPage from "./pages/FlightsPage.jsx"
 import LabelHighlightsPage from "./pages/LabelHighlightsPage.jsx"
 import LabelPage from "./pages/LabelPage.jsx"
 import LabelsPage from "./pages/LabelsPage.tsx"
+import LifestylePage from "./pages/LifestylePage.tsx"
 import PlaceHighlightsPage from "./pages/PlaceHighlightsPage.jsx"
 import PlacePage from "./pages/PlacePage.jsx"
 import PlansPage from "./pages/PlansPage.jsx"
@@ -66,6 +68,24 @@ export default function App() {
             toast.success(t("notification.voucherExpiring", { issuer: event.args.issuer, value: event.args.value, currency: event.args.currency, formattedExpiration: formatTimestamp(event.args.expiration, t("general.format.date.year.included")) }))
         })
     }, [voucherExpiringEvents])
+
+    const { events: subscriptionExpiringEvents } = useEvents(EventType.SubscriptionExpiring)
+    useEffect(() => {
+        (subscriptionExpiringEvents ?? []).forEach(event => {
+            event.markAsRead()
+
+            toast.success(t("notification.subscriptionExpiring", { description: event.args.description, formattedExpiration: formatTimestamp(event.args.expiration, t("general.format.date.year.included")) }))
+        })
+    }, [subscriptionExpiringEvents])
+
+    const { events: documentExpiringEvents } = useEvents(EventType.DocumentExpiring)
+    useEffect(() => {
+        (documentExpiringEvents ?? []).forEach(event => {
+            event.markAsRead()
+
+            toast.success(t("notification.documentExpiring", { name: event.args.name, formattedExpiration: formatTimestamp(event.args.expiration, t("general.format.date.year.included")) }))
+        })
+    }, [documentExpiringEvents])
 
     const { events: flightLoggedEvents } = useEvents(EventType.FlightLogged)
     useEffect(() => {
@@ -167,6 +187,8 @@ function AppContent() {
             <Route path="/plan/label/:labelId" element={<MainLayout><CandidateLabelPage /></MainLayout>} />
             <Route path="/plan/trip/:tripId" element={<MainLayout><TripPage /></MainLayout>} />
             <Route path="/admin" element={<MainLayout><AdminPage /></MainLayout>} />
+            <Route path="/chat" element={<MainLayout><ChatPage /></MainLayout>} />
+            <Route path="/lifestyle" element={<MainLayout><LifestylePage /></MainLayout>} />
         </Routes>
     ) : (
         <MainLayout>

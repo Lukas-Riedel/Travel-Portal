@@ -1,6 +1,6 @@
-import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { useAppNavigate } from "../hooks/useAppNavigate"
 import type { Category } from "../types/CoreSwaggerTypes"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import Map from "./Map"
 
 interface PlaceMapProps {

@@ -14,6 +14,16 @@
     use Core\Service\Trip\TripSortingStrategy;
 
     class YearService {
+
+        private const HIGHLIGHTS_SELECTING_PLACE_LIMIT = 20;
+
+        private const KEYWORDS_RESPONSE_SCHEMA = array(
+            "type" => "array",
+            "items" => array(
+                "type" => "string",
+                "description" => "An English keyword or short visual phrase for the year."
+            )
+        );
         
         private readonly YearMapper $yearMapper;
         private readonly PlaceService $placeService;
@@ -45,10 +55,18 @@
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
             $trips = $tripService->getRegularTrips($yearId, null, time(), array(TripIncludedEntity::Highlights->value), TripSortingStrategy::OldestAscending);
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["yearHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["yearKeywords"];
+            $response = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), array_slice($places, 0, self::HIGHLIGHTS_SELECTING_PLACE_LIMIT)))), self::KEYWORDS_RESPONSE_SCHEMA);
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear($yearId, $query ?? $yearId, $count,
+            $keywords = array((string) $yearId);
+            if ($response !== null) {
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)) {
+                    $keywords = $decoded;
+                }
+            }
+
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForYear($yearId, $keywords, $count,
                 $year->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($trip) => $trip->getMainHighlight()?->getPhoto()?->getId(), $trips)));
 
             foreach ($year->getHighlights() as &$highlight) {

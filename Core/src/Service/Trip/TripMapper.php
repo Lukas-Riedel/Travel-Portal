@@ -5,6 +5,7 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\WhereClauseBuilder;
     use Core\Common\CommonConstants;
+    use Core\Service\CarRental\CarRentalService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
     use Core\Service\Flight\FlightService;
@@ -21,6 +22,7 @@
         private readonly CalendarClient $calendarClient;
         private readonly PlaceService $placeService;
         private readonly StayService $stayService;
+        private readonly CarRentalService $carRentalService;
         private readonly FlightService $flightService;
         private readonly ExpenseService $expenseService;
         private readonly FitnessService $fitnessService;
@@ -30,12 +32,13 @@
         private readonly TaskService $taskService;
 
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient,
-            PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
+            PlaceService $placeService, StayService $stayService, CarRentalService $carRentalService, FlightService $flightService, ExpenseService $expenseService, FitnessService $fitnessService,
             NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, TaskService $taskService) {
             $this->databaseClient = $databaseClient;
             $this->calendarClient = $calendarClient;
             $this->placeService = $placeService;
             $this->stayService = $stayService;
+            $this->carRentalService = $carRentalService;
             $this->flightService = $flightService;
             $this->expenseService = $expenseService;
             $this->fitnessService = $fitnessService;
@@ -157,7 +160,7 @@
         
                     return new Trip($tripIdentifierRow["id"], $tripIdentifierRow["name"], null, null, 
                         null, null, array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories),
-                        array(), array(), array(), array(), array(), $notes, array(), array(), array(), $publicHolidays);
+                        array(), array(), array(), array(), array(), array(), $notes, array(), array(), array(), $publicHolidays);
                 });
         }
 
@@ -256,6 +259,11 @@
                     $stays = $this->stayService->getStaysForTrip($tripRow["id"]);                        
                 }
 
+                $carRentals = array();
+                if (in_array(TripIncludedEntity::CarRentals->value, $includedEntities)) {
+                    $carRentals = $this->carRentalService->getCarRentalsForTrip($tripRow["id"]);
+                }
+
                 $flights = array();
                 if (in_array(TripIncludedEntity::Flights->value, $includedEntities)) {
                     $flights = $this->flightService->getScheduledFlightsForTrip($tripRow["id"]);             
@@ -306,7 +314,7 @@
                 }
 
                 $trips[] = new Trip($tripRow["id"], $tripRow["name"], $tripRow["year"], $mainHighlights[$tripRow["main_highlight_id"]] ?? null, $tripRow["start"],
-                    $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $flights, $watchedFlights,
+                    $tripRow["end"], array_map(fn($countryCategory) => $countryCategory->getName(), $countryCategories), $expenses, $stays, $carRentals, $flights, $watchedFlights,
                     $fitness, $notes, $highlights, $statistics, $tasks, $publicHolidays);
             }
 

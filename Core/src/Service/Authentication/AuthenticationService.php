@@ -9,33 +9,37 @@
 
     class AuthenticationService {
         
-        private const SERVICE_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:ServiceAccessToken";
+        private const SERVICE_ACCESS_TOKEN_CACHE_KEY_FORMAT = "AuthenticationService:ServiceToken:%s:%s";
         private const GOOGLE_API_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleApiAccessToken";
         private const GOOGLE_FCM_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:GoogleFcmAccessToken";
         private const IBM_CLOUD_ACCESS_TOKEN_CACHE_KEY = "AuthenticationService:IbmCloudAccessToken";
 
         private const TOKEN_API_ENDPOINT_PATH = "/token";
+        private const USER_ROLES_API_ENDPOINT_PATH_FORMAT = "/users/%s/roles";
+        private const USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT = "/users?role=%s";
+
         private const IBM_CLOUD_TOKEN_API_ENDPOINT_PATH = "/ibmcloud/token";
         private const GOOGLE_API_TOKEN_API_ENDPOINT_PATH = "/google/token/api";
         private const GOOGLE_FCM_TOKEN_API_ENDPOINT_PATH = "/google/token/fcm";
 
-        private const USERS_WITH_ROLE_API_ENDPOINT_PATH_FORMAT = "/users?role=%s";
-
-        private const EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER = 0.95;
+        private const ACCESS_TOKENS_VALIDITY_TTL_MULTIPLIER = 0.95;
+        
+        private const USER_ROLES_CACHE_KEY_FORMAT = "AuthenticationService:UserRoles:%s";
+        private const USER_ROLES_CACHE_TTL = 300;
 
         private readonly HttpClient $httpClient;
         private readonly CacheClient $distributedCacheClient;
 
-        private readonly string $iamBackendClientId;
-        private readonly string $iamBackendClientSecret;
+        private readonly string $coreClientId;
+        private readonly string $coreClientSecret;
         private readonly string $iamHost;
         private readonly string $iamPort;
 
-        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, string $iamBackendClientId, string $iamBackendClientSecret, string $iamHost, string $iamPort) {
+        public function __construct(HttpClient $httpClient, CacheClient $distributedCacheClient, string $coreClientId, string $coreClientSecret, string $iamHost, string $iamPort) {
             $this->httpClient = $httpClient;
             $this->distributedCacheClient = $distributedCacheClient;
-            $this->iamBackendClientId = $iamBackendClientId;
-            $this->iamBackendClientSecret = $iamBackendClientSecret;
+            $this->coreClientId = $coreClientId;
+            $this->coreClientSecret = $coreClientSecret;
             $this->iamHost = $iamHost;
             $this->iamPort = $iamPort;
         }
@@ -48,6 +52,25 @@
                 throw new \RuntimeException("The response with user identifiers is not an array. Response: " . json_encode($response));
             }
 
+            return $response;
+        }
+
+        public function getUserRoles(string $userId, string $accessToken) : array {
+            $cacheKey = sprintf(self::USER_ROLES_CACHE_KEY_FORMAT, $userId);
+
+            $cachedRoles = $this->distributedCacheClient->get($cacheKey);
+            if ($cachedRoles !== null) {
+                return $cachedRoles;
+            }
+
+            $response = $this->httpClient->executeRequest(HttpMethod::GET, $this->getIamBaseUrl() . sprintf(self::USER_ROLES_API_ENDPOINT_PATH_FORMAT, $userId),
+                array("Authorization: Bearer " . $accessToken));
+
+            if (!is_array($response)) {
+                throw new \RuntimeException("The response with user roles is not an array. Response: " . json_encode($response));
+            }
+
+            $this->distributedCacheClient->set($cacheKey, $response, self::USER_ROLES_CACHE_TTL);
             return $response;
         }
 
@@ -102,16 +125,22 @@
             return $response["accessToken"];
         }
 
-        public function getServiceAccessToken() : string {
-            $cachedServiceAccessToken = $this->distributedCacheClient->get(self::SERVICE_ACCESS_TOKEN_CACHE_KEY);
+        public function getServiceAccessToken(?string $subjectToken = null) : string {
+            $cacheKey = sprintf(self::SERVICE_ACCESS_TOKEN_CACHE_KEY_FORMAT, $this->coreClientId, hash("sha256", $subjectToken ?? "NULL"));
+
+            $cachedServiceAccessToken = $this->distributedCacheClient->get($cacheKey);
             if ($cachedServiceAccessToken !== null) {
                 return $cachedServiceAccessToken;
             }
 
             $payload = array(
-                "clientId" => $this->iamBackendClientId,
-                "clientSecret" => $this->iamBackendClientSecret
+                "clientId" => $this->coreClientId,
+                "clientSecret" => $this->coreClientSecret
             );
+
+            if ($subjectToken !== null) {
+                $payload["subjectToken"] = $subjectToken;
+            }
 
             $response = $this->httpClient->executeRequest(HttpMethod::POST, $this->getIamBaseUrl() . self::TOKEN_API_ENDPOINT_PATH,
                 array("Content-Type: application/json"), json_encode($payload));
@@ -120,12 +149,12 @@
                 throw new AuthenticationException("The access token could not be obtained. Response: " . json_encode($response));
             }
 
-            $this->distributedCacheClient->set(self::SERVICE_ACCESS_TOKEN_CACHE_KEY, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
+            $this->distributedCacheClient->set($cacheKey, $response["accessToken"], $this->getExternalAccessTokenExpiration($response["expiresIn"]));
             return $response["accessToken"];
         }
 
         private function getExternalAccessTokenExpiration(int $expiration) : int {
-            return round(self::EXTERNAL_ACCESS_TOKENS_VALIDITY_MULTIPLIER * $expiration);
+            return round(self::ACCESS_TOKENS_VALIDITY_TTL_MULTIPLIER * $expiration);
         }
 
         private function getIamBaseUrl() : string {

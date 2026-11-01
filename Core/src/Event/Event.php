@@ -116,7 +116,19 @@
                 ->addWorkerEvent(EventPriority::Medium);
         }
 
+        public static function LabelCreated(string $labelId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
+        }
+
         public static function LabelUpdated(string $labelId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
+        }
+        
+        public static function AutoAssignedPlaceLabelsInvalidated(string $placeId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("placeId" => $placeId));
+        }
+
+        public static function AutoAssignedLabelPlacesInvalidated(string $labelId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
         }
 
@@ -149,6 +161,14 @@
         }
 
         public static function StayEventUpdated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function CarRentalEventCreated(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
+        }
+
+        public static function CarRentalEventUpdated(string $tripId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("tripId" => $tripId));
         }
 
@@ -220,6 +240,10 @@
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
         }
 
+        public static function CarRentalEventRemoved(string $tripId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
+        }
+
         public static function FlightEventRemoved(string $tripId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Lowest, array("tripId" => $tripId));
         }
@@ -276,12 +300,23 @@
             return new AgentEvent(Event::getEventName(), $agentId, array("path" => $path, "expiration" => $expiration));
         }
 
-        public static function TaskDeadlineReached(?string $title, string $task, ?string $url) : Event {
-            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX), array("title" => $title, "task" => $task, "url" => $url));
+        // TODO: Rename "task" to "description" (also in receivers - Portal and BridgeX).
+        public static function TaskDeadlineReached(?string $taskId, string $title, ?string $task, ?string $url, ?string $tripId, bool $autoDelete) : Event {
+            return (new CompositeEvent(Event::getEventName(), array("taskId" => $taskId, "title" => $title, "task" => $task, "url" => $url, "tripId" => $tripId, "autoDelete" => $autoDelete)))
+                ->addCloudMessagingEvent(array(UserRole::EventTaskDeadlineReachedRead), array(DeviceType::Portal, DeviceType::BridgeX))
+                ->addWorkerEvent(EventPriority::Highest);
         }
 
         public static function VoucherExpiring(string $issuer, float $value, string $currency, int $expiration) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventVoucherExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("issuer" => $issuer, "value" => $value, "currency" => $currency, "expiration" => $expiration));
+        }
+
+        public static function SubscriptionExpiring(string $description, int $expiration) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventSubscriptionExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("description" => $description, "expiration" => $expiration));
+        }
+
+        public static function DocumentExpiring(string $name, int $expiration) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventDocumentExpiringRead), array(DeviceType::Portal, DeviceType::BridgeX), array("name" => $name, "expiration" => $expiration));
         }
 
         public static function NewDataConsistencyIssuesDetected(int $count) : Event {
@@ -307,6 +342,10 @@
 
         public static function FitnessActivityDetected(array $intervals) : Event {
             return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventFitnessActivityDetectedRead), array(DeviceType::BridgeX), array("intervals" => $intervals));
+        }
+
+        public static function LifestyleActivityDetected(array $intervals, int $birthYear, int $height, bool $male) : Event {
+            return new CloudMessagingEvent(Event::getEventName(), array(UserRole::EventLifestyleActivityDetectedRead), array(DeviceType::BridgeX), array("intervals" => $intervals, "birthYear" => $birthYear, "height" => $height, "male" => $male));
         }
 
         public static function DeviceLogOnRequested() : Event {

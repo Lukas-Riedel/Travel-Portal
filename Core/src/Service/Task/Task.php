@@ -7,7 +7,7 @@
         schema: "Task",
         type: "object",
         description: "A class representing a task",
-        required: ["description", "priority"],
+        required: ["title", "priority", "deadline", "actionable"],
         properties: [
             new OA\Property(
                 property: "id",
@@ -23,7 +23,7 @@
             ),
             new OA\Property(
                 property: "description",
-                description: "The description of the task",
+                description: "The optional description of the task",
                 type: "string",
                 example: "Complete the project documentation"
             ),
@@ -51,20 +51,27 @@
                 description: "An external URL associated with the task",
                 type: "string",
                 example: "https://www.flightradar24.com/data/flights/EK139"
-            )
+            ),
+            new OA\Property(
+                property: "actionable",
+                description: "Whether the task can be acted upon",
+                type: "boolean",
+                example: true
+            ),
         ]
     )]
-    class Task implements \JsonSerializable {     
+    class Task implements \JsonSerializable {
            
         private ?string $id;
-        private readonly ?string $title;
-        private readonly string $description;
+        private readonly string $title;
+        private readonly ?string $description;
         private readonly TaskPriority $priority;
-        private readonly ?int $deadline;
+        private readonly int $deadline;
         private readonly ?int $notificationInterval;
         private readonly ?string $url;
+        private readonly bool $actionable;
 
-        public function __construct(?string $id, ?string $title, string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, ?string $url) {
+        public function __construct(?string $id, string $title, ?string $description, TaskPriority $priority, int $deadline, ?int $notificationInterval, ?string $url, bool $actionable) {
             $this->id = $id;
             $this->title = $title;
             $this->description = $description;
@@ -72,6 +79,7 @@
             $this->deadline = $deadline;
             $this->notificationInterval = $notificationInterval;
             $this->url = $url;
+            $this->actionable = $actionable;
         }
 
         public function getId() : ?string {
@@ -82,11 +90,11 @@
             $this->id = $id;
         }
 
-        public function getTitle() : ?string {
+        public function getTitle() : string {
             return $this->title;
         }
 
-        public function getDescription() : string {
+        public function getDescription() : ?string {
             return $this->description;
         }
 
@@ -94,7 +102,7 @@
             return $this->priority;
         }
 
-        public function getDeadline() : ?int {
+        public function getDeadline() : int {
             return $this->deadline;
         }
 
@@ -104,6 +112,10 @@
 
         public function getUrl() : ?string {
             return $this->url;
+        }
+
+        public function isActionable() : bool {
+            return $this->actionable;
         }
 
         #[\ReturnTypeWillChange]

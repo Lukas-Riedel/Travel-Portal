@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriBuilderFactory;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Base64;

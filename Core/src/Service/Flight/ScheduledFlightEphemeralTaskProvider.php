@@ -27,12 +27,12 @@
                     continue;
                 }
                 
-                $formattedTime = (new \DateTime())
+                $formattedTimestamp = (new \DateTime())
                     ->setTimestamp($flight->getStart())
                     ->setTimezone(new \DateTimeZone($flight->getFrom()->getTimezone()))
                     ->format(self::HI_TIME_FORMAT);
 
-                $candidates[] = new EphemeralTaskCandidate($flight->getStart(), array("flight" => $flight->getFlight(), "formattedTime" => $formattedTime),
+                $candidates[] = new EphemeralTaskCandidate($flight->getStart(), array("flight" => $flight->getFlight(), "formattedTimestamp" => $formattedTimestamp),
                     $this->flightService->getTripIdForFlight($flight), sprintf(self::FLIGHTRADAR_URL_FORMAT, $flight->getFlight()));
             }
 

@@ -4,6 +4,7 @@
     use Common\Client\Cache\CacheClient;
     use Core\Common\CommonConstants;
 
+    // TODO: Merge into GenerativeContentService?
     class CachingGenerativeContentClient implements GenerativeContentClient {
 
         private const RESPONSE_CACHE_KEY_FORMAT = "CachingGenerativeContentClient:Response:%s";
@@ -17,18 +18,22 @@
             $this->cacheClient = $cacheClient;
         }
 
-        public function getResponse(string $query, array $context) : ?string {
-            $cacheKey = sprintf(self::RESPONSE_CACHE_KEY_FORMAT, hash("sha256", json_encode(array("query" => $query, "context" => $context))));
+        public function getResponse(string $query, array $context, ?array $responseJsonSchema = null) : ?string {
+            $cacheKey = sprintf(self::RESPONSE_CACHE_KEY_FORMAT, hash("sha256", json_encode(array("query" => $query, "context" => $context, "schema" => $responseJsonSchema))));
             $cachedResponse = $this->cacheClient->get($cacheKey);
             if ($cachedResponse !== null) {
                 return $cachedResponse;
             }
 
-            $response = $this->client->getResponse($query, $context);
+            $response = $this->client->getResponse($query, $context, $responseJsonSchema);
             if ($response !== null) {
                 $this->cacheClient->set($cacheKey, $response, self::RESPONSE_CACHE_TTL);
             }
             
             return $response;
+        }
+
+        public function getChatResponse(array $messages, ?string $accessToken, ?string $username, mixed $environment, array $skills) : ?GenerativeContentResult {
+            return $this->client->getChatResponse($messages, $accessToken, $username, $environment, $skills);
         }
     }

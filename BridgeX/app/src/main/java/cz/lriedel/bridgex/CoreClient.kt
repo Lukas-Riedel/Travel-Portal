@@ -6,6 +6,7 @@ import cz.lriedel.bridgex.device.DeviceRequest
 import cz.lriedel.bridgex.fitness.FitnessRequest
 import cz.lriedel.bridgex.geocoding.AddressResponse
 import cz.lriedel.bridgex.device.DeviceType
+import cz.lriedel.bridgex.lifestyle.LifestyleRequest
 import cz.lriedel.bridgex.notification.NotificationContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -29,6 +30,11 @@ interface CoreClient {
     suspend fun replaceFitness(
         @Path("timestamp") timestamp: Long,
         @Body fitnessRequest: FitnessRequest
+    )
+
+    @POST("lifestyle")
+    suspend fun recordLifestyleEvent(
+        @Body request: LifestyleRequest
     )
 
     @GET("address")

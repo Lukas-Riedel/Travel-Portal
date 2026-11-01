@@ -1,57 +1,34 @@
 <?php
     namespace Common\Service\Authentication;
 
-    use OpenApi\Attributes as OA;
-
-    #[OA\Schema(
-        schema: "UserInfo",
-        type: "object",
-        description: "A class representing information about a user",
-        required: ["userId", "roles"],
-        properties: [
-            new OA\Property(
-                property: "userId",
-                type: "string",
-                description: "The identifier of the user",
-                example: "ebd5572e-9d35-4ffe-8469-e436c6fba72f"
-            ),
-            new OA\Property(
-                property: "client",
-                type: "string",
-                description: "The client of the user",
-                example: "travel-portal-app"
-            ),
-            new OA\Property(
-                property: "roles",
-                type: "array",
-                description: "The roles of the user",
-                items: new OA\Items(ref: "#/components/schemas/UserRole"),
-                example: [UserRole::AirlineRead->value, UserRole::PlaceRead->value]
-            ),
-        ]
-    )]
     class UserInfo implements \JsonSerializable {  
               
         private readonly string $userId;
+        private readonly ?string $username;
         private readonly string $client;
-        private readonly array $roles;
+        private readonly bool $trustedServiceAccount;
 
-        public function __construct(string $userId, string $client, array $roles) {
+        public function __construct(string $userId, ?string $username, string $client, bool $trustedServiceAccount) {
             $this->userId = $userId;
+            $this->username = $username;
             $this->client = $client;
-            $this->roles = $roles;
+            $this->trustedServiceAccount = $trustedServiceAccount;
         }
 
         public function getUserId() : string {
             return $this->userId;
         }
 
+        public function getUsername() : ?string {
+            return $this->username;
+        }
+
         public function getClient() : string {
             return $this->client;
         }
 
-        public function getRoles() : array {
-            return $this->roles;
+        public function isTrustedServiceAccount() : bool {
+            return $this->trustedServiceAccount;
         }
 
         #[\ReturnTypeWillChange]

@@ -9,6 +9,9 @@ spec:
   replicas: {{ .Values.cortex.replicas }}
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: {{ max 0 (sub (int .Values.cortex.replicas) 1) }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}
@@ -78,10 +81,36 @@ spec:
               value: "{{ .Values.cortex.iam.host }}"
             - name: IAM_PORT
               value: "{{ .Values.cortex.iam.port }}"
-            - name: IAM_APP_CLIENT_ID
-              value: "{{ .Values.cortex.iam.client.app.id }}"
-            - name: IAM_BACKEND_CLIENT_ID
-              value: "{{ .Values.cortex.iam.client.backend.id }}"
+            - name: CORTEX_CLIENT_ID
+              value: "{{ .Values.cortex.iam.client.cortex.id }}"
+            - name: CORTEX_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: iam-secret
+                  key: cortex-client-secret
+            - name: ALLOWLISTED_SERVICE_CLIENTS
+              value: "{{ join "," .Values.cortex.iam.client.allowed }}"
+            - name: CORE_HOST
+              value: "{{ .Values.cortex.core.host }}"
+            - name: CORE_PORT
+              value: "{{ .Values.cortex.core.port }}"
+            - name: PISTON_HOST
+              value: "{{ .Values.cortex.piston.host }}"
+            - name: PISTON_PORT
+              value: "{{ .Values.cortex.piston.port }}"
+            - name: GEMINI_MODELS
+              value: "{{ join "," .Values.cortex.model.generative }}"
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cortex-secret
+                  key: google-gemini-api-key
+            - name: CHAT_TIMEOUT_MS
+              value: "{{ .Values.cortex.generative.timeout }}"
+            - name: MAX_CUMULATIVE_TOKENS
+              value: "{{ .Values.cortex.generative.token.cumulative.max }}"
+            - name: MAX_TOOL_RESULT_TOKENS
+              value: "{{ .Values.cortex.generative.token.tool.max }}"
           volumeMounts:
             - name: {{ .Release.Name }}-tmp
               mountPath: /tmp

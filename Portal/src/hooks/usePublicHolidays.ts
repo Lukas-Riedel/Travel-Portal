@@ -19,16 +19,14 @@ export const usePublicHolidays = (maxYear?: number): UsePublicHolidaysResult => 
         refetchOnWindowFocus: false
     })
 
-    const publicHolidays = response ?? []
-
     const isPublicHoliday = useCallback((date: Date) => {
         if (isLoading) {
             return false
         }
 
         const localDateString = formatLocalDate(date)
-        return publicHolidays.some(publicHoliday => publicHoliday.date === localDateString)
-    }, [isLoading, publicHolidays])
+        return (response ?? []).some(publicHoliday => publicHoliday.date === localDateString)
+    }, [isLoading, response])
 
     const isFreeDay = useCallback((date: Date) => {
         if (isLoading) {

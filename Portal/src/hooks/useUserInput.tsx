@@ -6,9 +6,11 @@ import type { BranchingToastBranch } from "../types/BranchingToastBranch.ts"
 import type { FormField } from "../types/FormField.ts"
 import type { SelectFormField } from "../types/SelectFormField.ts"
 import type { UseUserInputResult } from "../types/UseUserInputResult.ts"
+import { useFormatters } from "./useFormatters.ts"
 
 export const useUserInput = (): UseUserInputResult => {
     const { t } = useTranslation()
+    const { formatChars } = useFormatters()
 
     const showConfirmToast = <R,>(message: string, onConfirmed?: () => Promise<R>, success?: string, error?: string): Promise<boolean> =>
         new Promise((resolve, reject) => {
@@ -167,6 +169,11 @@ export const useUserInput = (): UseUserInputResult => {
                                                 {field.label && (
                                                     <label className={`text-gray-600 text-sm ${isCheckbox(field) ? "" : "block mb-1"}`}>
                                                         {field.label}
+                                                        {!isSelectFormField(field) && field.maxLength != null && (
+                                                            <span>
+                                                                {` (${formatChars(field.maxLength)})`}
+                                                            </span>
+                                                        )}
                                                         {field.required && (
                                                             <span className="text-red-600">
                                                                 {"*"}
@@ -237,6 +244,7 @@ export const useUserInput = (): UseUserInputResult => {
                                                         type={field.type ?? "text" /** TODO: Remove the default type after the transition to TypeScript is done. */}
                                                         min={field.min}
                                                         max={field.max}
+                                                        maxLength={field.maxLength}
                                                         placeholder={field.placeholder as string}
                                                         defaultValue={field.defaultValue as string}
                                                         disabled={field.disabled}

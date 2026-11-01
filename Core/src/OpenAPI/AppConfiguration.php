@@ -44,6 +44,7 @@
         description: "The calendar configuration",
         properties: [
             new OA\Property(property: "stays", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
+            new OA\Property(property: "carRentals", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
             new OA\Property(property: "trips", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
             new OA\Property(property: "places", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
             new OA\Property(property: "flights", type: "string", example: "https://calendar.google.com/calendar/ical/example%40group.calendar.google.com/private-token/basic.ics"),
@@ -61,9 +62,9 @@
             new OA\Property(
                 property: "openingBalance",
                 type: "object",
-                required: ["tenure", "selfcare", "vacation"],
+                required: ["bonus", "selfcare", "vacation"],
                 properties: [
-                    new OA\Property(property: "tenure", type: "number", format: "float", example: 0),
+                    new OA\Property(property: "bonus", type: "number", format: "float", example: 0),
                     new OA\Property(property: "selfcare", type: "number", format: "float", example: 12.8),
                     new OA\Property(property: "vacation", type: "number", format: "float", example: 160)
                 ]
@@ -75,39 +76,15 @@
         type: "object",
         description: "The generative content prompt configuration",
         properties: [
+            new OA\Property(property: "calories", type: "string", example: "Determine the approximate calories for the meal \"{description}\" and output only one rounded number."),
             new OA\Property(property: "placeExcerpt", type: "string", example: "Write a travel blog article about {name} ({country}) in region {region}."),
             new OA\Property(property: "alternativeAddress", type: "string", example: "Find an alternative name for the place \"{address}\" for use with the Geocoding API."),
-            new OA\Property(property: "tripHighlightsSelecting", type: "string", example: "CLIP prompt for a trip covering: {places}."),
-            new OA\Property(property: "yearHighlightsSelecting", type: "string", example: "CLIP prompt for the year's best moments from: {places}."),
-            new OA\Property(property: "placeHighlightsSelecting", type: "string", example: "CLIP prompt for {name} in {country}."),
-            new OA\Property(property: "categoryHighlightsSelecting", type: "string", example: "CLIP prompt for the region {name} containing: {places}.")
-        ]
-    )]
-    #[OA\Schema(
-        schema: "OpenLineageConfiguration",
-        type: "object",
-        description: "The OpenLineage configuration",
-        required: ["producer"],
-        properties: [
-            new OA\Property(
-                property: "producer",
-                type: "object",
-                required: ["ibmCloud", "googleDrive"],
-                properties: [
-                    new OA\Property(
-                        property: "ibmCloud",
-                        type: "object",
-                        required: ["enabled"],
-                        properties: [new OA\Property(property: "enabled", type: "boolean", example: false)]
-                    ),
-                    new OA\Property(
-                        property: "googleDrive",
-                        type: "object",
-                        required: ["enabled"],
-                        properties: [new OA\Property(property: "enabled", type: "boolean", example: false)]
-                    )
-                ]
-            )
+            new OA\Property(property: "tripKeywords", type: "string", example: "Generate 5 to 10 visual keywords for a trip covering: {places}."),
+            new OA\Property(property: "yearKeywords", type: "string", example: "Generate 5 to 10 visual keywords for the year's best moments from: {places}."),
+            new OA\Property(property: "placeKeywords", type: "string", example: "Generate 5 to 10 visual keywords for {name} in {country}."),
+            new OA\Property(property: "categoryKeywords", type: "string", example: "Generate 5 to 10 visual keywords for the region {name} containing: {places}."),
+            new OA\Property(property: "labelAutoAssignmentForLabel", type: "string", example: "Evaluate whether each place in {places} is clearly known for the label {label}."),
+            new OA\Property(property: "labelAutoAssignmentForPlace", type: "string", example: "Evaluate whether the place {name} ({country}) is clearly known for each of these labels: {labels}.")
         ]
     )]
     #[OA\Schema(
@@ -126,8 +103,7 @@
                     new OA\Property(property: "composition", type: "array", items: new OA\Items(ref: "#/components/schemas/HighlightAttributeConfigurationOption")),
                     new OA\Property(property: "circumstances", type: "array", items: new OA\Items(ref: "#/components/schemas/HighlightAttributeConfigurationOption"))
                 ]
-            ),
-            new OA\Property(property: "negativeTerms", type: "array", items: new OA\Items(type: "string", example: "macro photography"))
+            )
         ]
     )]
     #[OA\Schema(
@@ -160,7 +136,8 @@
                         new OA\Property(property: "seconds", type: "integer", example: 3600)
                     ]
                 ),
-                new OA\Property(property: "notificationInterval", type: "integer", example: 259200)
+                new OA\Property(property: "notificationInterval", type: "integer", example: 259200),
+                new OA\Property(property: "actionable", type: "boolean", example: true)
             ]
         )
     )]
@@ -171,21 +148,69 @@
         additionalProperties: true
     )]
     #[OA\Schema(
+        schema: "AgenticAiPersonalContextConfiguration",
+        type: "object",
+        description: "Per-user personal context strings for the agentic AI.",
+        additionalProperties: new OA\AdditionalProperties(type: "string")
+    )]
+    #[OA\Schema(
+        schema: "AgenticAiConfiguration",
+        type: "object",
+        description: "The agentic AI configuration",
+        required: ["defaultSkills", "personalContext"],
+        properties: [
+            new OA\Property(
+                property: "defaultSkills",
+                type: "array",
+                items: new OA\Items(type: "string", example: "trip.read")
+            ),
+            new OA\Property(property: "personalContext", ref: "#/components/schemas/AgenticAiPersonalContextConfiguration")
+        ]
+    )]
+    #[OA\Schema(
+        schema: "KnownAddressesConfiguration",
+        type: "array",
+        description: "The known addresses configuration",
+        items: new OA\Items(
+            type: "object",
+            required: ["name", "radius", "latitude", "longitude"],
+            properties: [
+                new OA\Property(property: "name", type: "string", example: "Domov"),
+                new OA\Property(property: "radius", type: "number", format: "float", example: 0.5),
+                new OA\Property(property: "latitude", type: "number", format: "float", example: 50.5511909),
+                new OA\Property(property: "longitude", type: "number", format: "float", example: 13.7842376)
+            ]
+        )
+    )]
+    #[OA\Schema(
+        schema: "LifestyleConfiguration",
+        type: "object",
+        description: "The lifestyle tracking configuration",
+        properties: [
+            new OA\Property(property: "trackingEnabled", type: "boolean"),
+            new OA\Property(property: "height", type: "number", format: "float"),
+            new OA\Property(property: "birthYear", type: "integer"),
+            new OA\Property(property: "male", type: "boolean")
+        ]
+    )]
+    #[OA\Schema(
         schema: "AppConfiguration",
         type: "object",
         description: "An object representing the application configuration",
         additionalProperties: true,
         properties: [
+            new OA\Property(property: "lifestyle", ref: "#/components/schemas/LifestyleConfiguration"),
             new OA\Property(property: "dynamicLabels", ref: "#/components/schemas/DynamicLabelsConfiguration"),
             new OA\Property(property: "homeLocation", ref: "#/components/schemas/HomeLocationConfiguration"),
             new OA\Property(property: "expensify", ref: "#/components/schemas/ExpensifyConfiguration"),
             new OA\Property(property: "calendar", ref: "#/components/schemas/CalendarConfiguration"),
             new OA\Property(property: "timeTracking", ref: "#/components/schemas/TimeTrackingConfiguration"),
             new OA\Property(property: "generativeContentPrompt", ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
-            new OA\Property(property: "openLineage", ref: "#/components/schemas/OpenLineageConfiguration"),
             new OA\Property(property: "highlight", ref: "#/components/schemas/HighlightConfiguration"),
             new OA\Property(property: "ephemeralTasks", ref: "#/components/schemas/EphemeralTasksConfiguration"),
-            new OA\Property(property: "agent", ref: "#/components/schemas/AgentConfiguration")
+            new OA\Property(property: "agent", ref: "#/components/schemas/AgentConfiguration"),
+            new OA\Property(property: "agenticAi", ref: "#/components/schemas/AgenticAiConfiguration"),
+            new OA\Property(property: "knownAddresses", ref: "#/components/schemas/KnownAddressesConfiguration")
         ]
     )]
     class AppConfiguration {

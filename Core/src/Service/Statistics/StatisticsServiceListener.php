@@ -181,6 +181,18 @@
             $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }
 
+        public function onCarRentalEventCreated(mixed $message) : void {
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
+        }
+
+        public function onCarRentalEventUpdated(mixed $message) : void {
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
+        }
+
+        public function onCarRentalEventRemoved(mixed $message) : void {
+            $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
+        }
+
         public function onTripUpdated(mixed $message) : void {
             $this->eventPublisher->publish(Event::TripStatisticsInvalidated($message["tripId"]));
         }

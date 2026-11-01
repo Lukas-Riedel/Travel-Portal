@@ -31,13 +31,13 @@
                         continue;
                     }
                     
-                    $formattedDatetime = (new \DateTime())
+                    $formattedTimestamp = (new \DateTime())
                         ->setTimestamp($flight->getStart())
                         ->setTimezone(new \DateTimeZone($flight->getFrom()->getTimezone()))
                         ->format(self::DMY_HI_DATE_TIME_FORMAT);
 
-                    $candidates[] = new EphemeralTaskCandidate($flight->getStart(), array("from" => $flight->getFrom()->getShortName(), "to" => $flight->getTo()->getShortName(), "formattedDatetime" => $formattedDatetime),
-                        $trip->getId(), sprintf(self::GOOGLE_FLIGHTS_URL_FORMAT, $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), $formattedDatetime));
+                    $candidates[] = new EphemeralTaskCandidate($flight->getStart(), array("from" => $flight->getFrom()->getShortName(), "to" => $flight->getTo()->getShortName(), "formattedTimestamp" => $formattedTimestamp),
+                        $trip->getId(), sprintf(self::GOOGLE_FLIGHTS_URL_FORMAT, $flight->getFrom()->getShortName(), $flight->getTo()->getShortName(), $formattedTimestamp));
                 }
             }
 

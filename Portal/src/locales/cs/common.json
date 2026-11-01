@@ -72,6 +72,7 @@
             "kilometer_one": "{{count}} kilometr",
             "kilometer_few": "{{count}} kilometry",
             "kilometer_other": "{{count}} kilometrů",
+            "kilogram": "{{count}} kg",
             "millimeter_one": "{{count}} milimetr",
             "millimeter_few": "{{count}} milimetry",
             "millimeter_other": "{{count}} milimetrů",
@@ -102,6 +103,7 @@
             "step_one": "{{count}} krok",
             "step_few": "{{count}} kroky",
             "step_other": "{{count}} kroků",
+            "calorie": "{{count}} kcal",
             "visit_one": "{{count}} návštěva",
             "visit_few": "{{count}} návštěvy",
             "visit_other": "{{count}} návštěv",
@@ -113,7 +115,10 @@
             "night_other": "{{count}} nocí",
             "week_one": "{{count}} týden",
             "week_few": "{{count}} týdny",
-            "week_other": "{{count}} týdnů"
+            "week_other": "{{count}} týdnů",
+            "char_one": "{{count}} znak",
+            "char_few": "{{count}} znaky",
+            "char_other": "{{count}} znaků"
         },
         "time": {
             "ago": {
@@ -160,7 +165,9 @@
             "photosUploadingTriggered": "Nahrávání fotek pro místo {{placeName}} se nezdařilo",
             "photoReplacingTriggered": "Nahrazování fotky pro místo {{placeName}} se nezdařilo"
         },
-        "voucherExpiring": "Poukaz vydavatele {{issuer}} o hodnotě {{value}} {{currency}} expiruje dne {{formattedExpiration}}"
+        "voucherExpiring": "Poukaz vydavatele {{issuer}} o hodnotě {{value}} {{currency}} expiruje dne {{formattedExpiration}}",
+        "subscriptionExpiring": "{{description}} expiruje dne {{formattedExpiration}}",
+        "documentExpiring": "{{name}} expiruje dne {{formattedExpiration}}"
     },
     "search": {
         "label": {
@@ -219,6 +226,14 @@
             "TOTAL_TRAVEL_DAYS_PER_COUNTRY": "Počet dnů ve státě",
             "TOTAL_TRAVEL_DAYS_PER_CONTINENT": "Počet dnů na kontinentu",
             "MOST_DELAYED_FLIGHTS": "Nejvíce zpožděné lety",
+            "TOTAL_AIRBORNE_TIME_PER_AIRCRAFT": "Letový čas podle typu letadla",
+            "TOTAL_AIRBORNE_TIME_PER_AIRLINE": "Letový čas podle aerolinky",
+            "TOTAL_AIRBORNE_DISTANCE_PER_AIRCRAFT": "Nalétané kilometry podle typu letadla",
+            "TOTAL_AIRBORNE_DISTANCE_PER_AIRLINE": "Nalétané kilometry podle aerolinky",
+            "CHEAPEST_FLIGHTS_PER_KILOMETER": "Nejlevnější lety na kilometr",
+            "MOST_EXPENSIVE_FLIGHTS_PER_KILOMETER": "Nejdražší lety na kilometr",
+            "LONGEST_CAR_RENTALS": "Nejdelší výpůjčky aut",
+            "TOTAL_CAR_RENTAL_DAYS": "Celkový počet dní s půjčeným autem",
             "TOTAL_STEPS_COUNT": "Počet kroků",
             "AVERAGE_STEPS_PER_DAY": "Průměrný počet kroků za den",
             "TOTAL_TIME_IN_MOTION": "Čas v pohybu",
@@ -457,8 +472,10 @@
             "flights": "Lety",
             "statistics": "Statistiky",
             "plan": "Plán",
-            "tracker": "Tracker",
-            "admin": "Admin"
+            "tracker": "Sledování času",
+            "lifestyle": "Životní styl",
+            "admin": "Admin",
+            "chat": "Asistent"
         },
         "tab": {
             "label": {
@@ -482,6 +499,7 @@
         }
     },
     "tracker": {
+        "title": "Sledování času",
         "label": {
             "hours": {
                 "overtime": {
@@ -494,6 +512,12 @@
                     "available": "Dostupných dnů volna",
                     "required": "Potřebných dnů volna"
                 }
+            },
+            "type": {
+                "overtime": "Přesčasy",
+                "vacation": "Dovolená",
+                "selfcare": "Sick days",
+                "bonus": "Bonusové volno"
             }
         },
         "prompt": {
@@ -525,7 +549,7 @@
                         "confirmed": "Sick day byl úspěšně využit",
                         "failed": "Nepodařilo se využít sick day"
                     },
-                    "tenure": {
+                    "bonus": {
                         "message": "Zadej počet hodin k využití bonusového volna:",
                         "confirmed": "Bonusové volno bylo úspěšně využito",
                         "failed": "Nepodařilo se využít bonusové volno"
@@ -650,6 +674,7 @@
     },
     "task": {
         "label": {
+            "title": "Název",
             "description": "Popis",
             "trip": "Výlet",
             "priority": "Priorita",
@@ -668,10 +693,10 @@
                     "confirmed": "Priorita byla úspěšně aktualizována",
                     "failed": "Nepodařilo se aktualizovat prioritu"
                 },
-                "description": {
-                    "message": "Zadej nový popis úkolu:",
-                    "confirmed": "Popis byl úspěšně aktualizován",
-                    "failed": "Nepodařilo se aktualizovat popis"
+                "title": {
+                    "message": "Zadej nový název úkolu:",
+                    "confirmed": "Název byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat název"
                 }
             },
             "remove": {
@@ -689,6 +714,9 @@
         }
     },
     "note": {
+        "group": {
+            "other": "Ostatní"
+        },
         "placeholder": {
             "new": "Nová poznámka"
         },
@@ -1047,6 +1075,38 @@
             }
         }
     },
+    "chat": {
+        "label": {
+            "title": "Asistent",
+            "assistant": "Asistent",
+            "user": "Uživatel"
+        },
+        "placeholder": {
+            "input": "Napiš zprávu..."
+        },
+        "action": {
+            "load": {
+                "message": "Najdi můj nadcházející výlet a načti k němu všechny dostupné informace: poznámky, úkoly a celý itinerář včetně relevantních míst, letů, ubytování a dalších plánovaných aktivit. Z dostupných poznámek a úkolů vyhodnoť, jak je plán rozpracovaný, co už je hotové a co ještě zbývá vyřešit. Nakonec stručně shrň aktuální stav plánování.",
+                "label": "Načíst kontext nadcházejícího výletu"
+            },
+            "save": {
+                "message": "Najdi můj nadcházející výlet a vytvoř k němu novou poznámku se shrnutím této konverzace. Zahrň důležitá rozhodnutí, naplánované kroky a otevřené otázky, které ještě zbývá vyřešit, aby bylo možné při příští konverzaci ihned navázat tam, kde jsme skončili. Není potřeba zahrnovat věci, které lze vyčíst z jiných poznámek nebo existujících úkolů. Po uložení potvrď, že byla poznámka vytvořena.",
+                "label": "Uložit kontext nadcházejícího výletu"
+            }
+        },
+        "prompt": {
+            "clear": {
+                "message": "Opravdu chceš začít novou konverzaci?",
+                "confirmed": "Konverzace byla smazána",
+                "failed": "Nepodařilo se smazat konverzaci"
+            },
+            "copy": {
+                "message": "Text konverzace bude vložen do schránky. Přeješ si pokračovat?",
+                "confirmed": "Text konverzace byl úspěšně vložen do schránky",
+                "failed": "Nepodařilo se vložit text konverzace do schránky"
+            }
+        }
+    },
     "plan": {
         "slider": {
             "maxDistance": "Maximální vzdálenost",
@@ -1255,6 +1315,7 @@
             "places": "Místa",
             "flights": "Lety",
             "stays": "Ubytování",
+            "carRentals": "Půjčení auta",
             "notes": "Poznámky"
         }
     },
@@ -1355,6 +1416,71 @@
                 "message": "Opravdu chceš odstranit tento highlight?",
                 "confirmed": "Highlight byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit highlight"
+            }
+        }
+    },
+    "lifestyle": {
+        "title": "Životní styl",
+        "fact": {
+            "currentWeight": "Aktuální váha",
+            "weightTrend": "Trend váhy",
+            "todayIntake": "Příjem dnes",
+            "todayExpenditure": "Výdej dnes"
+        },
+        "section": {
+            "stepsLastDays": "Kroky za posledních {{period}}",
+            "deficitLastDays": "Deficit za posledních {{period}}",
+            "weightPrediction": "Odhad váhy za {{period}}"
+        },
+        "label": {
+            "stepsCount": "Kroky",
+            "intake": "Příjem",
+            "expenditure": "Výdej",
+            "basalMetabolism": "Bazální metabolismus",
+            "deficit": "Deficit",
+            "surplus": "Přebytek",
+            "measuredWeight": "Naměřená váha",
+            "predictedWeight": "Odhadovaná váha"
+        },
+        "prompt": {
+            "create": {
+                "intake": {
+                    "message": "Přidat příjem",
+                    "label": {
+                        "description": "Popis",
+                        "calories": "Kalorie (kcal)",
+                        "timestamp": "Datum a čas"
+                    },
+                    "confirmed": "Příjem byl úspěšně zaznamenán",
+                    "failed": "Nepodařilo se zaznamenat příjem"
+                },
+                "activity": {
+                    "message": "Přidat aktivitu",
+                    "label": {
+                        "description": "Popis",
+                        "calories": "Kalorie (kcal)",
+                        "timestamp": "Datum a čas"
+                    },
+                    "confirmed": "Aktivita byla úspěšně zaznamenána",
+                    "failed": "Nepodařilo se zaznamenat aktivitu"
+                }
+            },
+            "update": {
+                "content": {
+                    "message": "Zadej nový název záznamu:",
+                    "confirmed": "Název záznamu byl úspěšně aktualizován",
+                    "failed": "Nepodařilo se aktualizovat název záznamu"
+                }
+            },
+            "remove": {
+                "message": "Opravdu chceš odstranit tento záznam?",
+                "confirmed": "Záznam byl úspěšně odstraněn",
+                "failed": "Nepodařilo se odstranit záznam"
+            },
+            "duplicate": {
+                "message": "Opravdu chceš zduplikovat tento záznam?",
+                "confirmed": "Záznam byl úspěšně zduplikován",
+                "failed": "Nepodařilo se zduplikovat záznam"
             }
         }
     }

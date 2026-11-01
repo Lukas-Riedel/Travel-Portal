@@ -104,10 +104,12 @@
                         new OA\Schema(ref: "#/components/schemas/CalendarConfiguration"),
                         new OA\Schema(ref: "#/components/schemas/TimeTrackingConfiguration"),
                         new OA\Schema(ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
-                        new OA\Schema(ref: "#/components/schemas/OpenLineageConfiguration"),
                         new OA\Schema(ref: "#/components/schemas/HighlightConfiguration"),
                         new OA\Schema(ref: "#/components/schemas/EphemeralTasksConfiguration"),
-                        new OA\Schema(ref: "#/components/schemas/AgentConfiguration")
+                        new OA\Schema(ref: "#/components/schemas/AgentConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/AgenticAiConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/KnownAddressesConfiguration"),
+                        new OA\Schema(ref: "#/components/schemas/LifestyleConfiguration")
                     ]
                 )
             ),
@@ -123,10 +125,12 @@
                             new OA\Schema(ref: "#/components/schemas/CalendarConfiguration"),
                             new OA\Schema(ref: "#/components/schemas/TimeTrackingConfiguration"),
                             new OA\Schema(ref: "#/components/schemas/GenerativeContentPromptConfiguration"),
-                            new OA\Schema(ref: "#/components/schemas/OpenLineageConfiguration"),
                             new OA\Schema(ref: "#/components/schemas/HighlightConfiguration"),
                             new OA\Schema(ref: "#/components/schemas/EphemeralTasksConfiguration"),
-                            new OA\Schema(ref: "#/components/schemas/AgentConfiguration")
+                            new OA\Schema(ref: "#/components/schemas/AgentConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/AgenticAiConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/KnownAddressesConfiguration"),
+                            new OA\Schema(ref: "#/components/schemas/LifestyleConfiguration")
                         ]
                     )
                 ),

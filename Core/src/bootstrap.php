@@ -18,7 +18,7 @@
     use Core\Client\Forecast\OpenMeteoActualForecastClient;
     use Core\Client\Forecast\OpenMeteoHistoricalForecastClient;
     use Core\Client\GenerativeContent\CachingGenerativeContentClient;
-    use Core\Client\GenerativeContent\GeminiGenerativeContentClient;
+    use Core\Client\GenerativeContent\CortexGenerativeContentClient;
     use Core\Client\Google\GoogleClient;
     use Core\Client\Http\ExtendedHttpClient;
     use Core\Client\Http\FlareSolverrHttpClient;
@@ -34,6 +34,9 @@
     use Core\OpenLineage\OpenLineageEventManagerListener;
     use Core\PlatformListener;
     use Core\Service\Authentication\AuthenticationService;
+    use Core\Service\CarRental\CarRentalService;
+    use Core\Service\CarRental\CarRentalServiceListener;
+    use Core\Service\CarRental\CarRentalStatisticsProvider;
     use Core\Service\Category\CategoryDataConsistencyMonitor;
     use Core\Service\Category\CategoryIndexer;
     use Core\Service\Category\CategoryService;
@@ -42,6 +45,7 @@
     use Core\Service\Device\DeviceService;
     use Core\Service\Device\DeviceServiceListener;
     use Core\Service\Document\DocumentService;
+    use Core\Service\Document\DocumentServiceListener;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Expense\ExpenseServiceListener;
     use Core\Service\Expense\ExpenseStatisticsProvider;
@@ -58,6 +62,7 @@
     use Core\Service\Flight\WatchedFlightEphemeralTaskProvider;
     use Core\Service\Forecast\ForecastService;
     use Core\Service\Forecast\ForecastServiceListener;
+    use Core\Service\GenerativeContent\GenerativeContentService;
     use Core\Service\Geocoding\GeocodingService;
     use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightServiceListener;
@@ -66,6 +71,8 @@
     use Core\Service\Label\LabelIndexer;
     use Core\Service\Label\LabelService;
     use Core\Service\Label\LabelServiceListener;
+    use Core\Service\Lifestyle\LifestyleService;
+    use Core\Service\Lifestyle\LifestyleServiceListener;
     use Core\Service\Monitoring\MonitoringService;
     use Core\Service\Monitoring\MonitoringServiceListener;
     use Core\Service\Note\NoteService;
@@ -84,6 +91,7 @@
     use Core\Service\Stay\StayService;
     use Core\Service\Stay\StayServiceListener;
     use Core\Service\Stay\StayStatisticsProvider;
+    use Core\Service\Stay\WatchedStayEphemeralTaskProvider;
     use Core\Service\Task\TaskService;
     use Core\Service\Task\TaskServiceListener;
     use Core\Service\TimeTracking\TimeTrackingService;
@@ -120,12 +128,7 @@
     $httpClient = new StandardHttpClient(getenv("APP_NAME"), $loggingContext, $logger);
     $extendedHttpClient = new ExtendedHttpClient($httpClient);
     $flareSolverrHttpClient = new FlareSolverrHttpClient($extendedHttpClient, getenv("FLARESOLVERR_HOST"), getenv("FLARESOLVERR_PORT"), $logger);
-    $googleClient = new GoogleClient($distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"));
-    $generativeContentClient = new GeminiGenerativeContentClient($extendedHttpClient, $distributedCacheClient, $logger, getenv("GOOGLE_GEMINI_API_KEY"));
-    $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
     $translationClient = new LibreTranslateTranslationClient($extendedHttpClient, $distributedCacheClient, getenv("LIBRE_TRANSLATE_HOST"), getenv("LIBRE_TRANSLATE_PORT"));
-    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL")); 
-    $cloudMessagingClient = new FirebaseCloudMessagingClient(getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
     $exchangeRateClient = new ExchangeRateApiExchangeRateClient($extendedHttpClient, $logger, getenv("EXCHANGE_RATE_API_KEY"));
     $flightClient = new FlightRadar24FlightClient($flareSolverrHttpClient);
     $actualForecastClient = new OpenMeteoActualForecastClient($extendedHttpClient, $distributedCacheClient, explode(",", getenv("ACTUAL_WEATHER_FORECAST_MODELS")), explode(",", getenv("ACTUAL_WEATHER_FORECAST_REFRESH_HOURS")), getenv("ACTUAL_WEATHER_FORECAST_CLOUD_COVER_CONFIDENCE_COEFFICIENT"));
@@ -142,33 +145,40 @@
         $messagingClient
     );
 
+    // Authentication service.
+    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_HOST"), getenv("IAM_PORT"), getenv("CORE_CLIENT_ID"), array_filter(explode(",", getenv("ALLOWLISTED_SERVICE_CLIENTS"))));
+    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("CORE_CLIENT_ID"), getenv("CORE_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
+
+    // Authenticated clients.
+    $cloudMessagingClient = new FirebaseCloudMessagingClient($authenticationService, getenv("FCM_PROJECT_ID"), $extendedHttpClient, $loggingContext, $logger);
+    $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $clusteringClient = new CortexClusteringClient($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+
     // Event producers.
     $eventPublisher = new EventPublisher($messagingClient, $cloudMessagingClient, $distributedCacheClient, getenv("WORKER_QUEUE_NAME"));
-    $calendarClient->setEventPublisher($eventPublisher);
 
     $scheduler = new Scheduler($databaseClient, $distributedCacheClient, $eventPublisher);
 
     // Configuration service.
     $configurationService = new ConfigurationService($databaseClient, $eventPublisher, getenv("RMQ_EXTERNAL_HOST"), getenv("RMQ_EXTERNAL_PORT"), getenv("RMQ_VHOST"), getenv("RMQ_USER"), getenv("RMQ_PASSWORD"));
-    $googleClient->setConfigurationService($configurationService);
 
-    // Authentication service.
-    $commonAuthenticationService = new CommonAuthenticationService($distributedCacheClient, $extendedHttpClient, getenv("IAM_APP_CLIENT_ID"), getenv("IAM_HOST"), getenv("IAM_PORT"));
-    $authenticationService = new AuthenticationService($extendedHttpClient, $distributedCacheClient, getenv("IAM_BACKEND_CLIENT_ID"), getenv("IAM_BACKEND_CLIENT_SECRET"), getenv("IAM_HOST"), getenv("IAM_PORT"));
-    $cloudMessagingClient->setAuthenticationService($authenticationService);
-    $googleClient->setAuthenticationService($authenticationService);
+    // Configured clients.
+    $googleClient = new GoogleClient($authenticationService, $distributedCacheClient, $extendedHttpClient, $logger, getenv("BACKEND_GOOGLE_MAPS_API_KEY"), $configurationService);
+    $generativeContentClient = new CortexGenerativeContentClient($authenticationService, $configurationService, $extendedHttpClient, $logger, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
+    $cachingGenerativeContentClient = new CachingGenerativeContentClient($generativeContentClient, $distributedCacheClient);
+    $calendarClient = new CalendarClient($googleClient, $distributedCacheClient, $translationClient, $logger, getenv("CORE_BASE_URL"));
+    $calendarClient->setEventPublisher($eventPublisher);
 
     // Services.
-    $embeddingClient = new CortexEmbeddingClient($authenticationService, $extendedHttpClient, $distributedCacheClient, $translationClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $clusteringClient = new CortexClusteringClient($authenticationService, $extendedHttpClient, getenv("CORTEX_HOST"), getenv("CORTEX_PORT"));
-    $indexService = new IndexService($clusteringClient, $embeddingClient, $configurationService, $searchClient, $distributedCacheClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
-        getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"), getenv("STYLE_EMBEDDING_COEFFICIENT"), getenv("NEGATIVE_EMBEDDING_COEFFICIENT"));
+    $indexService = new IndexService($clusteringClient, $embeddingClient, $searchClient, $logger, getenv("COMPOSITE_INDEX_NAME"), getenv("PHOTO_INDEX_NAME"),
+        getenv("SELECTED_PHOTO_CANDIDATES_LIMIT_COEFFICIENT"), getenv("CLUSTERS_COUNT_COEFFICIENT"));
     $geocodingService = new GeocodingService($configurationService, $distributedCacheClient, $googleClient, $generativeContentClient);
     $deviceService = new DeviceService($databaseClient, $authenticationService);
     $timeTrackingService = new TimeTrackingService($databaseClient, $configurationService);
     $statisticsService = new StatisticsService($distributedCacheClient, $eventPublisher, $logger, getenv("STATISTICS_VALUES_COUNT_LIMIT"));
     $noteService = new NoteService($databaseClient);
     $stayService = new StayService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
+    $carRentalService = new CarRentalService($databaseClient, $calendarClient, $googleClient, $eventPublisher);
     $photoService = new PhotoService($databaseClient, $embeddingClient, $googleClient, $eventPublisher, $cloudStorageClient, $distributedCacheClient, $extendedHttpClient, getenv("CORE_BASE_URL"), getenv("ALBUM_THUMBNAIL_BUCKET"),
         getenv("PHOTO_THUMBNAIL_WIDTH"), getenv("PHOTO_THUMBNAIL_HEIGHT"), getenv("PHOTO_EMBEDDING_WIDTH"), getenv("PHOTO_EMBEDDING_HEIGHT"), getenv("INDOOR_PHOTO_ISO_THRESHOLD"));
     $highlightService = new HighlightService($databaseClient, $photoService, $embeddingClient, $configurationService, $eventPublisher, $cloudStorageClient, $extendedHttpClient, $logger);
@@ -176,22 +186,27 @@
     $expenseService = new ExpenseService($databaseClient, $configurationService, $eventPublisher, $exchangeRateClient, $distributedCacheClient, $encryptionClient);
     $fitnessService = new FitnessService($databaseClient, $eventPublisher, $logger, getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT"),
         getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_STEPS"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DISTANCE"), getenv("ALLOW_FITNESS_OVERWRITE_THRESHOLD_DURATION"), getenv("UPDATE_FITNESS_THRESHOLD_DAYS"), getenv("STEPS_PER_MINUTE_THRESHOLD"));
+    $lifestyleService = new LifestyleService($databaseClient, $generativeContentClient, $configurationService, getenv("LIFESTYLE_RETENTION_DAYS"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
-    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher);
+    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher, $generativeContentClient, $logger);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
+    $labelService->setPlaceService($placeService);
     $yearService = new YearService($databaseClient, $fitnessService, $placeService, $configurationService, $highlightService, $statisticsService, $indexService, $cachingGenerativeContentClient);
-    $taskService = new TaskService($databaseClient, $distributedCacheClient, $configurationService);
-    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $flightService, $expenseService, $fitnessService,
+    $taskService = new TaskService($databaseClient, $distributedCacheClient, $memoryCacheClient, $configurationService);
+    $tripService = new TripService($databaseClient, $calendarClient, $googleClient, $cachingGenerativeContentClient, $configurationService, $placeService, $stayService, $carRentalService, $flightService, $expenseService, $fitnessService,
         $noteService, $highlightService, $statisticsService, $yearService, $indexService, $taskService, $eventPublisher);
+    $geocodingService->setTripService($tripService);
+    $generativeContentService = new GenerativeContentService($tripService, $placeService, $categoryService, $labelService, $yearService, $configurationService, $distributedCacheClient, $generativeContentClient, getenv("CONTEXT_COMPACTIFICATION_THRESHOLD"));
     $monitoringService = new MonitoringService($distributedCacheClient, $eventPublisher, $logger);
-    $documentService = new DocumentService($databaseClient, $encryptionClient);
+    $documentService = new DocumentService($databaseClient, $encryptionClient, $distributedCacheClient);
 
     // Ephemeral task providers.
     $ephemeralTaskProviders = array(
         new ScheduledFlightEphemeralTaskProvider($flightService),
-        new WatchedFlightEphemeralTaskProvider($tripService)
+        new WatchedFlightEphemeralTaskProvider($tripService),
+        new WatchedStayEphemeralTaskProvider($tripService, $stayService)
     );
     $taskService->setEphemeralTaskProviders($ephemeralTaskProviders);
     $taskService->setTripService($tripService);
@@ -200,6 +215,7 @@
     $statisticsProviders = array(
         new TripStatisticsProvider($tripService),
         new FlightStatisticsProvider($flightService),
+        new CarRentalStatisticsProvider($tripService),
         new StayStatisticsProvider($stayService),
         new FitnessStatisticsProvider($fitnessService, $placeService, $tripService),
         new PhotoStatisticsProvider($photoService, $placeService),
@@ -231,13 +247,16 @@
     );
     $indexService->setEntityIndexers($entityIndexers);
 
-    // OpenLineage manager. Switching the producers on or off will require a script restart for changes to take effect.
+    // OpenLineage manager.
     $openLineageEventManager = null;
-    if (OpenLineageEventManager::isOpenLineageEnabled($configurationService)) {
-        $openLineageEventPublishers = array(
-            new IbmCloudOpenLineageEventPublisher($authenticationService, $configurationService, $extendedHttpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger), 
-            new GoogleDriveOpenLineageEventPublisher($configurationService, $googleClient)
-        );
+    $openLineageEventPublishers = array();
+    if (getenv("OPENLINEAGE_IBM_CLOUD_ENABLED") === "true") {
+        $openLineageEventPublishers[] = new IbmCloudOpenLineageEventPublisher($authenticationService, $extendedHttpClient, getenv("IBM_DATAPLATFORM_BASE_URL"), $logger);
+    }
+    if (getenv("OPENLINEAGE_GOOGLE_DRIVE_ENABLED") === "true") {
+        $openLineageEventPublishers[] = new GoogleDriveOpenLineageEventPublisher($googleClient);
+    }
+    if (!empty($openLineageEventPublishers)) {
         $openLineageEventManager = new OpenLineageEventManager($openLineageEventPublishers, $eventPublisher, getenv("CORE_BASE_URL"));
         $messagingClient->setOpenLineageEventManager($openLineageEventManager);
         $cloudMessagingClient->setOpenLineageEventManager($openLineageEventManager);
@@ -252,24 +271,27 @@
         new IndexServiceListener($indexService, $photoService, $highlightService, $placeService, $eventPublisher, $scheduler),
         new CategoryServiceListener($categoryService, $placeService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_CATEGORY_COUNT")),
         new FitnessServiceListener($fitnessService, $tripService, $placeService, $eventPublisher, $scheduler, $logger),
+        new LifestyleServiceListener($lifestyleService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("LIFESTYLE_RETENTION_DAYS")),
         new FlightServiceListener($flightService, $deviceService, $tripService, $calendarClient, $eventPublisher, $scheduler, $logger),
         new ForecastServiceListener($forecastService, $placeService, $eventPublisher, $scheduler, getenv("ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE")),
         new HighlightServiceListener($highlightService, $configurationService, $eventPublisher, $scheduler),
         new PhotoServiceListener($photoService, $distributedCacheClient, $eventPublisher, $scheduler),
         new PlaceServiceListener($placeService, $tripService, $categoryService, $photoService, $calendarClient, $eventPublisher, getenv("HIGHLIGHT_SCORE_MULTIPLIER"), getenv("PHOTO_SCORE_MULTIPLIER"), getenv("MAIN_HIGHLIGHT_QUALITY_MULTIPLIER"), getenv("INDOOR_PHOTO_RATIO"), getenv("LOW_IMPRESSION_QUALITY_THRESHOLD"), getenv("LOW_COMPOSITION_QUALITY_THRESHOLD"), getenv("LOW_SHADOWS_QUALITY_THRESHOLD"), getenv("LOW_SKY_QUALITY_THRESHOLD")),
         new StatisticsServiceListener($statisticsService, $placeService, $tripService, $categoryService, $flightService, $eventPublisher, $scheduler),
+        new CarRentalServiceListener($carRentalService, $tripService, $calendarClient),
         new StayServiceListener($stayService, $tripService, $calendarClient),
         new TimeTrackingServiceListener($timeTrackingService, $eventPublisher, $scheduler),
-        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $flightService, $photoService, $highlightService, $calendarClient, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_TRIP_COUNT")),
+        new TripServiceListener($databaseClient, $tripService, $placeService, $stayService, $carRentalService, $flightService, $photoService, $highlightService, $calendarClient, $eventPublisher, $scheduler, getenv("MAX_HIGHLIGHTS_PER_TRIP_COUNT")),
         new YearServiceListener($yearService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
         new LabelServiceListener($labelService, $placeService, $configurationService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
-        new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD"))),
+        new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD")), intval(getenv("SUBSCRIPTION_EXPIRING_NOTIFICATION_THRESHOLD"))),
+        new DocumentServiceListener($documentService, $eventPublisher, $scheduler, intval(getenv("DOCUMENT_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new OpenLineageEventManagerListener($openLineageEventManager, getenv("CORE_BASE_URL")),
         new PlatformListener($eventPublisher, $scheduler)
     );
-    $eventListener = new RabbitMQEventListener($messagingClient, $loggingContext, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"));
+    $eventListener = new RabbitMQEventListener($messagingClient, $loggingContext, $logger, $openLineageEventManager, $listeners, getenv("WORKER_QUEUE_NAME"), getenv("RMQ_HEARTBEAT"));
     $eventPublisher->setDeviceService($deviceService);    
 ?>

@@ -1,5 +1,5 @@
-import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Category } from "../types/CoreSwaggerTypes"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import PhotoTile from "./PhotoTile"
 
 interface PlaceTileProps {

@@ -158,7 +158,7 @@
             
             $requestedIncludes = array_map(fn($entity) => TripIncludedEntity::from($entity), array_filter(explode(",", $include)));
             $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
-                $requiredRole = match($entity) {
+                $requiredRole = match ($entity) {
                     TripIncludedEntity::Expenses => UserRole::TripExpenseRead,
                     TripIncludedEntity::Fitness => UserRole::TripFitnessRead,
                     TripIncludedEntity::Flights => UserRole::TripFlightRead,
@@ -168,6 +168,7 @@
                     TripIncludedEntity::Tasks => UserRole::TripTaskRead,
                     TripIncludedEntity::Statistics => UserRole::TripStatisticsRead,
                     TripIncludedEntity::Stays => UserRole::TripStayRead,
+                    TripIncludedEntity::CarRentals => UserRole::TripCarRentalRead,
                     TripIncludedEntity::PublicHolidays => UserRole::TripPublicHolidayRead,
                     default => null
                 };
@@ -903,7 +904,7 @@
                 throw new NotFoundException($expenseId);
             }
 
-            return $expenseId;
+            return $expense;
         }
 
         #[OA\Delete(
@@ -1635,8 +1636,14 @@
                 required: true,
                 content: new OA\JsonContent(
                     type: "object",
-                    required: ["content"],
+                    required: ["title", "priority", "deadline"],
                     properties: [
+                        new OA\Property(
+                            property: "title",
+                            description: "The title of the task",
+                            type: "string",
+                            example: "Daily briefing"
+                        ),
                         new OA\Property(
                             property: "description",
                             description: "The description of the task",
@@ -1661,7 +1668,7 @@
                             type: "integer",
                             format: "int64",
                             example: 86400
-                        )
+                        ),
                     ]
                 )
             ),
@@ -1739,14 +1746,14 @@
             $this->requireRole($request, UserRole::TripTaskEdit);
 
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
-            $description = $this->requireJsonBodyField($request, "description");
+            $title = $this->requireJsonBodyField($request, "title");
+            $description = $this->getJsonBodyField($request, "description");
             $priority = $this->requireJsonBodyField($request, "priority");
-            $deadline = $this->getJsonBodyField($request, "deadline");
+            $deadline = $this->requireJsonBodyField($request, "deadline");
             $notificationInterval = $this->getJsonBodyField($request, "notificationInterval");
-
             $mappedPriority = TaskPriority::from($priority);
 
-            return $this->taskService->createTask($description, $mappedPriority, $deadline, $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
+            return $this->taskService->createTask($title, $description, $mappedPriority, intval($deadline), $notificationInterval !== null ? intval($notificationInterval) : null, $tripId);
         }
 
         #[OA\Patch(
@@ -1760,6 +1767,12 @@
                 content: new OA\JsonContent(
                     type: "object",
                     properties: [
+                        new OA\Property(
+                            property: "title",
+                            description: "The title of the task",
+                            type: "string",
+                            example: "Upcoming flight"
+                        ),
                         new OA\Property(
                             property: "description",
                             description: "The description of the task",
@@ -1860,9 +1873,14 @@
             $tripId = $this->requirePathArgument($routeArguments, "tripId");
             $taskId = $this->requirePathArgument($routeArguments, "taskId");
 
+            $newTitle = $this->getJsonBodyField($request, "title");
+            if ($newTitle !== null) {
+                $wasUpdated |= $this->taskService->updateTaskTitle($taskId, $newTitle);
+            }
+            
             $newDescription = $this->getJsonBodyField($request, "description");
             if ($newDescription !== null) {
-                $wasUpdated |= $this->taskService->updateTaskDescription($taskId, $newDescription);
+                $wasUpdated |= $this->taskService->updateTaskDescription($taskId, $newDescription === "" ? null : $newDescription);
             }
 
             $newPriority = $this->getJsonBodyField($request, "priority");
@@ -1999,6 +2017,9 @@
             }
             if (!$this->hasRole($request, UserRole::TripStayRead)) {
                 $trip->resetStays();
+            }
+            if (!$this->hasRole($request, UserRole::TripCarRentalRead)) {
+                $trip->resetCarRentals();
             }
             if (!$this->hasRole($request, UserRole::TripHighlightRead)) {
                 $trip->resetHighlights();

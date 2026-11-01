@@ -1,5 +1,5 @@
 import os
-import traceback
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -8,29 +8,58 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from src.api.authentication_middleware import AuthenticationContextMiddleware
 from src.api.clustering_router import router as clustering_router
 from src.api.embeddings_router import router as embeddings_router
+from src.api.generative_content_router import router as generativecontent_router
 from src.api.logging_middleware import LoggingMiddleware
 from src.api.management_router import router as management_router
-from src.core.ai_engine import AiEngine
+from src.client.core_client import CoreClient
+from src.client.iam_client import IamClient
+from src.client.piston_client import PistonClient
 from src.core.clustering_engine import ClusteringEngine
+from src.core.embeddings_engine import EmbeddingsEngine
+from src.core.generative_content_engine import GenerativeContentEngine
 from src.core.logger import logger, transaction_id
-from src.service.authentication_service import AuthenticationService
+from src.tools.registry import SkillRegistry
 
 load_dotenv()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.ai_engine = AiEngine(
-        os.getenv("EMBEDDINGS_MODEL_NAME"), 
-        os.getenv("ENGINE_DEVICE"),
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    app.state.embeddings_engine = EmbeddingsEngine(
+        model_name=os.getenv("EMBEDDINGS_MODEL_NAME"),
+        engine_device=os.getenv("ENGINE_DEVICE"),
     )
     app.state.clustering_engine = ClusteringEngine()
-    app.state.authentication_service = AuthenticationService(
-        os.getenv("IAM_HOST"),
-        int(os.getenv("IAM_PORT")),
-        os.getenv("IAM_APP_CLIENT_ID"),
+    app.state.iam_client = IamClient(
+        iam_host=os.getenv("IAM_HOST"),
+        iam_port=int(os.getenv("IAM_PORT")),
+        cortex_client_id=os.getenv("CORTEX_CLIENT_ID"),
+        cortex_client_secret=os.getenv("CORTEX_CLIENT_SECRET"),
+    )
+    app.state.core_client = CoreClient(
+        core_host=os.getenv("CORE_HOST"),
+        core_port=int(os.getenv("CORE_PORT")),
+        iam_client=app.state.iam_client,
+    )
+    app.state.piston_client = PistonClient(
+        piston_host=os.getenv("PISTON_HOST"),
+        piston_port=int(os.getenv("PISTON_PORT")),
+    )
+    app.state.skill_registry = SkillRegistry(
+        core_client=app.state.core_client,
+        piston_client=app.state.piston_client,
+    )
+    app.state.generative_content_engine = GenerativeContentEngine(
+        api_key=os.getenv("GEMINI_API_KEY"),
+        models=os.getenv("GEMINI_MODELS"),
+        skill_registry=app.state.skill_registry,
+        core_client=app.state.core_client,
+        chat_timeout_ms=int(os.getenv("CHAT_TIMEOUT_MS")),
+        max_cumulative_tokens=int(os.getenv("MAX_CUMULATIVE_TOKENS")),
+        max_tool_result_tokens=int(os.getenv("MAX_TOOL_RESULT_TOKENS")),
     )
     yield
 
@@ -41,26 +70,39 @@ app = FastAPI(
 app.include_router(management_router)
 app.include_router(embeddings_router)
 app.include_router(clustering_router)
+app.include_router(generativecontent_router)
+app.add_middleware(AuthenticationContextMiddleware)
 app.add_middleware(LoggingMiddleware)
 
 
 @app.get("/", include_in_schema=False)
-async def redirect_to_swagger():
+async def redirect_to_swagger() -> RedirectResponse:
     return RedirectResponse(url="/swagger")
 
 
 @app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return await global_exception_handler(request, exc)
+async def http_exception_handler(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
+    return await global_exception_handler(request=request, exc=exc)
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return await global_exception_handler(request, exc)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    return await global_exception_handler(request=request, exc=exc)
+
+
+@app.exception_handler(RuntimeError)
+async def runtime_exception_handler(
+    request: Request, exc: RuntimeError
+) -> JSONResponse:
+    return await global_exception_handler(request=request, exc=exc)
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     status_code = 500
     error_type = exc.__class__.__name__
     message = str(exc)
@@ -82,7 +124,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         f"{error_type}: {message}",
         extra={
             "error": error_content,
-            "stacktrace": traceback.format_exc().splitlines(),
             "transaction_id": t_id,
         },
     )

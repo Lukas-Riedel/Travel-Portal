@@ -11,15 +11,14 @@ import { useLastSeenBridgeXDevice } from "../hooks/useLastSeenBridgeXDevice"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import type { Coordinates } from "../types/Coordinates.ts"
 import type { Trip } from "../types/CoreSwaggerTypes.ts"
-import type { Date as PlaceDate, Flight, Note, Place } from "../types/CoreSwaggerTypes.ts"
+import { type Date as PlaceDate, type Flight, type Note, type Place } from "../types/CoreSwaggerTypes.ts"
 import { CategoryCategory, PlaceIncludedEntity } from "../types/CoreSwaggerTypes.ts"
-import { KnownAddressType } from "../types/KnownAddressType.ts"
 import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getMapLink } from "../utils/navigationUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { getSunAltitude } from "../utils/sunUtils.ts"
 import { formatDateRange, formatTimestamp, getCurrentHour, getCurrentTimestamp, getTripDays, isTodayOrFutureDay, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
-import { getCalendarEvents, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
+import { getCalendarEvents, getTripCarRentals, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
 import DayCard from "./DayCard.tsx"
@@ -45,11 +44,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
     const getCachedCoordinates = useCachedCoordinates()
 
     const { places } = useRegularPlaces({ tripId: trip?.id, include: [PlaceIncludedEntity.Categories, PlaceIncludedEntity.Dates, PlaceIncludedEntity.Notes], enabled: !!trip?.id })
-    const lastSeenBridgeXDevice = useLastSeenBridgeXDevice([
-        ...(trip?.stays?.filter(stay => stay.address)?.map(stay => ({ name: stay.name, address: stay.address!, type: KnownAddressType.Stay })) ?? []),
-        ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.from.shortName }), address: t("airport.format", { name: flight.from.shortName }), type: KnownAddressType.Airport })) ?? []),
-        ...(trip?.flights?.map(flight => ({ name: t("airport.format", { name: flight.to.shortName }), address: t("airport.format", { name: flight.to.shortName }), type: KnownAddressType.Airport })) ?? [])
-    ])
+    const lastSeenBridgeXDevice = useLastSeenBridgeXDevice()
 
     const currentSunAltitude = lastSeenBridgeXDevice?.data?.latitude && lastSeenBridgeXDevice?.data?.longitude ? Math.round(getSunAltitude(getCurrentTimestamp(), lastSeenBridgeXDevice.data as Coordinates)) : undefined
     const SunAltitudeIcon = currentSunAltitude && currentSunAltitude > SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Sun : currentSunAltitude && currentSunAltitude < (-1) * SUNSET_OR_SUNRISE_SUN_ALTITUDE_THRESHOLD ? Moon : SunMoon
@@ -152,24 +147,30 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                                         href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
                                         target="_blank"
                                         rel="noopener noreferrer">
-                                        {lastSeenBridgeXDevice.data.address?.name}
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
                                     </a>
                                 ) : (
                                     <span className="text-xs truncate">
-                                        {lastSeenBridgeXDevice.data.address?.name}
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
                                     </span>
                                 )}
                             </div>
                         ) : (
                             <div className="flex items-center justify-center w-full text-red-600 space-x-1 mt-6 link-hover hover:text-red-400">
                                 <LocateOffIcon size={16} />
-                                <a
-                                    className="text-xs truncate"
-                                    href={getMapLink(lastSeenBridgeXDevice.data.address?.address ?? "")}
-                                    target="_blank"
-                                    rel="noopener noreferrer">
-                                    {lastSeenBridgeXDevice.data.address?.name}
-                                </a>
+                                {lastSeenBridgeXDevice.data.address?.address ? (
+                                    <a
+                                        className="text-xs truncate"
+                                        href={getMapLink(lastSeenBridgeXDevice.data.address?.address)}
+                                        target="_blank"
+                                        rel="noopener noreferrer">
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
+                                    </a>
+                                ) : (
+                                    <span className="text-xs truncate">
+                                        {lastSeenBridgeXDevice?.data?.address?.name}
+                                    </span>
+                                )}
                             </div>
                         )}
                         <ul className="text-[10px] text-gray-500 mt-2 space-y-0.5">
@@ -252,6 +253,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                     day={day}
                     events={(places && getCalendarEvents(day, trip?.flights, trip?.watchedFlights, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
                     stay={trip ? getTripStay(trip, day, configuration?.homeLocation?.timezone) : undefined}
+                    carRentals={trip ? getTripCarRentals(trip, day, configuration?.homeLocation?.timezone) : undefined}
                     fitness={trip?.fitness?.[(day.getTime() - startOfDay(fromUnixTime(trip?.start ?? 0)).getTime()) / (ONE_DAY_SECONDS * 1000)]}
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
                     publicHoliday={getTripPublicHoliday(trip, day)}

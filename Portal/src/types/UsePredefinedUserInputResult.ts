@@ -1,10 +1,15 @@
 import type { GeoJSON, Geometry } from "geojson"
 
 import type { AppConfiguration } from "./CoreSwaggerTypes.ts"
-import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, LabelMetadata, Note, Photo, Place, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, Voucher } from "./CoreSwaggerTypes.ts"
+import type { Airline, Airport, Album, Category, CategoryCategory, CategoryMetadata, CompositeRegion, Device, Document, Expense, ExpenseCurrency, Fitness, Flight, FlightType, GeographicalRegion, Highlight, HighlightAttributes, Label, LabelMetadata, LifestyleEvent, Note, Photo, Place, Subscription, Task, TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, Voucher } from "./CoreSwaggerTypes.ts"
 import type { Highlightable } from "./Highlightable.ts"
 
 export interface UsePredefinedUserInputResult {
+    showCreateLifestyleIntakeToast: (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) => Promise<boolean>
+    showCreateLifestyleActivityToast: (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) => Promise<boolean>
+    showUpdateLifestyleEventContentToast: (event: LifestyleEvent, updateLifestyleEventContent: (content: string) => Promise<LifestyleEvent>) => Promise<boolean>
+    showDuplicateLifestyleEventToast: (duplicateLifestyleEvent: () => Promise<LifestyleEvent>) => Promise<boolean>
+    showRemoveLifestyleEventToast: (removeLifestyleEvent: () => Promise<void>) => Promise<boolean>
     showSelectHighlightsToast: (selectHighlights: (count: number) => Promise<Highlight[]>) => Promise<boolean>
     showAssignCategoryToast: (categories: Category[], assignCategory: (categoryName: string) => Promise<GeographicalRegion>) => Promise<boolean>
     showAssignAirlineCodeToast: (airlines: Airline[], assignAirlineCode: (airlineId: string) => Promise<Airline>) => Promise<boolean>
@@ -78,9 +83,11 @@ export interface UsePredefinedUserInputResult {
     showCreateSelectedRegionToast: (countryCategories: Category[], createGeoJsonRegion: (geometry: Geometry) => GeoJSON, extractGeoJsonFeatures: (geoJson: GeoJSON) => unknown[], createGeographicalRegion: (name: string, category: CategoryCategory, geoJson: GeoJSON, country?: string, radius?: number) => Promise<GeographicalRegion>, createCompositeRegion: (name: string, category: CategoryCategory, includedCategoryNames: string[], excludedCategoryNames: string[]) => Promise<CompositeRegion>) => Promise<boolean>
     showCopyTripItineraryToast: (copyTripItinerary: () => Promise<void>) => Promise<boolean>
     showCopyDayItineraryToast: (copyDayItinerary: () => Promise<void>) => Promise<boolean>
-    showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date) => Promise<Task>) => Promise<boolean>
+    showCreateTripTaskToast: (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, deadline: Date, notificationInterval?: number, description?: string) => Promise<Task>) => Promise<boolean>
     showRemoveTaskToast: (removeTask: () => Promise<void>) => Promise<boolean>
     showUpdateTaskPriorityToast: (updateTaskPriority: (priority: TaskPriority) => Promise<Task>) => Promise<boolean>
-    showUpdateTaskDescriptionToast: (description: string, updateTaskDescription: (description: string) => Promise<Task>) => Promise<boolean>
+    showUpdateTaskTitleAndDescriptionToast: (title: string, description: string | undefined, updateTaskTitle: (title: string, description?: string) => Promise<Task>) => Promise<boolean>
     showUpdateLabelToast: (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) => Promise<boolean>
+    showClearConversationToast: (clearConversation: () => Promise<void>) => Promise<boolean>
+    showCopyConversationToast: (copyConversation: () => Promise<void>) => Promise<boolean>
 }

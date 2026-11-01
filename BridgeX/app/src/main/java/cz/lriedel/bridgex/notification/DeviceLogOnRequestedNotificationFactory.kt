@@ -18,7 +18,7 @@ class DeviceLogOnRequestedNotificationFactory(
         deviceForegroundServiceRunner.recordExecutionAttempt()
 
         if (isCharging(context)) {
-            deviceForegroundServiceRunner.execute(NotificationContext.headers.get())
+            deviceForegroundServiceRunner.execute(NotificationContext.headers.get(), true)
         }
 
         return null

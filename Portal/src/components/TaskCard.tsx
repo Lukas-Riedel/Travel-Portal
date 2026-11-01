@@ -14,14 +14,14 @@ import PropertyCardContent from "./PropertyCardContent.tsx"
 interface TaskCardProps {
     task: Task | null
     trip: Trip | null
-    onTaskDescriptionUpdated?: (taskId: string, newDescription: string) => Promise<Task>
+    onTaskTitleAndDescriptionUpdated?: (taskId: string, newTitle: string, newDescription?: string) => Promise<Task>
     onTaskPriorityUpdated?: (taskId: string, newPriority: TaskPriority) => Promise<Task>
     onTaskRemoved?: (taskId: string) => Promise<void>
 }
 
-export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskPriorityUpdated, onTaskRemoved }: TaskCardProps) {
+export default function TaskCard({ task, trip, onTaskTitleAndDescriptionUpdated, onTaskPriorityUpdated, onTaskRemoved }: TaskCardProps) {
     const { t } = useTranslation()
-    const { showRemoveTaskToast, showUpdateTaskPriorityToast, showUpdateTaskDescriptionToast } = usePredefinedUserInput()
+    const { showRemoveTaskToast, showUpdateTaskPriorityToast, showUpdateTaskTitleAndDescriptionToast } = usePredefinedUserInput()
 
     const handleTaskRemoved = () => {
         if (onTaskRemoved && task && task.id) {
@@ -30,8 +30,8 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
     }
 
     const handleTaskDescriptionUpdated = () => {
-        if (onTaskDescriptionUpdated && task && task.id) {
-            showUpdateTaskDescriptionToast(task.description, description => onTaskDescriptionUpdated(task.id!, description))
+        if (onTaskTitleAndDescriptionUpdated && task && task.id) {
+            showUpdateTaskTitleAndDescriptionToast(task.title, task.description, (title: string, description?: string) => onTaskTitleAndDescriptionUpdated(task.id!, title, description))
         }
     }
 
@@ -42,6 +42,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
     }
 
     const properties = trip && task && ({
+        [t("task.label.trip")]: getTripFullName(trip),
         [t("task.label.description")]: task.description,
         [t("task.label.deadline")]: task.deadline && formatTimestamp(task.deadline, t("general.format.date.year.included"))
     })
@@ -58,9 +59,9 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                 <AppLink
                     to={trip}
                     className="text-lg font-semibold hover:underline">
-                    {getTripFullName(trip)}
+                    {task.title}
                 </AppLink>
-                {!!(onTaskDescriptionUpdated || onTaskPriorityUpdated || onTaskRemoved) && (
+                {!!(onTaskTitleAndDescriptionUpdated || onTaskPriorityUpdated || onTaskRemoved) && (
                     <ul className="flex justify-end gap-1 ml-auto">
                         {onTaskPriorityUpdated && (
                             <li>
@@ -71,7 +72,7 @@ export default function TaskCard({ task, trip, onTaskDescriptionUpdated, onTaskP
                                 </button>
                             </li>
                         )}
-                        {onTaskDescriptionUpdated && (
+                        {onTaskTitleAndDescriptionUpdated && (
                             <li>
                                 <button
                                     onClick={handleTaskDescriptionUpdated}

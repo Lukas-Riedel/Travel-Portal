@@ -135,7 +135,8 @@
             
             $allowedEntityTypes = array_filter($allowedEntityTypes, fn($entityType) => $this->hasRole($request, $entityType->getRequiredRole()));
 
-            $searchResults = array_map(fn($searchResult) => $this->mapSearchResult($request, $searchResult), $this->indexService->search($query, $limit, $allowedEntityTypes, $this->hasRole($request, UserRole::SearchEdit)));
+            // TODO: Propagate the query language from the request.
+            $searchResults = array_map(fn($searchResult) => $this->mapSearchResult($request, $searchResult), $this->indexService->search($query, "cs", $limit, $allowedEntityTypes, $this->hasRole($request, UserRole::SearchEdit)));
             return array_values(array_filter($searchResults, fn($searchResult) => $searchResult->getEntity() !== null));
         }
 
@@ -148,7 +149,7 @@
             return $searchResult->withReplacedParentAndEntity($this->mapSearchResult($request, $searchResult->getParent()), $mappedSerachResult);
         }
 
-        private function getEntity(IndexableEntityType $entityType, string $entityId) : mixed {            
+        private function getEntity(IndexableEntityType $entityType, string $entityId) : mixed {
             return match ($entityType) {
                 IndexableEntityType::Category => $this->categoryService->getCategoryIdentifierById($entityId),
                 IndexableEntityType::Place => $this->placeService->getPlaceIdentifierById($entityId),

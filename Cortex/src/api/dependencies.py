@@ -1,29 +1,29 @@
 import os
+from typing import Any
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from src.service.authentication_service import AuthenticationService
 
 security = HTTPBearer()
 
 
 def get_current_user(
     request: Request, token: HTTPAuthorizationCredentials = Depends(security)
-):
-    authentication_service: AuthenticationService = (
-        request.app.state.authentication_service
-    )
+) -> dict[str, Any]:
+    iam_client = request.app.state.iam_client
 
-    return authentication_service.authenticate(token.credentials)
+    return iam_client.authenticate(token=token.credentials)
 
 
-def require_backend_service_account(
-    request: Request, user_info: dict = Depends(get_current_user)
-):
-    auth_service: AuthenticationService = request.app.state.authentication_service
-
-    if user_info.get("client") != os.getenv("IAM_BACKEND_CLIENT_ID"):
+def require_trusted_service_account(
+    request: Request, user_info: dict[str, Any] = Depends(get_current_user)
+) -> None:
+    allowed_clients = [
+        client
+        for client in os.getenv("ALLOWLISTED_SERVICE_CLIENTS").split(",")
+        if client
+    ]
+    if user_info.get("client") not in allowed_clients:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"The user '{user_info.get('user_id')}' is not authorized to access this resource.",

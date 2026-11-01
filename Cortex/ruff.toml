@@ -1,6 +1,28 @@
+target-version = "py311"
+
 [lint]
 select = [
     "I",
     "F401",
+    "ANN",
+    "UP",
+    "B",
+    "T20",
+    "FBT",
+    "E711",
+    "E712",
+    "E722",
 ]
-fixable = ["I", "F401"]
+ignore = [
+    "ANN401",
+]
+fixable = ["I", "F401", "UP"]
+
+[lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+]
+
+[format]
+quote-style = "double"

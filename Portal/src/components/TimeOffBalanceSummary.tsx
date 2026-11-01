@@ -1,60 +1,47 @@
-import { TailSpin } from "react-loader-spinner"
+import { useTranslation } from "react-i18next"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import { useFormatters } from "../hooks/useFormatters.ts"
-import { type TimeTrackingEvent,type TimeTrackingEventType } from "../types/CoreSwaggerTypes.ts"
+import { type TimeTrackingEvent, type TimeTrackingEventType } from "../types/CoreSwaggerTypes.ts"
 import { TIME_TRACKING_EVENT_TYPE_ICONS } from "../utils/eventUtils.ts"
+import CardGrid from "./CardGrid.tsx"
+import FactCard from "./FactCard.tsx"
 
 interface TimeOffBalanceSummaryProps {
     timeTrackingEvents: Partial<Record<TimeTrackingEventType, TimeTrackingEvent[]>> | null
 }
 
 export default function TimeOffBalanceSummary({ timeTrackingEvents }: TimeOffBalanceSummaryProps) {
+    const { t } = useTranslation()
     const { configuration } = useConfiguration()
     const { formatDuration, formatDays } = useFormatters()
 
     const standardWorkingHoursPerWorkingDay = 8 * (configuration?.timeTracking?.currentFte ?? 1)
-    const availableEventTypes = timeTrackingEvents ? Object.keys(timeTrackingEvents) : Object.keys(TIME_TRACKING_EVENT_TYPE_ICONS)
+    const availableEventTypes = (timeTrackingEvents ? Object.keys(timeTrackingEvents) : Object.keys(TIME_TRACKING_EVENT_TYPE_ICONS)) as TimeTrackingEventType[]
 
     const getBalance = (events: TimeTrackingEvent[]) => events[0]?.balance ?? 0
 
     return (
-        <div className="overflow-hidden py-2 my-4 relative bg-white">
-            <div className="flex flex-col sm:flex-row gap-4 px-2 items-stretch">
+        <div className="space-y-4 md:space-y-8">
+            <h1 className="text-2xl font-bold text-gray-800 px-4 md:px-0">
+                {t("tracker.title")}
+            </h1>
+            <CardGrid
+                rowSize={4}>
                 {availableEventTypes.map(type => {
-                    const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[type as TimeTrackingEventType]
-                    const balance = timeTrackingEvents?.[type as TimeTrackingEventType] != null ? getBalance(timeTrackingEvents[type as TimeTrackingEventType]!) : undefined
+                    const Icon = TIME_TRACKING_EVENT_TYPE_ICONS[type]
+                    const balance = timeTrackingEvents?.[type] != null ? getBalance(timeTrackingEvents[type]!) : undefined
 
                     return Icon && (
-                        <div
+                        <FactCard
                             key={type}
-                            className="flex flex-col bg-white text-black px-6 py-3 rounded-xl text-center flex-1 shadow-md select-none border border-gray-200 min-h-[150px]">
-                            <div className="mt-4 tracking-wide flex justify-center">
-                                <Icon size={24} />
-                            </div>
-                            <div className="flex-grow flex items-center justify-center">
-                                {balance !== undefined ? (
-                                    <div>
-                                        <div className="text-lg">
-                                            {formatDuration(balance * 3600, false, true)}
-                                        </div>
-                                        <div className="text-xs">
-                                            {formatDays(Math.floor(balance / standardWorkingHoursPerWorkingDay + 1e-10))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="items-center justify-center flex h-[120px]">
-                                        <TailSpin
-                                            color="black"
-                                            height={30}
-                                            width={30} />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                            icon={Icon}
+                            label={t(`tracker.label.type.${type}`)}
+                            value={balance !== undefined ? formatDays(Math.floor(balance / standardWorkingHoursPerWorkingDay + 1e-10)) : null}
+                            description={balance !== undefined ? formatDuration(balance * 3600, false, true) : undefined} />
                     )
                 })}
-            </div>
+            </CardGrid>
         </div>
     )
 }

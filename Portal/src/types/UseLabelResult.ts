@@ -2,6 +2,7 @@ import type { Highlight, Label, LabelMetadata } from "./CoreSwaggerTypes.ts"
 
 export interface UseLabelResult {
     label: Label | null
+    removeLabel: () => Promise<void>
     updateLabelName: (name: string) => Promise<Label>
     updateLabelMetadata: (metadata: LabelMetadata) => Promise<Label>
     updateLabelMainHighlight: (highlightId: string) => Promise<Label>

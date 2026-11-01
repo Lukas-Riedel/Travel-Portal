@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { useConfiguration } from "../contexts/ConfigContext.tsx"
 import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
-import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type Note, type Photo, type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryMetadata, type CompositeRegion, type Device, type Document, type Expense, ExpenseCurrency, type Fitness, type Flight, FlightType, type GeographicalRegion, type Highlight, type HighlightAttributes, type Label, type LabelMetadata, type LifestyleEvent, type Note, type Photo, type Place, type Subscription, type Task, TaskPriority, type TimeTrackingEvent, type TimeTrackingEventType, type Trip, type Voucher } from "../types/CoreSwaggerTypes.ts"
 import type { Highlightable } from "../types/Highlightable.ts"
 import type { UsePredefinedUserInputResult } from "../types/UsePredefinedUserInputResult.ts"
 import { formatTimestamp } from "../utils/timeUtils.ts"
@@ -68,6 +68,101 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             logout,
             t("general.prompt.logout.confirmed"),
             t("general.prompt.logout.failed")
+        )
+
+    const showCreateLifestyleIntakeToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
+        showFormToast(
+            t("lifestyle.prompt.create.intake.message"),
+            [
+                {
+                    type: "text",
+                    label: t("lifestyle.prompt.create.intake.label.description"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("lifestyle.prompt.create.intake.label.calories"),
+                    required: false,
+                    min: 0
+                },
+                {
+                    type: "datetime-local",
+                    label: t("lifestyle.prompt.create.intake.label.timestamp"),
+                    required: true,
+                    defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
+                }
+            ],
+            (description: string, calories: string | undefined, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), calories === undefined ? undefined : parseFloat(calories)),
+            t("lifestyle.prompt.create.intake.confirmed"),
+            t("lifestyle.prompt.create.intake.failed")
+        )
+
+    const showCreateLifestyleActivityToast = (createLifestyleEvent: (content: string, timestamp: Date, calories?: number) => Promise<LifestyleEvent>) =>
+        showFormToast(
+            t("lifestyle.prompt.create.activity.message"),
+            [
+                {
+                    type: "text",
+                    label: t("lifestyle.prompt.create.activity.label.description"),
+                    required: true
+                },
+                {
+                    type: "number",
+                    label: t("lifestyle.prompt.create.activity.label.calories"),
+                    required: true,
+                    min: 0
+                },
+                {
+                    type: "datetime-local",
+                    label: t("lifestyle.prompt.create.activity.label.timestamp"),
+                    required: true,
+                    defaultValue: format(new Date(), "yyyy-MM-dd'T'HH:mm")
+                }
+            ],
+            (description: string, calories: string, timestamp: string) => createLifestyleEvent(description, new Date(timestamp), parseFloat(calories)),
+            t("lifestyle.prompt.create.activity.confirmed"),
+            t("lifestyle.prompt.create.activity.failed")
+        )
+
+    const showUpdateLifestyleEventContentToast = (event: LifestyleEvent, updateLifestyleEventContent: (content: string) => Promise<LifestyleEvent>) =>
+        showInputToast(
+            t("lifestyle.prompt.update.content.message"),
+            updateLifestyleEventContent,
+            t("lifestyle.prompt.update.content.confirmed"),
+            t("lifestyle.prompt.update.content.failed"),
+            event.content ?? ""
+        )
+
+    const showRemoveLifestyleEventToast = (removeLifestyleEvent: () => Promise<void>) =>
+        showConfirmToast(
+            t("lifestyle.prompt.remove.message"),
+            removeLifestyleEvent,
+            t("lifestyle.prompt.remove.confirmed"),
+            t("lifestyle.prompt.remove.failed")
+        )
+
+    const showDuplicateLifestyleEventToast = (duplicateLifestyleEvent: () => Promise<LifestyleEvent>) =>
+        showConfirmToast(
+            t("lifestyle.prompt.duplicate.message"),
+            duplicateLifestyleEvent,
+            t("lifestyle.prompt.duplicate.confirmed"),
+            t("lifestyle.prompt.duplicate.failed")
+        )
+
+    const showClearConversationToast = (clearConversation: () => Promise<void>) =>
+        showConfirmToast(
+            t("chat.prompt.clear.message"),
+            clearConversation,
+            t("chat.prompt.clear.confirmed"),
+            t("chat.prompt.clear.failed")
+        )
+
+    const showCopyConversationToast = (copyConversation: () => Promise<void>) =>
+        showConfirmToast(
+            t("chat.prompt.copy.message"),
+            copyConversation,
+            t("chat.prompt.copy.confirmed"),
+            t("chat.prompt.copy.failed")
         )
 
     const showUpdatePlaceLocationToast = (updatePlaceLocation: () => Promise<Place>) =>
@@ -1120,12 +1215,12 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     }))
                 },
                 {
-                    type: "datetime-local",
+                    type: "date",
                     label: t("subscription.prompt.create.label.expiration"),
                     required: true
                 }
             ] as const,
-            (description: string, value: number, currency: ExpenseCurrency, expiration: string) => createSubscription(description, value, currency, new Date(expiration)),
+            (description: string, value: number, currency: ExpenseCurrency, expiration: string) => createSubscription(description, value, currency, new Date(`${expiration}T00:00:00`)),
             t("subscription.prompt.create.confirmed"),
             t("subscription.prompt.create.failed")
         )
@@ -1155,7 +1250,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ],
-            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration ? new Date(expiration) : undefined),
+            (name: string, identifier: string, issuer: string, expiration?: string) => createDocument(name, identifier, issuer, expiration ? new Date(`${expiration}T00:00:00`) : undefined),
             t("document.prompt.create.confirmed"),
             t("document.prompt.create.failed")
         )
@@ -1195,7 +1290,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false
                 }
             ] as const,
-            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration ? new Date(expiration) : undefined),
+            (code: string, issuer: string, value: number, currency: ExpenseCurrency, expiration: string) => createVoucher(code, issuer, value, currency, expiration ? new Date(`${expiration}T00:00:00`) : undefined),
             t("voucher.prompt.create.confirmed"),
             t("voucher.prompt.create.failed")
         )
@@ -1359,7 +1454,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("day.prompt.copy.failed")
         )
 
-    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: Date) => Promise<Task>) =>
+    const showCreateTripTaskToast = (trips: Trip[], createTripTask: (tripId: string, title: string, priority: TaskPriority, deadline: Date, notificationInterval?: number, description?: string) => Promise<Task>) =>
         showFormToast(
             t("task.prompt.create.message"),
             [
@@ -1374,8 +1469,15 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 },
                 {
                     type: "text",
+                    label: t("task.label.title"),
+                    required: true,
+                    maxLength: 50
+                },
+                {
+                    type: "text",
                     label: t("task.label.description"),
-                    required: true
+                    required: false,
+                    maxLength: 400
                 },
                 {
                     type: "select",
@@ -1389,17 +1491,17 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "datetime-local",
                     label: t("task.label.deadline"),
-                    required: false
+                    required: true
                 },
                 {
                     type: "select",
                     label: t("task.label.notificationInterval"),
-                    required: true,
-                    options: [{ id: "", name: "" }].concat([3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({id: `${interval}`, name: formatDuration(interval)}))),
-                }
+                    required: false,
+                    options: [3600, 21600, 43200, 86400, 259200, 604800].map(interval => ({ id: `${interval}`, name: formatDuration(interval) })),
+                },
             ] as const,
-            (tripId: string, description: string, priority: string, deadline: string | undefined, notificationInterval: string) =>
-                createTripTask(tripId, description, priority as TaskPriority, notificationInterval ? parseInt(notificationInterval) : undefined, deadline ? new Date(deadline) : undefined),
+            (tripId: string, title: string, description: string | undefined, priority: string, deadline: string, notificationInterval: string) =>
+                createTripTask(tripId, title, priority as TaskPriority, new Date(deadline), notificationInterval ? parseInt(notificationInterval) : undefined, description),
             t("task.prompt.create.confirmed"),
             t("task.prompt.create.failed")
         )
@@ -1431,23 +1533,35 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         )
 
 
-    const showUpdateTaskDescriptionToast = (description: string, updateTaskDescription: (description: string) => Promise<Task>) =>
+    const showUpdateTaskTitleAndDescriptionToast = (title: string, description: string | undefined, updateTaskTitle: (title: string, description?: string) => Promise<Task>) =>
         showFormToast(
-            t("task.prompt.update.description.message"),
+            t("task.prompt.update.title.message"),
             [
                 {
                     type: "text",
+                    label: t("task.label.title"),
                     required: true,
-                    defaultValue: description
+                    defaultValue: title
+                },
+                {
+                    type: "text",
+                    label: t("task.label.description"),
+                    required: false,
+                    defaultValue: description ?? undefined
                 }
             ],
-            updateTaskDescription,
-            t("task.prompt.update.description.confirmed"),
-            t("task.prompt.update.description.failed")
+            (newTitle: string, newDescription?: string) => updateTaskTitle(newTitle, newDescription),
+            t("task.prompt.update.title.confirmed"),
+            t("task.prompt.update.title.failed")
         )
 
     return {
-        showUpdateTaskDescriptionToast,
+        showCreateLifestyleIntakeToast,
+        showCreateLifestyleActivityToast,
+        showUpdateLifestyleEventContentToast,
+        showDuplicateLifestyleEventToast,
+        showRemoveLifestyleEventToast,
+        showUpdateTaskTitleAndDescriptionToast,
         showUpdateTaskPriorityToast,
         showRemoveTaskToast,
         showCreateTripTaskToast,
@@ -1523,6 +1637,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showRemoveHighlightToast,
         showAssignLabelToast,
         showUnassignLabelToast,
-        showUpdateLabelToast
+        showUpdateLabelToast,
+        showClearConversationToast,
+        showCopyConversationToast
     }
 }

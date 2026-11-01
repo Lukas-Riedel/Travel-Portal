@@ -1,8 +1,8 @@
-import type { KnownAddress } from "./KnownAddress.ts"
+import type { Address } from "../types/CoreSwaggerTypes.ts"
 
 export interface BridgeXDeviceData {
     battery?: number
-    address?: KnownAddress
+    address?: Address
     latitude?: number
     longitude?: number
     timezone?: string

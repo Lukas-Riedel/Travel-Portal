@@ -2,6 +2,7 @@
     namespace Core\Service\Task;
     
     use Core\Client\Database\DatabaseClient;
+    use Core\Client\Database\WhereClauseBuilder;
 
     class TaskMapper {
         
@@ -41,7 +42,7 @@
                 return null;
             }
 
-            return new Task($taskRow["id"], null, $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null);
+            return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
         }
 
         public function selectTasks(string $tripId) : array {
@@ -57,7 +58,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($tripId)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], null, $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null);
+                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
                 });
         }
 
@@ -74,7 +75,7 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->getMappedResultSet(function($taskRow) {
-                    return new Task($taskRow["id"], null, $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), $taskRow["deadline"] === null ? null : intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null);
+                    return new Task($taskRow["id"], $taskRow["title"], $taskRow["description"], TaskPriority::fromNumber(intval($taskRow["priority"])), intval($taskRow["deadline"]), $taskRow["notification_interval"] === null ? null : intval($taskRow["notification_interval"]), null, true);
                 });
         }
 
@@ -82,12 +83,14 @@
             $sql = <<<'SQL'
                 INSERT INTO task (
                     trip_id,
+                    title,
                     description,
                     priority,
                     deadline,
                     notification_interval
                 )
                 VALUES (
+                    ?,
                     ?,
                     ?,
                     ?,
@@ -99,7 +102,7 @@
 
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($tripId, $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval())
+                ->withParameters($tripId, $task->getTitle(), $task->getDescription(), $task->getPriority()->toNumber(), $task->getDeadline(), $task->getNotificationInterval())
                 ->getSingleColumn("id");
 
             if ($id === null) {
@@ -110,7 +113,20 @@
             return true;
         }
 
-        public function updateTaskDescription(string $taskId, string $description) : bool {
+        public function updateTaskTitle(string $taskId, string $title) : bool {
+            $sql = <<<'SQL'
+                UPDATE task
+                SET title = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($title, $taskId)
+                ->execute() > 0;
+        }
+
+        public function updateTaskDescription(string $taskId, ?string $description) : bool {
             $sql = <<<'SQL'
                 UPDATE task
                 SET description = ?
@@ -136,17 +152,21 @@
                 ->execute() > 0;
         }
 
-        public function deleteTask(string $taskId, string $tripId) : int {
+        public function deleteTask(string $taskId, ?string $tripId) : int {
             $sql = <<<'SQL'
                 DELETE
                 FROM task
-                WHERE id = ?
-                    AND trip_id = ?
+                WHERE :CONDITIONS
             SQL;
 
+            $whereClauseBuilder = (new WhereClauseBuilder())->withClause("id = ?", $taskId);
+            if ($tripId !== null) {
+                $whereClauseBuilder->withClause("trip_id = ?", $tripId);
+            }
+            $whereClause = $whereClauseBuilder->buildForAnd();
+
             return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($taskId, $tripId)
+                ->statementBuilder($sql, $whereClause)
                 ->execute();
         }
     }

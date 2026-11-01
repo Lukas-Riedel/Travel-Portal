@@ -113,6 +113,39 @@
                     if (count($mostDelayedFlights) > 0) {
                         $statistics[] = new Statistics(StatisticsName::MostDelayedFlights, $mostDelayedFlights, StatisticsUnit::Duration);
                     }
+
+                    $airborneTimePerAircraft = array_values(array_reduce(array_filter($flights, fn($flight) => $flight->getAircraft() !== null),
+                        fn($carry, $flight) => array_merge($carry, [$flight->getAircraft() => isset($carry[$flight->getAircraft()]) 
+                        ? $carry[$flight->getAircraft()]->withValue($carry[$flight->getAircraft()]->getValue() + $flight->getDuration()) : new KeyValuePair($flight->getAircraft(), $flight->getDuration())]), array()));
+                    usort($airborneTimePerAircraft, fn($a, $b) => $b->getValue() <=> $a->getValue());
+                    if (count($airborneTimePerAircraft) > 0) {
+                        $statistics[] = new Statistics(StatisticsName::TotalAirborneTimePerAircraft, $airborneTimePerAircraft, StatisticsUnit::Duration);
+                    }
+
+                    $airborneTimePerAirline = array_values(array_reduce($flights, fn($carry, $flight) => array_merge($carry, [$this->flightService->getAirlineForFlight($flight->getFlight())->getName()
+                        => isset($carry[$this->flightService->getAirlineForFlight($flight->getFlight())->getName()]) ? $carry[$this->flightService->getAirlineForFlight($flight->getFlight())->getName()]->withValue($carry[$this->flightService->getAirlineForFlight($flight->getFlight())->getName()]->getValue()
+                        + $flight->getDuration()) : new KeyValuePair($this->flightService->getAirlineForFlight($flight->getFlight())->getName(), $flight->getDuration())]), array()));
+                    usort($airborneTimePerAirline, fn($a, $b) => $b->getValue() <=> $a->getValue());
+                    if (count($airborneTimePerAirline) > 0) {
+                        $statistics[] = new Statistics(StatisticsName::TotalAirborneTimePerAirline, $airborneTimePerAirline, StatisticsUnit::Duration);
+                    }
+
+                    $airborneDistancePerAircraft = array_values(array_reduce(array_filter($flights, fn($flight) => $flight->getAircraft() !== null && $flight->getDistance() !== null),
+                        fn($carry, $flight) => array_merge($carry, [$flight->getAircraft() => isset($carry[$flight->getAircraft()])
+                        ? $carry[$flight->getAircraft()]->withValue($carry[$flight->getAircraft()]->getValue() + $flight->getDistance()) : new KeyValuePair($flight->getAircraft(), $flight->getDistance())]), array()));
+                    usort($airborneDistancePerAircraft, fn($a, $b) => $b->getValue() <=> $a->getValue());
+                    if (count($airborneDistancePerAircraft) > 0) {
+                        $statistics[] = new Statistics(StatisticsName::TotalAirborneDistancePerAircraft, $airborneDistancePerAircraft, StatisticsUnit::Kilometers);
+                    }
+
+                    $airborneDistancePerAirline = array_values(array_reduce(array_filter($flights, fn($flight) => $flight->getDistance() !== null),
+                        fn($carry, $flight) => array_merge($carry, [$this->flightService->getAirlineForFlight($flight->getFlight())->getName()
+                        => isset($carry[$this->flightService->getAirlineForFlight($flight->getFlight())->getName()]) ? $carry[$this->flightService->getAirlineForFlight($flight->getFlight())->getName()]->withValue($carry[$this->flightService->getAirlineForFlight($flight->getFlight())->getName()]->getValue()
+                        + $flight->getDistance()) : new KeyValuePair($this->flightService->getAirlineForFlight($flight->getFlight())->getName(), $flight->getDistance())]), array()));
+                    usort($airborneDistancePerAirline, fn($a, $b) => $b->getValue() <=> $a->getValue());
+                    if (count($airborneDistancePerAirline) > 0) {
+                        $statistics[] = new Statistics(StatisticsName::TotalAirborneDistancePerAirline, $airborneDistancePerAirline, StatisticsUnit::Kilometers);
+                    }
                 }
             }
 

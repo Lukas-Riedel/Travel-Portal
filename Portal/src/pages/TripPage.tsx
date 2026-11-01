@@ -1,11 +1,10 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
-import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { createPlaceAlbumPhoto, listPlaceAlbumPhotos, refreshPlaceAlbum } from "../clients/coreClient"
 import ExpenseSummary from "../components/ExpenseSummary"
 import HighlightCarouselAndPlaceMapAndFlightMapToggleToggle from "../components/HighlightCarouselAndPlaceMapAndFlightMapToggleToggle.tsx"
-import NoteCardGrid from "../components/NoteCardGrid.jsx"
+import NoteGroupCardGrid from "../components/NoteGroupCardGrid.jsx"
 import PageHeader from "../components/PageHeader"
 import PlaceTileGrid from "../components/PlaceTileGrid"
 import StatisticsPanel from "../components/StatisticsPanel"
@@ -18,10 +17,11 @@ import { useCountryCategoriesMap } from "../hooks/useCountryCategoriesMap.ts"
 import { useEvents } from "../hooks/useEvents"
 import { useRegularPlaces } from "../hooks/useRegularPlaces"
 import { useTrip } from "../hooks/useTrip"
+import type { Place } from "../types/CoreSwaggerTypes.ts"
 import { type Airport, type Category, CategoryCategory, ExpenseType, PlaceIncludedEntity, PlaceSortingStrategy, UserRole } from "../types/CoreSwaggerTypes.ts"
 import { InternalCategoryCategory } from "../types/InternalCategoryCategory.ts"
 import { getPlaceCategory as doGetPlaceCategory } from "../utils/placeUtils.ts"
-import { getTripFullName, isTripCandidate, isPastTrip } from "../utils/tripUtils.ts"
+import { getTripFullName, isPastTrip,isTripCandidate } from "../utils/tripUtils.ts"
 
 export default function TripPage() {
     const { tripId } = useParams()
@@ -99,7 +99,8 @@ export default function TripPage() {
                     expenses={trip ? (trip.expenses ?? []) : null}
                     expenseCandidates={trip && isPastTrip(trip) ? [] : [
                         ...(trip?.flights?.map(flight => ({ type: ExpenseType.Flight, description: `${flight.from?.shortName} - ${flight.to?.shortName}` })) ?? []),
-                        ...(trip?.stays?.map(stay => ({ type: ExpenseType.Hotel, description: stay.name })) ?? [])
+                        ...(trip?.stays?.map(stay => ({ type: ExpenseType.Hotel, description: stay.name })) ?? []),
+                        ...(trip?.carRentals?.map(carRental => ({ type: ExpenseType.Car, description: carRental.model })) ?? [])
                     ]}
                     onExpenseCreated={hasRole(UserRole.TripExpenseEdit) ? createTripExpense : undefined}
                     onExpenseDescriptionUpdated={hasRole(UserRole.TripExpenseEdit) ? updateTripExpenseDescription : undefined}
@@ -107,7 +108,7 @@ export default function TripPage() {
                     onExpenseRemoved={hasRole(UserRole.TripExpenseEdit) ? removeTripExpense : undefined} />
             )}
             {hasRole(UserRole.TripNoteRead) && (
-                <NoteCardGrid
+                <NoteGroupCardGrid
                     rowSize={3}
                     notes={trip ? (trip.notes ?? []) : null}
                     onNoteCreated={hasRole(UserRole.TripNoteEdit) ? createTripNote : undefined}

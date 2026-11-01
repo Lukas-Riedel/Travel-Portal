@@ -35,15 +35,14 @@ export default function PlacePage() {
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights, removePlace } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
-    const handlePlaceRemoved = () =>
-        removePlace().then(() => removeCandidatePlace(placeId!).catch(() => {}))
+    const doRemovePlace = () => removeCandidatePlace(placeId!).catch(() => removePlace())
 
     const mostSpecificCategory = place && getPlaceCategory(place, InternalCategoryCategory.MostSpecificWithMetadata)
 
     const attributes: Record<string, string | number | undefined> = {
         [t("place.attribute.quality")]: place?.quality?.rating ? `${Math.round(place.quality.rating)}%` : undefined,
         [t("place.attribute.tier")]: place?.quality?.tier,
-        [t("place.attribute.score")]: place?.score,
+        [t("place.attribute.score")]: place?.score ? place.score : undefined,
         [t("place.attribute.highlightsCount")]: place?.highlights?.length,
         [t("place.attribute.elevation")]: place?.elevation && formatMeters(place.elevation)
     }
@@ -64,7 +63,7 @@ export default function PlacePage() {
                 internalAttributes={hasRole(UserRole.PlaceEdit) ? attributes : undefined}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) ? (highlightsCount => refreshPlaceHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined}
-                onRemoved={hasRole(UserRole.PlaceEdit) ? handlePlaceRemoved : undefined} />
+                onRemoved={hasRole(UserRole.PlaceEdit) ? doRemovePlace : undefined} />
             <HighlightCarousel
                 place={place ?? undefined}
                 highlights={place ? (place.highlights ?? []).filter(highlight => (highlight.photo.timestamp ?? 0) < getCurrentOrMaximumAllowedTimestamp()) : null}

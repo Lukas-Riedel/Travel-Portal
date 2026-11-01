@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
-import static cz.lriedel.agent.LoggingContext.REQUEST_ORIGIN_HEADER;
 import static cz.lriedel.agent.LoggingContext.TRANSACTION_ID_HEADER;
 
 @Component
@@ -46,8 +45,6 @@ public class HttpEntityProvider {
         if (transactionId != null) {
             httpHeaders.add(TRANSACTION_ID_HEADER, transactionId);
         }
-
-        httpHeaders.add(REQUEST_ORIGIN_HEADER, loggingContext.getRequestOrigin());
 
         return httpHeaders;
     }

@@ -30,8 +30,4 @@ public class LoggingContext {
     public void setTransactionId(String transactionId) {
         MDC.put(MDC_TRANSACTION_ID, transactionId);
     }
-
-    public String getRequestOrigin() {
-        return DeviceType.AGENT.getValue();
-    }
 }

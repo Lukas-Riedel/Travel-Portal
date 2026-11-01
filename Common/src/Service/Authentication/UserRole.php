@@ -25,9 +25,12 @@
         case DocumentRead = "document.read";
         case DocumentEdit = "document.edit";
         case FitnessEdit = "fitness.edit";
+        case LifestyleRead = "lifestyle.read";
+        case LifestyleEdit = "lifestyle.edit";
         case FlightEdit = "flight.edit";
         case GeocodingRead = "geocoding.read";
         case GeocodingEdit = "geocoding.edit";
+        case GenerativeContentRead = "generativecontent.read";
         case HighlightRead = "highlight.read";
         case HighlightEdit = "highlight.edit";
         case LabelRead = "label.read";
@@ -66,6 +69,7 @@
         case TripTaskRead = "trip.task.read";
         case TripTaskEdit = "trip.task.edit";
         case TripStayRead = "trip.stay.read";
+        case TripCarRentalRead = "trip.carrental.read";
         case TripFlightRead = "trip.flight.read";
         case TripFitnessRead = "trip.fitness.read";
         case TripPublicHolidayRead = "trip.holiday.read";
@@ -83,6 +87,8 @@
         case EventNewDataConsistencyIssueDetectedRead = "event.newdataconsistencyissuedetected.read";
         case EventTaskDeadlineReachedRead = "event.taskdeadlinereached.read";
         case EventVoucherExpiringRead = "event.voucherexpiring.read";
+        case EventSubscriptionExpiringRead = "event.subscriptionexpiring.read";
+        case EventDocumentExpiringRead = "event.documentexpiring.read";
         case PhotoReplacingTriggeredEventProcessingStartedRead = "event.processingstarted.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingEndedRead = "event.processingended.photoreplacingtriggered.read";
         case PhotoReplacingTriggeredEventProcessingFailedRead = "event.processingfailed.photoreplacingtriggered.read";
@@ -99,6 +105,7 @@
         case AgentShutdownRequestedEventProcessingEndedRead = "event.processingended.agentshutdownrequested.read";
         case AgentShutdownRequestedEventProcessingFailedRead = "event.processingfailed.agentshutdownrequested.read";
         case EventFitnessActivityDetectedRead = "event.fitnessactivitydetected.read";
+        case EventLifestyleActivityDetectedRead = "event.lifestyleactivitydetected.read";
         case EventDeviceLogOnRequestedRead = "event.devicelogonrequested.read";
         case EventFlightLoggedRead = "event.flightlogged.read";
         case IamAuthEdit = "iam.auth.edit";

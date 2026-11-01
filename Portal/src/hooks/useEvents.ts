@@ -16,7 +16,7 @@ export const useEvents = <T extends EventType>(eventType?: T): UseEventsResult<T
 
     const events = useMemo(() => messages
         ?.filter(message => message.data?.event === eventType && !readMessageIds.has(message.messageId))
-        ?.map(message => ({ ...(message.data?.args as Record<string, unknown> ?? {}), markAsRead: () => markAsRead(message.messageId) }) as NonNullable<UseEventsResult<T>["events"]>[number]), [messages, readMessageIds])
+        ?.map(message => ({ name: message.data?.event, args: message.data?.args ?? {}, markAsRead: () => markAsRead(message.messageId) }) as NonNullable<UseEventsResult<T>["events"]>[number]), [messages, readMessageIds])
 
     return {
         events,

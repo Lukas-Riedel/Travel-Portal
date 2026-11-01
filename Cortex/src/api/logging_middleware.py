@@ -1,8 +1,9 @@
 import time
 import uuid
+from collections.abc import Awaitable, Callable
 from typing import Final
 
-from fastapi import Request
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.logger import logger, request_origin, transaction_id
@@ -12,14 +13,15 @@ REQUEST_ORIGIN_HEADER: Final[str] = "Request-Origin"
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         start_time = time.perf_counter()
 
         t_id = request.headers.get(TRANSACTION_ID_HEADER) or str(uuid.uuid4())
         origin = request.headers.get(
             REQUEST_ORIGIN_HEADER, request.client.host if request.client else None
         )
-
         token_t = transaction_id.set(t_id)
         token_o = request_origin.set(origin)
 

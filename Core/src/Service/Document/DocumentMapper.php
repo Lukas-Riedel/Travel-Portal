@@ -93,6 +93,24 @@
                 ->execute();
         }
 
+        public function selectDocumentsForNotifications(int $threshold) : array {
+            $sql = <<<'SQL'
+                SELECT *
+                FROM document
+                WHERE expiration IS NOT NULL
+                    AND expiration > ROUND(EXTRACT(EPOCH FROM NOW()))
+                    AND expiration - ROUND(EXTRACT(EPOCH FROM NOW())) <= ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($threshold)
+                ->getMappedResultSet(function($documentRow) {
+                    return new Document($documentRow["id"], $documentRow["name"], $this->encryptionClient->decrypt($documentRow["code"]),
+                        $documentRow["issuer"], $documentRow["expiration"]);
+                });
+        }
+
         public function deleteExpiredDocuments() : int {
             $sql = <<<'SQL'
                 DELETE

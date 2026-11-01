@@ -8,5 +8,7 @@ export enum StaticNavigationTarget {
     Statistics,
     Plan,
     Tracker,
-    Admin
+    Admin,
+    Chat,
+    Lifestyle
 }

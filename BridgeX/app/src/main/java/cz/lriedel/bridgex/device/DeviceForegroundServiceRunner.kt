@@ -15,7 +15,7 @@ class DeviceForegroundServiceRunner(
         preferences.edit().putLong(LAST_EXECUTION_ATTEMPT_TIMESTAMP_KEY, System.currentTimeMillis()).apply()
     }
 
-    fun execute(headers: Map<String, Any>? = null): Boolean {
+    fun execute(headers: Map<String, Any>? = null, force: Boolean = false): Boolean {
         val currentTime = System.currentTimeMillis()
         val lastExecutionAttemptTime = preferences.getLong(LAST_EXECUTION_ATTEMPT_TIMESTAMP_KEY, 0L)
         val lastSuccessfulExecutionTime = preferences.getLong(LAST_SUCCESSFUL_EXECUTION_TIMESTAMP_KEY, 0L)
@@ -23,7 +23,7 @@ class DeviceForegroundServiceRunner(
         val shouldBeExecuted = (currentTime - lastExecutionAttemptTime) <= MAX_LAST_EXECUTION_ATTEMPT_AGE_MS
         val isThrottled = (currentTime - lastSuccessfulExecutionTime) < MIN_EXECUTION_INTERVAL_MS
 
-        if (shouldBeExecuted && !isThrottled) {
+        if (force || (shouldBeExecuted && !isThrottled)) {
             preferences.edit().putLong(LAST_SUCCESSFUL_EXECUTION_TIMESTAMP_KEY, currentTime).commit()
 
             val serviceIntent = Intent(context, DeviceForegroundService::class.java).apply {

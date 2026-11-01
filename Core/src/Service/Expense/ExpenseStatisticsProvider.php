@@ -1,6 +1,7 @@
 <?php
     namespace Core\Service\Expense;
 
+    use Core\Common\CommonConstants;
     use Core\Service\Statistics\KeyValuePair;
     use Core\Service\Statistics\Statistics;
     use Core\Service\Statistics\StatisticsKind;
@@ -13,6 +14,8 @@
     use Core\Service\Trip\TripSortingStrategy;
 
     class ExpenseStatisticsProvider implements StatisticsProvider {
+
+        private const MAXIMUM_CONNECTION_TIME_HOURS = CommonConstants::ONE_DAY_SECONDS;
 
         private readonly ExpenseService $expenseService;
         private readonly TripService $tripService;
@@ -59,6 +62,15 @@
                     }
                 }
 
+                if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year) {
+                    $flightRoutes = $this->getFlightRoutes($start, $end);
+                    if (count($flightRoutes) > 0) {
+                        usort($flightRoutes, fn($a, $b) => $a->getValue() <=> $b->getValue());
+                        $statistics[] = new Statistics(StatisticsName::CheapestFlightsPerKilometer, $flightRoutes, StatisticsUnit::MainCurrency);
+                        $statistics[] = new Statistics(StatisticsName::MostExpensiveFlightsPerKilometer, array_reverse($flightRoutes), StatisticsUnit::MainCurrency);
+                    }
+                }
+
                 if ($statisticsType === StatisticsType::Overall || $statisticsType === StatisticsType::Year || $statisticsType === StatisticsType::Trip) {
                     $relevantTrips = $this->tripService->getRegularTrips(null, $start, $end,
                         array(TripIncludedEntity::Expenses->value, TripIncludedEntity::Stays->value), TripSortingStrategy::OldestAscending);
@@ -96,6 +108,54 @@
 
         private function getTripCost(string $tripId) : float {
             return array_sum(array_map(fn($expense) => $expense->getMainCurrencyValue(), $this->expenseService->getExpensesForTrip($tripId)));
+        }
+
+        private function getFlightRoutes(int $start, int $end) : array {
+            $routes = array();
+            foreach ($this->tripService->getRegularTrips(null, $start, $end, array(TripIncludedEntity::Flights->value, TripIncludedEntity::Expenses->value), TripSortingStrategy::OldestAscending) as &$trip) {
+                $flights = $trip->getFlights();
+                usort($flights, fn($a, $b) => $a->getStart() <=> $b->getStart());
+                $flightExpenses = array_filter($trip->getExpenses(), fn($expense) => $expense->getType() === ExpenseType::Flight);
+
+                $segments = array();
+                foreach ($flights as &$flight) {
+                    if (empty($segments) || $flight->getStart() - end($segments[count($segments) - 1])->getEnd() >= self::MAXIMUM_CONNECTION_TIME_HOURS
+                        || $flight->getFrom()->getCode() !== end($segments[count($segments) - 1])->getTo()->getCode()
+                        || $flight->getTo()->getCode() === $segments[count($segments) - 1][0]->getFrom()->getCode()) {
+                        $segments[] = array();
+                    }
+                    $segments[count($segments) - 1][] = $flight;
+                }
+
+                foreach ($segments as &$segment) {
+                    $totalDistance = array_sum(array_map(fn($flight) => $flight->getDistance() ?? 0, $segment));
+                    if ($totalDistance <= 0) {
+                        continue;
+                    }
+
+                    $totalCost = 0;
+                    foreach ($segment as &$flight) {
+                        $segmentDescription = $flight->getFrom()->getShortName() . " - " . $flight->getTo()->getShortName();
+                        $segmentCost = array_sum(array_map(fn($expense) => $expense->getMainCurrencyValue(),
+                            array_filter($flightExpenses, fn($expense) => $expense->getDescription() === $segmentDescription)));
+                        if ($segmentCost <= 0) {
+                            $totalCost = 0;
+                            break;
+                        }
+                        $totalCost += $segmentCost;
+                    }
+
+                    if ($totalCost <= 0) {
+                        continue;
+                    }
+
+                    $airports = array_map(fn($flight) => $flight->getFrom()->getShortName(), $segment);
+                    $airports[] = end($segment)->getTo()->getShortName();
+                    $label = implode(" - ", $airports) . " @ " . date(CommonConstants::DMY_DATE_FORMAT, $segment[0]->getStart());
+                    $routes[] = new KeyValuePair($label, round($totalCost / $totalDistance, 1));
+                }
+            }
+            return $routes;
         }
     }
 ?>

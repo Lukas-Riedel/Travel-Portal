@@ -28,10 +28,10 @@
                 });
         }
 
-        public function selectStaysForTrip(string $tripId) : array {
-            $sql = <<<'SQL'
+        public function selectStaysForTrip(StayType $stayType, string $tripId) : array {
+            $sql = <<<SQL
                 SELECT *
-                FROM stay_event
+                FROM {$stayType->getTableName()}
                 WHERE trip_id = ?
                 ORDER BY "start"
             SQL;
@@ -89,22 +89,22 @@
                 ->getResultSetForColumn("trip_id");
         }
 
-        public function insertStayEvent(Stay $stay, string $eventId, ?string $tripId) : bool {
-            $sql = <<<'SQL'
-                INSERT INTO stay_event (
-                    id, 
-                    name, 
-                    trip_id, 
-                    "start", 
-                    "end", 
+        public function insertStayEvent(StayType $stayType, Stay $stay, string $eventId, ?string $tripId) : bool {
+            $sql = <<<SQL
+                INSERT INTO {$stayType->getTableName()} (
+                    id,
+                    name,
+                    trip_id,
+                    "start",
+                    "end",
                     address
                 )
                 VALUES (
-                    ?, 
-                    ?, 
-                    ?, 
-                    ?, 
-                    ?, 
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
                     ?
                 )
             SQL;
@@ -115,10 +115,10 @@
                 ->execute() === 1;
         }
 
-        public function deleteAllStayEvents() : void {
-            $sql = <<<'SQL'
+        public function deleteAllStayEvents(StayType $stayType) : void {
+            $sql = <<<SQL
                 DELETE
-                FROM stay_event
+                FROM {$stayType->getTableName()}
             SQL;
 
             $this->databaseClient
@@ -126,14 +126,14 @@
                 ->execute();
         }
 
-        public function createStayEventTemporaryTable(string $tableName) : void {            
+        public function createStayEventTemporaryTable(string $tableName) : void {
             $sql = <<<SQL
                 DROP TABLE IF EXISTS {$tableName}
             SQL;
             
             $this->databaseClient
                 ->statementBuilder($sql)
-                ->execute();    
+                ->execute();
 
             $sql = <<<SQL
                 CREATE TEMPORARY TABLE {$tableName} AS

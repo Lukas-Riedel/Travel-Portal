@@ -70,15 +70,15 @@ class FitnessForegroundService : Service() {
         notificationManager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.title_synchronization_started))
-            .setContentText(getString(R.string.message_synchronization_started, itemsCount))
+            .setContentTitle(getString(R.string.title_fitness_synchronization_started))
+            .setContentText(getString(R.string.message_fitness_synchronization_started, itemsCount))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }
 
     companion object {
-        private const val NOTIFICATION_ID = 1
+        private const val NOTIFICATION_ID = 2
         private const val CHANNEL_ID = "FitnessForegroundService"
         private const val CHANNEL_NAME = "Fitness Data Synchronization"
     }

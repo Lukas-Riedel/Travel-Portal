@@ -11,12 +11,14 @@ import LoadingCard from "./LoadingCard.tsx"
 
 interface NoteCardProps {
     note?: Note | null
+    displayContent?: string
+    defaultContent?: string
     onNoteCreated?: (content: string) => Promise<Note>
     onNoteContentUpdated?: (noteId: string, content: string) => Promise<Note>
     onNoteRemoved?: (noteId: string) => Promise<void>
 }
 
-export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, onNoteRemoved }: NoteCardProps) {
+export default function NoteCard({ note, displayContent, defaultContent, onNoteCreated, onNoteContentUpdated, onNoteRemoved }: NoteCardProps) {
     const { t } = useTranslation()
     const { showCreateNoteToast, showRemoveNoteToast, showUpdateNoteToast } = usePredefinedUserInput()
 
@@ -111,7 +113,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
             {isBeingEdited ? (
                 <textarea
                     ref={textareaRef}
-                    defaultValue={note?.content}
+                    defaultValue={note?.content ?? defaultContent}
                     placeholder={!note ? t("note.placeholder.new") : undefined}
                     onInput={adjustHeight}
                     className="w-full resize-none border border-gray-300 rounded-md p-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2 flex-grow" />
@@ -119,7 +121,7 @@ export default function NoteCard({ note, onNoteCreated, onNoteContentUpdated, on
                 note && (
                     <div className="prose prose-sm max-w-none text-gray-800 mb-6">
                         <ReactMarkdown>
-                            {note.content}
+                            {displayContent ?? note.content}
                         </ReactMarkdown>
                     </div>
                 )

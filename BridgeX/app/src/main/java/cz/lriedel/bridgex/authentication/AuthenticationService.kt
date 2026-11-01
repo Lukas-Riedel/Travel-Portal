@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import cz.lriedel.bridgex.BuildConfig
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 
 class AuthenticationService private constructor(context: Context) {
     private val sharedPreferences: SharedPreferences = EncryptedSharedPreferences.create(
@@ -65,17 +66,26 @@ class AuthenticationService private constructor(context: Context) {
 
     suspend fun getUserRoles(): List<String> {
         val token = getAccessToken() ?: return emptyList()
-        return try {
-            val parts = token.split(".")
-            if (parts.size < 2) {
-                return emptyList()
-            }
+        val userId = getUserId(token) ?: return emptyList()
 
-            val decoded = gson.fromJson(String(Base64.decode(parts[1], Base64.URL_SAFE)), JwtPayload::class.java)
-            decoded.resourceAccess?.get(BuildConfig.IAM_APP_CLIENT_ID)?.roles ?: emptyList()
+        return try {
+            iamClient.getUserRoles(userId, "Bearer $token")
         } catch (e: Exception) {
             Log.e(AuthenticationService::class.java.simpleName, "An error occurred when obtaining user roles.", e)
             emptyList()
+        }
+    }
+
+    private fun getUserId(token: String): String? {
+        return try {
+            val parts = token.split(".")
+            if (parts.size < 2) return null
+
+            val decoded = gson.fromJson(String(Base64.decode(parts[1], Base64.URL_SAFE)), JsonObject::class.java)
+            decoded.get("sub")?.asString
+        } catch (e: Exception) {
+            Log.e(AuthenticationService::class.java.simpleName, "An error occurred when decoding user ID from token.", e)
+            null
         }
     }
 

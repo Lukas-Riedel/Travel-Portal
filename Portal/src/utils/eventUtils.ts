@@ -9,7 +9,7 @@ export const TIME_TRACKING_EVENT_TYPE_ICONS: Partial<Record<TimeTrackingEventTyp
     [TimeTrackingEventType.Overtime]: ClockPlus,
     [TimeTrackingEventType.Vacation]: Palmtree,
     [TimeTrackingEventType.Selfcare]: Pill,
-    [TimeTrackingEventType.Tenure]: Shield
+    [TimeTrackingEventType.Bonus]: Shield
 }
 
 export function getEvents(date: Date, events: TimeTrackingEvent[] | null, filterHours: (hours: number) => boolean, timezone: string) {

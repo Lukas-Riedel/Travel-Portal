@@ -29,6 +29,14 @@
         private const OLD_PLACE_EVENT_TEMPORARY_TABLE = "old_place_event";
         private const MDY_HMS_DATE_TIME_FORMAT = "m/d/Y H:i:s";
         private const LAYOVER_ATTRIBUTE_KEY = "Layover";
+        
+        private const KEYWORDS_RESPONSE_SCHEMA = array(
+            "type" => "array",
+            "items" => array(
+                "type" => "string",
+                "description" => "An English keyword or short visual phrase for the place."
+            )
+        );
 
         private readonly PlaceMapper $placeMapper;
         private readonly GenerativeContentClient $generativeContentClient;
@@ -71,10 +79,18 @@
                 return;
             }
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""));
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["placeKeywords"];
+            $response = $this->cachingGenerativeContentClient->getResponse($prompt, array("name" => $place->getName(), "country" => $place->getCountry() ?? ""), self::KEYWORDS_RESPONSE_SCHEMA);
+            
+            $keywords = array($place->getName());
+            if ($response !== null) {
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)) {
+                    $keywords = $decoded;
+                }
+            }
 
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $query ?? $place->getName(), $count, $place->getMainHighlight()?->getPhoto()?->getId());
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForPlace($placeId, $keywords, $count, $place->getMainHighlight()?->getPhoto()?->getId());
 
             foreach ($place->getHighlights() as &$highlight) {
                 if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {

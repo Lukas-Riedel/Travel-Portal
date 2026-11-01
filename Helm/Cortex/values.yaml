@@ -9,15 +9,33 @@ cortex:
     port: 8080
   model:
     embeddings: clip-ViT-L-14
+    generative:
+      - models/gemini-3.5-flash-lite
+      - models/gemini-3.1-flash-lite
+      - models/gemini-3.6-flash
+      - models/gemini-3.8-flash
   engine: cpu
+  generative:
+    timeout: "30000"
+    token:
+      tool:
+        max: "30000"
+      cumulative:
+        max: "240000"
   iam:
     host: iam
     port: 8080
     client:
-      app:
-        id: travel-portal-app
-      backend:
-        id: admin-cli
+      cortex:
+        id: travel-portal-cortex
+      allowed:
+        - travel-portal-core
+  core:
+    host: core
+    port: 8080
+  piston:
+    host: piston
+    port: 2000
   grafana:
     client:
       name: travel-portal-service

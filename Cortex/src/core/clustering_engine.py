@@ -1,19 +1,16 @@
-from typing import List
-
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 
 
 class ClusteringEngine:
-    def get_embeddings_clusters(self, embeddings: List[List[float]], clusters_count: int) -> List[List[int]]:
+    def get_embeddings_clusters(
+        self, embeddings: list[list[float]], clusters_count: int
+    ) -> list[list[int]]:
         k = min(clusters_count, len(embeddings))
         data = np.array(embeddings)
 
         model = AgglomerativeClustering(
-            n_clusters=k,
-            distance_threshold=None,
-            metric="cosine",
-            linkage="average"
+            n_clusters=k, distance_threshold=None, metric="cosine", linkage="average"
         )
 
         labels = model.fit_predict(data)

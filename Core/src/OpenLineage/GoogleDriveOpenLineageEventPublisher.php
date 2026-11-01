@@ -2,24 +2,18 @@
     namespace Core\OpenLineage;
 
     use Core\Client\Google\GoogleClient;
-    use Core\Service\Configuration\ConfigurationService;
 
     class GoogleDriveOpenLineageEventPublisher implements OpenLineageEventPublisher {
 
         private const OPENLINEAGE_EVENTS_FOLDER_NAME = "OpenLineage Events";
 
-        private readonly ConfigurationService $configurationService;
         private readonly GoogleClient $googleClient;
 
-        public function __construct(ConfigurationService $configurationService, GoogleClient $googleClient) {
-            $this->configurationService = $configurationService;
+        public function __construct(GoogleClient $googleClient) {
             $this->googleClient = $googleClient;
         }
 
         public function publishEvent(OpenLineageEvent $event) : void {
-            if (!$this->configurationService->getConfigurationEntry("openLineage")["producer"]["googleDrive"]["enabled"]) {
-                return;
-            }
 
             $rootFolderId = $this->googleClient->getOrCreateFolderId(self::OPENLINEAGE_EVENTS_FOLDER_NAME, null);
             $thisMonthFolderId = $this->googleClient->getOrCreateFolderId(date("m/Y"), $rootFolderId);

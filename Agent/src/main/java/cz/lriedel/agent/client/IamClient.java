@@ -51,6 +51,7 @@ public class IamClient {
 
     @SneakyThrows
     private IamResponse sendTokenRequest(TokenPrototype tokenPrototype) {
+        // TODO: Propagate Transaction-Id correctly (CoreClient does this thanks to HttpEntityProvider). Request-Origin is already included in the default headers.
         return Objects.requireNonNull(
                 restTemplate.postForObject(CREATE_TOKEN_ENDPOINT_PATH, new HttpEntity<>(objectMapper.writeValueAsBytes(tokenPrototype)),
                         IamResponse.class));

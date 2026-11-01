@@ -79,6 +79,14 @@
             $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip, $message["tripId"]);
         }
 
+        public function onCarRentalEventCreated(mixed $message) : void {
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip, $message["tripId"]);
+        }
+
+        public function onCarRentalEventUpdated(mixed $message) : void {
+            $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip, $message["tripId"]);
+        }
+
         public function onTripUpdated(mixed $message) : void {
             $this->indexService->index(IndexType::Composite, IndexableEntityType::Trip, $message["tripId"]);
         }

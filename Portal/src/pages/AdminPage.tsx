@@ -13,7 +13,7 @@ import DocumentCardGrid from "../components/DocumentCardGrid.tsx"
 import ExpenseSummary from "../components/ExpenseSummary.tsx"
 import FlightCardGrid from "../components/FlightCardGrid.tsx"
 import FloatingButton from "../components/FloatingButton.js"
-import NoteCardGrid from "../components/NoteCardGrid.tsx"
+import NoteGroupCardGrid from "../components/NoteGroupCardGrid.tsx"
 import PlaceCardGrid from "../components/PlaceCardGrid.tsx"
 import RegionEditor from "../components/RegionEditor.tsx"
 import SubscriptionCardGrid from "../components/SubscriptionCardGrid.tsx"
@@ -61,7 +61,7 @@ export default function AdminPage() {
     const { airlines, createAirline, createAirlineCode, updateAirlineName, updateAirlineLogo, removeAirline, removeAirlineCode } = useAirlines()
     const { updateAirportLongName, updateAirportCountry } = useAirports()
     const devices = useDevices({ type: DeviceType.Agent })
-    const { trips, createTripTask, removeTripTask, updateTripTaskDescription, updateTripTaskPriority } = useRegularTrips({ include: [TripIncludedEntity.WatchedFlights, TripIncludedEntity.Tasks] })
+    const { trips, createTripTask, removeTripTask, updateTripTaskTitle, updateTripTaskPriority } = useRegularTrips({ include: [TripIncludedEntity.WatchedFlights, TripIncludedEntity.Tasks] })
     const { trip: upcomingOrCurrentTrip, createTripNote, removeTripNote, createTripExpense, updateTripNoteContent,
         updateTripExpenseDescription, updateTripExpenseValue, removeTripExpense } = useUpcomingOrCurrentTrip()
     const { places: permanentPlaces, createPermanentPlace, removePermanentPlace } = useRegularPlaces({ include: [PlaceIncludedEntity.Categories], minStart: 0, maxEnd: 0 })
@@ -77,7 +77,7 @@ export default function AdminPage() {
     const filteredWatchedFlights = trips?.flatMap(trip => trip.watchedFlights ?? [])
     const watchedFlights = filteredWatchedFlights ? [...filteredWatchedFlights].sort((a, b) => a.start - b.start) : null
 
-    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).filter(task => task.id !== undefined).map(task => ({ task, trip }))) ?? null
+    const tasksWithTrips = trips?.flatMap(trip => (trip.tasks ?? []).filter(task => task.actionable).map(task => ({ task, trip }))) ?? null
 
     const tabs = [
         {
@@ -202,12 +202,12 @@ export default function AdminPage() {
     }
 
     const handleTaskCreated = () => {
-        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, description, priority, notificationInterval, deadline) => {
-            if (deadline && !isTodayOrFutureDay(deadline)) {
+        showCreateTripTaskToast((trips ?? []).filter(trip => (trip.end ?? 0) > getCurrentTimestamp()), (tripId, title, priority, deadline, notificationInterval, description) => {
+            if (!isTodayOrFutureDay(deadline)) {
                 return Promise.reject("Deadline must be in the future.")
             }
 
-            return createTripTask(tripId, description, priority, notificationInterval, deadline ? (deadline.getTime() / 1000) : undefined)
+            return createTripTask(tripId, title, priority, deadline.getTime() / 1000, notificationInterval, description)
         })
     }
 
@@ -254,7 +254,7 @@ export default function AdminPage() {
                         onNoteRemoved={hasRole(UserRole.TripNoteEdit) ? removeTripNote : undefined}
                         onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined} />
                     {hasRole(UserRole.TripNoteRead) && (
-                        <NoteCardGrid
+                        <NoteGroupCardGrid
                             rowSize={3}
                             notes={upcomingOrCurrentTrip ? (upcomingOrCurrentTrip.notes ?? []) : null}
                             onNoteCreated={createTripNote}
@@ -406,7 +406,7 @@ export default function AdminPage() {
                 <>
                     <TaskCardBoard
                         tasksWithTrips={tasksWithTrips}
-                        onTaskDescriptionUpdated={updateTripTaskDescription}
+                        onTaskTitleAndDescriptionUpdated={updateTripTaskTitle}
                         onTaskPriorityUpdated={updateTripTaskPriority}
                         onTaskRemoved={removeTripTask} />
                     <FloatingButton

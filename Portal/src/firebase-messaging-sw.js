@@ -29,13 +29,16 @@ const portalBaseUrl = __VITE_PORTAL_BASE_URL__
 const app = initializeApp(firebaseConfig)
 const messaging = getMessaging(app)
 
+const isWindows = /windows/i.test(navigator.userAgent)
+const icon = isWindows ? "icon-192.png" : "icon-1.png"
+
 onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "NewDataConsistencyIssuesDetected") {
         const args = JSON.parse(payload.data.args)
 
         self.registration.showNotification("Vyskytly se nové problémy", {
             body: "Hlášeno " + args.count + " nových problémů",
-            icon: "icon-192.png",
+            icon,
             data: "/admin?tab=issues"
         })
     }
@@ -43,10 +46,10 @@ onBackgroundMessage(messaging, payload => {
     if (payload.data.event === "TaskDeadlineReached") {
         const args = JSON.parse(payload.data.args)
 
-        self.registration.showNotification(args.title ?? "Blíží se termín úkolu", {
-            body: args.task,
-            icon: "icon-192.png",
-            data: args.url ?? "/admin?tab=tasks"
+        self.registration.showNotification(args.title, {
+            body: args.task ?? "",
+            icon,
+            data: args.tripId && `/trip/${args.tripId}`
         })
     }
 
@@ -60,8 +63,38 @@ onBackgroundMessage(messaging, payload => {
 
         self.registration.showNotification("Blíží se expirace poukazu", {
             body: `Poukaz vydavatele ${args.issuer} o hodnotě ${args.value} ${args.currency} expiruje dne ${formattedExpiration}`,
-            icon: "icon-192.png",
+            icon,
             data: "/admin?tab=vouchers"
+        })
+    }
+
+    if (payload.data.event === "SubscriptionExpiring") {
+        const args = JSON.parse(payload.data.args)
+        const formattedExpiration = new Intl.DateTimeFormat(undefined, {
+            day: "numeric",
+            month: "numeric",
+            year: "numeric"
+        }).format(new Date(args.expiration * 1000))
+
+        self.registration.showNotification("Blíží se expirace předplatného", {
+            body: `${args.description} expiruje dne ${formattedExpiration}`,
+            icon,
+            data: "/admin?tab=subscriptions"
+        })
+    }
+
+    if (payload.data.event === "DocumentExpiring") {
+        const args = JSON.parse(payload.data.args)
+        const formattedExpiration = new Intl.DateTimeFormat(undefined, {
+            day: "numeric",
+            month: "numeric",
+            year: "numeric"
+        }).format(new Date(args.expiration * 1000))
+
+        self.registration.showNotification("Blíží se expirace dokumentu", {
+            body: `${args.name} expiruje dne ${formattedExpiration}`,
+            icon,
+            data: "/admin?tab=documents"
         })
     }
 
@@ -76,7 +109,7 @@ onBackgroundMessage(messaging, payload => {
 
         self.registration.showNotification("Let přistál", {
             body: "Let " + args.flight + " přistál na letišti " + args.to + " v " + formattedActualArrival + " místního času",
-            icon: "icon-192.png",
+            icon,
             data: "https://www.flightradar24.com/data/flights/" + args.flight
         })
     }
@@ -87,7 +120,7 @@ onBackgroundMessage(messaging, payload => {
         if (wrappedEvent.name === "PhotosUploadingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotky byly nahrány", {
                 body: "Místo " + wrappedEvent.args.placeName + " má nové fotky",
-                icon: "icon-192.png",
+                icon,
                 image: wrappedEvent.args.result ? `${wrappedEvent.args.result}=w1024` : undefined,
                 data: "/place/" + wrappedEvent.args.placeId
             })
@@ -95,7 +128,7 @@ onBackgroundMessage(messaging, payload => {
         else if (wrappedEvent.name === "PhotoReplacingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotka byla nahrazena", {
                 body: "Místo " + wrappedEvent.args.placeName + " má novou fotku",
-                icon: "icon-192.png",
+                icon,
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
@@ -107,14 +140,14 @@ onBackgroundMessage(messaging, payload => {
         if (wrappedEvent.name === "PhotosUploadingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotky nebyly nahrány", {
                 body: "Nahrávání fotek pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
-                icon: "icon-192.png",
+                icon,
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }
         else if (wrappedEvent.name === "PhotoReplacingTriggered" && wrappedEvent.args.sendNotification) {
             self.registration.showNotification("Fotka nebyla nahrazena", {
                 body: "Nahrazování fotky pro místo " + wrappedEvent.args.placeName + " se nezdařilo",
-                icon: "icon-192.png",
+                icon,
                 data: "/place/" + wrappedEvent.args.placeId
             })
         }

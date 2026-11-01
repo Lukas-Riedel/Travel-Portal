@@ -1,8 +1,8 @@
 import {MoveLeft, MoveRight } from "lucide-react"
 import { TailSpin } from "react-loader-spinner"
 
-import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { useRegularTrips } from "../hooks/useRegularTrips.ts"
+import type { Trip } from "../types/CoreSwaggerTypes.ts"
 import { getCurrentOrMaximumAllowedTimestamp } from "../utils/timeUtils.ts"
 import { getTripFullName, isTripCandidate } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"

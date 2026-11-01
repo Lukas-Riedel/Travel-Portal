@@ -96,11 +96,6 @@
     secretKeyRef:
       name: {{ .Release.Name }}-secret
       key: google-maps-api-key
-- name: GOOGLE_GEMINI_API_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Release.Name }}-secret
-      key: google-gemini-api-key
 - name: FCM_PROJECT_ID
   value: "{{ .Values.core.fcm.project.id }}"
 - name: EXCHANGE_RATE_API_KEY
@@ -120,17 +115,19 @@
   value: "{{ .Values.core.iam.port }}"
 - name: IAM_APP_CLIENT_ID
   value: "{{ .Values.core.iam.client.app.id }}"
-- name: IAM_BACKEND_CLIENT_ID
-  value: "{{ .Values.core.iam.client.backend.id }}"
-- name: IAM_AGENT_CLIENT_ID
+- name: CORE_CLIENT_ID
+  value: "{{ .Values.core.iam.client.core.id }}"
+- name: AGENT_CLIENT_ID
   value: "{{ .Values.core.iam.client.agent.id }}"
-- name: IAM_BACKEND_CLIENT_SECRET
+- name: CORE_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
       name: iam-secret
-      key: backend-client-secret
+      key: core-client-secret
+- name: ALLOWLISTED_SERVICE_CLIENTS
+  value: "{{ join "," .Values.core.iam.client.allowed }}"
 - name: ALLOWED_REQUEST_ORIGINS
-  value: "{{ .Values.core.origin.whitelist }}"
+  value: "{{ join "," .Values.core.origin.whitelist }}"
 - name: COMPOSITE_INDEX_NAME
   value: "{{ .Values.core.index.composite }}"
 - name: PHOTO_INDEX_NAME
@@ -147,10 +144,6 @@
   value: "{{ .Values.core.highlight.selecting.candidate.coefficient }}"
 - name: CLUSTERS_COUNT_COEFFICIENT
   value: "{{ .Values.core.highlight.selecting.cluster.coefficient }}"
-- name: STYLE_EMBEDDING_COEFFICIENT
-  value: "{{ .Values.core.highlight.selecting.embedding.style.coefficient }}"
-- name: NEGATIVE_EMBEDDING_COEFFICIENT
-  value: "{{ .Values.core.highlight.selecting.embedding.negative.coefficient }}"
 - name: HIGHLIGHT_SCORE_MULTIPLIER
   value: "{{ .Values.core.place.score.multiplier.highlight }}"
 - name: PHOTO_SCORE_MULTIPLIER
@@ -167,6 +160,8 @@
   value: "{{ .Values.core.place.quality.threshold.shadows.low }}"
 - name: LOW_SKY_QUALITY_THRESHOLD
   value: "{{ .Values.core.place.quality.threshold.sky.low }}"
+- name: CONTEXT_COMPACTIFICATION_THRESHOLD
+  value: "{{ .Values.core.generative.token.compactification.threshold }}"
 - name: STATISTICS_VALUES_COUNT_LIMIT
   value: "{{ .Values.core.statistics.values.limit }}"
 - name: ALBUM_THUMBNAIL_BUCKET
@@ -192,9 +187,9 @@
 - name: ACTUAL_WEATHER_FORECAST_DAYS_TO_CACHE
   value: "{{ .Values.core.forecast.actual.days }}"
 - name: ACTUAL_WEATHER_FORECAST_MODELS
-  value: "{{ .Values.core.forecast.actual.models }}"
+  value: "{{ join "," .Values.core.forecast.actual.models }}"
 - name: ACTUAL_WEATHER_FORECAST_REFRESH_HOURS
-  value: "{{ .Values.core.forecast.actual.refresh.hours }}"
+  value: "{{ join "," .Values.core.forecast.actual.refresh.hours }}"
 - name: ACTUAL_WEATHER_FORECAST_CLOUD_COVER_CONFIDENCE_COEFFICIENT
   value: "{{ .Values.core.forecast.actual.cloud.cover.confidence.coefficient }}"
 - name: ALLOW_FITNESS_OVERWRITE_THRESHOLD_COEFFICIENT
@@ -207,12 +202,22 @@
   value: "{{ .Values.core.fitness.overwrite.threshold.step }}"
 - name: UPDATE_FITNESS_THRESHOLD_DAYS
   value: "{{ .Values.core.fitness.update.threshold.days }}"
+- name: LIFESTYLE_RETENTION_DAYS
+  value: "{{ .Values.core.lifestyle.retention.days }}"
 - name: STEPS_PER_MINUTE_THRESHOLD
   value: "{{ .Values.core.fitness.step.minute.threshold }}"
 - name: VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD
   value: "{{ .Values.core.voucher.expiring.notification.threshold }}"
+- name: SUBSCRIPTION_EXPIRING_NOTIFICATION_THRESHOLD
+  value: "{{ .Values.core.subscription.expiring.notification.threshold }}"
+- name: DOCUMENT_EXPIRING_NOTIFICATION_THRESHOLD
+  value: "{{ .Values.core.document.expiring.notification.threshold }}"
 - name: BACKUP_LOCATION
   value: "{{ .Values.core.backup.location }}"
 - name: BACKUP_LIMIT
   value: "{{ .Values.core.backup.limit }}"
+- name: OPENLINEAGE_IBM_CLOUD_ENABLED
+  value: "{{ .Values.core.openlineage.producer.ibmCloud.enabled }}"
+- name: OPENLINEAGE_GOOGLE_DRIVE_ENABLED
+  value: "{{ .Values.core.openlineage.producer.googleDrive.enabled }}"
 {{- end }}

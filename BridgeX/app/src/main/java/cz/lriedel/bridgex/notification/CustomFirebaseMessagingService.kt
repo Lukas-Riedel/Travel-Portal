@@ -14,6 +14,7 @@ import cz.lriedel.bridgex.MainActivity
 import cz.lriedel.bridgex.R
 import cz.lriedel.bridgex.authentication.AuthenticationService
 import cz.lriedel.bridgex.device.DeviceInitializer
+import cz.lriedel.bridgex.notification.LifestyleActivityDetectedNotificationFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asContextElement
@@ -32,10 +33,13 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             ProcessingEndedNotificationFactory(this),
             ProcessingFailedNotificationFactory(this),
             FitnessActivityDetectedNotificationFactory(this),
+            LifestyleActivityDetectedNotificationFactory(this),
             DeviceLogOnRequestedNotificationFactory(this),
             NewDataConsistencyIssuesDetectedNotificationFactory(this),
             TaskDeadlineReachedNotificationFactory(this),
             VoucherExpiringNotificationFactory(this),
+            SubscriptionExpiringNotificationFactory(this),
+            DocumentExpiringNotificationFactory(this),
             FlightLoggedNotificationFactory(this)
         ).associateBy { factory ->
             factory.javaClass.simpleName.replace(NotificationFactory::class.java.simpleName, "")
@@ -96,12 +100,18 @@ class CustomFirebaseMessagingService : FirebaseMessagingService() {
             .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
 
-        notification.image?.let { bitmap ->
-            builder.setLargeIcon(bitmap)
+        if (notification.image != null) {
+            builder.setLargeIcon(notification.image)
             builder.setStyle(
                 NotificationCompat.BigPictureStyle()
-                    .bigPicture(bitmap)
+                    .bigPicture(notification.image)
                     .bigLargeIcon(null as android.graphics.Bitmap?)
+            )
+        }
+        else {
+            builder.setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(notification.body)
             )
         }
 

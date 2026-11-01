@@ -334,7 +334,7 @@
             
             $requestedIncludes = array_map(fn($entity) => PlaceIncludedEntity::from($entity), array_filter(explode(",", $include)));
             $allowedIncludes = array_filter($requestedIncludes, function($entity) use(&$request) {
-                $requiredRole = match($entity) {
+                $requiredRole = match ($entity) {
                     PlaceIncludedEntity::Categories => UserRole::PlaceCategoryRead,
                     PlaceIncludedEntity::Dates => UserRole::PlaceDateRead,
                     PlaceIncludedEntity::Highlights => UserRole::PlaceHighlightRead,

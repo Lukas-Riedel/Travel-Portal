@@ -72,11 +72,11 @@ spec:
               value: {{ printf "http://%s:%d" .Values.agent.core.host (int .Values.agent.core.port) | quote }}              
             - name: SERVICE_IAM_URL
               value: {{ printf "http://%s:%d" .Values.agent.iam.host (int .Values.agent.iam.port) | quote }}
-            - name: SERVICE_IAM_CLIENT_ID
+            - name: AGENT_CLIENT_ID
               value: "{{ .Values.agent.iam.client.agent.id }}"
             - name: AGENT_PHOTO_FOLDER_DEFAULT
               value: "{{ .Values.agent.photo.folder }}"
-            - name: SERVICE_IAM_CLIENT_SECRET
+            - name: AGENT_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: iam-secret

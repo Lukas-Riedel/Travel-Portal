@@ -620,5 +620,23 @@
                 ->withParameters($categoryId)
                 ->execute();
         }
+
+        public function deleteStaleCategoryIdentifiers() : int {
+            $sql = <<<'SQL'
+                DELETE
+                FROM category_identifier
+                WHERE id NOT IN (
+                    SELECT category_id
+                    FROM region_geographical
+                ) AND id NOT IN (
+                    SELECT category_id
+                    FROM region_composite
+                ) AND category != 'country'
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->execute();
+        }
     }
 ?>

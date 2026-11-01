@@ -529,7 +529,8 @@
                         continue;
                     }
 
-                    $optionEmbedding = $this->embeddingClient->getTextEmbedding($option["text"]);
+                    // TODO: Do not harcode the language here. The value depends on language that the configuration is written in.
+                    $optionEmbedding = $this->embeddingClient->getTextEmbedding($option["text"], "cs");
                     $optionSimilarity = $this->embeddingClient->getEmbeddingSimilarity($photoEmbedding->getEmbedding(), $optionEmbedding);
 
                     if ($bestOption === null || $optionSimilarity > $maxSimilarity) {

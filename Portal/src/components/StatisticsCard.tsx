@@ -40,7 +40,11 @@ const CHART_TYPES: Partial<Record<StatisticsName, React.ComponentType<ChartProps
     [StatisticsName.MOST_USED_AIRPORTS]: StandingStatisticsPieChart,
     [StatisticsName.MOST_USED_AIRCRAFTS]: StandingStatisticsPieChart,
     [StatisticsName.MOST_USED_AIRLINES]: StandingStatisticsPieChart,
-    [StatisticsName.MOST_USED_CAMERAS]: StandingStatisticsPieChart
+    [StatisticsName.MOST_USED_CAMERAS]: StandingStatisticsPieChart,
+    [StatisticsName.TOTAL_AIRBORNE_TIME_PER_AIRCRAFT]: StandingStatisticsPieChart,
+    [StatisticsName.TOTAL_AIRBORNE_TIME_PER_AIRLINE]: StandingStatisticsPieChart,
+    [StatisticsName.TOTAL_AIRBORNE_DISTANCE_PER_AIRCRAFT]: StandingStatisticsPieChart,
+    [StatisticsName.TOTAL_AIRBORNE_DISTANCE_PER_AIRLINE]: StandingStatisticsPieChart
 }
 
 export default function StatisticsCard({ statistics, years }: StatisticsCardProps) {

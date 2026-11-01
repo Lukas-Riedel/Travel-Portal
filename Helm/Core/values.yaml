@@ -43,7 +43,7 @@ core:
       port: 
         management: 5671
     vhost: /
-    heartbeat: "60"
+    heartbeat: "180"
     prefetch: "1"
     queue:
       worker: WorkerQueue
@@ -63,15 +63,19 @@ core:
     client:
       app:
         id: travel-portal-app
-      backend:
-        id: admin-cli
+      core:
+        id: travel-portal-core
       agent:
         id: travel-portal-agent
+      allowed:
+        - travel-portal-cortex
   grafana:
     client:
       name: travel-portal-service
   origin:
-    whitelist: https://travel-portal.eu,https://lriedel.cz
+    whitelist:
+      - https://travel-portal.eu
+      - https://lriedel.cz
   bucket:
     album:
       thumbnail: album-thumbnails
@@ -95,11 +99,10 @@ core:
         coefficient: "20"
       cluster:
         coefficient: "3.1"
-      embedding:
-        style:
-          coefficient: "0.3"
-        negative:
-          coefficient: "0.2"
+  generative:
+    token:
+      compactification:
+        threshold: "70000"
   place:
     score:
       multiplier:
@@ -138,13 +141,22 @@ core:
   forecast:
     actual:
       days: "10"
-      models: ecmwf_ifs025_ensemble,icon_global_eps
+      models:
+        - ecmwf_ifs025_ensemble
+        - ncep_gefs_seamless
       refresh:
-        hours: 1,7,13,19
+        hours:
+          - 1
+          - 7
+          - 13
+          - 19
       cloud:
         cover:
           confidence:
-            coefficient: "0.15"
+            coefficient: "0.3"
+  lifestyle:
+    retention:
+      days: "90"
   fitness:
     overwrite:
       threshold:
@@ -161,8 +173,22 @@ core:
   voucher:
     expiring:
       notification:
-        threshold: "604800"
+        threshold: "2592000"
+  subscription:
+    expiring:
+      notification:
+        threshold: "2592000"
+  document:
+    expiring:
+      notification:
+        threshold: "2592000"
   timezone: Europe/Prague
+  openlineage:
+    producer:
+      ibmCloud:
+        enabled: false
+      googleDrive:
+        enabled: false
   backup:
     location: /var/tmp/db.sql.gz
     limit: "8"

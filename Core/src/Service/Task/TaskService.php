@@ -12,19 +12,24 @@
         private const PERSISTENT_NOTIFICATION_CACHE_KEY_FORMAT = "TaskService:Notification:%s";
         private const EPHEMERAL_NOTIFICATION_CACHE_KEY_FORMAT = "TaskService:Notification:%s:%s:%s";
 
+        private const EPHEMERAL_TASK_CANDIDATES_CACHE_KEY_FORMAT = "TaskService:EphemeralTaskCandidates:%s";
+        private const EPHEMERAL_TASK_CACHE_TTL = 60;
+
         private const KEY_PLACEHOLDER_FORMAT = "{%s}";
 
         private readonly TaskMapper $taskMapper;
         private readonly CacheClient $distributedCacheClient;
+        private readonly CacheClient $memoryCacheClient;
         private readonly ConfigurationService $configurationService;
         
         private ?TripService $tripService = null;
 
         private array $ephemeralTaskProviders = array();
 
-        public function __construct(DatabaseClient $databaseClient, CacheClient $distributedCacheClient, ConfigurationService $configurationService) {
+        public function __construct(DatabaseClient $databaseClient, CacheClient $distributedCacheClient, CacheClient $memoryCacheClient, ConfigurationService $configurationService) {
             $this->taskMapper = new TaskMapper($databaseClient);
             $this->distributedCacheClient = $distributedCacheClient;
+            $this->memoryCacheClient = $memoryCacheClient;
             $this->configurationService = $configurationService;
         }
 
@@ -36,8 +41,8 @@
             $this->ephemeralTaskProviders = $ephemeralTaskProviders;
         }
 
-        public function createTask(string $description, TaskPriority $priority, ?int $deadline, ?int $notificationInterval, string $tripId) : Task {
-            $task = new Task(null, null, $description, $priority, $deadline, $notificationInterval, null);
+        public function createTask(string $title, ?string $description, TaskPriority $priority, int $deadline, ?int $notificationInterval, string $tripId) : Task {
+            $task = new Task(null, $title, $description, $priority, $deadline, $notificationInterval, null, true);
             $this->taskMapper->insertTask($task, $tripId);
             return $task;
         }
@@ -59,18 +64,6 @@
                     return $priorityDiff;
                 }
 
-                if ($a->getDeadline() === null && $b->getDeadline() === null) {
-                    return 0;
-                }
-
-                if ($a->getDeadline() === null) {
-                    return 1;
-                }
-
-                if ($b->getDeadline() === null) {
-                    return -1;
-                }
-
                 return $a->getDeadline() - $b->getDeadline();
             });
 
@@ -81,18 +74,20 @@
             $tasks = array();
 
             foreach ($this->taskMapper->selectTasksForNotifications() as &$task) {
-                $ttl = $this->getNotificationTtl($task->getNotificationInterval(), $this->taskMapper->selectTripIdForTask($task->getId()));
-                $cacheKey = sprintf(self::PERSISTENT_NOTIFICATION_CACHE_KEY_FORMAT, $task->getId());
-                if ($this->distributedCacheClient->trySet($cacheKey, true, $ttl)) {
+                if ($task->getNotificationInterval() === null) {
                     $tasks[] = $task;
                 }
+                else {
+                    $ttl = $this->getNotificationTtl($task->getNotificationInterval(), $this->taskMapper->selectTripIdForTask($task->getId()));
+                    $cacheKey = sprintf(self::PERSISTENT_NOTIFICATION_CACHE_KEY_FORMAT, $task->getId());
+                    if ($this->distributedCacheClient->trySet($cacheKey, true, $ttl)) {
+                        $tasks[] = $task;
+                    }
+                }
+
             }
 
-            return $tasks;
-        }
-
-        public function getEphemeralTasksForNotifications() : array {
-            return $this->doGetEphemeralTasks(null, function($template, $candidate) {
+            $ephemeralTasks = $this->doGetEphemeralTasks(null, function($template, $candidate) {
                 if (time() + $template["trigger"]["seconds"] < $candidate->getValidity()) {
                     return false;
                 }
@@ -101,9 +96,15 @@
                 $cacheKey = sprintf(self::EPHEMERAL_NOTIFICATION_CACHE_KEY_FORMAT, $template["source"], implode(":", $candidate->getPlaceholders()), $template["title"]);
                 return $this->distributedCacheClient->trySet($cacheKey, true, $ttl);
             });
+
+            return array_merge($tasks, $ephemeralTasks);
         }
 
-        public function updateTaskDescription(string $taskId, string $description) : bool {
+        public function updateTaskTitle(string $taskId, string $title) : bool {
+            return $this->taskMapper->updateTaskTitle($taskId, $title) > 0;
+        }
+
+        public function updateTaskDescription(string $taskId, ?string $description) : bool {
             return $this->taskMapper->updateTaskDescription($taskId, $description) > 0;
         }
 
@@ -141,7 +142,15 @@
                     continue;
                 }
 
-                foreach ($providersBySource[$template["source"]]->getCandidates() as &$candidate) {
+                $cacheKey = sprintf(self::EPHEMERAL_TASK_CANDIDATES_CACHE_KEY_FORMAT, $template["source"]);
+                $candidates = $this->memoryCacheClient->get($cacheKey);
+                
+                if ($candidates === null) {
+                    $candidates = $providersBySource[$template["source"]]->getCandidates();
+                    $this->memoryCacheClient->set($cacheKey, $candidates, self::EPHEMERAL_TASK_CACHE_TTL);
+                }
+
+                foreach ($candidates as &$candidate) {
                     if ($tripId !== null && $candidate->getTripId() !== $tripId) {
                         continue;
                     }
@@ -151,7 +160,8 @@
                     }
 
                     $tasks[] = new Task(null, $template["title"], $this->createText($template["text"], $candidate->getPlaceholders()),
-                        TaskPriority::from($template["priority"]), $candidate->getValidity() - $template["trigger"]["seconds"], $template["notificationInterval"] ?? null, $candidate->getUrl());
+                        TaskPriority::from($template["priority"]), $candidate->getValidity() - $template["trigger"]["seconds"], $template["notificationInterval"] ?? null,
+                        $candidate->getUrl(), $template["actionable"] ?? false);
                 }
             }
 

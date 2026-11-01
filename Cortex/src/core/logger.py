@@ -4,13 +4,14 @@ import json
 import logging
 import os
 import sys
+from contextvars import ContextVar
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-transaction_id = contextvars.ContextVar("transaction_id", default="")
-request_origin = contextvars.ContextVar("request_origin", default="")
+transaction_id: ContextVar[str] = contextvars.ContextVar("transaction_id", default="")
+request_origin: ContextVar[str] = contextvars.ContextVar("request_origin", default="")
 
 
 class TransactionFilter(logging.Filter):
@@ -40,17 +41,20 @@ class JsonFormatter(logging.Formatter):
         event = getattr(record, "event", None)
         if event:
             log_record["ctxt_name"] = event.get("name")
-            log_record["ctxt_args"] = json.dumps(event.get("args"), default=str)
+            log_record["ctxt_args"] = json.dumps(obj=event.get("args"), default=str)
 
-        return json.dumps(log_record, default=str)
+        if record.exc_info:
+            log_record["exception"] = self.formatException(record.exc_info)
+
+        return json.dumps(obj=log_record, default=str)
 
 
 class Logger:
     def __init__(
-            self,
-            app_name: str,
+        self,
+        app_name: str,
     ) -> None:
-        self.app_name = app_name
+        self.app_name: str = app_name
 
     def get_logger(self) -> logging.Logger:
         logger = logging.getLogger(self.app_name)

@@ -9,6 +9,7 @@
     use Core\Client\Google\GoogleClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
+    use Core\Service\CarRental\CarRentalService;
     use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Expense\ExpenseService;
     use Core\Service\Fitness\FitnessService;
@@ -28,6 +29,14 @@
 
         private const OLD_TRIP_EVENT_TEMPORARY_TABLE = "old_trip_event";
 
+        private const KEYWORDS_RESPONSE_SCHEMA = array(
+            "type" => "array",
+            "items" => array(
+                "type" => "string",
+                "description" => "An English keyword or short visual phrase for the trip."
+            )
+        );
+
         private const YEAR_FORMAT = "Y";
 
         private readonly TripMapper $tripMapper;
@@ -44,11 +53,11 @@
         private readonly TransactionManager $transactionManager;
 
         public function __construct(DatabaseClient $databaseClient, CalendarClient $calendarClient, GoogleClient $googleClient, GenerativeContentClient $cachingGenerativeContentClient,
-            ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, FlightService $flightService, ExpenseService $expenseService,
+            ConfigurationService $configurationService, PlaceService $placeService, StayService $stayService, CarRentalService $carRentalService, FlightService $flightService, ExpenseService $expenseService,
             FitnessService $fitnessService, NoteService $noteService, HighlightService $highlightService, StatisticsService $statisticsService, YearService $yearService,
             IndexService $indexService, TaskService $taskService, EventPublisher $eventPublisher) {
             $this->tripMapper = new TripMapper($databaseClient, $calendarClient, $placeService,
-                $stayService, $flightService, $expenseService, $fitnessService, $noteService,
+                $stayService, $carRentalService, $flightService, $expenseService, $fitnessService, $noteService,
                 $highlightService, $statisticsService, $taskService);
             $this->calendarClient = $calendarClient;
             $this->googleClient = $googleClient;
@@ -72,11 +81,19 @@
             $places = $this->placeService->getRegularPlaces(null, null, $tripId, null, null, null, null, null,
                 null, null, null, null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::ScoreDescending);
 
-            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["tripHighlightsSelecting"];
-            $query = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))));
+            $prompt = $this->configurationService->getConfigurationEntry("generativeContentPrompt")["tripKeywords"];
+            $response = $this->cachingGenerativeContentClient->getResponse($prompt, array("places" => implode(", ", array_map(fn($place) => $place->getName(), $places))), self::KEYWORDS_RESPONSE_SCHEMA);
+
+            $keywords = array($trip->getName());
+            if ($response !== null) {
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)) {
+                    $keywords = $decoded;
+                }
+            }
 
             $tripPlaceHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), array_merge(...array_map(fn($place) => $place->getHighlights(), $places)));
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $query ?? $trip->getName(), $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForTrip($tripId, $keywords, $count, $trip->getMainHighlight()?->getPhoto()?->getId(), $tripPlaceHighlightPhotoIds);
 
             foreach ($trip->getHighlights() as &$highlight) {
                 if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
@@ -221,8 +238,8 @@
                 $this->tripMapper->deleteAllTripEvents();            
                 foreach ($tripEvents as &$tripEvent) {
                     $tripIdentifier = $this->getOrCreateTripIdentifier($tripEvent->getSummary(), date(self::YEAR_FORMAT, $tripEvent->getStart()));
-                    $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(), 
-                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
+                    $trip = new Trip($tripIdentifier->getId(), $tripIdentifier->getName(), $tripIdentifier->getYear(), $tripIdentifier->getMainHighlight(),
+                        $tripEvent->getStart(), $tripEvent->getEnd(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array(), array());
 
                     $this->tripMapper->insertTripEvent($trip, $tripEvent->getId());
                     

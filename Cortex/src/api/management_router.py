@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from fastapi import APIRouter, Request
 
@@ -6,7 +7,7 @@ router = APIRouter(prefix="/management", tags=["Management"], include_in_schema=
 
 
 @router.get("/liveness")
-def check_liveness():
+def check_liveness() -> dict[str, Any]:
     return {
         "name": os.getenv("APP_NAME"),
         "version": os.getenv("VERSION_TAG"),
@@ -15,7 +16,7 @@ def check_liveness():
 
 
 @router.get("/readiness")
-def check_readiness(request: Request):
+def check_readiness(request: Request) -> dict[str, Any]:
     return {
         "name": os.getenv("APP_NAME"),
         "version": os.getenv("VERSION_TAG"),

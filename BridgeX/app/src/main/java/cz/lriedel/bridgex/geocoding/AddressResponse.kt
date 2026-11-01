@@ -1,5 +1,6 @@
 package cz.lriedel.bridgex.geocoding
 
 data class AddressResponse(
-    val address: String
+    val address: String,
+    val name: String?
 )

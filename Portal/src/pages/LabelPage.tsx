@@ -23,7 +23,7 @@ export default function LabelPage() {
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
     const { showUpdateLabelToast } = usePredefinedUserInput()
 
-    const { label, updateLabelName, updateLabelMetadata, refreshLabelHighlights,
+    const { label, removeLabel, updateLabelName, updateLabelMetadata, refreshLabelHighlights,
         removeLabelHighlight, updateLabelMainHighlight, updateLabelHighlightQualityAttributes } = useLabel(labelId)
     const { places } = useTimeFilteredRegularPlaces({ labelId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
@@ -53,6 +53,7 @@ export default function LabelPage() {
             <PageHeader
                 name={label?.name ?? null}
                 onNameChanged={hasRole(UserRole.LabelEdit) ? updateLabelName : undefined}
+                onRemoved={hasRole(UserRole.LabelEdit) ? removeLabel : undefined}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.LabelHighlightRead) ? attributes : undefined}
                 onHighlightsRefreshed={hasRole(UserRole.LabelHighlightEdit) && (totalScore ?? 0) > 0 ? (highlightsCount => refreshLabelHighlights(highlightsCount)) : undefined} />

@@ -9,42 +9,38 @@
     
     abstract class AbstractResource {
 
+        public function getAccessToken(Request $request) : ?string {
+            return $request->getAttribute(CommonConstants::ACCESS_TOKEN_ATTRIBUTE_KEY);
+        }
+
         public function getUserInfo(Request $request) : UserInfo {
             return $request->getAttribute(CommonConstants::USER_INFO_ATTRIBUTE_KEY);
         }
+        
+        public function getUserRoles(Request $request) : array {
+            return $request->getAttribute(CommonConstants::USER_ROLES_ATTRIBUTE_KEY) ?? array();
+        }
 
-        public function isBackendServiceAccount(Request $request) : bool {
-            $userInfo = $this->getUserInfo($request);
-            // TODO: Propagate Client ID to a field and use here.
-            return $userInfo->getClient() === getenv("IAM_BACKEND_CLIENT_ID");
+        public function isTrustedServiceAccount(Request $request) : bool {
+            return $this->getUserInfo($request)->isTrustedServiceAccount();
         }
 
         public function isAgentServiceAccount(Request $request) : bool {
             $userInfo = $this->getUserInfo($request);
-            // TODO: Propagate Client ID to a field and use here.
-            return $userInfo->getClient() === getenv("IAM_AGENT_CLIENT_ID");
+            // TODO: Propagate AGENT_CLIENT_ID to Request/UserInfo and use here.
+            return $userInfo->getClient() === getenv("AGENT_CLIENT_ID");
         }
 
         public function hasRole(Request $request, UserRole $requiredRole) : bool {
-            if ($this->isBackendServiceAccount($request)) {
+            if ($this->isTrustedServiceAccount($request)) {
                 return true;
             }
-            
-            $userInfo = $this->getUserInfo($request);
-    
-            foreach ($userInfo->getRoles() as $assignedRoleValue) {
-                $assignedRole = UserRole::tryFrom($assignedRoleValue);
-                
-                if ($assignedRole && $assignedRole->implies($requiredRole)) {
-                    return true;
-                }
-            }
 
-            return false;
+            return $this->hasImpliedRole($request, $requiredRole);
         }
 
-        public function requireBackendServiceAccount(Request $request) : void {          
-            if (!$this->isBackendServiceAccount($request)) {
+        public function requireTrustedServiceAccount(Request $request) : void {
+            if (!$this->isTrustedServiceAccount($request)) {
                 throw new AuthorizationException($this->getUserInfo($request));
             }
         }
@@ -106,6 +102,17 @@
         public function existsJsonBodyField(Request $request, string $field) : bool {
             $body = $this->requireJsonBody($request);
             return array_key_exists($field, $body);
+        }
+
+        private function hasImpliedRole(Request $request, UserRole $requiredRole) : bool {
+            foreach ($this->getUserRoles($request) as &$assignedRoleValue) {
+                $assignedRole = UserRole::tryFrom($assignedRoleValue);
+                if ($assignedRole && $assignedRole->implies($requiredRole)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 ?>

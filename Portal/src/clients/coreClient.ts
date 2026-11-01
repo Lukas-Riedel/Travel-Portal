@@ -2,18 +2,20 @@ import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } fro
 import axios, { AxiosHeaders } from "axios"
 import * as authRefresh from "axios-auth-refresh"
 import type { GeoJSON } from "geojson"
+import { jwtDecode } from "jwt-decode"
 
 import { useAuthStore } from "../hooks/useAuthStore.ts"
 import type { AppConfiguration } from "../types/CoreSwaggerTypes.ts"
 import type {
     Address, Airline, Airport, Album, Category, CategoryCategory, CategoryIncludedEntity, CategoryMetadata,
+ChatResponse,
     CompositeRegion, DataConsistencyIssue, Device, Document, Expense, ExpenseCurrency, ExpenseType, Fitness,
-    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, Location, Note, PendingPhoto, Photo,
-    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,
-    TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity} from "../types/CoreSwaggerTypes.ts"
+    Flight, GeographicalRegion, Highlight, IndexableEntityType, Label, LabelIncludedEntity, LabelMetadata, LifestyleEvent, LifestyleEventType, Location, Note, PendingPhoto, Photo,
+    Place, PlaceIncludedEntity, PlaceQualityTier, PlaceSortingStrategy, SearchResult, Statistics, Subscription, Task,     TaskPriority, TimeTrackingEvent, TimeTrackingEventType, Trip, TripIncludedEntity, Voucher, Year, YearIncludedEntity
+} from "../types/CoreSwaggerTypes.ts"
 import { DeviceType, FlightType, PlaceType, RegionType, SpecialPlaceType, TripType } from "../types/CoreSwaggerTypes.ts"
 import { GUEST_CREDENTIALS } from "../utils/authenticationUtils.ts"
-import { getIamResponseWithCredentials, getIamResponseWithRefresh } from "./iamClient.ts"
+import { getIamResponseWithCredentials, getIamResponseWithRefresh, getUserRoles } from "./iamClient.ts"
 
 export const refreshPlaceHighlights = async (placeId: string, count: number): Promise<Highlight[]> =>
     coreClient.post<Highlight[]>(createQueryPath(`places/${placeId}/highlights/refresh`,
@@ -156,6 +158,9 @@ export const createLabelHighlight = async (labelId: string, photoId: string): Pr
             }
         }
     ).then(extractData)
+
+export const removeLabel = async (labelId: string): Promise<void> =>
+    coreClient.delete(`labels/${labelId}`)
 
 export const removeLabelHighlight = async (labelId: string, highlightId: string): Promise<void> =>
     coreClient.delete(`labels/${labelId}/highlights/${highlightId}`)
@@ -546,6 +551,25 @@ export const listStatistics = async (): Promise<Statistics[]> =>
     coreClient.get<Statistics[]>("statistics")
         .then(extractData)
 
+export const listLifestyleEvents = async ({ type, from, to }: { type?: LifestyleEventType, from?: number, to?: number } = {}): Promise<LifestyleEvent[]> =>
+    coreClient.get<LifestyleEvent[]>(createQueryPath("lifestyle", { type, from, to }))
+        .then(extractData)
+
+export const getLifestyleEvent = async (eventId: string): Promise<LifestyleEvent> =>
+    coreClient.get<LifestyleEvent>(`lifestyle/${eventId}`)
+        .then(extractData)
+
+export const createLifestyleEvent = async (type: LifestyleEventType, content: string, timestamp: number, calories?: number): Promise<LifestyleEvent> =>
+    coreClient.post<LifestyleEvent>("lifestyle", { type, content, timestamp, calories })
+        .then(extractData)
+
+export const updateLifestyleEventContent = async (eventId: string, content: string): Promise<LifestyleEvent> =>
+    coreClient.patch<LifestyleEvent>(`lifestyle/${eventId}`, { content })
+        .then(extractData)
+
+export const removeLifestyleEvent = async (eventId: string): Promise<void> =>
+    coreClient.delete(`lifestyle/${eventId}`)
+
 export const createSubscription = async (description: string, value: number, currency: ExpenseCurrency, expiration: number): Promise<Subscription> =>
     coreClient.post<Subscription>("subscriptions",
         {
@@ -754,9 +778,10 @@ export const updatePlaceNoteContent = async (placeId: string, noteId: string, co
 export const removePlaceNote = async (placeId: string, noteId: string): Promise<void> =>
     coreClient.delete(`places/${placeId}/notes/${noteId}`)
 
-export const createTripTask = async (tripId: string, description: string, priority: TaskPriority, notificationInterval?: number, deadline?: number): Promise<Task> =>
+export const createTripTask = async (tripId: string, title: string, priority: TaskPriority, deadline: number, notificationInterval?: number, description?: string): Promise<Task> =>
     coreClient.post<Task>(`trips/${tripId}/tasks`,
         {
+            title,
             description,
             priority,
             notificationInterval,
@@ -764,9 +789,10 @@ export const createTripTask = async (tripId: string, description: string, priori
         }
     ).then(extractData)
 
-export const updateTripTaskDescription = async (tripId: string, taskId: string, description: string): Promise<Task> =>
+export const updateTripTaskTitle = async (tripId: string, taskId: string, title: string, description?: string): Promise<Task> =>
     coreClient.patch<Task>(`trips/${tripId}/tasks/${taskId}`,
         {
+            title,
             description
         }
     ).then(extractData)
@@ -883,25 +909,46 @@ export const createYearHighlight = async (year: number, photoId: string): Promis
 export const removeYearHighlight = async (year: number, highlightId: string): Promise<void> =>
     coreClient.delete(`years/${year}/highlights/${highlightId}`)
 
+
+export const createGenerativeContent = async (
+    prompt: string,
+    conversationId?: string,
+    environment?: Record<string, unknown>,
+    requestedHighlightsCount?: number
+): Promise<ChatResponse> =>
+    coreClient.post<ChatResponse>("generativecontent",
+        {
+            prompt,
+            conversationId,
+            environment,
+            requestedHighlightsCount
+        }
+    ).then(extractData)
+
 export const refreshAccessToken = async (): Promise<string> => {
-    const { refreshToken, setIamResponse } = useAuthStore.getState()
+    const { refreshToken } = useAuthStore.getState()
     const { username: fallbackUsername, password: fallbackPassword } = GUEST_CREDENTIALS
 
+    const processIamResponse = async (iamResponse: { accessToken: string; expiresIn: number; refreshToken?: string; refreshExpiresIn?: number }): Promise<string> => {
+        const { setSession, setRefreshToken } = useAuthStore.getState()
+        const { sub } = jwtDecode(iamResponse.accessToken)
+        const roles = await getUserRoles(sub!, iamResponse.accessToken)
+        setSession(iamResponse.accessToken, iamResponse.expiresIn, roles)
+        if (iamResponse.refreshToken !== undefined && iamResponse.refreshExpiresIn !== undefined) {
+            setRefreshToken(iamResponse.refreshToken, iamResponse.refreshExpiresIn)
+        }
+        return iamResponse.accessToken
+    }
+
     if (!refreshToken) {
-        const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
-        setIamResponse(newIamResponse)
-        return Promise.resolve(newIamResponse.accessToken)
+        return processIamResponse(await getIamResponseWithCredentials(fallbackUsername, fallbackPassword))
     }
 
     try {
-        const newIamResponse = await getIamResponseWithRefresh(refreshToken)
-        setIamResponse(newIamResponse)
-        return Promise.resolve(newIamResponse.accessToken)
+        return processIamResponse(await getIamResponseWithRefresh(refreshToken))
     }
     catch (_) {
-        const newIamResponse = await getIamResponseWithCredentials(fallbackUsername, fallbackPassword)
-        setIamResponse(newIamResponse)
-        return Promise.resolve(newIamResponse.accessToken)
+        return processIamResponse(await getIamResponseWithCredentials(fallbackUsername, fallbackPassword))
     }
 }
 
@@ -933,7 +980,7 @@ const createAuthRefreshInterceptor = (authRefresh as any).default ?? (authRefres
 createAuthRefreshInterceptor(coreClient, doRefreshAccessToken)
 
 coreClient.interceptors.request.use(config => {
-    const accessToken = useAuthStore.getState().accessToken
+    const accessToken = useAuthStore.getState().session?.accessToken
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`
     }
