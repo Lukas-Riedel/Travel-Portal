@@ -56,6 +56,10 @@
             return $this->highlightMapper->selectHighlightsByPhotoIds($photoIds);
         }
 
+        public function getPlaceIdsWithHighlights(array $highlightIds) : array {
+            return $this->highlightMapper->selectEntityIdsForHighlightIds(HighlightType::Place, $highlightIds);
+        }
+
         public function getPlaceHighlights(string $placeId) : array {
             return $this->highlightMapper->selectHighlightsForEntity(HighlightType::Place, $placeId);
         }

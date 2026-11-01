@@ -48,8 +48,8 @@
         private ?PlaceService $placeService = null;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
-            TranslationClient $translationClient, EventPublisher $eventPublisher, GenerativeContentClient $generativeContentClient, Logger $logger) {
-            $this->labelMapper = new LabelMapper($databaseClient, $configurationService, $highlightService);
+            TranslationClient $translationClient, EventPublisher $eventPublisher, GenerativeContentClient $generativeContentClient, Logger $logger, float $minHighlightSimilarity) {
+            $this->labelMapper = new LabelMapper($databaseClient, $highlightService, $minHighlightSimilarity);
             $this->highlightService = $highlightService;
             $this->indexService = $indexService;
             $this->translationClient = $translationClient;
@@ -86,8 +86,16 @@
             return $this->labelMapper->selectLabels(null, $placeId, array());
         }
 
+        public function getLabelsForHighlights(array $highlightIds) : array {
+            return $this->labelMapper->selectLabelsForHighlights($highlightIds);
+        }
+
         public function getPlaceIdsForLabelId(string $labelId) : array {
             return $this->labelMapper->selectPlaceIdsForLabelId($labelId);
+        }
+
+        public function getHighlightIdsForLabelId(string $labelId) : array {
+            return $this->labelMapper->selectHighlightIdsForLabelId($labelId);
         }
 
         public function getOrCreateLabelId(string $labelName) : string {
@@ -160,7 +168,6 @@
         public function removeLabelForPlace(string $placeId, string $labelId) : bool {
             $wasRemoved = $this->labelMapper->deleteLabelForPlace($placeId, $labelId) > 0;
             if ($wasRemoved) {
-                $this->labelMapper->deleteStaleLabelIdentifiers();
                 $this->eventPublisher->publish(Event::LabelUpdated($labelId));
             }
             return $wasRemoved;
@@ -169,7 +176,6 @@
         public function removeLabelForAllPlaces(string $labelId) : bool {
             $wasRemoved = $this->labelMapper->deleteLabelForAllPlaces($labelId) > 0;
             if ($wasRemoved) {
-                $this->labelMapper->deleteStaleLabelIdentifiers();
                 $this->eventPublisher->publish(Event::LabelUpdated($labelId));
             }
             return $wasRemoved;
@@ -200,7 +206,7 @@
         }
 
         public function assignPlacesToLabel(Label $label) : void {
-            $places = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending), $this->placeService->getCandidatePlaces(null, null, null, null, array(PlaceIncludedEntity::Categories->value)));
+            $places = array_merge($this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, time(), null, null, array(PlaceIncludedEntity::Categories->value), PlaceSortingStrategy::OldestAscending), $this->placeService->getCandidatePlaces(null, null, null, array(PlaceIncludedEntity::Categories->value)));
 
             foreach (array_chunk($places, self::AUTO_ASSIGNMENT_BATCH_SIZE) as $places) {
                 $placesList = implode(", ", array_map(fn($i, $place) => ($i + 1) . ". " . $place->getName() . ", " . ($this->getPlaceRegion($place) ?? "UNKNOWN") . ", " . ($place->getCountry() ?? "UNKNOWN") . " (placeId: " . $place->getId() . ")", array_keys($places), $places));

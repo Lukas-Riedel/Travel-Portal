@@ -3,19 +3,19 @@
 
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\WhereClauseBuilder;
-    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
 
     class LabelMapper {
         
         private readonly DatabaseClient $databaseClient;
-        private readonly ConfigurationService $configurationService;
         private readonly HighlightService $highlightService;
 
-        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService) {
+        private readonly float $minHighlightSimilarity;
+
+        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, float $minHighlightSimilarity) {
             $this->databaseClient = $databaseClient;
-            $this->configurationService = $configurationService;
             $this->highlightService = $highlightService;
+            $this->minHighlightSimilarity = $minHighlightSimilarity;
         }
 
         public function selectLabels(?string $labelId, ?string $placeId, array $includedEntities) : array {
@@ -60,6 +60,28 @@
 
             return $labels;
         }
+        
+        public function selectLabelsForHighlights(array $highlightIds) : array {
+            $sql = <<<SQL
+                SELECT li.*
+                FROM label_identifier li
+                WHERE li.id IN (
+                    SELECT DISTINCT lh.label_id
+                    FROM label_highlight lh
+                    WHERE similarity > ?
+                        AND lh.highlight_id IN ({$this->databaseClient->getPlaceholdersSequence(count($highlightIds))})
+                )
+                ORDER BY li.name
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($this->minHighlightSimilarity, ...$highlightIds)
+                ->getMappedResultSet(function($labelRow) {
+                    $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
+                    return new Label($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null, array());
+                });
+        }
 
         public function selectPlaceIdsForLabelId(string $labelId) : array {            
             $sql = <<<'SQL'
@@ -72,6 +94,20 @@
                 ->statementBuilder($sql)
                 ->withParameters($labelId)
                 ->getResultSetForColumn("place_id");
+        }
+
+        public function selectHighlightIdsForLabelId(string $labelId) : array {            
+            $sql = <<<'SQL'
+                SELECT highlight_id
+                FROM label_highlight
+                WHERE similarity > ?
+                    AND label_id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($this->minHighlightSimilarity, $labelId)
+                ->getResultSetForColumn("highlight_id");
         }
 
         public function selectLabelId(string $labelName) : ?string {
@@ -247,29 +283,6 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($labelId)
-                ->execute();
-        }
-
-        public function deleteStaleLabelIdentifiers() : int {
-            $sql = <<<'SQL'
-                DELETE
-                FROM label_identifier li
-                WHERE :CONDITIONS
-            SQL;
-
-            $whereClauseBuilder = (new WhereClauseBuilder())
-                ->withClause("NOT EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id)");
-
-            $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 
-                $this->configurationService->getConfigurationEntry("dynamicLabels"));
-            if (count($dynamicLabelNames) > 0) {
-                $whereClauseBuilder->withClause("name NOT IN (" . $this->databaseClient->getPlaceholdersSequence(count($dynamicLabelNames)) . ")", ...$dynamicLabelNames);
-            }
-
-            $whereClause = $whereClauseBuilder->buildForAnd();
-            
-            return $this->databaseClient
-                ->statementBuilder($sql, $whereClause)
                 ->execute();
         }
     }

@@ -354,7 +354,7 @@
             
             $places = match ($mappedType) {
                 PlaceType::Regular => $this->placeService->getRegularPlaces($categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $mappedTier, $minStart, $maxEnd, $nearbyPlaces, $limit, $mappedInclude, $mappedSort),
-                PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $labelId, $nearbyPlaces, $mappedInclude)
+                PlaceType::Candidate => $this->placeService->getCandidatePlaces($categoryId, $tripId, $nearbyPlaces, $mappedInclude)
             };
 
             foreach ($places as &$place) {

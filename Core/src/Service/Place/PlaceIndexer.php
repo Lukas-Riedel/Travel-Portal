@@ -48,7 +48,7 @@
                     }
                 }
                 else {
-                    $candidatePlaces = $this->placeService->getCandidatePlaces(null, null, null, self::NEARBY_PLACES_COUNT,
+                    $candidatePlaces = $this->placeService->getCandidatePlaces(null, null, self::NEARBY_PLACES_COUNT,
                         array(PlaceIncludedEntity::Categories->value, PlaceIncludedEntity::Labels->value));
                 }
                 $this->doIndex($documentBuffer, $candidatePlaces);

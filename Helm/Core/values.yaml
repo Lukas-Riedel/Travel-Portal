@@ -99,6 +99,9 @@ core:
         coefficient: "20"
       cluster:
         coefficient: "3.1"
+    label:
+      similarity:
+        min: "0.2"
   generative:
     token:
       compactification:
