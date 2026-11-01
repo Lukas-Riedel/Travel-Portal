@@ -107,6 +107,10 @@
             return $this->labelMapper->updateLabelName($labelId, $name);
         }
 
+        public function updateLabelDescription(string $labelId, string $description) : bool {
+            return $this->labelMapper->updateLabelDescription($labelId, $description);
+        }
+
         public function updateLabelUnicode(string $labelId, string $unicode) : bool {
             return $this->labelMapper->updateLabelUnicode($labelId, $unicode);
         }

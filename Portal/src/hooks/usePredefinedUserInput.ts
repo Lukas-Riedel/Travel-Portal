@@ -734,7 +734,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("category.prompt.update.failed"),
         )
 
-    const showUpdateLabelToast = (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) =>
+    const showUpdateLabelToast = (label: Label, updateLabel: (metadata: LabelMetadata) => Promise<Label>) =>
         showFormToast(
             t("label.prompt.update.message"),
             [
@@ -743,9 +743,15 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false,
                     label: t("label.prompt.update.label.unicode"),
                     defaultValue: label.metadata?.unicode
+                },
+                {
+                    type: "text",
+                    required: false,
+                    label: t("label.prompt.update.label.description"),
+                    defaultValue: label.metadata?.description
                 }
             ],
-            (unicode: string | undefined) => updateMetadata({ unicode }),
+            (unicode: string | undefined, description: string | undefined) => updateLabel({ unicode, description }),
             t("label.prompt.update.confirmed"),
             t("label.prompt.update.failed"),
         )

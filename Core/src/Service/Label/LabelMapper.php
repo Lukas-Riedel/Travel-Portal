@@ -53,7 +53,7 @@
                     $highlights = $this->highlightService->getLabelHighlights($labelRow["id"]);
                 }
 
-                $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
+                $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
                 $labels[] = new Label($labelRow["id"], $labelRow["name"], $metadata,
                     $mainHighlights[$labelRow["main_highlight_id"]] ?? null, $highlights);
             }
@@ -133,6 +133,19 @@
             return $this->databaseClient
                 ->statementBuilder($sql)
                 ->withParameters($name, $labelId)
+                ->execute() === 1;
+        }
+
+        public function updateLabelDescription(string $labelId, string $description) : bool {
+            $sql = <<<'SQL'
+                UPDATE label_identifier
+                SET description = ?
+                WHERE id = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($description, $labelId)
                 ->execute() === 1;
         }
 

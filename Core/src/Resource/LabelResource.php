@@ -256,6 +256,12 @@
                                     description: "The unicode of the metadata of the label",
                                     type: "string",
                                     example: "1f1ec-1f1e7"
+                                ),
+                                new OA\Property(
+                                    property: "description",
+                                    description: "The description of the metadata of the label",
+                                    type: "string",
+                                    example: "A tropical beach with clear water and palm trees"
                                 )
                             ]
                         )
@@ -353,6 +359,9 @@
             if ($newMetadata !== null) {
                 if (isset($newMetadata["unicode"])) {
                     $wasUpdated |= $this->labelService->updateLabelUnicode($labelId, $newMetadata["unicode"]);
+                }
+                if (isset($newMetadata["description"])) {
+                    $wasUpdated |= $this->labelService->updateLabelDescription($labelId, $newMetadata["description"]);
                 }
             }
 

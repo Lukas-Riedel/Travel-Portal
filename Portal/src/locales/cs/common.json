@@ -887,7 +887,8 @@
             "update": {
                 "message": "Zadej nové údaje pro štítek:",
                 "label": {
-                    "unicode": "Unikód"
+                    "unicode": "Unikód",
+                    "description": "Popis"
                 },
                 "confirmed": "Štítek byl úspěšně aktualizován",
                 "failed": "Nepodařilo se aktualizovat štítek"
