@@ -27,8 +27,8 @@
         private array $entityIndexers = array();
 
         public function __construct(ClusteringClient $clusteringClient, EmbeddingClient $embeddingClient,
-            SearchClient $searchClient, Logger $logger, string $compositeIndexName, string $photoIndexName,
-            string $selectedPhotoCandidatesLimitCoefficient, string $clustersCountCoefficient) {
+            SearchClient $searchClient, Logger $logger, string $compositeIndexName,
+            string $photoIndexName, string $selectedPhotoCandidatesLimitCoefficient, string $clustersCountCoefficient) {
             $this->indexQueryDefinitionFactory = new IndexQueryDefinitionFactory();
             $this->clusteringClient = $clusteringClient;
             $this->embeddingClient = $embeddingClient;
@@ -99,8 +99,8 @@
                     $embedding, count($prioritizedPhotoIds), null, $categoryPlaceIds, array(), $prioritizedPhotoIds, null, null));
         }
 
-        public function getSelectedPhotoIdsForLabel(array $labelPlaceIds, string $labelName, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
-            return $this->doGetSelectedPhotoIds(array($labelName), $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
+        public function getSelectedPhotoIdsForLabel(array $labelPlaceIds, string $keyword, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
+            return $this->doGetSelectedPhotoIds(array($keyword), $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
                     $embedding, $count * $this->selectedPhotoCandidatesLimitCoefficient, null, $labelPlaceIds, array(), array(), true, null),
                 fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(

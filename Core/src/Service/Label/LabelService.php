@@ -4,6 +4,7 @@
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\TransactionManager;
     use Core\Client\GenerativeContent\GenerativeContentClient;
+    use Core\Client\Translation\TranslationClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Configuration\ConfigurationService;
@@ -32,9 +33,12 @@
             )
         );
 
+        private const KEYWORD_LANGUAGE = "en";
+
         private readonly LabelMapper $labelMapper;
         private readonly HighlightService $highlightService;
         private readonly IndexService $indexService;
+        private readonly TranslationClient $translationClient;
         private readonly ConfigurationService $configurationService;
         private readonly EventPublisher $eventPublisher;
         private readonly TransactionManager $transactionManager;
@@ -44,10 +48,11 @@
         private ?PlaceService $placeService = null;
 
         public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService, IndexService $indexService,
-            EventPublisher $eventPublisher, GenerativeContentClient $generativeContentClient, Logger $logger) {
+            TranslationClient $translationClient, EventPublisher $eventPublisher, GenerativeContentClient $generativeContentClient, Logger $logger) {
             $this->labelMapper = new LabelMapper($databaseClient, $configurationService, $highlightService);
             $this->highlightService = $highlightService;
             $this->indexService = $indexService;
+            $this->translationClient = $translationClient;
             $this->configurationService = $configurationService;
             $this->eventPublisher = $eventPublisher;
             $this->transactionManager = $databaseClient;
@@ -118,7 +123,9 @@
 
             $places = $this->placeService->getRegularPlaces(null, $labelId, null, null, null, null, null, null,
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $label->getName(), $count,
+            // TODO: Do not harcode the language here. The value depends on language that the label name is written in.
+            $translatedLabelName = $this->translationClient->translate($label->getName(), "cs", self::KEYWORD_LANGUAGE);
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $translatedLabelName, $count,
                 $label->getMainHighlight()?->getPhoto()?->getId(), array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)));
 
             foreach ($label->getHighlights() as &$highlight) {

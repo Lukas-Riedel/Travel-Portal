@@ -189,7 +189,7 @@
     $lifestyleService = new LifestyleService($databaseClient, $generativeContentClient, $configurationService, getenv("LIFESTYLE_RETENTION_DAYS"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
-    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $eventPublisher, $generativeContentClient, $logger);
+    $labelService = new LabelService($databaseClient, $configurationService, $highlightService, $indexService, $translationClient, $eventPublisher, $generativeContentClient, $logger);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $labelService->setPlaceService($placeService);
