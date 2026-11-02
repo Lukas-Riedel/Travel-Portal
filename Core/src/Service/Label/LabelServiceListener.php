@@ -103,19 +103,12 @@
                 $highlightEmbedding = $this->photoService->getPhotoEmbedding($message["photoId"])?->getEmbedding();
                 if ($highlightEmbedding !== null) {
                     foreach ($this->labelService->getAllLabels(array()) as &$label) {
-                        $labelDescription = $label->getMetadata()?->getDescription();
-                        if ($labelDescription === null) {
+                        $keywordEmbeddings = $this->getKeywordEmbeddings($label);
+                        if (empty($keywordEmbeddings)) {
                             continue;
                         }
 
-                        // TODO: Do not harcode the language here. The value depends on language that the label description is written in.
-                        $labelEmbedding = $this->embeddingClient->getTextEmbedding($labelDescription, "cs");
-                        if ($labelEmbedding === null) {
-                            continue;
-                        }
-
-                        $labelSimilarity = $this->embeddingClient->getEmbeddingSimilarity($labelEmbedding, $highlightEmbedding);
-                        $this->labelService->reassignLabelToHighlight($message["highlightId"], $label->getId(), $labelSimilarity);
+                        $this->labelService->reassignLabelToHighlight($message["highlightId"], $label->getId(), $this->getLabelSimilarity($keywordEmbeddings, $highlightEmbedding));
                     }
                 }
                 
@@ -161,28 +154,39 @@
         }
 
         private function reassignLabelToHighlights(Label $label) : void {
-            $labelDescription = $label->getMetadata()?->getDescription();
-            if ($labelDescription !== null) {
-                // TODO: Do not harcode the language here. The value depends on language that the label description is written in.
-                $labelEmbedding = $this->embeddingClient->getTextEmbedding($labelDescription, "cs");
-
-                if ($labelEmbedding !== null) {
-                    $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null, null,
-                        null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
-                    
-                    foreach ($places as &$place) {
-                        foreach ($place->getHighlights() as &$highlight) {
-                            $highlightEmbedding = $this->photoService->getPhotoEmbedding($highlight->getPhoto()->getId())?->getEmbedding();
-                            if ($highlightEmbedding === null) {
-                                continue;
-                            }
-
-                            $labelSimilarity = $this->embeddingClient->getEmbeddingSimilarity($labelEmbedding, $highlightEmbedding);
-                            $this->labelService->reassignLabelToHighlight($highlight->getId(), $label->getId(), $labelSimilarity);
+            $keywordEmbeddings = $this->getKeywordEmbeddings($label);
+            if (!empty($keywordEmbeddings)) {
+                $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null, null,
+                    null, array(PlaceIncludedEntity::Highlights->value), PlaceSortingStrategy::OldestAscending);
+                
+                foreach ($places as &$place) {
+                    foreach ($place->getHighlights() as &$highlight) {
+                        $highlightEmbedding = $this->photoService->getPhotoEmbedding($highlight->getPhoto()->getId())?->getEmbedding();
+                        if ($highlightEmbedding === null) {
+                            continue;
                         }
+
+                        $this->labelService->reassignLabelToHighlight($highlight->getId(), $label->getId(), $this->getLabelSimilarity($keywordEmbeddings, $highlightEmbedding));
                     }
-                }                    
+                }
             }
+        }
+
+        private function getKeywordEmbeddings(Label $label) : array {
+            $keywordEmbeddings = array();
+            foreach ($label->getMetadata()?->getKeywords() ?? array() as &$keyword) {
+                // TODO: Do not harcode the language here. The value depends on language that the label keywords are written in.
+                $keywordEmbedding = $this->embeddingClient->getTextEmbedding($keyword, "cs");
+                if ($keywordEmbedding !== null) {
+                    $keywordEmbeddings[] = $keywordEmbedding;
+                }
+            }
+
+            return $keywordEmbeddings;
+        }
+
+        private function getLabelSimilarity(array $keywordEmbeddings, array $highlightEmbedding) : float {
+            return max(array_map(fn($keywordEmbedding) => $this->embeddingClient->getEmbeddingSimilarity($keywordEmbedding, $highlightEmbedding), $keywordEmbeddings));
         }
     }
 ?>

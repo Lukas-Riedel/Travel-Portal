@@ -17,6 +17,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { configuration } = useConfiguration()
     const { t } = useTranslation()
     const { formatMillimeters, formatDuration } = useFormatters()
+    
+    const parseCsvList = (csv: string): string[] => csv.split(",").map(value => value.trim()).filter(value => value.length > 0)
 
     const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
         showInputToast(
@@ -540,10 +542,22 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("airline.prompt.update.logo.failed")
         )
 
-    const showCreateLabelToast = (createLabel: (name: string) => Promise<Label>) =>
-        showInputToast(
+    const showCreateLabelToast = (createLabel: (name: string, metadata?: LabelMetadata) => Promise<Label>) =>
+        showFormToast(
             t("label.prompt.create.message"),
-            createLabel,
+            [
+                {
+                    type: "text",
+                    required: true,
+                    label: t("label.prompt.create.label.name")
+                },
+                {
+                    type: "text",
+                    required: false,
+                    label: t("label.prompt.create.label.keywords")
+                }
+            ],
+            (name: string, keywords: string | undefined) => createLabel(name, keywords ? { keywords: parseCsvList(keywords) } : undefined),
             t("label.prompt.create.confirmed"),
             t("label.prompt.create.failed")
         )
@@ -739,11 +753,11 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                 {
                     type: "text",
                     required: false,
-                    label: t("label.prompt.update.label.description"),
-                    defaultValue: label.metadata?.description
+                    label: t("label.prompt.update.label.keywords"),
+                    defaultValue: label.metadata?.keywords?.join(", ")
                 }
             ],
-            (unicode: string | undefined, description: string | undefined) => updateLabel({ unicode, description }),
+            (unicode: string | undefined, keywords: string | undefined) => updateLabel({ unicode, keywords: keywords ? parseCsvList(keywords) : undefined }),
             t("label.prompt.update.confirmed"),
             t("label.prompt.update.failed"),
         )

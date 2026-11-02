@@ -123,7 +123,7 @@
             $name = $this->requireJsonBodyField($request, "name");
             $metadata = $this->getJsonBodyField($request, "metadata");
 
-            $convertedMetadata = $metadata === null ? null : new LabelMetadata($metadata["unicode"] ?? null, $metadata["description"] ?? null);
+            $convertedMetadata = $metadata === null ? null : new LabelMetadata($metadata["unicode"] ?? null, $metadata["keywords"] ?? null);
 
             return $this->labelService->createLabel($name, $convertedMetadata);
         }
@@ -345,10 +345,11 @@
                                     example: "1f1ec-1f1e7"
                                 ),
                                 new OA\Property(
-                                    property: "description",
-                                    description: "The description of the metadata of the label",
-                                    type: "string",
-                                    example: "A tropical beach with clear water and palm trees"
+                                    property: "keywords",
+                                    description: "The keywords of the metadata of the label",
+                                    type: "array",
+                                    items: new OA\Items(type: "string"),
+                                    example: ["tropical beach", "clear water", "palm trees"]
                                 )
                             ]
                         )
@@ -447,8 +448,8 @@
                 if (isset($newMetadata["unicode"])) {
                     $wasUpdated |= $this->labelService->updateLabelUnicode($labelId, $newMetadata["unicode"]);
                 }
-                if (isset($newMetadata["description"])) {
-                    $wasUpdated |= $this->labelService->updateLabelDescription($labelId, $newMetadata["description"]);
+                if (isset($newMetadata["keywords"])) {
+                    $wasUpdated |= $this->labelService->updateLabelKeywords($labelId, $newMetadata["keywords"]);
                 }
             }
 

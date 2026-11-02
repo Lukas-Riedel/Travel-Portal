@@ -15,29 +15,30 @@
                 example: "1f3d9"
             ),
             new OA\Property(
-                property: "description",
-                type: "string",
-                description: "The description of the label",
-                example: "A tropical beach with clear water and palm trees"
+                property: "keywords",
+                type: "array",
+                description: "The keywords of the label",
+                items: new OA\Items(type: "string"),
+                example: ["tropical beach", "clear water", "palm trees"]
             )
         ]
     )]
     class LabelMetadata implements \JsonSerializable {       
          
         private readonly ?string $unicode;
-        private readonly ?string $description;
+        private readonly ?array $keywords;
 
-        public function __construct(?string $unicode, ?string $description) {
+        public function __construct(?string $unicode, ?array $keywords) {
             $this->unicode = $unicode;
-            $this->description = $description;
+            $this->keywords = $keywords;
         }
 
         public function getUnicode() : ?string {
             return $this->unicode;
         }
 
-        public function getDescription() : ?string {
-            return $this->description;
+        public function getKeywords() : ?array {
+            return $this->keywords;
         }
 
         #[\ReturnTypeWillChange]

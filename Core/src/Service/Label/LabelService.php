@@ -82,8 +82,8 @@
             return $this->labelMapper->updateLabelName($labelId, $name);
         }
 
-        public function updateLabelDescription(string $labelId, string $description) : bool {
-            $wasUpdated = $this->labelMapper->updateLabelDescription($labelId, $description);
+        public function updateLabelKeywords(string $labelId, array $keywords) : bool {
+            $wasUpdated = $this->labelMapper->updateLabelKeywords($labelId, $keywords);
             if ($wasUpdated) {
                 $this->eventPublisher->publish(Event::LabelUpdated($labelId));
             }
@@ -108,9 +108,10 @@
             $places = $this->placeService->getRegularPlaces(null, $labelId, null, null, null, null, null, null,
                 null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
             
+            $keywords = $label->getMetadata()?->getKeywords();
             // TODO: Do not harcode the language here. The value depends on language that the label description/name is written in.
-            $keyword = $this->translationClient->translate($label->getMetadata()?->getDescription() ?? $label->getName(), "cs", self::KEYWORD_LANGUAGE);
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel($highlightPhotoIds, $keyword, $count,
+            $translatedKeywords = array_map(fn($keyword) => $this->translationClient->translate($keyword, "cs", self::KEYWORD_LANGUAGE), $keywords === null || empty($keywords) ? array($label->getName()) : $keywords);
+            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $translatedKeywords, $count,
                 $label->getMainHighlight()?->getPhoto()?->getId(), array_values(array_intersect($highlightPhotoIds, array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places)))));
 
             foreach ($label->getHighlights() as &$highlight) {

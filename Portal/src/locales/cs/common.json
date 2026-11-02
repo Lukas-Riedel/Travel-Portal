@@ -871,7 +871,11 @@
     "label": {
         "prompt": {
             "create": {
-                "message": "Zadej název štítku k přidání:",
+                "message": "Zadej údaje pro nový štítek:",
+                "label": {
+                    "name": "Název",
+                    "keywords": "Klíčová slova"
+                },
                 "confirmed": "Štítek byl úspěšně přidán",
                 "failed": "Nepodařilo se přidat štítek"
             },
@@ -884,7 +888,7 @@
                 "message": "Zadej nové údaje pro štítek:",
                 "label": {
                     "unicode": "Unikód",
-                    "description": "Popis"
+                    "keywords": "Klíčová slova"
                 },
                 "confirmed": "Štítek byl úspěšně aktualizován",
                 "failed": "Nepodařilo se aktualizovat štítek"

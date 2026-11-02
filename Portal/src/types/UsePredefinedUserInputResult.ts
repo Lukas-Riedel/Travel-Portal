@@ -27,7 +27,7 @@ export interface UsePredefinedUserInputResult {
     showUpdatePlaceExcerptToast: (place: Place, updatePlaceExcerpt: (excerpt: string) => Promise<Place>) => Promise<boolean>
     showUpdateEntityNameToast: <T> (name: string, updateEntityName: (name: string) => Promise<T>) => Promise<boolean>
     showRemoveEntityToast: (removeEntity: () => Promise<void>) => Promise<boolean>
-    showCreateLabelToast: (createLabel: (name: string) => Promise<Label>) => Promise<boolean>
+    showCreateLabelToast: (createLabel: (name: string, metadata?: LabelMetadata) => Promise<Label>) => Promise<boolean>
     showUpdateAirlineLogoToast: (updateAirlineLogo: (logo: string) => Promise<Airline>) => Promise<boolean>
     showUpdateAirportCountryToast: (updateAirportCountry: (country: string) => Promise<Airport>) => Promise<boolean>
     showUpdateAirportNameToast: (updateAirportName: (name: string) => Promise<Airport>) => Promise<boolean>

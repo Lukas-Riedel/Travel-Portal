@@ -140,12 +140,12 @@ export const updateLabelName = async (labelId: string, name: string): Promise<La
         }
     ).then(extractData)
 
-export const updateLabelMetadata = async (labelId: string, { unicode, description }: LabelMetadata = {}): Promise<Label> =>
+export const updateLabelMetadata = async (labelId: string, { unicode, keywords }: LabelMetadata = {}): Promise<Label> =>
     coreClient.patch<Label>(`labels/${labelId}`,
         {
             metadata: {
                 unicode,
-                description
+                keywords
             }
         }
     ).then(extractData)

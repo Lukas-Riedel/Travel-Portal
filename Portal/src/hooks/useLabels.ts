@@ -17,7 +17,7 @@ export const useLabels = ({ include }: UseLabelsProps = {}): UseLabelsResult => 
 
     return {
         labels: response,
-        createLabel: (name: string) => createLabel(name).then(refetchResponse),
+        createLabel: (name: string, metadata?: LabelMetadata) => createLabel(name, metadata).then(refetchResponse),
         updateLabelMetadata: (labelId: string, metadata: LabelMetadata) => updateLabelMetadata(labelId, metadata).then(refetchResponse),
         removeLabel: (labelId: string) => removeLabel(labelId).then(refetchResponse)
     }

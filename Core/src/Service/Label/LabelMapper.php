@@ -50,7 +50,7 @@
                     $highlights = $this->highlightService->getLabelHighlights($labelRow["id"]);
                 }
 
-                $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
+                $metadata = $labelRow["unicode"] === null && $labelRow["keywords"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["keywords"] === null ? null : json_decode($labelRow["keywords"], true));
                 $labels[] = new Label($labelRow["id"], $labelRow["name"], $metadata,
                     $mainHighlights[$labelRow["main_highlight_id"]] ?? null, $highlights);
             }
@@ -75,7 +75,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($this->minHighlightSimilarity, ...$highlightIds)
                 ->getMappedResultSet(function($labelRow) {
-                    $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
+                    $metadata = $labelRow["unicode"] === null && $labelRow["keywords"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["keywords"] === null ? null : json_decode($labelRow["keywords"], true));
                     return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
                 });
         }
@@ -96,7 +96,7 @@
                 return null;
             }
             
-            $metadata = $labelRow["unicode"] === null && $labelRow["description"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["description"]);
+            $metadata = $labelRow["unicode"] === null && $labelRow["keywords"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["keywords"] === null ? null : json_decode($labelRow["keywords"], true));
             return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
         }
 
@@ -139,7 +139,7 @@
                 INSERT INTO label_identifier (
                     name,
                     unicode,
-                    description
+                    keywords
                 )
                 VALUES (
                     ?,
@@ -150,9 +150,10 @@
                 RETURNING id
             SQL;
 
+            $keywords = $labelIdentifier->getMetadata()?->getKeywords();
             $id = $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($labelIdentifier->getName(), $labelIdentifier->getMetadata()?->getUnicode(), $labelIdentifier->getMetadata()?->getDescription())
+                ->withParameters($labelIdentifier->getName(), $labelIdentifier->getMetadata()?->getUnicode(), $keywords === null ? null : json_encode($keywords))
                 ->getSingleColumn("id");
 
             if ($id === null) {
@@ -176,16 +177,16 @@
                 ->execute() === 1;
         }
 
-        public function updateLabelDescription(string $labelId, string $description) : bool {
+        public function updateLabelKeywords(string $labelId, array $keywords) : bool {
             $sql = <<<'SQL'
                 UPDATE label_identifier
-                SET description = ?
+                SET keywords = ?
                 WHERE id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($description, $labelId)
+                ->withParameters(json_encode($keywords), $labelId)
                 ->execute() === 1;
         }
 
