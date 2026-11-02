@@ -189,7 +189,7 @@
     $lifestyleService = new LifestyleService($databaseClient, $generativeContentClient, $configurationService, getenv("LIFESTYLE_RETENTION_DAYS"));
     $flightService = new FlightService($databaseClient, $geocodingService, $categoryService, $flightClient, $calendarClient, $googleClient, $distributedCacheClient, $eventPublisher);
     $forecastService = new ForecastService($databaseClient, $actualForecastClient, $historicalForecastClient);
-    $labelService = new LabelService($databaseClient, $highlightService, $indexService, $translationClient, $eventPublisher, getenv("MIN_HIGHLIGHT_SIMILARITY"));
+    $labelService = new LabelService($databaseClient, $highlightService, $indexService, $translationClient, $eventPublisher);
     $placeService = new PlaceService($databaseClient, $generativeContentClient, $cachingGenerativeContentClient, $calendarClient, $googleClient, $memoryCacheClient, $configurationService, $categoryService,
         $labelService, $forecastService, $photoService, $highlightService, $noteService, $geocodingService, $indexService, $eventPublisher);
     $labelService->setPlaceService($placeService);
@@ -285,7 +285,7 @@
         new YearServiceListener($yearService, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_YEAR_COUNT")),
         new DeviceServiceListener($deviceService, $tripService, $eventPublisher, $scheduler),
         new MonitoringServiceListener($monitoringService, $eventPublisher, $scheduler),
-        new LabelServiceListener($labelService, $placeService, $photoService, $configurationService, $embeddingClient, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT")),
+        new LabelServiceListener($labelService, $placeService, $photoService, $configurationService, $embeddingClient, $eventPublisher, $scheduler, $logger, getenv("MAX_HIGHLIGHTS_PER_LABEL_COUNT"), getenv("MIN_HIGHLIGHT_SIMILARITY"), getenv("MIN_LABEL_PHOTOS_RATIO")),
         new TaskServiceListener($taskService, $tripService, $eventPublisher, $scheduler),
         new ExpenseServiceListener($expenseService, $eventPublisher, $scheduler, intval(getenv("VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD")), intval(getenv("SUBSCRIPTION_EXPIRING_NOTIFICATION_THRESHOLD"))),
         new DocumentServiceListener($documentService, $eventPublisher, $scheduler, intval(getenv("DOCUMENT_EXPIRING_NOTIFICATION_THRESHOLD"))),

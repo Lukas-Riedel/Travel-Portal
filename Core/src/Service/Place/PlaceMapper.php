@@ -270,8 +270,7 @@
                 }
             }
             if ($labelId !== null) {
-                $labelHighlightIds = $this->labelService->getHighlightIdsForLabel($labelId);
-                $placeIds = $this->highlightService->getPlaceIdsWithHighlights($labelHighlightIds);
+                $placeIds = $this->labelService->getPlaceIdsForLabel($labelId);
                 if (count($placeIds) > 0) {
                     $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
@@ -346,8 +345,7 @@
 
                     $labels = array();         
                     if (in_array(PlaceIncludedEntity::Labels->value, $includedEntities)) {
-                        $highlightIds = array_map(fn($highlight) => $highlight->getId(), $this->highlightService->getPlaceHighlights($placeRow["id"]));
-                        $labels = $this->labelService->getLabelIdentifiersForHighlights($highlightIds);                 
+                        $labels = $this->labelService->getLabelIdentifiersForPlace($placeRow["id"]);                 
                     }
                     
                     $notes = array();

@@ -10,14 +10,10 @@
         private readonly DatabaseClient $databaseClient;
         private readonly HighlightService $highlightService;
 
-        private readonly float $minHighlightSimilarity;
-
-        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, float $minHighlightSimilarity) {
+        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService) {
             $this->databaseClient = $databaseClient;
             $this->highlightService = $highlightService;
-            $this->minHighlightSimilarity = $minHighlightSimilarity;
         }
-
         public function selectLabels(?string $labelId, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT *
@@ -58,28 +54,26 @@
             return $labels;
         }
         
-        public function selectLabelIdentifiersForHighlights(array $highlightIds) : array {
-            $sql = <<<SQL
+        public function selectLabelIdentifiersForPlace(string $placeId) : array {
+            $sql = <<<'SQL'
                 SELECT li.*
                 FROM label_identifier li
                 WHERE li.id IN (
-                    SELECT DISTINCT lh.label_id
-                    FROM label_highlight lh
-                    WHERE similarity > ?
-                        AND lh.highlight_id IN ({$this->databaseClient->getPlaceholdersSequence(count($highlightIds))})
+                    SELECT lp.label_id
+                    FROM label_place lp
+                    WHERE lp.place_id = ?
                 )
                 ORDER BY li.name
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($this->minHighlightSimilarity, ...$highlightIds)
+                ->withParameters($placeId)
                 ->getMappedResultSet(function($labelRow) {
                     $metadata = $labelRow["unicode"] === null && $labelRow["keywords"] === null ? null : new LabelMetadata($labelRow["unicode"], $labelRow["keywords"] === null ? null : json_decode($labelRow["keywords"], true));
                     return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
                 });
         }
-
         public function selectLabelIdentifier(string $labelName) : ?LabelIdentifier {       
             $sql = <<<'SQL'
                 SELECT *
@@ -100,40 +94,37 @@
             return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
         }
 
-        public function selectHighlightIdsForLabelId(string $labelId) : array {            
+        public function selectPlaceIdsForLabelId(string $labelId) : array {
             $sql = <<<'SQL'
-                SELECT highlight_id
-                FROM label_highlight
-                WHERE similarity > ?
-                    AND label_id = ?
+                SELECT place_id
+                FROM label_place
+                WHERE label_id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($this->minHighlightSimilarity, $labelId)
-                ->getResultSetForColumn("highlight_id");
+                ->withParameters($labelId)
+                ->getResultSetForColumn("place_id");
         }
 
-        public function insertHighlightLabel(string $highlightId, string $labelId, float $similarity) : bool {
+        public function insertPlaceLabel(string $placeId, string $labelId) : bool {
             $sql = <<<'SQL'
-                INSERT INTO label_highlight (
-                    highlight_id,
-                    label_id,
-                    similarity
+                INSERT INTO label_place (
+                    place_id,
+                    label_id
                 )
                 VALUES (
                     ?,
-                    ?,
                     ?
                 )
+                ON CONFLICT DO NOTHING
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($highlightId, $labelId, $similarity)
+                ->withParameters($placeId, $labelId)
                 ->execute() === 1;
         }
-
         public function insertLabelIdentifier(LabelIdentifier $labelIdentifier) : ?string {
             $sql = <<<'SQL'
                 INSERT INTO label_identifier (
@@ -216,24 +207,24 @@
                 ->execute() === 1;
         }
         
-        public function deleteLabelForHighlight(string $highlightId, string $labelId) : int {
+        public function deleteLabelForPlace(string $placeId, string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_highlight
-                WHERE highlight_id = ?
+                FROM label_place
+                WHERE place_id = ?
                     AND label_id = ?
             SQL;
 
             return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($highlightId, $labelId)
+                ->withParameters($placeId, $labelId)
                 ->execute();
         }
 
-        public function deleteLabelForAllHighlights(string $labelId) : int {
+        public function deleteLabelForAllPlaces(string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_highlight
+                FROM label_place
                 WHERE label_id = ?
             SQL;
 
@@ -242,7 +233,7 @@
                 ->withParameters($labelId)
                 ->execute();
         }
-
+        
         public function deleteLabel(string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE

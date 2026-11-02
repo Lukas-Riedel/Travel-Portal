@@ -102,6 +102,8 @@ core:
     label:
       similarity:
         min: "0.2"
+      ratio:
+        min: "0.2"
   generative:
     token:
       compactification:

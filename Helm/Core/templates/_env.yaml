@@ -208,6 +208,8 @@
   value: "{{ .Values.core.fitness.step.minute.threshold }}"
 - name: MIN_HIGHLIGHT_SIMILARITY
   value: "{{ .Values.core.highlight.label.similarity.min }}"
+- name: MIN_LABEL_PHOTOS_RATIO
+  value: "{{ .Values.core.highlight.label.ratio.min }}"
 - name: VOUCHER_EXPIRING_NOTIFICATION_THRESHOLD
   value: "{{ .Values.core.voucher.expiring.notification.threshold }}"
 - name: SUBSCRIPTION_EXPIRING_NOTIFICATION_THRESHOLD
