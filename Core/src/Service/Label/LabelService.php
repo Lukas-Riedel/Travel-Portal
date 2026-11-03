@@ -73,13 +73,17 @@
         }
 
         public function updateLabelName(string $labelId, string $name) : bool {
-            return $this->labelMapper->updateLabelName($labelId, $name);
+            $wasUpdated = $this->labelMapper->updateLabelName($labelId, $name);
+            if ($wasUpdated) {
+                $this->eventPublisher->publish(Event::LabelInvalidated($labelId));
+            }
+            return $wasUpdated;
         }
 
         public function updateLabelKeywords(string $labelId, array $keywords) : bool {
             $wasUpdated = $this->labelMapper->updateLabelKeywords($labelId, $keywords);
             if ($wasUpdated) {
-                $this->eventPublisher->publish(Event::LabelUpdated($labelId));
+                $this->eventPublisher->publish(Event::LabelInvalidated($labelId));
             }
             return $wasUpdated;
         }

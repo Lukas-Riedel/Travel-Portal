@@ -71,14 +71,13 @@
             }
         }
 
+        public function onLabelInvalidated(mixed $message) : void {
+            $this->reassignLabelToPlacesById($message["labelId"]);
+        }
+
         public function onLabelUpdated(mixed $message) : void {
             $label = $this->labelService->getLabel($message["labelId"]);
             if ($label !== null) {
-                $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
-                if (!in_array($label->getName(), $dynamicLabelNames)) {
-                    $this->reassignLabelToPlaces($label);
-                }
-
                 if ($label->getMainHighlight() === null && count($label->getHighlights()) > 0) {
                     $this->labelService->updateLabelMainHighlight($message["labelId"], $label->getHighlights()[0]->getId());
                 }
@@ -126,13 +125,7 @@
         }
 
         public function onLabelCreated(mixed $message) : void {
-            $label = $this->labelService->getLabel($message["labelId"]);  
-            if ($label !== null) {
-                $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
-                if (!in_array($label->getName(), $dynamicLabelNames)) {
-                    $this->reassignLabelToPlaces($label);
-                }
-            }
+            $this->reassignLabelToPlacesById($message["labelId"]);
         }
 
         public function onAlbumUpdated(mixed $message) : void {
@@ -143,11 +136,16 @@
 
             // The place found for the album only contains the dates of that album, so it has to be fetched again to get all of its albums.
             $albumPlaces = $this->placeService->getRegularPlaces(null, null, null, null, $message["albumId"], null, null, null, null, null, null,  null, array(), PlaceSortingStrategy::OldestAscending);
+            $changedLabelIds = array();
             foreach ($albumPlaces as &$albumPlace) {
                 $place = $this->placeService->getRegularPlace($albumPlace->getId());
                 if ($place !== null) {
-                    $this->reassignLabelsToPlace($place, $keywordEmbeddingsByLabelId);
+                    $changedLabelIds = array_merge($changedLabelIds, $this->reassignLabelsToPlace($place, $keywordEmbeddingsByLabelId));
                 }
+            }
+
+            foreach (array_unique($changedLabelIds) as &$changedLabelId) {
+                $this->eventPublisher->publish(Event::LabelUpdated($changedLabelId));
             }
         }
 
@@ -155,6 +153,20 @@
             if ($this->scheduler->requestExecution(self::UPDATE_DYNAMIC_LABELS_ACTION_NAME, self::UPDATE_DYNAMIC_LABELS_ACTION_INTERVAL)) {
                 $this->eventPublisher->publish(Event::AllDynamicLabelsInvalidated());
             }
+        }
+
+        private function reassignLabelToPlacesById(string $labelId) : void {
+            $label = $this->labelService->getLabel($labelId);
+            if ($label === null) {
+                return;
+            }
+
+            $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
+            if (!in_array($label->getName(), $dynamicLabelNames)) {
+                $this->reassignLabelToPlaces($label);
+            }
+
+            $this->eventPublisher->publish(Event::LabelUpdated($labelId));
         }
 
         private function reassignLabelToPlaces(Label $label) : void {
@@ -170,7 +182,7 @@
             }
         }
 
-        private function reassignLabelsToPlace(Place $place, array $keywordEmbeddingsByLabelId) : void {
+        private function reassignLabelsToPlace(Place $place, array $keywordEmbeddingsByLabelId) : array {
             $matchingPhotosCounts = array_fill_keys(array_keys($keywordEmbeddingsByLabelId), 0);
             $photosCount = 0;
 
@@ -192,14 +204,21 @@
                 }
             }
 
+            $changedLabelIds = array();
             foreach ($matchingPhotosCounts as $labelId => $matchingPhotosCount) {
                 if ($photosCount > 0 && $matchingPhotosCount / $photosCount >= $this->minPhotosRatio) {
-                    $this->labelService->assignLabelToPlace($place->getId(), $labelId);
+                    $wasChanged = $this->labelService->assignLabelToPlace($place->getId(), $labelId);
                 }
                 else {
-                    $this->labelService->removeLabelForPlace($place->getId(), $labelId);
+                    $wasChanged = $this->labelService->removeLabelForPlace($place->getId(), $labelId);
+                }
+
+                if ($wasChanged) {
+                    $changedLabelIds[] = $labelId;
                 }
             }
+
+            return $changedLabelIds;
         }
 
         private function getKeywordEmbeddingsByLabelId(array $labels) : array {

@@ -116,6 +116,10 @@
                 ->addWorkerEvent(EventPriority::Medium);
         }
 
+        public static function LabelInvalidated(string $labelId) : Event {
+            return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
+        }
+
         public static function LabelCreated(string $labelId) : Event {
             return new WorkerEvent(Event::getEventName(), EventPriority::Low, array("labelId" => $labelId));
         }
