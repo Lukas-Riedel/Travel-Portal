@@ -19,6 +19,7 @@ import CategoryPage from "./pages/CategoryPage.jsx"
 import ChatPage from "./pages/ChatPage.tsx"
 import CountriesPage from "./pages/CountriesPage.jsx"
 import FlightsPage from "./pages/FlightsPage.jsx"
+import LabelAssignPage from "./pages/LabelAssignPage.jsx"
 import LabelHighlightsPage from "./pages/LabelHighlightsPage.jsx"
 import LabelPage from "./pages/LabelPage.jsx"
 import LifestylePage from "./pages/LifestylePage.tsx"
@@ -175,6 +176,7 @@ function AppContent() {
             <Route path="/category/:categoryId/highlight" element={<MainLayout><CategoryHighlightsPage /></MainLayout>} />
             <Route path="/label/:labelId" element={<MainLayout><LabelPage /></MainLayout>} />
             <Route path="/label/:labelId/highlight" element={<MainLayout><LabelHighlightsPage /></MainLayout>} />
+            <Route path="/label/:labelId/assign" element={<MainLayout><LabelAssignPage /></MainLayout>} />
             <Route path="/flight" element={<MainLayout><FlightsPage /></MainLayout>} />
             <Route path="/airport/:airportId" element={<MainLayout><AirportPage /></MainLayout>} />
             <Route path="/airline/:airlineId" element={<MainLayout><AirlinePage /></MainLayout>} />
