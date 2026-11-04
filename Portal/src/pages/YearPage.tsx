@@ -64,6 +64,7 @@ export default function YearPage() {
                 name={yearParameter ?? null}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.YearEdit) ? attributes : undefined}
+                highlightsEditable={hasRole(UserRole.YearHighlightEdit)}
                 onHighlightsRefreshed={hasRole(UserRole.YearHighlightEdit) && yearTrips?.some(trip => trip.mainHighlight) ? (highlightsCount => refreshYearHighlights(highlightsCount)) : undefined}
             />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle

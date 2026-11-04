@@ -61,6 +61,7 @@ export default function PlacePage() {
                 name={place?.name ?? null}
                 categories={mostSpecificCategory ? [mostSpecificCategory] : undefined}
                 internalAttributes={hasRole(UserRole.PlaceEdit) ? attributes : undefined}
+                highlightsEditable={hasRole(UserRole.PlaceHighlightEdit)}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) ? (highlightsCount => refreshPlaceHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined}
                 onRemoved={hasRole(UserRole.PlaceEdit) ? doRemovePlace : undefined} />

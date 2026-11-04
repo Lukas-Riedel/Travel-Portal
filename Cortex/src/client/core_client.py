@@ -458,23 +458,11 @@ class CoreClient:
 
         return self._request(method="GET", url=url)
 
-    def create_label(
-        self,
-        name: str,
-        keywords: list[str] | None = None,
-    ) -> dict[str, Any]:
+    def create_label(self, name: str) -> dict[str, Any]:
         url = f"{self.base_url}/labels"
         payload = {"name": name}
-        if keywords is not None:
-            payload["metadata"] = {"keywords": keywords}
 
         return self._request(method="POST", url=url, json=payload)
-
-    def update_label(self, label_id: str, keywords: list[str]) -> dict[str, Any]:
-        url = f"{self.base_url}/labels/{label_id}"
-        payload = {"metadata": {"keywords": keywords}}
-
-        return self._request(method="PATCH", url=url, json=payload)
 
     def update_place_note(
         self, place_id: str, note_id: str, content: str | None = None

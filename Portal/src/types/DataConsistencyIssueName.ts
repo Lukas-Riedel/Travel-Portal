@@ -20,5 +20,6 @@ export enum DataConsistencyIssueName {
     AirportWithoutCountry = "AIRPORT_WITHOUT_COUNTRY",
     AirlineWithoutLogo = "AIRLINE_WITHOUT_LOGO",
     NonLoggedFlight = "NON_LOGGED_FLIGHT",
-    GeographicalRegionsWithSameName = "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME"
+    GeographicalRegionsWithSameName = "GEOGRAPHICAL_REGIONS_WITH_SAME_NAME",
+    LabelWithIncorrectHighlightsCount = "LABEL_WITH_INCORRECT_HIGHLIGHTS_COUNT"
 }

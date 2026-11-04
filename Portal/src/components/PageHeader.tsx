@@ -17,9 +17,10 @@ interface PageHeaderProps<T> {
     onNameChanged?: (name: string) => Promise<T>
     onRemoved?: () => Promise<void>
     onHighlightsRefreshed?: (count: number) => Promise<Highlight[]>
+    highlightsEditable?: boolean
 }
 
-export default function PageHeader<T,>({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed }: PageHeaderProps<T>) {
+export default function PageHeader<T,>({ name, categories, internalAttributes, onNameChanged, onRemoved, onHighlightsRefreshed, highlightsEditable }: PageHeaderProps<T>) {
     const { showRemoveEntityToast, showUpdateEntityNameToast, showSelectHighlightsToast } = usePredefinedUserInput()
 
     const [isMobile, setIsMobile] = useState(false)
@@ -73,19 +74,19 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
                     <Share2 size={16} />
                 </button>
             )}
+            {highlightsEditable && (
+                <AppLink
+                    to={StaticNavigationTarget.Highlights}
+                    className="btn-chip">
+                    <Images size={16} />
+                </AppLink>
+            )}
             {onHighlightsRefreshed && (
-                <>
-                    <AppLink
-                        to={StaticNavigationTarget.Highlights}
-                        className="btn-chip">
-                        <Images size={16} />
-                    </AppLink>
-                    <button
-                        onClick={handleHighlightsRefreshed}
-                        className="btn-chip">
-                        <RefreshCcw size={16} />
-                    </button>
-                </>
+                <button
+                    onClick={handleHighlightsRefreshed}
+                    className="btn-chip">
+                    <RefreshCcw size={16} />
+                </button>
             )}
             {onNameChanged && (
                 <button
@@ -119,7 +120,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
                     {name && (
                         <>
                             {getEntityPrettyName(name)}
-                            {!!(onHighlightsRefreshed || onNameChanged || onRemoved) && (
+                            {!!(onHighlightsRefreshed || highlightsEditable || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
                                 </span>)}
@@ -148,7 +149,7 @@ export default function PageHeader<T,>({ name, categories, internalAttributes, o
                     {name && (
                         <>
                             {getEntityPrettyName(name)}
-                            {!!(onHighlightsRefreshed || onNameChanged || onRemoved) && (
+                            {!!(onHighlightsRefreshed || highlightsEditable || onNameChanged || onRemoved) && (
                                 <span className="inline-flex ml-4 align-middle relative -top-[2px] space-x-2">
                                     {renderButtons()}
                                 </span>)}

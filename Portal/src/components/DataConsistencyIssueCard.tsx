@@ -9,7 +9,7 @@ import { usePredefinedUserInput } from "../hooks/usePredefinedUserInput.ts"
 import { AdminMenuTabName } from "../types/AdminMenuTabName.ts"
 import type { Place } from "../types/CoreSwaggerTypes.ts"
 import type { Trip } from "../types/CoreSwaggerTypes.ts"
-import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryIdentifier, type CategoryMetadata, type DataConsistencyIssue, type Fitness, type Flight, type GeographicalRegion, type Photo, type TimeBasedFitnessCollection } from "../types/CoreSwaggerTypes.ts"
+import { type Airline, type Airport, type Album, type Category, CategoryCategory, type CategoryIdentifier, type CategoryMetadata, type DataConsistencyIssue, type Fitness, type Flight, type GeographicalRegion, type Label, type Photo, type TimeBasedFitnessCollection } from "../types/CoreSwaggerTypes.ts"
 import { DataConsistencyIssueName } from "../types/DataConsistencyIssueName.ts"
 import { getAdminNavigationTarget } from "../utils/navigationUtils.ts"
 import { getGoogleCalendarLink } from "../utils/navigationUtils.ts"
@@ -394,6 +394,17 @@ export default function DataConsistencyIssueCard({ dataConsistencyIssue, airline
                 }
             ),
             resolve: (category: CategoryIdentifier) => navigate(getAdminNavigationTarget(AdminMenuTabName.Regions, category.name))
+        },
+        [DataConsistencyIssueName.LabelWithIncorrectHighlightsCount]: {
+            name: t("issue.label.highlights.incorrect.name"),
+            isResolvable: true,
+            getProperties: (label: Label) => (
+                {
+                    [t("issue.label.highlights.incorrect.label.name")]: label.name,
+                    [t("issue.label.highlights.incorrect.label.count")]: label.highlights?.length ?? 0
+                }
+            ),
+            resolve: (label: Label) => navigate(label)
         }
     }
 

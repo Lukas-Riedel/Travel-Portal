@@ -1,19 +1,18 @@
 <?php
     namespace Core\Service\Label;
 
-    use Core\Client\Embedding\EmbeddingClient;
     use Core\Common\CommonConstants;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Event\Scheduler;
     use Core\Service\Configuration\ConfigurationService;
+    use Core\Service\Highlight\HighlightService;
     use Core\Service\Highlight\HighlightType;
     use Core\Service\Photo\PhotoService;
     use Core\Service\Place\Place;
     use Core\Service\Place\PlaceIncludedEntity;
     use Core\Service\Place\PlaceService;
     use Core\Service\Place\PlaceSortingStrategy;
-    use Monolog\Logger;
 
     class LabelServiceListener {
         
@@ -23,28 +22,23 @@
         private readonly LabelService $labelService;
         private readonly PlaceService $placeService;
         private readonly PhotoService $photoService;
+        private readonly HighlightService $highlightService;
         private readonly ConfigurationService $configurationService;
-        private readonly EmbeddingClient $embeddingClient;
         private readonly EventPublisher $eventPublisher;
         private readonly Scheduler $scheduler;
-        private readonly Logger $logger;
 
-        private readonly int $maxHighlightsPerLabelCount;
         private readonly float $minPhotoSimilarity;
         private readonly float $minPhotosRatio;
 
-        public function __construct(LabelService $labelService, PlaceService $placeService, PhotoService $photoService, ConfigurationService $configurationService,
-            EmbeddingClient $embeddingClient, EventPublisher $eventPublisher, Scheduler $scheduler, Logger $logger, int $maxHighlightsPerLabelCount,
-            float $minPhotoSimilarity, float $minPhotosRatio) {
+        public function __construct(LabelService $labelService, PlaceService $placeService, PhotoService $photoService, HighlightService $highlightService,
+            ConfigurationService $configurationService, EventPublisher $eventPublisher, Scheduler $scheduler, float $minPhotoSimilarity, float $minPhotosRatio) {
             $this->labelService = $labelService;
             $this->placeService = $placeService;
             $this->photoService = $photoService;
+            $this->highlightService = $highlightService;
             $this->configurationService = $configurationService;
-            $this->embeddingClient = $embeddingClient;
             $this->eventPublisher = $eventPublisher;
             $this->scheduler = $scheduler;
-            $this->logger = $logger;
-            $this->maxHighlightsPerLabelCount = $maxHighlightsPerLabelCount;
             $this->minPhotoSimilarity = $minPhotoSimilarity;
             $this->minPhotosRatio = $minPhotosRatio;
         }
@@ -77,14 +71,8 @@
 
         public function onLabelUpdated(mixed $message) : void {
             $label = $this->labelService->getLabel($message["labelId"]);
-            if ($label !== null) {
-                if ($label->getMainHighlight() === null && count($label->getHighlights()) > 0) {
-                    $this->labelService->updateLabelMainHighlight($message["labelId"], $label->getHighlights()[0]->getId());
-                }
-
-                if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
-                    $this->labelService->refreshLabelHighlights($message["labelId"], $this->maxHighlightsPerLabelCount);
-                }
+            if ($label !== null && $label->getMainHighlight() === null && count($label->getHighlights()) > 0) {
+                $this->labelService->updateLabelMainHighlight($message["labelId"], $label->getHighlights()[0]->getId());
             }
         }
 
@@ -95,10 +83,8 @@
                     if ($label->getMainHighlight() === null) {
                         $this->labelService->updateLabelMainHighlight($message["entityId"], $message["highlightId"]);
                     }
-                    
-                    if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
-                        $this->labelService->refreshLabelHighlights($message["entityId"], $this->maxHighlightsPerLabelCount);
-                    }
+
+                    $this->eventPublisher->publish(Event::LabelInvalidated($message["entityId"]));
                 }
             }
         }
@@ -115,11 +101,8 @@
                             $this->labelService->updateLabelMainHighlight($label->getId(), null);
                         }
                     }
-                    
-                    if (count($label->getHighlights()) !== $this->maxHighlightsPerLabelCount) {
-                        $this->logger->debug("There are " . count($label->getHighlights()) . "/" . $this->maxHighlightsPerLabelCount . " highlights for the '" . $message["entityId"] . "' label. Refreshing the highlights...");
-                        $this->labelService->refreshLabelHighlights($message["entityId"], $this->maxHighlightsPerLabelCount);
-                    }
+
+                    $this->eventPublisher->publish(Event::LabelInvalidated($message["entityId"]));
                 }
             }
         }
@@ -129,8 +112,8 @@
         }
 
         public function onAlbumUpdated(mixed $message) : void {
-            $keywordEmbeddingsByLabelId = $this->getKeywordEmbeddingsByLabelId($this->labelService->getAllLabels(array()));
-            if (empty($keywordEmbeddingsByLabelId)) {
+            $profilesByLabelId = $this->getLabelProfiles($this->labelService->getAllLabels(array(LabelIncludedEntity::Highlights->value)));
+            if (empty($profilesByLabelId)) {
                 return;
             }
 
@@ -140,7 +123,7 @@
             foreach ($albumPlaces as &$albumPlace) {
                 $place = $this->placeService->getRegularPlace($albumPlace->getId());
                 if ($place !== null) {
-                    $changedLabelIds = array_merge($changedLabelIds, $this->reassignLabelsToPlace($place, $keywordEmbeddingsByLabelId));
+                    $changedLabelIds = array_merge($changedLabelIds, $this->reassignLabelsToPlace($place, $profilesByLabelId));
                 }
             }
 
@@ -170,49 +153,36 @@
         }
 
         private function reassignLabelToPlaces(Label $label) : void {
-            $keywordEmbeddingsByLabelId = $this->getKeywordEmbeddingsByLabelId(array($label));
-            if (empty($keywordEmbeddingsByLabelId)) {
+            $profilesByLabelId = $this->getLabelProfiles(array($label));
+            if (empty($profilesByLabelId)) {
                 $this->labelService->removeLabelForAllPlaces($label->getId());
                 return;
             }
 
             $places = $this->placeService->getRegularPlaces(null, null, null, null, null, null, null, null, null, null, null, null, array(PlaceIncludedEntity::Dates->value), PlaceSortingStrategy::OldestAscending);
             foreach ($places as &$place) {
-                $this->reassignLabelsToPlace($place, $keywordEmbeddingsByLabelId);
+                $this->reassignLabelsToPlace($place, $profilesByLabelId);
             }
         }
 
-        private function reassignLabelsToPlace(Place $place, array $keywordEmbeddingsByLabelId) : array {
-            $matchingPhotosCounts = array_fill_keys(array_keys($keywordEmbeddingsByLabelId), 0);
-            $photosCount = 0;
-
-            $processedAlbumIds = array();
+        private function reassignLabelsToPlace(Place $place, array $profilesByLabelId) : array {
+            $albumIds = array();
             foreach ($place->getDates() as &$date) {
                 $album = $date->getAlbum();
-                if ($album === null || isset($processedAlbumIds[$album->getId()])) {
-                    continue;
-                }
-                $processedAlbumIds[$album->getId()] = true;
-
-                foreach ($this->photoService->getPhotoEmbeddings($album->getId()) as &$photoEmbedding) {
-                    $photosCount++;
-                    foreach ($keywordEmbeddingsByLabelId as $labelId => $keywordEmbeddings) {
-                        if ($this->getLabelSimilarity($keywordEmbeddings, $photoEmbedding->getEmbedding()) > $this->minPhotoSimilarity) {
-                            $matchingPhotosCounts[$labelId]++;
-                        }
-                    }
+                if ($album !== null) {
+                    $albumIds[$album->getId()] = $album->getId();
                 }
             }
 
             $changedLabelIds = array();
-            foreach ($matchingPhotosCounts as $labelId => $matchingPhotosCount) {
-                if ($photosCount > 0 && $matchingPhotosCount / $photosCount >= $this->minPhotosRatio) {
-                    $wasChanged = $this->labelService->assignLabelToPlace($place->getId(), $labelId);
-                }
-                else {
-                    $wasChanged = $this->labelService->removeLabelForPlace($place->getId(), $labelId);
+            foreach ($profilesByLabelId as $labelId => $profile) {
+                $hasLabel = in_array($place->getId(), $profile["highlightPlaceIds"]);
+                if (!$hasLabel) {
+                    $counts = $this->photoService->getPhotosSimilarityCounts(array_values($albumIds), $profile["photoIds"], $this->minPhotoSimilarity);
+                    $hasLabel = $counts->getTotal() > 0 && $counts->getMatching() / $counts->getTotal() >= $this->minPhotosRatio;
                 }
 
+                $wasChanged = $hasLabel ? $this->labelService->assignLabelToPlace($place->getId(), $labelId) : $this->labelService->removeLabelForPlace($place->getId(), $labelId);
                 if ($wasChanged) {
                     $changedLabelIds[] = $labelId;
                 }
@@ -221,39 +191,25 @@
             return $changedLabelIds;
         }
 
-        private function getKeywordEmbeddingsByLabelId(array $labels) : array {
+        private function getLabelProfiles(array $labels) : array {
             $dynamicLabelNames = array_column($this->configurationService->getConfigurationEntry("dynamicLabels"), "name");
 
-            $keywordEmbeddingsByLabelId = array();
+            $profilesByLabelId = array();
             foreach ($labels as &$label) {
                 if (in_array($label->getName(), $dynamicLabelNames)) {
                     continue;
                 }
 
-                $keywordEmbeddings = $this->getKeywordEmbeddings($label);
-                if (!empty($keywordEmbeddings)) {
-                    $keywordEmbeddingsByLabelId[$label->getId()] = $keywordEmbeddings;
+                if (!empty($label->getHighlights())) {
+                    $highlightIds = array_map(fn($highlight) => $highlight->getId(), $label->getHighlights());
+                    $profilesByLabelId[$label->getId()] = array(
+                        "photoIds" => array_map(fn($highlight) => $highlight->getPhoto()->getId(), $label->getHighlights()),
+                        "highlightPlaceIds" => $this->highlightService->getPlaceIdsWithHighlights($highlightIds)
+                    );
                 }
             }
 
-            return $keywordEmbeddingsByLabelId;
-        }
-
-        private function getKeywordEmbeddings(Label $label) : array {
-            $keywordEmbeddings = array();
-            foreach ($label->getMetadata()?->getKeywords() ?? array() as &$keyword) {
-                // TODO: Do not harcode the language here. The value depends on language that the label keywords are written in.
-                $keywordEmbedding = $this->embeddingClient->getTextEmbedding($keyword, "cs");
-                if ($keywordEmbedding !== null) {
-                    $keywordEmbeddings[] = $keywordEmbedding;
-                }
-            }
-
-            return $keywordEmbeddings;
-        }
-
-        private function getLabelSimilarity(array $keywordEmbeddings, array $photoEmbedding) : float {
-            return max(array_map(fn($keywordEmbedding) => $this->embeddingClient->getEmbeddingSimilarity($keywordEmbedding, $photoEmbedding), $keywordEmbeddings));
+            return $profilesByLabelId;
         }
     }
 ?>
