@@ -1,8 +1,3 @@
-import type { Label, LabelMetadata } from "./CoreSwaggerTypes.ts"
+import type { Label } from "./CoreSwaggerTypes.ts"
 
-export interface UseLabelsResult {
-    labels: Label[] | null
-    createLabel: (name: string, metadata?: LabelMetadata) => Promise<Label>
-    updateLabelMetadata: (labelId: string, metadata: LabelMetadata) => Promise<Label>
-    removeLabel: (labelId: string) => Promise<void>
-}
+export type UseLabelsResult = Label[] | null

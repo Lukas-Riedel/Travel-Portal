@@ -524,12 +524,20 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("highlight.prompt.remove.failed")
         )
 
-    const showRemoveLabelToast = (removeLabel: () => Promise<void>) =>
+    const showAssignLabelToast = (createLabel: () => Promise<Label>) =>
         showConfirmToast(
-            t("label.prompt.remove.message"),
+            t("label.prompt.assign.message"),
+            createLabel,
+            t("label.prompt.assign.confirmed"),
+            t("label.prompt.assign.failed")
+        )
+
+    const showUnassignLabelToast = (removeLabel: () => Promise<void>) =>
+        showConfirmToast(
+            t("label.prompt.unassign.message"),
             removeLabel,
-            t("label.prompt.remove.confirmed"),
-            t("label.prompt.remove.failed")
+            t("label.prompt.unassign.confirmed"),
+            t("label.prompt.unassign.failed")
         )
 
     const showUpdateAirlineLogoToast = (updateAirlineLogo: (logo: string) => Promise<Airline>) =>
@@ -726,7 +734,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("category.prompt.update.failed"),
         )
 
-    const showUpdateLabelToast = (label: Label, updateLabel: (metadata: LabelMetadata) => Promise<Label>) =>
+    const showUpdateLabelToast = (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) =>
         showFormToast(
             t("label.prompt.update.message"),
             [
@@ -737,7 +745,7 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     defaultValue: label.metadata?.unicode
                 }
             ],
-            (unicode: string | undefined) => updateLabel({ unicode }),
+            (unicode: string | undefined) => updateMetadata({ unicode }),
             t("label.prompt.update.confirmed"),
             t("label.prompt.update.failed"),
         )
@@ -1627,7 +1635,8 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
         showUpdateMainHighlightToast,
         showUpdateHighlightToast,
         showRemoveHighlightToast,
-        showRemoveLabelToast,
+        showAssignLabelToast,
+        showUnassignLabelToast,
         showUpdateLabelToast,
         showClearConversationToast,
         showCopyConversationToast

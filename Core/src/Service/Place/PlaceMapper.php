@@ -270,7 +270,7 @@
                 }
             }
             if ($labelId !== null) {
-                $placeIds = $this->labelService->getPlaceIdsForLabel($labelId);
+                $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
                 if (count($placeIds) > 0) {
                     $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
                 }
@@ -340,12 +340,12 @@
 
                     $highlights = array();         
                     if (in_array(PlaceIncludedEntity::Highlights->value, $includedEntities)) {
-                        $highlights = $this->highlightService->getPlaceHighlights($placeRow["id"]);
+                        $highlights = $this->highlightService->getPlaceHighlights($placeRow["id"]);                      
                     }                 
 
                     $labels = array();         
                     if (in_array(PlaceIncludedEntity::Labels->value, $includedEntities)) {
-                        $labels = $this->labelService->getLabelIdentifiersForPlace($placeRow["id"]);                 
+                        $labels = $this->labelService->getLabelsForPlace($placeRow["id"]);                      
                     }
                     
                     $notes = array();
@@ -396,7 +396,7 @@
             return array_values($places);
         }
         
-        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?int $nearbyPlaces, array $includedEntities) : array {
+        public function selectCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
             $sql = <<<'SQL'
                 SELECT pi.*
                 FROM place_candidate pc
@@ -421,6 +421,15 @@
                     $whereClauseBuilder->withClause("false");
                 }
             }
+            if ($labelId !== null) {
+                $placeIds = $this->labelService->getPlaceIdsForLabelId($labelId);
+                if (count($placeIds) > 0) {
+                    $whereClauseBuilder->withClause("pi.id IN (" . $this->databaseClient->getPlaceholdersSequence(count($placeIds)) . ")", ...$placeIds);
+                }
+                else {
+                    $whereClauseBuilder->withClause("false");
+                }
+            }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
             $placeRows = $this->databaseClient
@@ -437,6 +446,11 @@
                 $excerpt = null;
                 if (in_array(PlaceIncludedEntity::Excerpt->value, $includedEntities)) {
                     $excerpt = $placeRow["excerpt"];
+                }         
+
+                $labels = array();         
+                if (in_array(PlaceIncludedEntity::Labels->value, $includedEntities)) {
+                    $labels = $this->labelService->getLabelsForPlace($placeRow["id"]);                      
                 }
 
                 $categories = array();
@@ -457,12 +471,13 @@
                 $quality = $placeRow["quality"] !== null && $placeRow["tier"] !== null ? new PlaceQuality($placeRow["quality"], PlaceQualityTier::from($placeRow["tier"])) : null;
                 $places[] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
                     $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $quality, $excerpt,
-                    $categories, $highlights, array(), $notes, $nearbyPlacesArr, array());
+                    $categories, $highlights, $labels, $notes, $nearbyPlacesArr, array());
             }
             
             return $places;
         }
         
+        // TODO: Missing filter label identifier.
         public function selectCandidatePlacesForTrip(?string $categoryId, string $tripId, ?int $nearbyPlaces, array $includedEntities) {         
             // TODO: Introduce a property for TripService $tripService.
             global $tripService;
@@ -508,6 +523,11 @@
                         $excerpt = $placeRow["excerpt"];
                     }         
 
+                    $labels = array();         
+                    if (in_array(PlaceIncludedEntity::Labels->value, $includedEntities)) {
+                        $labels = $this->labelService->getLabelsForPlace($placeRow["id"]);                      
+                    }
+
                     $categories = array();
                     if (in_array(PlaceIncludedEntity::Categories->value, $includedEntities)) {
                         $categories = $this->categoryService->getCategoryIdentifiersForPlace($placeRow["id"]);
@@ -526,7 +546,7 @@
                     $quality = $placeRow["quality"] !== null && $placeRow["tier"] !== null ? new PlaceQuality($placeRow["quality"], PlaceQualityTier::from($placeRow["tier"])) : null;
                     $places[$placeRow["id"]] = new Place($placeRow["id"], $placeRow["name"], $this->getCountryName($placeRow["country_category_id"]), $placeRow["latitude"],
                         $placeRow["longitude"], $placeRow["elevation"], $placeRow["timezone"], null, $placeRow["score"] ?? 0, $quality, $excerpt, $categories,
-                        $highlights, array(), $notes, $nearbyPlacesArr, array());
+                        $highlights, $labels, $notes, $nearbyPlacesArr, array());
                 }
                 
                 if (in_array(PlaceIncludedEntity::Dates->value, $includedEntities)) {
@@ -1020,7 +1040,7 @@
                 ->statementBuilder($sql)
                 ->withParameters($placeId, $longitude, $latitude, $limit)
                 ->getMappedResultSet(function($placeIdentifierRow) {
-                    $places = $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, PlaceIncludedEntity::values());
+                    $places = $this->selectCandidatePlaces($placeIdentifierRow["id"], null, null, null, PlaceIncludedEntity::values());
                     return $places[0] ?? null;
                 }));
         }

@@ -78,7 +78,6 @@ export default function CategoryPage() {
                 name={category?.name ?? null}
                 categories={category?.metadata ? [category] : [...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.CategoryEdit) ? attributes : undefined}
-                highlightsEditable={hasRole(UserRole.CategoryHighlightEdit)}
                 onHighlightsRefreshed={hasRole(UserRole.CategoryHighlightEdit) && (totalScore ?? 0) > 0 ? (highlightsCount => refreshCategoryHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.CategoryEdit) ? updateCategoryName : undefined}
                 onRemoved={hasRole(UserRole.CategoryEdit) && category?.category !== CategoryCategory.Country ? removeCategory : undefined} />

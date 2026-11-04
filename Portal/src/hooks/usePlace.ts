@@ -1,8 +1,9 @@
 import { useEffect } from "react"
 
 import {
-createPlaceHighlight, createPlaceNote, getCoordinates,     getPlace, refreshPlaceAlbum,     refreshPlaceHighlights,
+createPlaceHighlight, createPlaceLabel, createPlaceNote, getCoordinates,     getPlace, refreshPlaceAlbum,     refreshPlaceHighlights,
 removePlaceHighlight,
+removePlaceLabel,
 removePlaceNote,
 removeRegularPlace,
 updateHighlightQualityAttributes,     updatePlaceAlbumsReviewed,
@@ -41,6 +42,8 @@ export const usePlace = (placeId?: string, nearbyPlaces?: number): UsePlaceResul
         updatePlaceMainHighlight: (highlightId: string) => updatePlaceMainHighlight(placeId!, highlightId).then(refetchResponse),
         updatePlaceHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) =>
             updateHighlightQualityAttributes(highlightId, composition, sky, shadows, circumstances, atmosphere, impression).then(refetchResponse),
+        createPlaceLabel: (name: string) => createPlaceLabel(placeId!, name).then(refetchResponse),
+        removePlaceLabel: (labelId: string) => removePlaceLabel(placeId!, labelId).then(refetchResponse),
         updatePlaceExcerpt: (excerpt: string) => updatePlaceExcerpt(placeId!, excerpt).then(refetchResponse),
         refreshPlaceExcerpt: () => updatePlaceExcerpt(placeId!, null).then(refetchResponse),
         updatePlaceLocation: (latitude: number, longitude: number) => updatePlaceLocation(placeId!, latitude, longitude).then(refetchResponse),

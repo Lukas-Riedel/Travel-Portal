@@ -83,6 +83,8 @@
             new OA\Property(property: "yearKeywords", type: "string", example: "Generate 5 to 10 visual keywords for the year's best moments from: {places}."),
             new OA\Property(property: "placeKeywords", type: "string", example: "Generate 5 to 10 visual keywords for {name} in {country}."),
             new OA\Property(property: "categoryKeywords", type: "string", example: "Generate 5 to 10 visual keywords for the region {name} containing: {places}."),
+            new OA\Property(property: "labelAutoAssignmentForLabel", type: "string", example: "Evaluate whether each place in {places} is clearly known for the label {label}."),
+            new OA\Property(property: "labelAutoAssignmentForPlace", type: "string", example: "Evaluate whether the place {name} ({country}) is clearly known for each of these labels: {labels}.")
         ]
     )]
     #[OA\Schema(

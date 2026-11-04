@@ -9,4 +9,5 @@ export interface UseLabelResult {
     createLabelHighlight: (photoId: string) => Promise<Highlight>
     removeLabelHighlight: (highlightId: string) => Promise<void>
     updateLabelHighlightQualityAttributes: (highlightId: string, composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>
+    refreshLabelHighlights: (count: number) => Promise<Highlight[]>
 }

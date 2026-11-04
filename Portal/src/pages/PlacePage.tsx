@@ -31,7 +31,7 @@ export default function PlacePage() {
     const { t } = useTranslation()
     const { formatMeters } = useFormatters()
     const { place, updatePlaceName, updatePlaceAddress, removePlaceHighlight, updatePlaceAlbumsReviewed,
-        updatePlaceMainHighlight, updatePlaceExcerpt, updatePlaceNoteContent,
+        updatePlaceMainHighlight, createPlaceLabel, removePlaceLabel, updatePlaceExcerpt, updatePlaceNoteContent,
         refreshPlaceExcerpt, updatePlaceLocation, refreshPlaceAlbum, updatePlaceHighlightQualityAttributes,
         createPlaceNote, removePlaceNote, refreshPlaceHighlights, removePlace } = usePlace(placeId, NEARBY_PLACES_COUNT)
 
@@ -61,7 +61,6 @@ export default function PlacePage() {
                 name={place?.name ?? null}
                 categories={mostSpecificCategory ? [mostSpecificCategory] : undefined}
                 internalAttributes={hasRole(UserRole.PlaceEdit) ? attributes : undefined}
-                highlightsEditable={hasRole(UserRole.PlaceHighlightEdit)}
                 onHighlightsRefreshed={hasRole(UserRole.PlaceHighlightEdit) && place?.dates?.some(date => date.album) ? (highlightsCount => refreshPlaceHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.PlaceEdit) ? updatePlaceName : undefined}
                 onRemoved={hasRole(UserRole.PlaceEdit) ? doRemovePlace : undefined} />
@@ -75,7 +74,9 @@ export default function PlacePage() {
                 onHighlightQualityAttributesUpdated={hasRole(UserRole.HighlightEdit) ? updatePlaceHighlightQualityAttributes : undefined} />
             <CategoryBar categories={place ? (place.categories ?? []) : null} />
             <LabelBar
-                labels={place ? (place.labels ?? []) : null} />
+                labels={place ? (place.labels ?? []) : null}
+                onLabelAdded={hasRole(UserRole.PlaceLabelEdit) ? createPlaceLabel : undefined}
+                onLabelRemoved={hasRole(UserRole.PlaceLabelEdit) ? removePlaceLabel : undefined} />
             <PlaceContent
                 place={place}
                 onPhotosAdded={hasRole(UserRole.PlaceAlbumEdit) ? publishPhotosUploadingTriggeredEvent : undefined}

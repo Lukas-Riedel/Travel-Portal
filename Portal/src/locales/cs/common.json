@@ -367,17 +367,6 @@
                 }
             }
         },
-        "label": {
-            "highlights": {
-                "incorrect": {
-                    "name": "Štítek s nesprávným počtem highlightů",
-                    "label": {
-                        "name": "Název",
-                        "count": "Počet highlightů"
-                    }
-                }
-            }
-        },
         "place": {
             "category": {
                 "unassigned": {
@@ -493,7 +482,6 @@
                 "trip": "Aktuální výlet",
                 "flights": "Sledované lety",
                 "airlines": "Aerolinky",
-                "labels": "Štítky",
                 "issues": "Hlášené problémy",
                 "configuration": "Konfigurace",
                 "devices": "Zařízení",
@@ -882,11 +870,16 @@
     "label": {
         "prompt": {
             "create": {
-                "message": "Zadej název nového štítku:",
+                "message": "Zadej název štítku k přidání:",
                 "confirmed": "Štítek byl úspěšně přidán",
                 "failed": "Nepodařilo se přidat štítek"
             },
-            "remove": {
+            "assign": {
+                "message": "Opravdu chceš přiřadit tento štítek?",
+                "confirmed": "Štítek byl úspěšně přiřazen",
+                "failed": "Nepodařilo se přiřadit štítek"
+            },
+            "unassign": {
                 "message": "Opravdu chceš odstranit tento štítek?",
                 "confirmed": "Štítek byl úspěšně odstraněn",
                 "failed": "Nepodařilo se odstranit štítek"

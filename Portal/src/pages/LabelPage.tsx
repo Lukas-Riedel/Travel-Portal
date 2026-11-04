@@ -23,12 +23,15 @@ export default function LabelPage() {
     const { publishPhotoReplacingTriggeredEvent } = useEvents()
     const { showUpdateLabelToast } = usePredefinedUserInput()
 
-    const { label, removeLabel, updateLabelName, updateLabelMetadata,
+    const { label, removeLabel, updateLabelName, updateLabelMetadata, refreshLabelHighlights,
         removeLabelHighlight, updateLabelMainHighlight, updateLabelHighlightQualityAttributes } = useLabel(labelId)
     const { places } = useTimeFilteredRegularPlaces({ labelId, include: [PlaceIncludedEntity.Categories], sort: PlaceSortingStrategy.ValueScore })
 
     const countryCategoriesMap = new Map(places?.map(place => getPlaceCategory(place, CategoryCategory.Country))
         ?.filter((c): c is NonNullable<typeof c> => c != null)?.map(category => [category.name, category]))
+
+    const totalScore = places?.map(place => place.score)?.filter((s): s is NonNullable<typeof s> => s != null)
+        ?.reduce((acc, score) => acc + score, 0)
 
     const attributes: Record<string, string | number | undefined> = {
         [t("label.attribute.highlightsCount")]: label?.highlights?.length
@@ -53,7 +56,7 @@ export default function LabelPage() {
                 onRemoved={hasRole(UserRole.LabelEdit) ? removeLabel : undefined}
                 categories={[...countryCategoriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.LabelHighlightRead) ? attributes : undefined}
-                highlightsEditable={hasRole(UserRole.LabelHighlightEdit)} />
+                onHighlightsRefreshed={hasRole(UserRole.LabelHighlightEdit) && (totalScore ?? 0) > 0 ? (highlightsCount => refreshLabelHighlights(highlightsCount)) : undefined} />
             <HighlightCarouselAndPlaceMapAndFlightMapToggleToggle
                 entity={label}
                 places={places}

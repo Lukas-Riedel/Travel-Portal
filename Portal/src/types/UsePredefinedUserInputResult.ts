@@ -60,7 +60,8 @@ export interface UsePredefinedUserInputResult {
     // TODO: According to usage, this should be renamed to showUpdatePhotoToast.
     showUpdateHighlightToast: (updateHighlight: () => Promise<Photo>) => Promise<boolean>
     showRemoveHighlightToast: (removeHighlight: () => Promise<void>) => Promise<boolean>
-    showRemoveLabelToast: (removeLabel: () => Promise<void>) => Promise<boolean>
+    showAssignLabelToast: (createLabel: () => Promise<Label>) => Promise<boolean>
+    showUnassignLabelToast: (removeLabel: () => Promise<void>) => Promise<boolean>
     showUploadPhotosToast: (agents: Device[], uploadPhotos: ((path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>) | ((date: string, path: string, agentId: string, sendNotification: boolean, mainPhotoPosition?: number) => Promise<void>), sendNotification?: boolean, defaultPath?: string) => Promise<boolean>
     showUpdateHighlightAttributesToast: (updateHighlightAttributes: (composition: number | null, sky: number | null, shadows: number | null, circumstances: number | null, atmosphere: number | null, impression: number | null) => Promise<Highlight>, highlightAttributes?: HighlightAttributes, timestamp?: number, focalLength?: number) => Promise<boolean>
     showOverwriteGeographicalRegionToast: (region: GeographicalRegion, overwriteGeographicalRegion: (radius: number, geoJson: GeoJSON) => Promise<GeographicalRegion>) => Promise<boolean>
@@ -86,7 +87,7 @@ export interface UsePredefinedUserInputResult {
     showRemoveTaskToast: (removeTask: () => Promise<void>) => Promise<boolean>
     showUpdateTaskPriorityToast: (updateTaskPriority: (priority: TaskPriority) => Promise<Task>) => Promise<boolean>
     showUpdateTaskTitleAndDescriptionToast: (title: string, description: string | undefined, updateTaskTitle: (title: string, description?: string) => Promise<Task>) => Promise<boolean>
-    showUpdateLabelToast: (label: Label, updateLabel: (metadata: LabelMetadata) => Promise<Label>) => Promise<boolean>
+    showUpdateLabelToast: (label: Label, updateMetadata: (metadata: LabelMetadata) => Promise<Label>) => Promise<boolean>
     showClearConversationToast: (clearConversation: () => Promise<void>) => Promise<boolean>
     showCopyConversationToast: (copyConversation: () => Promise<void>) => Promise<boolean>
 }

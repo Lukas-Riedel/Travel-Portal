@@ -82,21 +82,6 @@
                 });
         }
 
-        public function selectEntityIdsForHighlightIds(HighlightType $highlightType, array $highlightIds) : array {
-            $sql = <<<SQL
-                SELECT ht.id
-                FROM {$highlightType->getTableName()} ht
-                INNER JOIN highlight_identifier hi
-                    ON ht.highlight_id = hi.id
-                WHERE ht.highlight_id IN ({$this->databaseClient->getPlaceholdersSequence(count($highlightIds))})
-            SQL;
-
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters(...$highlightIds)
-                ->getResultSetForColumn("id");
-        }
-
         public function selectEntityIdsForHighlightId(HighlightType $highlightType, string $highlightId) : array {
             $sql = <<<SQL
                 SELECT ht.id

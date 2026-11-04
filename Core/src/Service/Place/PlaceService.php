@@ -141,14 +141,14 @@
         }
 
         public function getCandidatePlace(string $placeId, ?int $nearbyPlaces = null) : ?Place {
-            $candidatePlaces = $this->doGetCandidatePlaces($placeId, null, $nearbyPlaces, PlaceIncludedEntity::values());
+            $candidatePlaces = $this->doGetCandidatePlaces($placeId, null, null, $nearbyPlaces, PlaceIncludedEntity::values());
             return count($candidatePlaces) === 1 ? $candidatePlaces[0] : null;
         }
 
-        public function getCandidatePlaces(?string $categoryId, ?string $tripId, ?int $nearbyPlaces, array $includedEntities) : array {
+        public function getCandidatePlaces(?string $categoryId, ?string $tripId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
             return $tripId !== null
                 ? $this->doGetCandidatePlacesForTrip($categoryId, $tripId, $nearbyPlaces, $includedEntities)
-                : $this->doGetCandidatePlaces(null, $categoryId, $nearbyPlaces, $includedEntities);
+                : $this->doGetCandidatePlaces(null, $categoryId, $labelId, $nearbyPlaces, $includedEntities);
         }
 
         public function getAllPlaceIdentifiers() : array {
@@ -494,8 +494,8 @@
             return $this->placeMapper->selectRegularPlaces($placeId, $categoryId, $labelId, $tripId, $year, $albumId, $photoId, $maxQuality, $maxTier, $minStart, $maxEnd, $nearbyPlaces, $limit, $includedEntities, $placeSortingStrategy);
         }
         
-        private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?int $nearbyPlaces, array $includedEntities) : array {
-            return $this->placeMapper->selectCandidatePlaces($placeId, $categoryId, $nearbyPlaces, $includedEntities);
+        private function doGetCandidatePlaces(?string $placeId, ?string $categoryId, ?string $labelId, ?int $nearbyPlaces, array $includedEntities) : array {
+            return $this->placeMapper->selectCandidatePlaces($placeId, $categoryId, $labelId, $nearbyPlaces, $includedEntities);
         }
 
         private function doGetCandidatePlacesForTrip(?string $categoryId, string $tripId, ?int $nearbyPlaces, array $includedEntities) : array {            

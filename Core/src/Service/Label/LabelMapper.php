@@ -3,28 +3,35 @@
 
     use Core\Client\Database\DatabaseClient;
     use Core\Client\Database\WhereClauseBuilder;
+    use Core\Service\Configuration\ConfigurationService;
     use Core\Service\Highlight\HighlightService;
 
     class LabelMapper {
         
         private readonly DatabaseClient $databaseClient;
+        private readonly ConfigurationService $configurationService;
         private readonly HighlightService $highlightService;
 
-        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService) {
+        public function __construct(DatabaseClient $databaseClient, ConfigurationService $configurationService, HighlightService $highlightService) {
             $this->databaseClient = $databaseClient;
+            $this->configurationService = $configurationService;
             $this->highlightService = $highlightService;
         }
-        public function selectLabels(?string $labelId, array $includedEntities) : array {
+
+        public function selectLabels(?string $labelId, ?string $placeId, array $includedEntities) : array {
             $sql = <<<'SQL'
-                SELECT *
-                FROM label_identifier
+                SELECT li.*
+                FROM label_identifier li
                 WHERE :CONDITIONS
-                ORDER BY name
+                ORDER BY li.name
             SQL;
 
             $whereClauseBuilder = new WhereClauseBuilder();
             if ($labelId !== null) {
-                $whereClauseBuilder->withClause("id = ?", $labelId);
+                $whereClauseBuilder->withClause("li.id = ?", $labelId);
+            }
+            if ($placeId !== null) {
+                $whereClauseBuilder->withClause("EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id AND l.place_id = ?)", $placeId);
             }
             $whereClause = $whereClauseBuilder->buildForAnd();
 
@@ -53,51 +60,11 @@
 
             return $labels;
         }
-        
-        public function selectLabelIdentifiersForPlace(string $placeId) : array {
-            $sql = <<<'SQL'
-                SELECT li.*
-                FROM label_identifier li
-                WHERE li.id IN (
-                    SELECT lp.label_id
-                    FROM label_place lp
-                    WHERE lp.place_id = ?
-                )
-                ORDER BY li.name
-            SQL;
 
-            return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($placeId)
-                ->getMappedResultSet(function($labelRow) {
-                    $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
-                    return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
-                });
-        }
-        public function selectLabelIdentifier(string $labelName) : ?LabelIdentifier {       
-            $sql = <<<'SQL'
-                SELECT *
-                FROM label_identifier
-                WHERE name = ?
-            SQL;
-
-            $labelRow = $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($labelName)
-                ->getSingleRow();
-            
-            if ($labelRow === null) {
-                return null;
-            }
-            
-            $metadata = $labelRow["unicode"] === null ? null : new LabelMetadata($labelRow["unicode"]);
-            return new LabelIdentifier($labelRow["id"], $labelRow["name"], $metadata, $mainHighlights[$labelRow["main_highlight_id"]] ?? null);
-        }
-
-        public function selectPlaceIdsForLabelId(string $labelId) : array {
+        public function selectPlaceIdsForLabelId(string $labelId) : array {            
             $sql = <<<'SQL'
                 SELECT place_id
-                FROM label_place
+                FROM label
                 WHERE label_id = ?
             SQL;
 
@@ -107,9 +74,22 @@
                 ->getResultSetForColumn("place_id");
         }
 
-        public function insertPlaceLabel(string $placeId, string $labelId) : bool {
+        public function selectLabelId(string $labelName) : ?string {
             $sql = <<<'SQL'
-                INSERT INTO label_place (
+                SELECT id
+                FROM label_identifier
+                WHERE name = ?
+            SQL;
+
+            return $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters($labelName)
+                ->getSingleColumn("id");
+        }
+
+        public function insertLabel(string $placeId, string $labelId) : bool {
+            $sql = <<<'SQL'
+                INSERT INTO label (
                     place_id,
                     label_id
                 )
@@ -117,7 +97,6 @@
                     ?,
                     ?
                 )
-                ON CONFLICT DO NOTHING
             SQL;
 
             return $this->databaseClient
@@ -125,31 +104,23 @@
                 ->withParameters($placeId, $labelId)
                 ->execute() === 1;
         }
-        public function insertLabelIdentifier(LabelIdentifier $labelIdentifier) : ?string {
+
+        public function insertLabelId(string $labelName) : ?string {
             $sql = <<<'SQL'
                 INSERT INTO label_identifier (
-                    name,
-                    unicode
+                    name
                 )
                 VALUES (
-                    ?,
                     ?
                 )
                 ON CONFLICT DO NOTHING
                 RETURNING id
             SQL;
 
-            $id = $this->databaseClient
+            return $this->databaseClient
                 ->statementBuilder($sql)
-                ->withParameters($labelIdentifier->getName(), $labelIdentifier->getMetadata()?->getUnicode())
+                ->withParameters($labelName)
                 ->getSingleColumn("id");
-
-            if ($id === null) {
-                return false;
-            }
-
-            $labelIdentifier->setId($id);
-            return true;
         }
         
         public function updateLabelName(string $labelId, string $name) : bool {
@@ -178,6 +149,7 @@
                 ->execute() === 1;
         }
 
+
         public function updateLabelMainHighlight(string $labelId, ?string $highlightIdentifier) : bool {
             $sql = <<<'SQL'
                 UPDATE label_identifier
@@ -190,11 +162,12 @@
                 ->withParameters($highlightIdentifier, $labelId)
                 ->execute() === 1;
         }
-        
+
+
         public function deleteLabelForPlace(string $placeId, string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_place
+                FROM label
                 WHERE place_id = ?
                     AND label_id = ?
             SQL;
@@ -208,7 +181,7 @@
         public function deleteLabelForAllPlaces(string $labelId) : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_place
+                FROM label
                 WHERE label_id = ?
             SQL;
 
@@ -217,17 +190,27 @@
                 ->withParameters($labelId)
                 ->execute();
         }
-        
-        public function deleteLabel(string $labelId) : int {
+
+        public function deleteStaleLabelIdentifiers() : int {
             $sql = <<<'SQL'
                 DELETE
-                FROM label_identifier
-                WHERE id = ?
+                FROM label_identifier li
+                WHERE :CONDITIONS
             SQL;
 
+            $whereClauseBuilder = (new WhereClauseBuilder())
+                ->withClause("NOT EXISTS (SELECT 1 FROM label l WHERE l.label_id = li.id)");
+
+            $dynamicLabelNames = array_map(fn($dynamicLabel) => $dynamicLabel["name"], 
+                $this->configurationService->getConfigurationEntry("dynamicLabels"));
+            if (count($dynamicLabelNames) > 0) {
+                $whereClauseBuilder->withClause("name NOT IN (" . $this->databaseClient->getPlaceholdersSequence(count($dynamicLabelNames)) . ")", ...$dynamicLabelNames);
+            }
+
+            $whereClause = $whereClauseBuilder->buildForAnd();
+            
             return $this->databaseClient
-                ->statementBuilder($sql)
-                ->withParameters($labelId)
+                ->statementBuilder($sql, $whereClause)
                 ->execute();
         }
     }

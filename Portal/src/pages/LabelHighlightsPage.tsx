@@ -13,11 +13,11 @@ export default function LabelHighlightsPage() {
     const { hasRole } = useAuth()
 
     const { label, createLabelHighlight } = useLabel(labelId)
-    const { places } = useRegularPlaces({ include: [PlaceIncludedEntity.Highlights], sort: PlaceSortingStrategy.ValueOldest })
+    const { places } = useRegularPlaces({ labelId, include: [PlaceIncludedEntity.Highlights], sort: PlaceSortingStrategy.ValueScore })
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 
-    const highlightCandidates = useMemo(() => places?.filter(place => place.highlights?.length)?.map(place => {
+    const highlightCandidates = useMemo(() => places?.map(place => {
         const photos = place.highlights?.filter(highlight => !label?.highlights?.some(h => h.photo.id === highlight.photo.id))?.map(highlight => highlight.photo) ?? []
         return {
             title: place.name,
