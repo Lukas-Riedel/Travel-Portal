@@ -82,6 +82,12 @@
         public function getPhotoEmbedding(string $photoId) : ?PhotoEmbedding {
             return $this->photoMapper->selectPhotoEmbedding($photoId);
         }
+
+        public function getPhotosSimilarityCounts(array $albumIds, array $referencePhotoIds, float $minSimilarity) : PhotoSimilarityCounts {
+            return empty($albumIds) || empty($referencePhotoIds)
+                ? new PhotoSimilarityCounts(0, 0)
+                : $this->photoMapper->selectPhotosSimilarityCounts($albumIds, $referencePhotoIds, $minSimilarity);
+        }
         
         public function getAlbum(string $albumId) : ?Album {
             return $this->photoMapper->selectAlbum($albumId);

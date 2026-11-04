@@ -9,7 +9,6 @@ class BaseLabelTools(BaseCoreTools, ABC):
         return {
             "id": label.get("id"),
             "name": label.get("name"),
-            "keywords": label.get("metadata", {}).get("keywords"),
         }
 
 
@@ -33,7 +32,6 @@ class LabelReadTools(BaseLabelTools):
             A list of label objects, where each object contains:
             - id (string): Unique label identifier.
             - name (string): Label name (e.g. `"City"`).
-            - keywords (list): Keywords used to match the label to place highlights.
         """
         labels = self.core_client.get_labels()
         self._verify_error_response(labels)
@@ -43,7 +41,7 @@ class LabelReadTools(BaseLabelTools):
 
 class PlaceLabelReadTools(BaseLabelTools):
     def _get_description(self) -> str | None:
-        return 'Provides capabilities to inspect automatically matched labels for places in Travel Portal. Activate and apply this skill when the user asks what labels a place has (e.g. "what labels does Prague have?", "show me the labels for Angkor Wat"). Place labels are derived from highlight similarity and cannot be manually assigned or removed.'
+        return 'Provides capabilities to inspect automatically matched labels for places in Travel Portal. Activate and apply this skill when the user asks what labels a place has (e.g. "what labels does Prague have?", "show me the labels for Angkor Wat"). Place labels are derived from the similarity of place photos to the example photos of each label and cannot be manually assigned or removed.'
 
     def _get_supported_skill(self) -> str:
         return "place.label.read"
@@ -62,7 +60,6 @@ class PlaceLabelReadTools(BaseLabelTools):
             A list of label objects for the place, where each object contains:
             - id (string): Unique label identifier.
             - name (string): Label name (e.g. `"City"`).
-            - keywords (list): Keywords used to match the label to place highlights.
         """
         place = self.core_client.get_place(place_id=place_id)
         self._verify_error_response(place)
@@ -72,61 +69,28 @@ class PlaceLabelReadTools(BaseLabelTools):
 
 class LabelEditTools(BaseLabelTools):
     def _get_description(self) -> str | None:
-        return "Provides capabilities to create and update standalone labels in Travel Portal. Activate and apply this skill when the user asks to manage a label or its keywords. Labels are automatically matched to place highlights; they cannot be manually assigned to or removed from individual places."
+        return "Provides capabilities to create standalone labels in Travel Portal. Activate and apply this skill when the user asks to create a label. Labels are matched to places automatically by the similarity of place photos to the example photos of the label, which are chosen in Travel Portal; they cannot be manually assigned to or removed from individual places."
 
     def _get_supported_skill(self) -> str:
         return "label.edit"
 
     def _get_tools(self) -> list[Any]:
-        return [
-            self.create_label,
-            self.update_label_keywords,
-        ]
+        return [self.create_label]
 
-    def create_label(
-        self,
-        name: str,
-        keywords: list[str] | None = None,
-    ) -> dict[str, Any]:
-        """Creates a standalone label, optionally with keywords.
+    def create_label(self, name: str) -> dict[str, Any]:
+        """Creates a standalone label.
         Use this when the user asks to create a label (e.g. "create a label called City").
-        The keywords are used to match the label to place highlights. Labels are matched automatically and cannot be manually assigned to places.
+        The new label has no places until its example photos are chosen in Travel Portal. Labels are matched to places automatically and cannot be manually assigned to places.
 
         Args:
             name: Name of the label to create (e.g. "City").
-            keywords: Optional list of keywords used to match the label to place highlights (e.g. `["city", "urban area", "dense buildings", "public transport"]`).
 
         Returns:
             The label object containing:
             - id (string): Unique label identifier.
             - name (string): Label name (e.g. `"City"`).
-            - keywords (list): Keywords used to match the label to place highlights.
         """
-        label = self.core_client.create_label(name=name, keywords=keywords)
+        label = self.core_client.create_label(name=name)
         self._verify_error_response(label)
 
         return self._extract_label(label)
-
-    def update_label_keywords(
-        self, label_id: str, keywords: list[str]
-    ) -> dict[str, Any]:
-        """Replaces the keywords of an existing standalone label.
-        Use this when the user asks to change the keywords that control matching to place highlights.
-        The provided list fully replaces the existing keywords, so include the keywords that should be kept.
-        Always resolve the label ID using get_labels. Never ask the user for a UUID.
-
-        Args:
-            label_id: The `id` of the label as returned by get_labels.
-            keywords: New list of keywords used to match the label to place highlights.
-
-        Returns:
-            The label object containing:
-            - id (string): Unique label identifier.
-            - name (string): Label name (e.g. `"City"`).
-            - keywords (list): Keywords used to match the label to place highlights.
-        """
-        updated_label = self.core_client.update_label(
-            label_id=label_id, keywords=keywords
-        )
-        self._verify_error_response(updated_label)
-        return self._extract_label(updated_label)

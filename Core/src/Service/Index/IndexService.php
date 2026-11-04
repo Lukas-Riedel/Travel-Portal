@@ -99,14 +99,6 @@
                     $embedding, count($prioritizedPhotoIds), null, $categoryPlaceIds, array(), $prioritizedPhotoIds, null, null));
         }
 
-        public function getSelectedPhotoIdsForLabel(array $labelPlaceIds, array $keywords, int $count, ?string $mainHighlightPhotoId, array $placeMainHighlightPhotoIds) : array {
-            return $this->doGetSelectedPhotoIds($keywords, $count, $mainHighlightPhotoId, $placeMainHighlightPhotoIds,
-                fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, round($count / count($keywords)) * $this->selectedPhotoCandidatesLimitCoefficient, null, $labelPlaceIds, array(), array(), true, null),
-                fn($embedding, $prioritizedPhotoIds) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(
-                    $embedding, count($prioritizedPhotoIds), null, $labelPlaceIds, array(), $prioritizedPhotoIds, null, null));
-        }
-
         public function getSelectedPhotoIdsForYear(int $year, array $keywords, int $count, ?string $mainHighlightPhotoId, array $tripMainHighlightPhotoIds) : array {
             return $this->doGetSelectedPhotoIds($keywords, $count, $mainHighlightPhotoId, $tripMainHighlightPhotoIds,
                 fn($embedding) => $this->indexQueryDefinitionFactory->createPhotoSelectionQuery(

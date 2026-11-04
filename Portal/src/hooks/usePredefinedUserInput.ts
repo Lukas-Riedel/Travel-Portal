@@ -17,8 +17,6 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
     const { configuration } = useConfiguration()
     const { t } = useTranslation()
     const { formatMillimeters, formatDuration } = useFormatters()
-    
-    const parseCsvList = (csv: string): string[] => csv.split(",").map(value => value.trim()).filter(value => value.length > 0)
 
     const showUpdateAirportCountryToast = (updateAirportCountry: (country: string) => Promise<Airport>) =>
         showInputToast(
@@ -542,22 +540,10 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
             t("airline.prompt.update.logo.failed")
         )
 
-    const showCreateLabelToast = (createLabel: (name: string, metadata?: LabelMetadata) => Promise<Label>) =>
-        showFormToast(
+    const showCreateLabelToast = (createLabel: (name: string) => Promise<Label>) =>
+        showInputToast(
             t("label.prompt.create.message"),
-            [
-                {
-                    type: "text",
-                    required: true,
-                    label: t("label.prompt.create.label.name")
-                },
-                {
-                    type: "text",
-                    required: false,
-                    label: t("label.prompt.create.label.keywords")
-                }
-            ],
-            (name: string, keywords: string | undefined) => createLabel(name, keywords ? { keywords: parseCsvList(keywords) } : undefined),
+            createLabel,
             t("label.prompt.create.confirmed"),
             t("label.prompt.create.failed")
         )
@@ -749,15 +735,9 @@ export const usePredefinedUserInput = (): UsePredefinedUserInputResult => {
                     required: false,
                     label: t("label.prompt.update.label.unicode"),
                     defaultValue: label.metadata?.unicode
-                },
-                {
-                    type: "text",
-                    required: false,
-                    label: t("label.prompt.update.label.keywords"),
-                    defaultValue: label.metadata?.keywords?.join(", ")
                 }
             ],
-            (unicode: string | undefined, keywords: string | undefined) => updateLabel({ unicode, keywords: keywords ? parseCsvList(keywords) : undefined }),
+            (unicode: string | undefined) => updateLabel({ unicode }),
             t("label.prompt.update.confirmed"),
             t("label.prompt.update.failed"),
         )

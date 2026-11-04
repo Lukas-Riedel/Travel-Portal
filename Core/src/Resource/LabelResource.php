@@ -38,7 +38,6 @@
                 $group->patch("/{labelId}", [$resource, "updateLabel"]);
                 $group->delete("/{labelId}", [$resource, "removeLabel"]);
                 $group->post("/{labelId}/highlights", [$resource, "createLabelHighlight"]);
-                $group->post("/{labelId}/highlights/refresh", [$resource, "refreshLabelHighlights"]);
                 $group->delete("/{labelId}/highlights/{highlightId}", [$resource, "removeLabelHighlight"]);
             });
         }
@@ -123,7 +122,7 @@
             $name = $this->requireJsonBodyField($request, "name");
             $metadata = $this->getJsonBodyField($request, "metadata");
 
-            $convertedMetadata = $metadata === null ? null : new LabelMetadata($metadata["unicode"] ?? null, $metadata["keywords"] ?? null);
+            $convertedMetadata = $metadata === null ? null : new LabelMetadata($metadata["unicode"] ?? null);
 
             return $this->labelService->createLabel($name, $convertedMetadata);
         }
@@ -343,13 +342,6 @@
                                     description: "The unicode of the metadata of the label",
                                     type: "string",
                                     example: "1f1ec-1f1e7"
-                                ),
-                                new OA\Property(
-                                    property: "keywords",
-                                    description: "The keywords of the metadata of the label",
-                                    type: "array",
-                                    items: new OA\Items(type: "string"),
-                                    example: ["tropical beach", "clear water", "palm trees"]
                                 )
                             ]
                         )
@@ -447,9 +439,6 @@
             if ($newMetadata !== null) {
                 if (isset($newMetadata["unicode"])) {
                     $wasUpdated |= $this->labelService->updateLabelUnicode($labelId, $newMetadata["unicode"]);
-                }
-                if (isset($newMetadata["keywords"])) {
-                    $wasUpdated |= $this->labelService->updateLabelKeywords($labelId, $newMetadata["keywords"]);
                 }
             }
 
@@ -574,104 +563,6 @@
             }
 
             return $this->highlightService->createLabelHighlight($labelId, $photo["id"]);
-        }
-
-        #[OA\Post(
-            path: "/labels/{labelId}/highlights/refresh",
-            summary: "Refresh highlights for a label with the specified identifier",
-            operationId: "refreshLabelHighlights",
-            tags: ["Labels"],
-            security: [ ["bearerAuth" => []] ],
-            parameters: [
-                new OA\Parameter(
-                    name: "labelId",
-                    in: "path",
-                    required: true,
-                    description: "The identifier of the label",
-                    schema: new OA\Schema(type: "string"),
-                    example: "80e193aa-8d74-4ff6-af1a-91cc2d6cef8a",
-                ),
-                new OA\Parameter(
-                    name: "count",
-                    in: "query",
-                    required: true,
-                    description: "The count of highlights to select",
-                    schema: new OA\Schema(type: "integer"),
-                    example: 15,
-                )
-            ],
-            responses: [
-                new OA\Response(
-                    response: 200,
-                    description: "Success. Refreshed highlights for a label with the specified identifier.",
-                    content: new OA\JsonContent(
-                        type: "array",
-                        items: new OA\Items(ref: "#/components/schemas/Highlight")
-                    )
-                ),
-                new OA\Response(
-                    response: 400,
-                    description: "Bad Request. The request had invalid syntax or could not be fulfilled.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Bad Request",
-                                ref: "#/components/examples/BadRequest"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 401,
-                    description: "Unauthorized. The request required user authentication.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Unauthorized",
-                                ref: "#/components/examples/Unauthorized"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 403,
-                    description: "Forbidden. The user did not have access to the requested resource.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Forbidden",
-                                ref: "#/components/examples/Forbidden"
-                            )
-                        ]
-                    )
-                ),
-                new OA\Response(
-                    response: 404,
-                    description: "Not Found. The requested resource did not exist.",
-                    content: new OA\JsonContent(
-                        ref: "#/components/schemas/RequestError",
-                        examples: [
-                            new OA\Examples(
-                                example: "Not Found",
-                                ref: "#/components/examples/NotFound"
-                            )
-                        ]
-                    )
-                )
-            ]
-        )]
-        public function refreshLabelHighlights(Request $request, Response $response, array $routeArguments) : mixed {
-            $this->requireRole($request, UserRole::LabelHighlightEdit);
-
-            $labelId = $this->requirePathArgument($routeArguments, "labelId");
-            $count = $this->requireQueryParameter($request, "count");
-
-            $this->labelService->refreshLabelHighlights($labelId, $count);
-
-            return $this->labelService->getLabel($labelId)?->getHighlights();
         }
 
         #[OA\Delete(

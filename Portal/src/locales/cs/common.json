@@ -367,6 +367,17 @@
                 }
             }
         },
+        "label": {
+            "highlights": {
+                "incorrect": {
+                    "name": "Štítek s nesprávným počtem highlightů",
+                    "label": {
+                        "name": "Název",
+                        "count": "Počet highlightů"
+                    }
+                }
+            }
+        },
         "place": {
             "category": {
                 "unassigned": {
@@ -871,11 +882,7 @@
     "label": {
         "prompt": {
             "create": {
-                "message": "Zadej údaje pro nový štítek:",
-                "label": {
-                    "name": "Název",
-                    "keywords": "Klíčová slova"
-                },
+                "message": "Zadej název nového štítku:",
                 "confirmed": "Štítek byl úspěšně přidán",
                 "failed": "Nepodařilo se přidat štítek"
             },
@@ -887,8 +894,7 @@
             "update": {
                 "message": "Zadej nové údaje pro štítek:",
                 "label": {
-                    "unicode": "Unikód",
-                    "keywords": "Klíčová slova"
+                    "unicode": "Unikód"
                 },
                 "confirmed": "Štítek byl úspěšně aktualizován",
                 "failed": "Nepodařilo se aktualizovat štítek"

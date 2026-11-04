@@ -140,12 +140,11 @@ export const updateLabelName = async (labelId: string, name: string): Promise<La
         }
     ).then(extractData)
 
-export const updateLabelMetadata = async (labelId: string, { unicode, keywords }: LabelMetadata = {}): Promise<Label> =>
+export const updateLabelMetadata = async (labelId: string, { unicode }: LabelMetadata = {}): Promise<Label> =>
     coreClient.patch<Label>(`labels/${labelId}`,
         {
             metadata: {
-                unicode,
-                keywords
+                unicode
             }
         }
     ).then(extractData)
@@ -173,12 +172,6 @@ export const removeLabel = async (labelId: string): Promise<void> =>
 
 export const removeLabelHighlight = async (labelId: string, highlightId: string): Promise<void> =>
     coreClient.delete(`labels/${labelId}/highlights/${highlightId}`)
-
-export const refreshLabelHighlights = async (labelId: string, count: number): Promise<Highlight[]> =>
-    coreClient.post<Highlight[]>(createQueryPath(`labels/${labelId}/highlights/refresh`,
-        {
-            count
-        })).then(extractData)
 
 export const getAirport = async (airportId: string): Promise<Airport> =>
     coreClient.get<Airport>(`airports/${airportId}`)

@@ -13,7 +13,7 @@ export default function LabelHighlightsPage() {
     const { hasRole } = useAuth()
 
     const { label, createLabelHighlight } = useLabel(labelId)
-    const { places } = useRegularPlaces({ labelId, include: [PlaceIncludedEntity.Highlights], sort: PlaceSortingStrategy.ValueScore })
+    const { places } = useRegularPlaces({ include: [PlaceIncludedEntity.Highlights], sort: PlaceSortingStrategy.ValueOldest })
 
     const [currentPhotos, setCurrentPhotos] = useState<Photo[] | null>(null)
 

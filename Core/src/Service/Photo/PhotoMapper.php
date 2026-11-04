@@ -121,6 +121,33 @@
                 });
         }
 
+        public function selectPhotosSimilarityCounts(array $albumIds, array $referencePhotoIds, float $minSimilarity) : PhotoSimilarityCounts {
+            $sql = <<<SQL
+                SELECT COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE matches) AS matching
+                FROM (
+                    SELECT (
+                        SELECT COUNT(*)
+                        FROM photo_identifier reference
+                        WHERE reference.id IN ({$this->databaseClient->getPlaceholdersSequence(count($referencePhotoIds))})
+                            AND (pi.embedding <=> reference.embedding) <= ?
+                    ) >= ? AS matches
+                    FROM photo_identifier pi
+                    INNER JOIN photo p
+                        ON pi.id = p.id
+                    WHERE NOT pi.replaced
+                        AND p.album_id IN ({$this->databaseClient->getPlaceholdersSequence(count($albumIds))})
+                ) photo_matches
+            SQL;
+
+            $row = $this->databaseClient
+                ->statementBuilder($sql)
+                ->withParameters(...array_merge($referencePhotoIds, array(1 - $minSimilarity, intdiv(count($referencePhotoIds), 2) + 1), $albumIds))
+                ->getSingleRow();
+
+            return new PhotoSimilarityCounts($row["total"], $row["matching"]);
+        }
+
         public function selectAlbum(string $albumId) : ?Album {
             $sql = <<<SQL
                 WITH target_album AS (

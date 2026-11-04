@@ -2,36 +2,18 @@
     namespace Core\Service\Label;
 
     use Core\Client\Database\DatabaseClient;
-    use Core\Client\Translation\TranslationClient;
     use Core\Event\Event;
     use Core\Event\EventPublisher;
     use Core\Service\Highlight\HighlightService;
-    use Core\Service\Index\IndexService;
-    use Core\Service\Place\PlaceService;
-    use Core\Service\Place\PlaceSortingStrategy;
 
     class LabelService {
-        private const KEYWORD_LANGUAGE = "en";
 
         private readonly LabelMapper $labelMapper;
-        private readonly HighlightService $highlightService;
-        private readonly IndexService $indexService;
-        private readonly TranslationClient $translationClient;
         private readonly EventPublisher $eventPublisher;
 
-        private ?PlaceService $placeService = null;
-
-        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, IndexService $indexService,
-            TranslationClient $translationClient, EventPublisher $eventPublisher) {
+        public function __construct(DatabaseClient $databaseClient, HighlightService $highlightService, EventPublisher $eventPublisher) {
             $this->labelMapper = new LabelMapper($databaseClient, $highlightService);
-            $this->highlightService = $highlightService;
-            $this->indexService = $indexService;
-            $this->translationClient = $translationClient;
             $this->eventPublisher = $eventPublisher;
-        }
-
-        public function setPlaceService(PlaceService $placeService) : void {
-            $this->placeService = $placeService;
         }
         
         public function createLabel(string $labelName, ?LabelMetadata $metadata) : Label {
@@ -80,49 +62,12 @@
             return $wasUpdated;
         }
 
-        public function updateLabelKeywords(string $labelId, array $keywords) : bool {
-            $wasUpdated = $this->labelMapper->updateLabelKeywords($labelId, $keywords);
-            if ($wasUpdated) {
-                $this->eventPublisher->publish(Event::LabelInvalidated($labelId));
-            }
-            return $wasUpdated;
-        }
-
         public function updateLabelUnicode(string $labelId, string $unicode) : bool {
             return $this->labelMapper->updateLabelUnicode($labelId, $unicode);
         }
 
         public function updateLabelMainHighlight(string $labelId, ?string $highlightIdentifier) : bool {
             return $this->labelMapper->updateLabelMainHighlight($labelId, $highlightIdentifier);
-        }
-
-        public function refreshLabelHighlights(string $labelId, int $count) : void {
-            $label = $this->getLabel($labelId);
-            if ($label === null) {
-                return;
-            }
-
-            $places = $this->placeService->getRegularPlaces(null, $labelId, null, null, null, null, null, null,
-                null, time(), null, null, array(), PlaceSortingStrategy::ScoreDescending);
-            
-            $keywords = $label->getMetadata()?->getKeywords();
-            // TODO: Do not harcode the language here. The value depends on language that the label description/name is written in.
-            $translatedKeywords = array_map(fn($keyword) => $this->translationClient->translate($keyword, "cs", self::KEYWORD_LANGUAGE), $keywords === null || empty($keywords) ? array($label->getName()) : $keywords);
-            $selectedPhotoIds = $this->indexService->getSelectedPhotoIdsForLabel(array_map(fn($place) => $place->getId(), $places), $translatedKeywords, $count,
-                $label->getMainHighlight()?->getPhoto()?->getId(), array_values(array_filter(array_map(fn($place) => $place->getMainHighlight()?->getPhoto()?->getId(), $places))));
-
-            foreach ($label->getHighlights() as &$highlight) {
-                if (!in_array($highlight->getPhoto()->getId(), $selectedPhotoIds)) {
-                    $this->highlightService->removeLabelHighlight($labelId, $highlight->getId());
-                }
-            }
-
-            $existingHighlightPhotoIds = array_map(fn($highlight) => $highlight->getPhoto()->getId(), $label->getHighlights());
-            foreach ($selectedPhotoIds as &$photoId) {
-                if (!in_array($photoId, $existingHighlightPhotoIds)) {
-                    $this->highlightService->createLabelHighlight($labelId, $photoId);
-                }
-            }
         }
 
         public function removeLabelForPlace(string $placeId, string $labelId) : bool {

@@ -66,6 +66,7 @@ export default function TripPage() {
                 name={trip ? getTripFullName(trip) : null}
                 categories={[...visitedCountriesMap.values()].sort((a, b) => a.name.localeCompare(b.name))}
                 internalAttributes={hasRole(UserRole.TripEdit) ? attributes : undefined}
+                highlightsEditable={hasRole(UserRole.TripHighlightEdit)}
                 onHighlightsRefreshed={hasRole(UserRole.TripHighlightEdit) && places?.some(place => place.dates?.some(date => date.album)) ? (highlightsCount => refreshTripHighlights(highlightsCount)) : undefined}
                 onNameChanged={hasRole(UserRole.TripEdit) ? updateTripName : undefined}
                 onRemoved={hasRole(UserRole.TripEdit) ? removeTrip : undefined} />
