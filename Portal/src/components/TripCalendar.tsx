@@ -68,7 +68,7 @@ export default function TripCalendar({ trip, places, tripCandidates, displayWarn
     return (
         <div className="relative w-full my-4">
             <CardGrid rowSize={4}>
-                {getTripDays(trip ?? undefined, places ?? undefined, timezone)?.map((day, index) => (
+                {getTripDays(trip ?? undefined, places ?? undefined, configuration?.homeLocation?.timezone)?.map((day, index) => (
                     <DayCard
                         key={day.getTime()}
                         day={day}

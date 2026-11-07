@@ -1,4 +1,4 @@
-import { fromUnixTime, startOfDay } from "date-fns"
+import { startOfDay } from "date-fns"
 import { Battery, Bed, Clock, Earth, House, LocateFixedIcon, LocateOffIcon, Moon, Sun, SunMoon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,7 +17,7 @@ import { getHaversineDistance } from "../utils/geocodingUtils.ts"
 import { getMapLink } from "../utils/navigationUtils.ts"
 import { getPlaceCategory } from "../utils/placeUtils.ts"
 import { getSunAltitude } from "../utils/sunUtils.ts"
-import { formatDateRange, formatTimestamp, getCurrentHour, getCurrentTimestamp, getTripDays, isTodayOrFutureDay, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
+import { formatDateRange, formatTimestamp, getCurrentHour, getCurrentTimestamp, getTimezoneOrDefault, getTripDays, getZonedDate, isTodayOrFutureDay, ONE_DAY_SECONDS } from "../utils/timeUtils.ts"
 import { getCalendarEvents, getTripCarRentals, getTripPublicHoliday, getTripStay, isCurrentTrip } from "../utils/tripUtils.ts"
 import AppLink from "./AppLink.tsx"
 import CategoryFlag from "./CategoryFlag.tsx"
@@ -70,7 +70,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
         return () => window.removeEventListener("resize", onResize)
     }, [])
 
-    const days = trip && getTripDays(trip, places ?? undefined, timezone)?.filter(date => isTodayOrFutureDay(date, timezone))
+    const days = trip && getTripDays(trip, places ?? undefined, configuration?.homeLocation?.timezone)?.filter(date => isTodayOrFutureDay(date, timezone))
 
     const tripPlacesWithoutLayover = trip && places?.filter(place => !place.dates?.some(date => date?.layover))
     const countryCategories = [...new Map(tripPlacesWithoutLayover?.map(place => getPlaceCategory(place, CategoryCategory.Country))
@@ -254,7 +254,7 @@ export default function TripSummary({ trip, displayDeviceData, displayWarnings, 
                     events={(places && getCalendarEvents(day, trip?.flights, trip?.watchedFlights, places, timezone) as (Flight | (Place & PlaceDate))[]) ?? null}
                     stay={trip ? getTripStay(trip, day, configuration?.homeLocation?.timezone) : undefined}
                     carRentals={trip ? getTripCarRentals(trip, day, configuration?.homeLocation?.timezone) : undefined}
-                    fitness={trip?.fitness?.[(day.getTime() - startOfDay(fromUnixTime(trip?.start ?? 0)).getTime()) / (ONE_DAY_SECONDS * 1000)]}
+                    fitness={trip?.fitness?.[(day.getTime() - startOfDay(getZonedDate(trip?.start ?? 0, getTimezoneOrDefault(configuration?.homeLocation?.timezone))).getTime()) / (ONE_DAY_SECONDS * 1000)]}
                     noteSelector={prefix => trip?.notes?.filter(note => note.content.startsWith(prefix))?.map(note => ({ ...note, content: note.content.substring(prefix.length) })) ?? []}
                     publicHoliday={getTripPublicHoliday(trip, day)}
                     timezone={timezone}
